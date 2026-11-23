@@ -1,0 +1,253 @@
+{
+  "runs": [
+    {
+      "id": "run-1795424439957",
+      "kind": "scan",
+      "startedAt": "2026-11-23T09:00:39.957Z",
+      "finishedAt": "2026-11-23T09:00:51.303Z",
+      "status": "finished",
+      "searchesUsed": 3,
+      "keepaTokensUsed": 0,
+      "aiCostUsd": 0,
+      "summary": "16 bundles, 0 with an estimate. 3 searches. Home Depot refused a page (HTTP 200); the rest are read next scan. BOGO: DEWALT and RYOBI not read in full (This browser does not know that kind of job.); the pairs found before are kept. There is no API key saved for this model.",
+      "trigger": "manual",
+      "stopReason": null,
+      "error": "Home Depot refused a page (HTTP 200); the rest are read next scan.",
+      "steps": [
+        {
+          "label": "Home Depot deals pages",
+          "state": "done",
+          "figure": "3 searches"
+        },
+        {
+          "label": "Bundle pages",
+          "state": "done",
+          "figure": "0 read"
+        },
+        {
+          "label": "Kit pages",
+          "state": "skipped",
+          "figure": "Home Depot refused"
+        },
+        {
+          "label": "Home Depot part prices",
+          "state": "skipped",
+          "figure": "Home Depot refused"
+        },
+        {
+          "label": "eBay listings",
+          "state": "skipped",
+          "figure": "no eBay keys"
+        },
+        {
+          "label": "Listing check (Claude)",
+          "state": "skipped",
+          "figure": "no eBay keys"
+        },
+        {
+          "label": "Amazon lookups",
+          "state": "skipped",
+          "figure": "none found"
+        },
+        {
+          "label": "Finish",
+          "state": "done",
+          "figure": ""
+        }
+      ],
+      "judgeCostUsd": 0,
+      "questionsAsked": 0,
+      "autopilotApplied": 0
+    },
+    {
+      "id": "run-1795425864820",
+      "kind": "ask",
+      "startedAt": "2026-11-23T09:24:24.820Z",
+      "finishedAt": "2026-11-23T09:31:25.538Z",
+      "status": "finished",
+      "searchesUsed": 0,
+      "keepaTokensUsed": 0,
+      "aiCostUsd": 0.6951,
+      "summary": "AI asked about 16, 2 verified. Autopilot applied 2.",
+      "trigger": "manual",
+      "questionsAsked": 16,
+      "autopilotApplied": 2
+    },
+    {
+      "id": "run-1795426927490",
+      "kind": "scan",
+      "startedAt": "2026-11-23T09:42:07.490Z",
+      "finishedAt": "2026-11-23T09:55:45.410Z",
+      "status": "limit",
+      "searchesUsed": 1,
+      "keepaTokensUsed": 0,
+      "aiCostUsd": 0.2648,
+      "summary": "Found 53 bundles; 0 estimated. 1 search. AI asked about 5.",
+      "trigger": "manual",
+      "stopReason": "run_cap",
+      "error": null,
+      "steps": [
+        {
+          "label": "Home Depot deals pages",
+          "state": "done",
+          "figure": "1 search"
+        },
+        {
+          "label": "Bundle pages",
+          "state": "done",
+          "figure": "13 read"
+        },
+        {
+          "label": "Kit pages",
+          "state": "done",
+          "figure": "3 read"
+        },
+        {
+          "label": "Home Depot part prices",
+          "state": "done",
+          "figure": "40 read"
+        },
+        {
+          "label": "eBay listings",
+          "state": "done",
+          "figure": "1 call"
+        },
+        {
+          "label": "Listing check (Claude)",
+          "state": "done",
+          "figure": "$0.00"
+        },
+        {
+          "label": "Amazon lookups",
+          "state": "skipped",
+          "figure": "search limit"
+        },
+        {
+          "label": "Finish",
+          "state": "done",
+          "figure": ""
+        }
+      ],
+      "judgeCostUsd": 0,
+      "questionsAsked": 5,
+      "autopilotApplied": 0
+    },
+    {
+      "id": "run-1795431340979",
+      "kind": "scan",
+      "startedAt": "2026-11-23T10:55:40.979Z",
+      "finishedAt": "2026-11-23T10:59:47.047Z",
+      "status": "limit",
+      "searchesUsed": 16,
+      "keepaTokensUsed": 4,
+      "aiCostUsd": 0.1309,
+      "summary": "Found 59 bundles; 32 estimated. 8 Amazon lookups wait for Keepa tokens (1 a minute); 13 were done with searches. 16 searches. AI asked about 5. Autopilot applied 1. BOGO: DEWALT and RYOBI not read in full (Home Depot refused the BOGO listing (HTTP 200).); the pairs found before are kept.",
+      "trigger": "manual",
+      "stopReason": "keepa_tokens",
+      "error": null,
+      "steps": [
+        {
+          "label": "Home Depot deals pages",
+          "state": "done",
+          "figure": "3 searches",
+          "done": 3,
+          "total": 3
+        },
+        {
+          "label": "Bundle pages",
+          "state": "done",
+          "figure": "6 read",
+          "done": 6,
+          "total": 6
+        },
+        {
+          "label": "Kit pages",
+          "state": "done",
+          "figure": "3 read",
+          "done": 3,
+          "total": 3
+        },
+        {
+          "label": "Amazon lookups",
+          "state": "done",
+          "figure": "13 searches, 8 wait",
+          "done": 17,
+          "total": 17
+        },
+        {
+          "label": "Home Depot part prices",
+          "state": "done",
+          "figure": "9 read",
+          "done": 9,
+          "total": 9
+        },
+        {
+          "label": "eBay listings",
+          "state": "done",
+          "figure": "1 call",
+          "done": 1,
+          "total": 1
+        },
+        {
+          "label": "Listing check (Claude)",
+          "state": "done",
+          "figure": "$0.00",
+          "done": 0,
+          "total": 0
+        },
+        {
+          "label": "Finish",
+          "state": "done",
+          "figure": "",
+          "done": 1,
+          "total": 1
+        }
+      ],
+      "judgeCostUsd": 0,
+      "questionsAsked": 5,
+      "autopilotApplied": 1
+    },
+    {
+      "id": "run-1795431335267-drip",
+      "kind": "lookup",
+      "startedAt": "2026-11-23T10:55:35.267Z",
+      "finishedAt": "2026-11-23T11:24:06.511Z",
+      "status": "finished",
+      "searchesUsed": 0,
+      "keepaTokensUsed": 72,
+      "aiCostUsd": 0,
+      "summary": "Looked up 7 parts with Keepa: 2 matched, 4 no Amazon listing, 1 to review.",
+      "trigger": "scheduled"
+    },
+    {
+      "id": "run-1795435197773-drip",
+      "kind": "lookup",
+      "startedAt": "2026-11-23T11:59:57.773Z",
+      "finishedAt": "2026-11-23T11:59:57.773Z",
+      "status": "finished",
+      "searchesUsed": 0,
+      "keepaTokensUsed": 11,
+      "aiCostUsd": 0,
+      "summary": "Looked up 1 part with Keepa: 1 matched.",
+      "trigger": "scheduled"
+    }
+  ],
+  "helper": null,
+  "lastScan": {
+    "at": "2026-11-23T10:59:47.047Z",
+    "status": "limit",
+    "stopMessage": null,
+    "searchesUsed": 16,
+    "keepaTokensUsed": 4,
+    "newDeals": 13,
+    "reviewOpen": 9,
+    "pagesUnread": 0,
+    "waitingLookups": 8,
+    "lookupsDone": {
+      "keepa": 0,
+      "serpapi": 13
+    },
+    "lookupsBlockedBy": "keepa_tokens"
+  },
+  "bridge": null
+}

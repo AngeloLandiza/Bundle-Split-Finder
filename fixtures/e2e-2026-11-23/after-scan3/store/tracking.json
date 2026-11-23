@@ -1,0 +1,4870 @@
+{
+  "watch": {
+    "homedepot:337486530": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:337504846": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:337486705": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:324903619": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:343992131": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:344284153": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:343992132": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:343992137": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:343992140": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:343992135": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:343992133": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    },
+    "homedepot:306554196": {
+      "watched": true,
+      "by": "auto",
+      "since": 1795431586978
+    }
+  },
+  "history": {
+    "homedepot:337486530": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 63.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 179,
+        "amazonNew": 218.39,
+        "options": [
+          {
+            "id": "whole",
+            "profit": 6.63,
+            "roiPercent": 3.7
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:337504846": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 59.99,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 179,
+        "amazonNew": 214.43,
+        "options": [
+          {
+            "id": "whole",
+            "profit": 3.26,
+            "roiPercent": 1.82
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:337486705": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 57.7,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 179,
+        "amazonNew": 212.14,
+        "options": [
+          {
+            "id": "whole",
+            "profit": 1.32,
+            "roiPercent": 0.74
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:324903619": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 55.99,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 179,
+        "amazonNew": 210.43,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -0.14,
+            "roiPercent": -0.08
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:343992131": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 499,
+        "amazonNew": 585.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -0.94,
+            "roiPercent": -0.19
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:344284153": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 179,
+        "amazonNew": 209.43,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -0.99,
+            "roiPercent": -0.55
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:343992132": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 499,
+        "amazonNew": 578.7,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -7.11,
+            "roiPercent": -1.42
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992137": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 499,
+        "amazonNew": 578,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -7.7,
+            "roiPercent": -1.54
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992140": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 499,
+        "amazonNew": 569.61,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -14.83,
+            "roiPercent": -2.97
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992135": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": 118.79,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 499,
+        "amazonNew": 567.79,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -16.38,
+            "roiPercent": -3.28
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992133": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": 116.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 499,
+        "amazonNew": 565.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -17.94,
+            "roiPercent": -3.6
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:324615781": [
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 158,
+        "amazonNew": 117.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -57.74,
+            "roiPercent": -36.54
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 65307,
+        "offers": 20
+      }
+    ],
+    "homedepot:306554196": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 318,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 318,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "confirmed",
+        "price": 318,
+        "amazonNew": 255.33,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -100.97,
+            "roiPercent": -31.75
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:320243741": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 388,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 388,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 388,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1600K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:324904496": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:334547651": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 208.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 208.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 208.97,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1600K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440460": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337486151": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:337486812": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:337487615": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:337504926": [
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:339206615": [
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 99,
+        "amazonNew": 36.89,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992111": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992114": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992134": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": 449,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992143": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": 449,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992144": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": 449,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:344284026": [
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:344284060": [
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:344284100": [
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:344284129": [
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 179,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:344284347": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:344284397": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "waiting",
+        "price": 179,
+        "amazonNew": 154.44,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1201K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 143981,
+        "offers": 14
+      }
+    ],
+    "homedepot:321367167": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 338,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 338,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "inactive_listing",
+        "price": 338,
+        "amazonNew": 238.99,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -134.86,
+            "roiPercent": -39.9
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 165069,
+        "offers": 3
+      }
+    ],
+    "homedepot:324811435": [
+      {
+        "at": 1795431586978,
+        "section": "inactive_listing",
+        "price": 269,
+        "amazonNew": 126.9,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -161.13,
+            "roiPercent": -59.9
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:341644756": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 398.58,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 398.58,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "inactive_listing",
+        "price": 398.58,
+        "amazonNew": 36.89,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -367.22,
+            "roiPercent": -92.13
+          },
+          {
+            "id": "split:PCL1600K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:334324780": [
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 108.97,
+        "amazonNew": 115.82,
+        "options": [
+          {
+            "id": "split:PCL1200K2",
+            "profit": -10.52,
+            "roiPercent": -9.65
+          },
+          {
+            "id": "whole",
+            "profit": -108.97,
+            "roiPercent": -100
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:320243714": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 109.94,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 109.94,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 109.94,
+        "amazonNew": 54,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -64.04,
+            "roiPercent": -58.25
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": 65307,
+        "offers": 20
+      }
+    ],
+    "homedepot:343992136": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 499,
+        "amazonNew": 449,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -117.35,
+            "roiPercent": -23.52
+          }
+        ],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992142": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 499,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 499,
+        "amazonNew": 449,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -117.35,
+            "roiPercent": -23.52
+          }
+        ],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440459": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 165,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -158.75,
+            "roiPercent": -53.09
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440452": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 136.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -182.59,
+            "roiPercent": -61.07
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440453": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 129.7,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -188.76,
+            "roiPercent": -63.13
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992112": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 129,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -189.35,
+            "roiPercent": -63.33
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440462": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 126.03,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -191.87,
+            "roiPercent": -64.17
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:343992113": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": 124.99,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 124.99,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -192.76,
+            "roiPercent": -64.47
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440461": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 299,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 120.61,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -196.48,
+            "roiPercent": -65.71
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440456": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": 118.79,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 118.79,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -198.03,
+            "roiPercent": -66.23
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440454": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": 116.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": 116.95,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -199.59,
+            "roiPercent": -66.75
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:334547280": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 216.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 216.97,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1600K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 216.97,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -216.97,
+            "roiPercent": -100
+          },
+          {
+            "id": "split:PCL1600K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:329673936": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 268.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 268.97,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          },
+          {
+            "id": "split:PCL1400K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 268.97,
+        "amazonNew": 41.27,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -233.89,
+            "roiPercent": -86.96
+          },
+          {
+            "id": "split:PCL1400K2",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:337440457": [
+      {
+        "at": 1795427745370,
+        "section": "waiting",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": null,
+            "roiPercent": null
+          }
+        ],
+        "reviewOpen": false,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "missing_listing",
+        "price": 299,
+        "amazonNew": null,
+        "options": [
+          {
+            "id": "whole",
+            "profit": -299,
+            "roiPercent": -100
+          }
+        ],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:320243671": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 223.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 223.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 223.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:321809549": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 498,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 498,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 498,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:321811428": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 448,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 448,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 448,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:326894185": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 1138,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 1138,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 1138,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:328690510": [
+      {
+        "at": 1795424451271,
+        "section": "split",
+        "price": 79.88,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795427745370,
+        "section": "split",
+        "price": 79.88,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      },
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 79.88,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:334547201": [
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 208.97,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ],
+    "homedepot:335724135": [
+      {
+        "at": 1795431586978,
+        "section": "split",
+        "price": 105.47,
+        "amazonNew": null,
+        "options": [],
+        "reviewOpen": true,
+        "monthlySold": null,
+        "salesRank": null,
+        "offers": null
+      }
+    ]
+  },
+  "signals": {
+    "homedepot:337486530": {
+      "bundleKey": "homedepot:337486530",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL424B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "PCL1201K2 sold whole",
+          "profit": 6.63,
+          "roiPercent": 3.7,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL1201K2 and PCL424B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL1201K2",
+                "asin": "B0DSCG26GL",
+                "monthlySold": null,
+                "salesRank": 143981,
+                "offers": 14,
+                "pulledAt": 1795431429656
+              },
+              {
+                "model": "PCL424B",
+                "asin": "B0BNFBL5PR",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit $6.63 (4% ROI)."
+        },
+        {
+          "optionId": "split:PCL1201K2",
+          "label": "PCL1201K2 split into its parts",
+          "profit": null,
+          "roiPercent": null,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL206, PCL500, PBP002 and PCL424B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL206",
+                "asin": "B0HQHXLWR3",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL500",
+                "asin": null,
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PBP002",
+                "asin": "B08L339D94",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL424B",
+                "asin": "B0BNFBL5PR",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "No estimate for this way to sell yet."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit $6.63 (4% ROI).",
+          "numbers": {
+            "profit": 6.63,
+            "roiPercent": 3.7,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:337504846": {
+      "bundleKey": "homedepot:337504846",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-P755",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "PCL1201K2 sold whole",
+          "profit": 3.26,
+          "roiPercent": 1.82,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL1201K2 and P755: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL1201K2",
+                "asin": "B0DSCG26GL",
+                "monthlySold": null,
+                "salesRank": 143981,
+                "offers": 14,
+                "pulledAt": 1795431429656
+              },
+              {
+                "model": "P755",
+                "asin": "B078TPR4LB",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit $3.26 (2% ROI)."
+        },
+        {
+          "optionId": "split:PCL1201K2",
+          "label": "PCL1201K2 split into its parts",
+          "profit": null,
+          "roiPercent": null,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL206, PCL500, PBP002 and P755: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL206",
+                "asin": "B0HQHXLWR3",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL500",
+                "asin": null,
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PBP002",
+                "asin": "B08L339D94",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "P755",
+                "asin": "B078TPR4LB",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "No estimate for this way to sell yet."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit $3.26 (2% ROI).",
+          "numbers": {
+            "profit": 3.26,
+            "roiPercent": 1.82,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:337486705": {
+      "bundleKey": "homedepot:337486705",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL445B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "PCL1201K2 sold whole",
+          "profit": 1.32,
+          "roiPercent": 0.74,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL1201K2 and PCL445B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL1201K2",
+                "asin": "B0DSCG26GL",
+                "monthlySold": null,
+                "salesRank": 143981,
+                "offers": 14,
+                "pulledAt": 1795431429656
+              },
+              {
+                "model": "PCL445B",
+                "asin": "B0DQVRYQMJ",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit $1.32 (1% ROI)."
+        },
+        {
+          "optionId": "split:PCL1201K2",
+          "label": "PCL1201K2 split into its parts",
+          "profit": null,
+          "roiPercent": null,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL206, PCL500, PBP002 and PCL445B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL206",
+                "asin": "B0HQHXLWR3",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL500",
+                "asin": null,
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PBP002",
+                "asin": "B08L339D94",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL445B",
+                "asin": "B0DQVRYQMJ",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "No estimate for this way to sell yet."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit $1.32 (1% ROI).",
+          "numbers": {
+            "profit": 1.32,
+            "roiPercent": 0.74,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:324903619": {
+      "bundleKey": "homedepot:324903619",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL515B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "PCL1201K2 sold whole",
+          "profit": -0.14,
+          "roiPercent": -0.08,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL1201K2 and PCL515B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL1201K2",
+                "asin": "B0DSCG26GL",
+                "monthlySold": null,
+                "salesRank": 143981,
+                "offers": 14,
+                "pulledAt": 1795431429656
+              },
+              {
+                "model": "PCL515B",
+                "asin": "B0B88R7HWB",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$0.14 (0% ROI)."
+        },
+        {
+          "optionId": "split:PCL1201K2",
+          "label": "PCL1201K2 split into its parts",
+          "profit": null,
+          "roiPercent": null,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL206, PCL500, PBP002 and PCL515B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL206",
+                "asin": "B0HQHXLWR3",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL500",
+                "asin": null,
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PBP002",
+                "asin": "B08L339D94",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL515B",
+                "asin": "B0B88R7HWB",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "No estimate for this way to sell yet."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$0.14 (0% ROI).",
+          "numbers": {
+            "profit": -0.14,
+            "roiPercent": -0.08,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:343992131": {
+      "bundleKey": "homedepot:343992131",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS382B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -0.94,
+          "roiPercent": -0.19,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK540D1 and DCS382B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK540D1",
+                "asin": "B0GQ6QKPWF",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCS382B",
+                "asin": "B09NP9H7SG",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$0.94 (0% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$0.94 (0% ROI).",
+          "numbers": {
+            "profit": -0.94,
+            "roiPercent": -0.19,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:344284153": {
+      "bundleKey": "homedepot:344284153",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL031B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "PCL1201K2 sold whole",
+          "profit": -0.99,
+          "roiPercent": -0.55,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL1201K2 and PCL031B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL1201K2",
+                "asin": "B0DSCG26GL",
+                "monthlySold": null,
+                "salesRank": 143981,
+                "offers": 14,
+                "pulledAt": 1795431429656
+              },
+              {
+                "model": "PCL031B",
+                "asin": "B0CRFS4F6G",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$0.99 (-1% ROI)."
+        },
+        {
+          "optionId": "split:PCL1201K2",
+          "label": "PCL1201K2 split into its parts",
+          "profit": null,
+          "roiPercent": null,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for PCL206, PCL500, PBP002 and PCL031B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "PCL206",
+                "asin": "B0HQHXLWR3",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL500",
+                "asin": null,
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PBP002",
+                "asin": "B08L339D94",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "PCL031B",
+                "asin": "B0CRFS4F6G",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "No estimate for this way to sell yet."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$0.99 (-1% ROI).",
+          "numbers": {
+            "profit": -0.99,
+            "roiPercent": -0.55,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:343992132": {
+      "bundleKey": "homedepot:343992132",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS565B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -7.11,
+          "roiPercent": -1.42,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK540D1 and DCS565B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK540D1",
+                "asin": "B0GQ6QKPWF",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCS565B",
+                "asin": "B08KYM6GW6",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$7.11 (-1% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$7.11 (-1% ROI).",
+          "numbers": {
+            "profit": -7.11,
+            "roiPercent": -1.42,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:343992137": {
+      "bundleKey": "homedepot:343992137",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCB1404",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -7.7,
+          "roiPercent": -1.54,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK540D1 and DCB1404: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK540D1",
+                "asin": "B0GQ6QKPWF",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCB1404",
+                "asin": "B0GQJR8RQB",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$7.70 (-2% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$7.70 (-2% ROI).",
+          "numbers": {
+            "profit": -7.7,
+            "roiPercent": -1.54,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:343992140": {
+      "bundleKey": "homedepot:343992140",
+      "brand": "DEWALT",
+      "model": "DCK540D1WDCB606",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -14.83,
+          "roiPercent": -2.97,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK540D1 and DCB606: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK540D1",
+                "asin": "B0GQ6QKPWF",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCB606",
+                "asin": "B01H9BL8EO",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$14.83 (-3% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$14.83 (-3% ROI).",
+          "numbers": {
+            "profit": -14.83,
+            "roiPercent": -2.97,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:343992135": {
+      "bundleKey": "homedepot:343992135",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCW600B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -16.38,
+          "roiPercent": -3.28,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK540D1 and DCW600B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK540D1",
+                "asin": "B0GQ6QKPWF",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCW600B",
+                "asin": "B07KSRTDML",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$16.38 (-3% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$16.38 (-3% ROI).",
+          "numbers": {
+            "profit": -16.38,
+            "roiPercent": -3.28,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:343992133": {
+      "bundleKey": "homedepot:343992133",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS334B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -17.94,
+          "roiPercent": -3.6,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK540D1 and DCS334B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK540D1",
+                "asin": "B0GQ6QKPWF",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCS334B",
+                "asin": "B07JPFHQKG",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": {
+              "at": 1795427745370,
+              "profit": null,
+              "roiPercent": null
+            },
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$17.94 (-4% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$17.94 (-4% ROI).",
+          "numbers": {
+            "profit": -17.94,
+            "roiPercent": -3.6,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    },
+    "homedepot:306554196": {
+      "bundleKey": "homedepot:306554196",
+      "brand": "DEWALT",
+      "model": "DCK240C2DCS380B",
+      "at": 1795431586978,
+      "options": [
+        {
+          "optionId": "whole",
+          "label": "",
+          "profit": -100.97,
+          "roiPercent": -31.75,
+          "meetsThresholds": false,
+          "velocity": {
+            "status": "no_data",
+            "reason": "No sales data for DCK240C2 and DCS380B: Keepa has no monthly-sold figure stored for them.",
+            "minMonthlySold": 50,
+            "slowest": null,
+            "parts": [
+              {
+                "model": "DCK240C2",
+                "asin": "B00IJ0ALYS",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              },
+              {
+                "model": "DCS380B",
+                "asin": "B007NVSTCK",
+                "monthlySold": null,
+                "salesRank": null,
+                "offers": null,
+                "pulledAt": null
+              }
+            ]
+          },
+          "baseline": {
+            "last": null,
+            "rolling7d": null
+          },
+          "buyNow": false,
+          "notBuyNow": "Below your $20.00 and 20% thresholds: est. profit -$100.97 (-32% ROI)."
+        }
+      ],
+      "signals": [
+        {
+          "kind": "reviewCleared",
+          "optionId": null,
+          "reason": "Your Review answers cleared it: it now has an estimated profit of -$100.97 (-32% ROI).",
+          "numbers": {
+            "profit": -100.97,
+            "roiPercent": -31.75,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        },
+        {
+          "kind": "discoveryDone",
+          "optionId": null,
+          "reason": "Confirmed for the first time: every part has an Amazon listing for sale, est. profit -$100.97 (-32% ROI).",
+          "numbers": {
+            "profit": -100.97,
+            "roiPercent": -31.75,
+            "minProfit": 20,
+            "minRoiPercent": 20,
+            "floorProfit": 20,
+            "lastProfit": null,
+            "lastRoiPercent": null,
+            "rollingProfit": null,
+            "rollingPoints": 0,
+            "monthlySold": null,
+            "minMonthlySold": 50
+          }
+        }
+      ],
+      "buyNow": null
+    }
+  },
+  "notified": [],
+  "bogo": {},
+  "bogoPairs": {
+    "homedepot:343992142": {
+      "key": "homedepot:343992142",
+      "itemId": "343992142",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCH172B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and ATOMIC Brushless 5/8 in. Hammer Drill with 2 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 718,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-ATOMIC-Brushless-5-8-in-Hammer-Drill-with-2-Ah-Battery-and-Charger-DCK540D1WCH172B/343992142",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CH172B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992140": {
+      "key": "homedepot:343992140",
+      "itemId": "343992140",
+      "brand": "DEWALT",
+      "model": "DCK540D1WDCB606",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) with FLEXVOLT 20-Volt/60V MAX 6.0Ah Battery, 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 698,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-with-FLEXVOLT-20-Volt-60V-MAX-6-0Ah-Battery-2-0-Ah-Battery-and-Charger-DCK540D1WDCB606/343992140",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "DCB606",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440459": {
+      "key": "homedepot:337440459",
+      "itemId": "337440459",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W921B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit, Brushless 1/2 in. Impact Wrench w/ 5 Ah, 2 Ah Batteries, Charger",
+      "price": 299,
+      "wasPrice": 538,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-Brushless-1-2-in-Impact-Wrench-w-5-Ah-2-Ah-Batteries-Charger-DCK200D1P1W921B/337440459",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "921B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992133": {
+      "key": "homedepot:343992133",
+      "itemId": "343992133",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS334B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Cordless Brushless Jigsaw with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 738,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS334B/343992133",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CS334B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440461": {
+      "key": "homedepot:337440461",
+      "itemId": "337440461",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1WB606",
+      "title": "ATOMIC 20V Lithium-Ion Cordless 2-Tool Combo Kit with FLEXVOLT 20V/60V 6.0Ah, 20V 5 Ah and 2 Ah Batteries and Charger",
+      "price": 299,
+      "wasPrice": 498,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-FLEXVOLT-20V-60V-6-0Ah-20V-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1WB606/337440461",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "B606",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992132": {
+      "key": "homedepot:343992132",
+      "itemId": "343992132",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS565B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless 6-1/2 in. Circular Saw with 2 Ah Battery & Charger",
+      "price": 499,
+      "wasPrice": 698,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-6-1-2-in-Circular-Saw-with-2-Ah-Battery-Charger-DCK540D1WCS565B/343992132",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CS565B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992131": {
+      "key": "homedepot:343992131",
+      "itemId": "343992131",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS382B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless Reciprocating Saw with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 728,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-Reciprocating-Saw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS382B/343992131",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CS382B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992135": {
+      "key": "homedepot:343992135",
+      "itemId": "343992135",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCW600B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Brushless Compact Router with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 748,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Brushless-Compact-Router-with-2-0-Ah-Battery-and-Charger-DCK540D1WCW600B/343992135",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CW600B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992134": {
+      "key": "homedepot:343992134",
+      "itemId": "343992134",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCG407B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless 4-1/2 in. Angle Grinder with 2Ah Battery & Charger",
+      "price": 499,
+      "wasPrice": 678,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-4-1-2-in-Angle-Grinder-with-2Ah-Battery-Charger-DCK540D1WCG407B/343992134",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CG407B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992136": {
+      "key": "homedepot:343992136",
+      "itemId": "343992136",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCF860B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Cordless Impact Driver with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 718,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Cordless-Impact-Driver-with-2-0-Ah-Battery-and-Charger-DCK540D1WCF860B/343992136",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CF860B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992111": {
+      "key": "homedepot:343992111",
+      "itemId": "343992111",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W407B",
+      "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 4-1/2 in. Angle Grinder with 5Ah & 2Ah Batteries, Charger & Bag",
+      "price": 299,
+      "wasPrice": 478,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-4-1-2-in-Angle-Grinder-with-5Ah-2Ah-Batteries-Charger-Bag-DCK200D1P1W407B/343992111",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "407B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440460": {
+      "key": "homedepot:337440460",
+      "itemId": "337440460",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W722B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Handheld Blower w/ 5 Ah and 2 Ah Batteries, Charger",
+      "price": 299,
+      "wasPrice": 478,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Handheld-Blower-w-5-Ah-and-2-Ah-Batteries-Charger-DCK200D1P1W722B/337440460",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "722B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440452": {
+      "key": "homedepot:337440452",
+      "itemId": "337440452",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W382B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Recip Saw wi/ 5.0 Ah and 2.0 Ah Batteries and Charger",
+      "price": 299,
+      "wasPrice": 528,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Recip-Saw-wi-5-0-Ah-and-2-0-Ah-Batteries-and-Charger-DCK200D1P1W382B/337440452",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "382B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440462": {
+      "key": "homedepot:337440462",
+      "itemId": "337440462",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W630B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and XR Brushless Screw Gun w/ 5.0 Ah and 2.0 Ah Batteries, Charger",
+      "price": 299,
+      "wasPrice": 498,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-XR-Brushless-Screw-Gun-w-5-0-Ah-and-2-0-Ah-Batteries-Charger-DCK200D1P1W630B/337440462",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "630B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440454": {
+      "key": "homedepot:337440454",
+      "itemId": "337440454",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W334B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Jigsaw with 5.0 Ah and 2.0 Ah Batteries and Charger",
+      "price": 299,
+      "wasPrice": 538,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Jigsaw-with-5-0-Ah-and-2-0-Ah-Batteries-and-Charger-DCK200D1P1W334B/337440454",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "334B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992143": {
+      "key": "homedepot:343992143",
+      "itemId": "343992143",
+      "brand": "DEWALT",
+      "model": "DCK540D1WBL722B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless Handheld Blower with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 678,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-Handheld-Blower-with-2-0-Ah-Battery-and-Charger-DCK540D1WBL722B/343992143",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "BL722B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992144": {
+      "key": "homedepot:343992144",
+      "itemId": "343992144",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS621B",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX 12 in. Brushless Chainsaw with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 698,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-12-in-Brushless-Chainsaw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS621B/343992144",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CS621B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440457": {
+      "key": "homedepot:337440457",
+      "itemId": "337440457",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W860B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Cordless Impact Driver w/ 5.0 Ah, 2.0 Ah Batteries and Charger",
+      "price": 299,
+      "wasPrice": 518,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Cordless-Impact-Driver-w-5-0-Ah-2-0-Ah-Batteries-and-Charger-DCK200D1P1W860B/337440457",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "860B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440456": {
+      "key": "homedepot:337440456",
+      "itemId": "337440456",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W600B",
+      "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Compact Router w/ 5 Ah and 2 Ah Batteries and Charger",
+      "price": 299,
+      "wasPrice": 548,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Compact-Router-w-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1W600B/337440456",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "600B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992113": {
+      "key": "homedepot:343992113",
+      "itemId": "343992113",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W211B",
+      "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 5 in. Random Orbit Sander w/ 5Ah & 2Ah Batteries, Charger & Bag",
+      "price": 299,
+      "wasPrice": 498,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-5-in-Random-Orbit-Sander-w-5Ah-2Ah-Batteries-Charger-Bag-DCK200D1P1W211B/343992113",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "211B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992112": {
+      "key": "homedepot:343992112",
+      "itemId": "343992112",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W1404",
+      "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 4-Port Charger with 5Ah and2 Ah Batteries, Charger and Kit Bag",
+      "price": 299,
+      "wasPrice": 498,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-4-Port-Charger-with-5Ah-and2-Ah-Batteries-Charger-and-Kit-Bag-DCK200D1P1W1404/343992112",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "1404",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992114": {
+      "key": "homedepot:343992114",
+      "itemId": "343992114",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W621B",
+      "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 12 in. Cordless Chainsaw w/ 5Ah & 2Ah Batteries, Charger & Bag",
+      "price": 299,
+      "wasPrice": 498,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-12-in-Cordless-Chainsaw-w-5Ah-2Ah-Batteries-Charger-Bag-DCK200D1P1W621B/343992114",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "621B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:337440453": {
+      "key": "homedepot:337440453",
+      "itemId": "337440453",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W565B",
+      "title": "ATOMIC 20V Lithium-Ion Cordless 2-Tool Combo Kit and Brushless 6-1/2 in. Circular Saw w/ 5 Ah & 2 Ah Batteries & Charger",
+      "price": 299,
+      "wasPrice": 498,
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-6-1-2-in-Circular-Saw-w-5-Ah-2-Ah-Batteries-Charger-DCK200D1P1W565B/337440453",
+      "promotionId": "945972",
+      "starterItemId": "334337675",
+      "starterModel": "DCK200D1P1",
+      "freeModel": "565B",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:343992137": {
+      "key": "homedepot:343992137",
+      "itemId": "343992137",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCB1404",
+      "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 12V/20V/60V MAX 4-Amp 4-Port Charger with 2.0 Ah Battery and Charger",
+      "price": 499,
+      "wasPrice": 698,
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-12V-20V-60V-MAX-4-Amp-4-Port-Charger-with-2-0-Ah-Battery-and-Charger-DCK540D1WCB1404/343992137",
+      "promotionId": "945972",
+      "starterItemId": "343971918",
+      "starterModel": "DCK540D1",
+      "freeModel": "CB1404",
+      "endsAt": "2027-01-31",
+      "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL"
+    },
+    "homedepot:324903619": {
+      "key": "homedepot:324903619",
+      "itemId": "324903619",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL515B",
+      "title": "ONE+ 18V 3 Tool Combo Kit With 1/2\" Drill/Driver, 5 1/2\" Circular Saw, Reciprocating Saw, 1.5ah Batteries & Charger",
+      "price": 179,
+      "wasPrice": 268,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-3-Tool-Combo-Kit-With-1-2-Drill-Driver-5-1-2-Circular-Saw-Reciprocating-Saw-1-5ah-Batteries-Charger-PCL1201K2-PCL515B/324903619",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL515B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:324904496": {
+      "key": "homedepot:324904496",
+      "itemId": "324904496",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL430B",
+      "title": "ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger",
+      "price": 179,
+      "wasPrice": 258,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL430B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337486151": {
+      "key": "homedepot:337486151",
+      "itemId": "337486151",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL265B",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless 1/2 in. Impact Wrench",
+      "price": 179,
+      "wasPrice": 318,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-1-2-in-Impact-Wrench-PCL1201K2-PCL265B/337486151",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL265B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337486705": {
+      "key": "homedepot:337486705",
+      "itemId": "337486705",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL445B",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless 4-1/2 in. Angle Grinder",
+      "price": 179,
+      "wasPrice": 238.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-4-1-2-in-Angle-Grinder-PCL1201K2-PCL445B/337486705",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL445B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337504926": {
+      "key": "homedepot:337504926",
+      "itemId": "337504926",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-P20015BTL",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ 13” String Trimmer",
+      "price": 179,
+      "wasPrice": 248.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "P20015BTL",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337486812": {
+      "key": "homedepot:337486812",
+      "itemId": "337486812",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL525B",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Jig Saw",
+      "price": 179,
+      "wasPrice": 258,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Jig-Saw-PCL1201K2-PCL525B/337486812",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL525B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337504846": {
+      "key": "homedepot:337504846",
+      "itemId": "337504846",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-P755",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Compact Workshop Blower",
+      "price": 179,
+      "wasPrice": 243.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Compact-Workshop-Blower-PCL1201K2-P755/337504846",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "P755",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337487615": {
+      "key": "homedepot:337487615",
+      "itemId": "337487615",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL811B",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Hybrid WHISPER SERIES 7-1/2 in. Fan",
+      "price": 179,
+      "wasPrice": 238,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Hybrid-WHISPER-SERIES-7-1-2-in-Fan-PCL1201K2-PCL811B/337487615",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL811B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284347": {
+      "key": "homedepot:344284347",
+      "itemId": "344284347",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL615B",
+      "title": "ONE+ 18V Lithium-Ion Cordless 2-Tool Combo Kit w/ (2) Batteries & Charger w/ ONE+ 18V Cordless VERSE Clamp Speaker",
+      "price": 179,
+      "wasPrice": 243,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-w-2-Batteries-Charger-w-ONE-18V-Cordless-VERSE-Clamp-Speaker-PCL1201K2-PCL615B/344284347",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL615B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284153": {
+      "key": "homedepot:344284153",
+      "itemId": "344284153",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL031B",
+      "title": "ONE+ 18V Lithium-Ion Cordless 2-Tool Combo Kit w/ (2) Batteries & Charger w/ ONE+ 18V Cordless Dual Function Inflator",
+      "price": 179,
+      "wasPrice": 248.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-w-2-Batteries-Charger-w-ONE-18V-Cordless-Dual-Function-Inflator-PCL1201K2-PCL031B/344284153",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL031B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284060": {
+      "key": "homedepot:344284060",
+      "itemId": "344284060",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVD50K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Screwdriver Kit",
+      "price": 179,
+      "wasPrice": 228.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "FVD50K",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284397": {
+      "key": "homedepot:344284397",
+      "itemId": "344284397",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL633B",
+      "title": "ONE+ 18V Lithium-Ion Cordless 2-Tool Combo Kit w/ (2) Batteries & Charger w/ ONE+ 18V Hybrid LED Work Light",
+      "price": 179,
+      "wasPrice": 263,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-w-2-Batteries-Charger-w-ONE-18V-Hybrid-LED-Work-Light-PCL1201K2-PCL633B/344284397",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL633B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284026": {
+      "key": "homedepot:344284026",
+      "itemId": "344284026",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVC51K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Power Cutter Kit",
+      "price": 179,
+      "wasPrice": 238.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "FVC51K",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284129": {
+      "key": "homedepot:344284129",
+      "itemId": "344284129",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVL51K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium 3-Mode Flashlight Kit",
+      "price": 179,
+      "wasPrice": 218.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "FVL51K",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:344284100": {
+      "key": "homedepot:344284100",
+      "itemId": "344284100",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVF51K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Clamp Fan Kit",
+      "price": 179,
+      "wasPrice": 218.97,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "FVF51K",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    },
+    "homedepot:337486530": {
+      "key": "homedepot:337486530",
+      "itemId": "337486530",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL424B",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Compact Router",
+      "price": 179,
+      "wasPrice": 278,
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Compact-Router-PCL1201K2-PCL424B/337486530",
+      "promotionId": "945815",
+      "starterItemId": "317987584",
+      "starterModel": "PCL1201K2",
+      "freeModel": "PCL424B",
+      "endsAt": "2027-01-31",
+      "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool"
+    }
+  },
+  "derived": {
+    "bogo": {},
+    "fba": {
+      "homedepot:337486530": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 179,
+          "netRevenue": 170.62,
+          "profit": -8.38,
+          "roi": -0.0468
+        },
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "fee": 15.01,
+            "source": "keepa"
+          },
+          {
+            "model": "PCL424B",
+            "qty": 1,
+            "fee": 0,
+            "source": "settings"
+          }
+        ]
+      },
+      "homedepot:337504846": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 179,
+          "netRevenue": 167.25,
+          "profit": -11.75,
+          "roi": -0.0656
+        },
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "fee": 15.01,
+            "source": "keepa"
+          },
+          {
+            "model": "P755",
+            "qty": 1,
+            "fee": 0,
+            "source": "settings"
+          }
+        ]
+      },
+      "homedepot:337486705": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 179,
+          "netRevenue": 165.31,
+          "profit": -13.69,
+          "roi": -0.0765
+        },
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "fee": 15.01,
+            "source": "keepa"
+          },
+          {
+            "model": "PCL445B",
+            "qty": 1,
+            "fee": 0,
+            "source": "settings"
+          }
+        ]
+      },
+      "homedepot:324903619": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 179,
+          "netRevenue": 163.85,
+          "profit": -15.15,
+          "roi": -0.0846
+        },
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "fee": 15.01,
+            "source": "keepa"
+          },
+          {
+            "model": "PCL515B",
+            "qty": 1,
+            "fee": 0,
+            "source": "settings"
+          }
+        ]
+      },
+      "homedepot:344284153": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 179,
+          "netRevenue": 163,
+          "profit": -16,
+          "roi": -0.0894
+        },
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "fee": 15.01,
+            "source": "keepa"
+          },
+          {
+            "model": "PCL031B",
+            "qty": 1,
+            "fee": 0,
+            "source": "settings"
+          }
+        ]
+      },
+      "homedepot:324615781": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 158,
+          "netRevenue": 92.66,
+          "profit": -65.34,
+          "roi": -0.4135
+        },
+        "parts": [
+          {
+            "model": "PCL424B",
+            "qty": 1,
+            "fee": 0,
+            "source": "settings"
+          },
+          {
+            "model": "PCL406B",
+            "qty": 1,
+            "fee": 7.6,
+            "source": "keepa"
+          }
+        ]
+      },
+      "homedepot:321367167": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 338,
+          "netRevenue": 161.61,
+          "profit": -176.39,
+          "roi": -0.5219
+        },
+        "parts": [
+          {
+            "model": "PBT01B",
+            "qty": 1,
+            "fee": 41.53,
+            "source": "keepa"
+          }
+        ]
+      },
+      "homedepot:320243714": {
+        "label": "Amazon's FBA fee estimate (Keepa)",
+        "estimate": {
+          "cost": 109.94,
+          "netRevenue": 38.3,
+          "profit": -71.64,
+          "roi": -0.6516
+        },
+        "parts": [
+          {
+            "model": "PCL406B",
+            "qty": 1,
+            "fee": 7.6,
+            "source": "keepa"
+          }
+        ]
+      }
+    },
+    "groups": {
+      "945815:317987584": {
+        "id": "945815:317987584",
+        "promotionId": "945815",
+        "brand": "RYOBI",
+        "starterItemId": "317987584",
+        "starterModel": "PCL1201K2",
+        "starterKey": "homedepot:317987584",
+        "starterLink": "https://www.homedepot.com/p/317987584",
+        "endsAt": "2027-01-31",
+        "description": "Purchase Select Ryobi Starter Kit and receive a select FREE Tool",
+        "choices": [
+          {
+            "key": "homedepot:337486530",
+            "itemId": "337486530",
+            "model": "PCL1201K2-PCL424B",
+            "freeModel": "PCL424B",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Compact Router",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Compact-Router-PCL1201K2-PCL424B/337486530",
+            "price": 179,
+            "wasPrice": 278,
+            "profit": 6.63,
+            "roi": 0.037,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:337504846",
+            "itemId": "337504846",
+            "model": "PCL1201K2-P755",
+            "freeModel": "P755",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Compact Workshop Blower",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Compact-Workshop-Blower-PCL1201K2-P755/337504846",
+            "price": 179,
+            "wasPrice": 243.97,
+            "profit": 3.26,
+            "roi": 0.0182,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:337486705",
+            "itemId": "337486705",
+            "model": "PCL1201K2-PCL445B",
+            "freeModel": "PCL445B",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless 4-1/2 in. Angle Grinder",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-4-1-2-in-Angle-Grinder-PCL1201K2-PCL445B/337486705",
+            "price": 179,
+            "wasPrice": 238.97,
+            "profit": 1.32,
+            "roi": 0.0074,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:324903619",
+            "itemId": "324903619",
+            "model": "PCL1201K2-PCL515B",
+            "freeModel": "PCL515B",
+            "title": "ONE+ 18V 3 Tool Combo Kit With 1/2\" Drill/Driver, 5 1/2\" Circular Saw, Reciprocating Saw, 1.5ah Batteries & Charger",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-3-Tool-Combo-Kit-With-1-2-Drill-Driver-5-1-2-Circular-Saw-Reciprocating-Saw-1-5ah-Batteries-Charger-PCL1201K2-PCL515B/324903619",
+            "price": 179,
+            "wasPrice": 268,
+            "profit": -0.14,
+            "roi": -0.0008,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:344284153",
+            "itemId": "344284153",
+            "model": "PCL1201K2-PCL031B",
+            "freeModel": "PCL031B",
+            "title": "ONE+ 18V Lithium-Ion Cordless 2-Tool Combo Kit w/ (2) Batteries & Charger w/ ONE+ 18V Cordless Dual Function Inflator",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-w-2-Batteries-Charger-w-ONE-18V-Cordless-Dual-Function-Inflator-PCL1201K2-PCL031B/344284153",
+            "price": 179,
+            "wasPrice": 248.97,
+            "profit": -0.99,
+            "roi": -0.0055,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:344284026",
+            "itemId": "344284026",
+            "model": "PCL1201K2-FVC51K",
+            "freeModel": "FVC51K",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Power Cutter Kit",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026",
+            "price": 179,
+            "wasPrice": 238.97,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:344284060",
+            "itemId": "344284060",
+            "model": "PCL1201K2-FVD50K",
+            "freeModel": "FVD50K",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Screwdriver Kit",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060",
+            "price": 179,
+            "wasPrice": 228.97,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:344284100",
+            "itemId": "344284100",
+            "model": "PCL1201K2-FVF51K",
+            "freeModel": "FVF51K",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Clamp Fan Kit",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100",
+            "price": 179,
+            "wasPrice": 218.97,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:344284129",
+            "itemId": "344284129",
+            "model": "PCL1201K2-FVL51K",
+            "freeModel": "FVL51K",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium 3-Mode Flashlight Kit",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129",
+            "price": 179,
+            "wasPrice": 218.97,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:337504926",
+            "itemId": "337504926",
+            "model": "PCL1201K2-P20015BTL",
+            "freeModel": "P20015BTL",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ 13” String Trimmer",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926",
+            "price": 179,
+            "wasPrice": 248.97,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:337486151",
+            "itemId": "337486151",
+            "model": "PCL1201K2-PCL265B",
+            "freeModel": "PCL265B",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless 1/2 in. Impact Wrench",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-1-2-in-Impact-Wrench-PCL1201K2-PCL265B/337486151",
+            "price": 179,
+            "wasPrice": 318,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:324904496",
+            "itemId": "324904496",
+            "model": "PCL1201K2-PCL430B",
+            "freeModel": "PCL430B",
+            "title": "ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496",
+            "price": 179,
+            "wasPrice": 258,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:337486812",
+            "itemId": "337486812",
+            "model": "PCL1201K2-PCL525B",
+            "freeModel": "PCL525B",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Jig Saw",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Jig-Saw-PCL1201K2-PCL525B/337486812",
+            "price": 179,
+            "wasPrice": 258,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:344284347",
+            "itemId": "344284347",
+            "model": "PCL1201K2-PCL615B",
+            "freeModel": "PCL615B",
+            "title": "ONE+ 18V Lithium-Ion Cordless 2-Tool Combo Kit w/ (2) Batteries & Charger w/ ONE+ 18V Cordless VERSE Clamp Speaker",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-w-2-Batteries-Charger-w-ONE-18V-Cordless-VERSE-Clamp-Speaker-PCL1201K2-PCL615B/344284347",
+            "price": 179,
+            "wasPrice": 243,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:344284397",
+            "itemId": "344284397",
+            "model": "PCL1201K2-PCL633B",
+            "freeModel": "PCL633B",
+            "title": "ONE+ 18V Lithium-Ion Cordless 2-Tool Combo Kit w/ (2) Batteries & Charger w/ ONE+ 18V Hybrid LED Work Light",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-w-2-Batteries-Charger-w-ONE-18V-Hybrid-LED-Work-Light-PCL1201K2-PCL633B/344284397",
+            "price": 179,
+            "wasPrice": 263,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:337487615",
+            "itemId": "337487615",
+            "model": "PCL1201K2-PCL811B",
+            "freeModel": "PCL811B",
+            "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Hybrid WHISPER SERIES 7-1/2 in. Fan",
+            "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Hybrid-WHISPER-SERIES-7-1-2-in-Fan-PCL1201K2-PCL811B/337487615",
+            "price": 179,
+            "wasPrice": 238,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          }
+        ],
+        "best": {
+          "key": "homedepot:337486530",
+          "itemId": "337486530",
+          "model": "PCL1201K2-PCL424B",
+          "freeModel": "PCL424B",
+          "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless Compact Router",
+          "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-Cordless-Compact-Router-PCL1201K2-PCL424B/337486530",
+          "price": 179,
+          "wasPrice": 278,
+          "profit": 6.63,
+          "roi": 0.037,
+          "section": "confirmed"
+        },
+        "waitingLookup": 11,
+        "label": "BOGO: 16 free-tool choices — best: PCL424B +$6.63 est."
+      },
+      "945972:343971918": {
+        "id": "945972:343971918",
+        "promotionId": "945972",
+        "brand": "DEWALT",
+        "starterItemId": "343971918",
+        "starterModel": "DCK540D1",
+        "starterKey": "homedepot:343971918",
+        "starterLink": "https://www.homedepot.com/p/343971918",
+        "endsAt": "2027-01-31",
+        "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL",
+        "choices": [
+          {
+            "key": "homedepot:343992131",
+            "itemId": "343992131",
+            "model": "DCK540D1WCS382B",
+            "freeModel": "CS382B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless Reciprocating Saw with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-Reciprocating-Saw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS382B/343992131",
+            "price": 499,
+            "wasPrice": 728,
+            "profit": -0.94,
+            "roi": -0.0019,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:343992132",
+            "itemId": "343992132",
+            "model": "DCK540D1WCS565B",
+            "freeModel": "CS565B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless 6-1/2 in. Circular Saw with 2 Ah Battery & Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-6-1-2-in-Circular-Saw-with-2-Ah-Battery-Charger-DCK540D1WCS565B/343992132",
+            "price": 499,
+            "wasPrice": 698,
+            "profit": -7.11,
+            "roi": -0.0142,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:343992137",
+            "itemId": "343992137",
+            "model": "DCK540D1WCB1404",
+            "freeModel": "CB1404",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 12V/20V/60V MAX 4-Amp 4-Port Charger with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-12V-20V-60V-MAX-4-Amp-4-Port-Charger-with-2-0-Ah-Battery-and-Charger-DCK540D1WCB1404/343992137",
+            "price": 499,
+            "wasPrice": 698,
+            "profit": -7.7,
+            "roi": -0.0154,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:343992140",
+            "itemId": "343992140",
+            "model": "DCK540D1WDCB606",
+            "freeModel": "DCB606",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) with FLEXVOLT 20-Volt/60V MAX 6.0Ah Battery, 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-with-FLEXVOLT-20-Volt-60V-MAX-6-0Ah-Battery-2-0-Ah-Battery-and-Charger-DCK540D1WDCB606/343992140",
+            "price": 499,
+            "wasPrice": 698,
+            "profit": -14.83,
+            "roi": -0.0297,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:343992135",
+            "itemId": "343992135",
+            "model": "DCK540D1WCW600B",
+            "freeModel": "CW600B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Brushless Compact Router with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Brushless-Compact-Router-with-2-0-Ah-Battery-and-Charger-DCK540D1WCW600B/343992135",
+            "price": 499,
+            "wasPrice": 748,
+            "profit": -16.38,
+            "roi": -0.0328,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:343992133",
+            "itemId": "343992133",
+            "model": "DCK540D1WCS334B",
+            "freeModel": "CS334B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Cordless Brushless Jigsaw with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS334B/343992133",
+            "price": 499,
+            "wasPrice": 738,
+            "profit": -17.94,
+            "roi": -0.036,
+            "section": "confirmed"
+          },
+          {
+            "key": "homedepot:343992136",
+            "itemId": "343992136",
+            "model": "DCK540D1WCF860B",
+            "freeModel": "CF860B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Cordless Impact Driver with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Cordless-Impact-Driver-with-2-0-Ah-Battery-and-Charger-DCK540D1WCF860B/343992136",
+            "price": 499,
+            "wasPrice": 718,
+            "profit": -117.35,
+            "roi": -0.2352,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:343992142",
+            "itemId": "343992142",
+            "model": "DCK540D1WCH172B",
+            "freeModel": "CH172B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and ATOMIC Brushless 5/8 in. Hammer Drill with 2 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-ATOMIC-Brushless-5-8-in-Hammer-Drill-with-2-Ah-Battery-and-Charger-DCK540D1WCH172B/343992142",
+            "price": 499,
+            "wasPrice": 718,
+            "profit": -117.35,
+            "roi": -0.2352,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:343992143",
+            "itemId": "343992143",
+            "model": "DCK540D1WBL722B",
+            "freeModel": "BL722B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless Handheld Blower with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-Handheld-Blower-with-2-0-Ah-Battery-and-Charger-DCK540D1WBL722B/343992143",
+            "price": 499,
+            "wasPrice": 678,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:343992134",
+            "itemId": "343992134",
+            "model": "DCK540D1WCG407B",
+            "freeModel": "CG407B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless 4-1/2 in. Angle Grinder with 2Ah Battery & Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-4-1-2-in-Angle-Grinder-with-2Ah-Battery-Charger-DCK540D1WCG407B/343992134",
+            "price": 499,
+            "wasPrice": 678,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:343992144",
+            "itemId": "343992144",
+            "model": "DCK540D1WCS621B",
+            "freeModel": "CS621B",
+            "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX 12 in. Brushless Chainsaw with 2.0 Ah Battery and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-12-in-Brushless-Chainsaw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS621B/343992144",
+            "price": 499,
+            "wasPrice": 698,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          }
+        ],
+        "best": {
+          "key": "homedepot:343992131",
+          "itemId": "343992131",
+          "model": "DCK540D1WCS382B",
+          "freeModel": "CS382B",
+          "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX Brushless Reciprocating Saw with 2.0 Ah Battery and Charger",
+          "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-Brushless-Reciprocating-Saw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS382B/343992131",
+          "price": 499,
+          "wasPrice": 728,
+          "profit": -0.94,
+          "roi": -0.0019,
+          "section": "confirmed"
+        },
+        "waitingLookup": 3,
+        "label": "BOGO: 11 free-tool choices — best: CS382B −$0.94 est."
+      },
+      "945972:334337675": {
+        "id": "945972:334337675",
+        "promotionId": "945972",
+        "brand": "DEWALT",
+        "starterItemId": "334337675",
+        "starterModel": "DCK200D1P1",
+        "starterKey": "homedepot:334337675",
+        "starterLink": "https://www.homedepot.com/p/334337675",
+        "endsAt": "2027-01-31",
+        "description": "BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL",
+        "choices": [
+          {
+            "key": "homedepot:337440459",
+            "itemId": "337440459",
+            "model": "DCK200D1P1W921B",
+            "freeModel": "921B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit, Brushless 1/2 in. Impact Wrench w/ 5 Ah, 2 Ah Batteries, Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-Brushless-1-2-in-Impact-Wrench-w-5-Ah-2-Ah-Batteries-Charger-DCK200D1P1W921B/337440459",
+            "price": 299,
+            "wasPrice": 538,
+            "profit": -158.75,
+            "roi": -0.5309,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440452",
+            "itemId": "337440452",
+            "model": "DCK200D1P1W382B",
+            "freeModel": "382B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Recip Saw wi/ 5.0 Ah and 2.0 Ah Batteries and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Recip-Saw-wi-5-0-Ah-and-2-0-Ah-Batteries-and-Charger-DCK200D1P1W382B/337440452",
+            "price": 299,
+            "wasPrice": 528,
+            "profit": -182.59,
+            "roi": -0.6107,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440453",
+            "itemId": "337440453",
+            "model": "DCK200D1P1W565B",
+            "freeModel": "565B",
+            "title": "ATOMIC 20V Lithium-Ion Cordless 2-Tool Combo Kit and Brushless 6-1/2 in. Circular Saw w/ 5 Ah & 2 Ah Batteries & Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-6-1-2-in-Circular-Saw-w-5-Ah-2-Ah-Batteries-Charger-DCK200D1P1W565B/337440453",
+            "price": 299,
+            "wasPrice": 498,
+            "profit": -188.76,
+            "roi": -0.6313,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:343992112",
+            "itemId": "343992112",
+            "model": "DCK200D1P1W1404",
+            "freeModel": "1404",
+            "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 4-Port Charger with 5Ah and2 Ah Batteries, Charger and Kit Bag",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-4-Port-Charger-with-5Ah-and2-Ah-Batteries-Charger-and-Kit-Bag-DCK200D1P1W1404/343992112",
+            "price": 299,
+            "wasPrice": 498,
+            "profit": -189.35,
+            "roi": -0.6333,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440462",
+            "itemId": "337440462",
+            "model": "DCK200D1P1W630B",
+            "freeModel": "630B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and XR Brushless Screw Gun w/ 5.0 Ah and 2.0 Ah Batteries, Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-XR-Brushless-Screw-Gun-w-5-0-Ah-and-2-0-Ah-Batteries-Charger-DCK200D1P1W630B/337440462",
+            "price": 299,
+            "wasPrice": 498,
+            "profit": -191.87,
+            "roi": -0.6417,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:343992113",
+            "itemId": "343992113",
+            "model": "DCK200D1P1W211B",
+            "freeModel": "211B",
+            "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 5 in. Random Orbit Sander w/ 5Ah & 2Ah Batteries, Charger & Bag",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-5-in-Random-Orbit-Sander-w-5Ah-2Ah-Batteries-Charger-Bag-DCK200D1P1W211B/343992113",
+            "price": 299,
+            "wasPrice": 498,
+            "profit": -192.76,
+            "roi": -0.6447,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440461",
+            "itemId": "337440461",
+            "model": "DCK200D1P1WB606",
+            "freeModel": "B606",
+            "title": "ATOMIC 20V Lithium-Ion Cordless 2-Tool Combo Kit with FLEXVOLT 20V/60V 6.0Ah, 20V 5 Ah and 2 Ah Batteries and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-FLEXVOLT-20V-60V-6-0Ah-20V-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1WB606/337440461",
+            "price": 299,
+            "wasPrice": 498,
+            "profit": -196.48,
+            "roi": -0.6571,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440456",
+            "itemId": "337440456",
+            "model": "DCK200D1P1W600B",
+            "freeModel": "600B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Compact Router w/ 5 Ah and 2 Ah Batteries and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Compact-Router-w-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1W600B/337440456",
+            "price": 299,
+            "wasPrice": 548,
+            "profit": -198.03,
+            "roi": -0.6623,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440454",
+            "itemId": "337440454",
+            "model": "DCK200D1P1W334B",
+            "freeModel": "334B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Jigsaw with 5.0 Ah and 2.0 Ah Batteries and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Jigsaw-with-5-0-Ah-and-2-0-Ah-Batteries-and-Charger-DCK200D1P1W334B/337440454",
+            "price": 299,
+            "wasPrice": 538,
+            "profit": -199.59,
+            "roi": -0.6675,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:337440457",
+            "itemId": "337440457",
+            "model": "DCK200D1P1W860B",
+            "freeModel": "860B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Cordless Impact Driver w/ 5.0 Ah, 2.0 Ah Batteries and Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Cordless-Impact-Driver-w-5-0-Ah-2-0-Ah-Batteries-and-Charger-DCK200D1P1W860B/337440457",
+            "price": 299,
+            "wasPrice": 518,
+            "profit": -299,
+            "roi": -1,
+            "section": "missing_listing"
+          },
+          {
+            "key": "homedepot:343992111",
+            "itemId": "343992111",
+            "model": "DCK200D1P1W407B",
+            "freeModel": "407B",
+            "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 4-1/2 in. Angle Grinder with 5Ah & 2Ah Batteries, Charger & Bag",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-4-1-2-in-Angle-Grinder-with-5Ah-2Ah-Batteries-Charger-Bag-DCK200D1P1W407B/343992111",
+            "price": 299,
+            "wasPrice": 478,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:343992114",
+            "itemId": "343992114",
+            "model": "DCK200D1P1W621B",
+            "freeModel": "621B",
+            "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit and 12 in. Cordless Chainsaw w/ 5Ah & 2Ah Batteries, Charger & Bag",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-12-in-Cordless-Chainsaw-w-5Ah-2Ah-Batteries-Charger-Bag-DCK200D1P1W621B/343992114",
+            "price": 299,
+            "wasPrice": 498,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          },
+          {
+            "key": "homedepot:337440460",
+            "itemId": "337440460",
+            "model": "DCK200D1P1W722B",
+            "freeModel": "722B",
+            "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit and Brushless Handheld Blower w/ 5 Ah and 2 Ah Batteries, Charger",
+            "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-and-Brushless-Handheld-Blower-w-5-Ah-and-2-Ah-Batteries-Charger-DCK200D1P1W722B/337440460",
+            "price": 299,
+            "wasPrice": 478,
+            "profit": null,
+            "roi": null,
+            "section": "waiting"
+          }
+        ],
+        "best": {
+          "key": "homedepot:337440459",
+          "itemId": "337440459",
+          "model": "DCK200D1P1W921B",
+          "freeModel": "921B",
+          "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit, Brushless 1/2 in. Impact Wrench w/ 5 Ah, 2 Ah Batteries, Charger",
+          "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-Brushless-1-2-in-Impact-Wrench-w-5-Ah-2-Ah-Batteries-Charger-DCK200D1P1W921B/337440459",
+          "price": 299,
+          "wasPrice": 538,
+          "profit": -158.75,
+          "roi": -0.5309,
+          "section": "missing_listing"
+        },
+        "waitingLookup": 3,
+        "label": "BOGO: 13 free-tool choices — best: 921B −$158.75 est."
+      }
+    }
+  }
+}

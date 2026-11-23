@@ -14,3 +14,9 @@ What it shows:
 - Questions that should not be questions: BOGO pairs (PCL1201K2-FVC51K …) whose split the pair rule already gives;
   hyphen bundles whose halves Home Depot sells under exactly those models (partPrices.json); AI answers rejected for
   "The bundle states 6 tools; the parts hold 7" on "6-Tool Combo Kit … and Miter Saw".
+
+## after-scan3/ (same day, after the step 15 fixes)
+The third real scan: 4 minutes, 16 searches, 59 bundles, 32 with an estimate (34 a few minutes later, as the Keepa drip
+went on), 10 open questions, AI $0.13. What it shows next: the best estimate is +$6.63 on a $179 BOGO pair at $0
+fulfillment; 26 bundles sit in "Losing money", many at -100% because a part with no price yet is counted at zero
+(`estimate.countedAtZero`: DCK200D1P1 in 10 bundles, PCL1600K2 in 4, …), which is not an estimate of anything.
