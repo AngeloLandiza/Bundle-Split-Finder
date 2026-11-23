@@ -51,7 +51,7 @@ import {
   BRAND_QUERIES, budgetPolicyFor, estimatedJudgeCost, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
 } from '../core/src/settings';
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
-import { addBriefs, backfillBriefs, type BriefCtx } from './brief';
+import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { buildDigest, sendPending } from './alerts';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
@@ -1087,10 +1087,11 @@ export class AgentWork {
       now: this.d.now,
     });
     const model = (p: typeof pipelines.assist | typeof pipelines.research) => (p.ok ? { ok: true as const, model: p.value.model } : { ok: false as const, error: p.error });
-    const result = await runAiPass({
+    return runAiPass({
       store: this.scanStore,
       suggestions: () => store.get('suggestions'),
       keep: (r) => store.update('suggestions', (all) => [...all.filter((x) => x.key !== r.key), r]),
+      afterKeep: briefAfterKeep(this.briefCtx()),
       models: { assist: model(pipelines.assist), research: model(pipelines.research) },
       askOne,
       chromeConnected: this.d.helperConnected,
@@ -1100,7 +1101,6 @@ export class AgentWork {
       now: this.d.now,
       ...(only ? { only } : {}),
     });
-    return addBriefs(result, this.briefCtx(), only);
   }
 
   /** Step 16: what the plain brief above a Review question is written with (agent/brief.ts). */

@@ -31,6 +31,12 @@ export interface AiPassDeps {
   /** Suggestions kept so far (oldest first) and how to keep one. */
   suggestions: () => StoredSuggestion[];
   keep: (record: StoredSuggestion) => void;
+  /**
+   * Step 16: called with each suggestion right after it is kept for a question that is still as asked; the brief above the question is
+   * written here, so it appears as the suggestion does. Returns the dollars it cost (they count in this pass and its cap) and a
+   * sentence when it could not write one (the cap, no price); neither stops the pass.
+   */
+  afterKeep?: (record: StoredSuggestion) => Promise<{ costUsd: number; problem: string | null }>;
   /** The model each route uses, or why there is none (pipelinesFrom). */
   models: { assist: { ok: true; model: string } | { ok: false; error: string }; research: { ok: true; model: string } | { ok: false; error: string } };
   askOne: AskOne;
@@ -68,6 +74,7 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
   const queue = askQueueOf(open, deps.suggestions());
   let spent = deps.spentUsd;
   let failures = 0;
+  let briefProblem: string | null = null;
   for (const item of queue) {
     if (deps.signal.aborted) break;
     const route: AskRoute = item.kind === 'split' ? 'research' : 'assist';
@@ -113,6 +120,12 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
       if (current && s.status !== 'not_suggested') {
         out.suggested += 1;
         if (s.status === 'verified') out.verified += 1;
+        if (deps.afterKeep) {
+          const b = await deps.afterKeep(record);
+          spent += b.costUsd;
+          out.costUsd += b.costUsd;
+          briefProblem ??= b.problem;
+        }
       }
     }
     if (providerTrouble(s)) {
@@ -123,6 +136,7 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
       }
     } else failures = 0;
   }
+  out.problem ??= briefProblem;
   return out;
 }
 

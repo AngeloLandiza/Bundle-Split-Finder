@@ -1,4 +1,4 @@
-// The brief pass (step 16): after a suggestion is made (the scan's AI pass, Ask AI, Ask about all) and, lazily, for stored
+// The brief pass (step 16): as each suggestion is made (the scan's AI pass, Ask AI, Ask about all: aiPass.ts afterKeep) and, lazily, for stored
 // suggestions that have none (a batch at agent start, at most BACKFILL_LIMIT), one small model call per question writes the
 // three plain lines above it (core/src/brief). The call explains a suggestion and changes nothing: the answer, its status
 // and what Autopilot may apply are not read from it. Its cost is kept on the suggestion (briefMeta) and counts in the month's
@@ -12,7 +12,6 @@ import { briefInputOf, linksOfEvidence, poolOfEvidence } from '../core/src/brief
 import { BRIEF_PROMPT_VERSION } from '../core/src/brief/prompt';
 import { type BriefModel, estimatedBriefCost, worthABrief, writeBrief } from '../core/src/brief/pipeline';
 import type { ReviewItem, ScanStore } from '../core/src/scan/types';
-import type { AiPassResult } from './aiPass';
 import type { Store } from './store';
 import { aiSpentThisMonth } from './views';
 
@@ -132,11 +131,11 @@ function keep(ctx: BriefCtx, key: string, brief: StoredSuggestion['brief'], meta
   ctx.store.update('suggestions', (all) => all.map((s) => (s.key === key ? { ...s, ...(brief ? { brief } : {}), briefMeta: meta } : s)));
 }
 
-/** The AI pass's result with the briefs it led to: their cost counts in the run's AI cost, a problem is added when the pass had none. */
-export async function addBriefs(result: AiPassResult, ctx: BriefCtx, only?: string[]): Promise<AiPassResult> {
-  const b = await briefPass(ctx, only ? { only } : {}).catch((): BriefPassResult => ({ written: 0, asked: 0, costUsd: 0, problem: null }));
-  return { ...result, costUsd: result.costUsd + b.costUsd, problem: result.problem ?? b.problem };
-}
+/** Each suggestion as it lands (AiPassDeps.afterKeep): its brief is written at once, so the card fills in during a long Ask about all. */
+export const briefAfterKeep = (ctx: BriefCtx) => async (record: StoredSuggestion): Promise<{ costUsd: number; problem: string | null }> => {
+  const b = await briefPass(ctx, { only: [record.questionId] }).catch((): BriefPassResult => ({ written: 0, asked: 0, costUsd: 0, problem: null }));
+  return { costUsd: b.costUsd, problem: b.problem };
+};
 
 /** The batch at agent start: the stored suggestions that have no brief, at most BACKFILL_LIMIT. */
 export const backfillBriefs = (ctx: BriefCtx): Promise<BriefPassResult> => briefPass(ctx, { limit: BACKFILL_LIMIT });

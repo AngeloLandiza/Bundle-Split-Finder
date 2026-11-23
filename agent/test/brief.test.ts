@@ -8,9 +8,9 @@ import { MemoryScanStore } from '../../core/src/scan/memoryStore';
 import { read, REVIEW, SUGGESTIONS, FIXTURE } from '../../core/test/brief-world';
 import { loadScanFolder } from '../../scripts/data-folder';
 import { aiPipelinePatch } from '../app';
-import type { AiPassResult } from '../aiPass';
-import { addBriefs, BACKFILL_LIMIT, briefPass, type BriefCtx, RETRY_AFTER_MS } from '../brief';
-import { defaultAiSettings, defaultSettings, Store, type StoreData } from '../store';
+import { runAiPass } from '../aiPass';
+import { BACKFILL_LIMIT, briefAfterKeep, briefPass, type BriefCtx, RETRY_AFTER_MS } from '../brief';
+import { BRIEF_OPUS_MIGRATION, defaultAiSettings, defaultSettings, Store, type StoreData } from '../store';
 import { aiSpentThisMonth, reviewResponse } from '../views';
 
 // Step 16, the agent's side of the brief, on the owner's real data (fixtures/e2e-2026-11-23/after-scan3 for the questions and
@@ -50,7 +50,7 @@ describe('GET /api/review: brief, from the rules', () => {
     expect(by('split:homedepot:335724135')).toMatchObject({ state: 'none', suggestion: null });
     expect(by('match:DEWALT:DCF860B')).toMatchObject({ state: 'none', suggestion: null, ask: 'Which Amazon listing is this part?' });
     // The verifier's plain sentences are the reasons of a suggestion that was not verified.
-    expect(by('split:homedepot:326894185').reasons.map((r) => r.text)).toContain('Nothing the AI read shows DCS334B is a real model.');
+    expect(by('split:homedepot:326894185').reasons.map((r) => r.text)).toContain('None of the pages the app read lists DCS334B as a model number.');
     // A question's link is the Home Depot page or the listing, never invented.
     expect(by('split:homedepot:328690510').check!.url).toBe(qs.find((q) => q.id === 'split:homedepot:328690510')!.sources[0]!.url);
   });
@@ -70,7 +70,7 @@ describe('the cost of a brief', () => {
     const [s] = suggestionsOf([SPLITS[0]!]);
     const runs = [] as never[];
     const base = aiSpentThisMonth({ suggestions: [s!], runs }, NOW);
-    const withBrief = { ...s!, briefMeta: { at: NOW, provider: 'claude', model: 'claude-haiku-5-5', promptVersion: 'v', called: true, costUsd: 0.0002 } };
+    const withBrief = { ...s!, briefMeta: { at: NOW, provider: 'claude', model: 'claude-opus-5-5', promptVersion: 'v', called: true, costUsd: 0.0002 } };
     expect(aiSpentThisMonth({ suggestions: [withBrief], runs }, NOW)).toBeCloseTo(base + 0.0002, 8);
     // A brief written in an earlier month is that month's.
     expect(aiSpentThisMonth({ suggestions: [{ ...withBrief, briefMeta: { ...withBrief.briefMeta, at: Date.UTC(2026, 9, 30) } }], runs }, NOW)).toBeCloseTo(base, 8);
@@ -116,11 +116,11 @@ describe('the brief pass', () => {
     const w = await world();
     const r = await briefPass(w.ctx);
     expect(r).toMatchObject({ written: 5, asked: 5, problem: null });
-    expect(r.costUsd).toBeCloseTo(5 * 0.00022, 8);
+    expect(r.costUsd).toBeCloseTo(5 * 0.0088, 8);
     expect(w.calls).toHaveLength(5);
     expect(new Set(w.calls.map((c) => c.url))).toEqual(new Set(['https://api.anthropic.com/v1/messages']));
     expect(w.calls.every((c) => c.key === 'sk-ant-test-key')).toBe(true);
-    expect(w.calls.every((c) => c.body.model === 'claude-haiku-5-5')).toBe(true);
+    expect(w.calls.every((c) => c.body.model === 'claude-opus-5-5')).toBe(true);
     expect(JSON.stringify(w.calls.map((c) => c.body))).not.toContain('sk-ant-test-key');
     // The prompt holds the question and the found quotes, not the research agent's own argument or its answer's quotes.
     const prompt = JSON.stringify(w.calls[0]!.body.messages);
@@ -129,14 +129,14 @@ describe('the brief pass', () => {
 
     const saved = w.store.get('suggestions');
     expect(saved.filter((s) => s.brief?.writtenBy === 'ai')).toHaveLength(5);
-    expect(saved[0]!.briefMeta).toMatchObject({ called: true, model: 'claude-haiku-5-5', costUsd: expect.closeTo(0.00022, 8) });
+    expect(saved[0]!.briefMeta).toMatchObject({ called: true, model: 'claude-opus-5-5', costUsd: expect.closeTo(0.0088, 8) });
     // What the suggestion says is untouched.
     expect(saved.map(({ brief: _b, briefMeta: _m, ...rest }) => rest)).toEqual(suggestionsOf(SPLITS));
     // GET /api/review shows it, and the month's AI spend counts it.
     const shown = reviewResponse({ ...dataOf(saved), settings: w.store.get('settings') }).questions.find((q) => q.id === SPLITS[3])!;
     expect(shown.brief).toMatchObject({ writtenBy: 'ai', state: 'not_verified', suggestion: 'PCL500B + PCL525B' });
     expect(shown.brief!.reasons[0]).toMatchObject({ text: 'The page lists what the bundle holds.', sourceLabel: 'Home Depot page' });
-    expect(aiSpentThisMonth({ suggestions: saved, runs: [] }, NOW)).toBeCloseTo(aiSpentThisMonth({ suggestions: suggestionsOf(SPLITS), runs: [] }, NOW) + 5 * 0.00022, 8);
+    expect(aiSpentThisMonth({ suggestions: saved, runs: [] }, NOW)).toBeCloseTo(aiSpentThisMonth({ suggestions: suggestionsOf(SPLITS), runs: [] }, NOW) + 5 * 0.0088, 8);
   });
 
   it('writes each brief once', async () => {
@@ -186,8 +186,8 @@ describe('the brief pass', () => {
   it('stops before the call that would pass the cap', async () => {
     const w = await world();
     const spent = aiSpentThisMonth({ suggestions: w.store.get('suggestions'), runs: [] }, NOW);
-    w.store.update('settings', (s) => ({ ...s, ai: { ...s.ai, monthlyCapUsd: spent + 0.0005 } }));
-    // One brief is estimated at $0.0004 and costs $0.00022: after the first, a second would pass the cap.
+    w.store.update('settings', (s) => ({ ...s, ai: { ...s.ai, monthlyCapUsd: spent + 0.02 } }));
+    // One brief is estimated at $0.016 and costs $0.0088: after the first, a second would pass the cap.
     const r = await briefPass(w.ctx);
     expect(r.asked).toBe(1);
     expect(r.problem).toMatch(/is reached/);
@@ -233,38 +233,99 @@ describe('the brief pass', () => {
     expect(w.calls).toHaveLength(0);
   });
 
-  it('adds its cost to the AI pass’s and keeps the pass’s own problem', async () => {
-    const w = await world();
-    const pass: AiPassResult = { asked: 2, suggested: 2, verified: 0, costUsd: 0.1, waitingForChrome: 0, problem: 'The AI stopped.' };
-    const out = await addBriefs(pass, w.ctx);
-    expect(out.costUsd).toBeCloseTo(0.1 + 5 * 0.00022, 8);
-    expect(out).toMatchObject({ asked: 2, problem: 'The AI stopped.' });
+  it('each suggestion gets its brief as it lands in the AI pass, its cost counts in the pass, and a problem does not stop it', async () => {
+    const w = await world({ suggestions: [] });
+    const real = suggestionsOf(SPLITS);
+    const briefedWhenAsked: number[] = [];
+    const out = await runAiPass({
+      store: w.scan, suggestions: () => w.store.get('suggestions'),
+      keep: (r) => w.store.update('suggestions', (all) => [...all.filter((x) => x.key !== r.key), r]),
+      afterKeep: briefAfterKeep(w.ctx),
+      models: { assist: { ok: true, model: 'claude-opus-5-5' }, research: { ok: true, model: 'claude-opus-5-5' } },
+      askOne: async (item) => {
+        // How many suggestions already hold a brief when the next question is asked.
+        briefedWhenAsked.push(w.store.get('suggestions').filter((s) => s.brief !== undefined).length);
+        return real.find((s) => s.questionId === item.id)!;
+      },
+      chromeConnected: () => true, spentUsd: 0, capUsd: 25, signal: new AbortController().signal, now: () => NOW, only: SPLITS,
+    });
+    expect(out).toMatchObject({ asked: 5, suggested: 5, problem: null });
+    expect(briefedWhenAsked).toEqual([0, 1, 2, 3, 4]);
+    expect(w.calls).toHaveLength(5);
+    expect(out.costUsd).toBeCloseTo(suggestionsOf(SPLITS).reduce((n, s) => n + (s.costUsd ?? 0), 0) + 5 * 0.0088, 8);
+    expect(w.store.get('suggestions').filter((s) => s.brief?.writtenBy === 'ai')).toHaveLength(5);
+  });
+
+  it('a brief the cap cannot hold is the pass’s problem, not its end', async () => {
+    const w = await world({ suggestions: [], cap: 0.01 });
+    const real = suggestionsOf(SPLITS.slice(0, 2));
+    const out = await runAiPass({
+      store: w.scan, suggestions: () => w.store.get('suggestions'),
+      keep: (r) => w.store.update('suggestions', (all) => [...all.filter((x) => x.key !== r.key), r]),
+      afterKeep: briefAfterKeep(w.ctx),
+      models: { assist: { ok: true, model: 'claude-opus-5-5' }, research: { ok: true, model: 'claude-opus-5-5' } },
+      askOne: async (item) => ({ ...real.find((s) => s.questionId === item.id)!, costUsd: 0 }),
+      chromeConnected: () => true, spentUsd: 0, capUsd: 25, signal: new AbortController().signal, now: () => NOW, only: SPLITS.slice(0, 2),
+    });
+    expect(out.suggested).toBe(2);
+    expect(out.problem).toMatch(/AI limit of \$0\.01 is reached/);
+    expect(w.calls).toHaveLength(0);
   });
 });
 
 describe('the brief in Settings', () => {
-  it('starts as Claude Haiku, never trusted, and a change of model keeps it untrusted', () => {
+  it('starts as Claude Opus (measured), never trusted, and a change of model keeps it untrusted', () => {
     const cur = { ...defaultAiSettings().brief! };
-    expect(cur).toMatchObject({ provider: 'anthropic', model: 'claude-haiku-5-5', apiKeyRef: 'anthropic', trusted: false });
+    expect(cur).toMatchObject({ provider: 'anthropic', model: 'claude-opus-5-5', apiKeyRef: 'anthropic', trusted: false });
     const next = aiPipelinePatch(cur, { provider: 'openai-compatible', preset: 'deepseek', model: 'deepseek-flash', trusted: true }, 'brief');
     expect(next).toMatchObject({ provider: 'openai-compatible', model: 'deepseek-flash', apiKeyRef: 'openai', trusted: false });
   });
 
+  function reopen(dir: string, edit: (saved: StoreData['settings'], runtime: StoreData['runtime']) => void): Store {
+    const settingsFile = join(dir, 'store', 'settings.json');
+    const runtimeFile = join(dir, 'store', 'runtime.json');
+    const saved = JSON.parse(readFileSync(settingsFile, 'utf8')) as StoreData['settings'];
+    const runtime = JSON.parse(readFileSync(runtimeFile, 'utf8')) as StoreData['runtime'];
+    edit(saved, runtime);
+    writeFileSync(settingsFile, JSON.stringify(saved));
+    writeFileSync(runtimeFile, JSON.stringify(runtime));
+    const s = Store.open(dir);
+    open.push(s);
+    return s;
+  }
+
   it('a store saved before it has the default, and keeps the owner’s choice after', () => {
     const dir = mkdtempSync(join(tmpdir(), 'sf-brief-settings-'));
-    const s = Store.open(dir);
-    s.close();
-    const file = join(dir, 'store', 'settings.json');
-    const saved = JSON.parse(readFileSync(file, 'utf8')) as StoreData['settings'];
-    delete saved.ai.brief;
-    writeFileSync(file, JSON.stringify(saved));
-    const again = Store.open(dir);
-    open.push(again);
-    expect(again.get('settings').ai.brief).toMatchObject({ model: 'claude-haiku-5-5', trusted: false });
-    again.update('settings', (cur) => ({ ...cur, ai: { ...cur.ai, brief: { ...cur.ai.brief!, model: 'claude-opus-5-5' } } }));
+    Store.open(dir).close();
+    const again = reopen(dir, (saved) => { delete saved.ai.brief; });
+    expect(again.get('settings').ai.brief).toMatchObject({ model: 'claude-opus-5-5', trusted: false });
+    again.update('settings', (cur) => ({ ...cur, ai: { ...cur.ai, brief: { ...cur.ai.brief!, model: 'claude-haiku-5-5' } } }));
     again.close();
     const third = Store.open(dir);
     open.push(third);
-    expect(third.get('settings').ai.brief!.model).toBe('claude-opus-5-5');
+    expect(third.get('settings').ai.brief!.model).toBe('claude-haiku-5-5');
+  });
+
+  it('a store still on the Haiku default moves to Opus once; the owner who picks Haiku again keeps it', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sf-brief-migrate-'));
+    Store.open(dir).close();
+    const old = reopen(dir, (saved, runtime) => {
+      saved.ai.brief = { provider: 'anthropic', model: 'claude-haiku-5-5', apiKeyRef: 'anthropic', trusted: false };
+      runtime.migrations = (runtime.migrations ?? []).filter((m) => m !== BRIEF_OPUS_MIGRATION);
+    });
+    expect(old.get('settings').ai.brief!.model).toBe('claude-opus-5-5');
+    expect(old.get('runtime').migrations).toContain(BRIEF_OPUS_MIGRATION);
+    old.update('settings', (cur) => ({ ...cur, ai: { ...cur.ai, brief: { ...cur.ai.brief!, model: 'claude-haiku-5-5' } } }));
+    old.close();
+    const chosen = Store.open(dir);
+    open.push(chosen);
+    expect(chosen.get('settings').ai.brief!.model).toBe('claude-haiku-5-5');
+    // Another provider, or a model the owner chose, is never touched.
+    chosen.close();
+    const other = reopen(dir, (saved, runtime) => {
+      saved.ai.brief = { provider: 'openai-compatible', preset: 'deepseek', model: 'deepseek-flash', apiKeyRef: 'openai', trusted: false };
+      runtime.migrations = (runtime.migrations ?? []).filter((m) => m !== BRIEF_OPUS_MIGRATION);
+    });
+    expect(other.get('settings').ai.brief!.model).toBe('deepseek-flash');
   });
 });
