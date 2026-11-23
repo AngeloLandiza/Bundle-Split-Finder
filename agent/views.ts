@@ -8,6 +8,9 @@ import type {
   DealDetail,
   DealEstimate,
   DealHistoryPoint,
+  DealIncomplete,
+  DealIncompleteEstimate,
+  DealUnpricedPart,
   DealRow,
   DealSignals,
   EvidenceQuote,
@@ -127,7 +130,15 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     needsAnswer: needsAnswer && !b.waitingPage && !b.waitingParts,
     updatedAt: new Date(b.seenAt).toISOString(),
     lookup: searches === undefined ? null : { searches },
+    ...(b.incomplete ? { incomplete: incompleteOf(b) } : {}),
   };
+}
+
+/** Nov 23: the row's incomplete estimate (BundleRow.incomplete, the primary way's). */
+function incompleteOf(b: BundleRow): DealIncomplete | null {
+  const i = b.incomplete;
+  if (!i) return null;
+  return { priced: i.priced, total: i.total, pricedNet: i.pricedNet, breakEvenNet: i.breakEvenNet, breakEvenPrice: i.breakEvenPrice, unpriced: i.unpriced.map((u) => u.model) };
 }
 
 function rowOfAudit(a: AuditBundle, needsAnswer: boolean, at: string | null): DealRow {
@@ -176,7 +187,9 @@ export function dealsResponse(
   const rows = allRows(data).filter((r) => !query.section || r.section === query.section);
   const ordered = DEAL_SECTION_ORDER.flatMap((s) =>
     sortDealRows(
-      rows.filter((r) => r.section === s).map((r) => ({ r, percentOff: r.off, profit: r.profit, roi: r.roi, roiLowest: r.roiRange.low, roiHighest: r.roiRange.high })),
+      rows.filter((r) => r.section === s).map((r) => ({
+        r, percentOff: r.off, profit: r.profit, roi: r.roi, roiLowest: r.roiRange.low, roiHighest: r.roiRange.high, breakEven: r.incomplete?.breakEvenNet ?? null,
+      })),
       query.sort,
     ).map((x) => x.r),
   );
@@ -217,8 +230,43 @@ function estimateOf(b: BundleRow, fees: StoreData['settings']['settings']['fees'
     partsSellFor: Math.round(partsSellFor * 100) / 100,
     afterFees: b.estimate.netRevenue,
     basis: feeBasis(fees),
-    // DEFAULT_SCAN_SETTINGS.liquidationRate is 0: a part no priced listing covers counts at $0.
+    // Nov 23: an estimate exists only when every model part is priced, so only items with no model number are left
+    // here; DEFAULT_SCAN_SETTINGS.liquidationRate is 0, so they are not counted until the owner confirms a price.
     countedAtZero: DEFAULT_SCAN_SETTINGS.liquidationRate === 0 ? [...b.uncovered] : [],
+  };
+}
+
+const ACTION_OF: Record<DealUnpricedPart['state'], DealUnpricedPart['action']> = {
+  waiting: 'look_up', review: 'answer', no_listing: 'confirm_price', inactive: 'confirm_price',
+};
+
+/**
+ * Nov 23: the deal's incomplete estimate, each unpriced part with its state and the one action that moves it forward;
+ * for a kit, whether its page is read and how many parts it lists. `questionOf`: the open match question of a part key.
+ */
+function incompleteEstimateOf(
+  b: BundleRow, fees: StoreData['settings']['settings']['fees'], questionOf: (key: string) => string | null,
+): DealIncompleteEstimate | null {
+  const i = b.incomplete;
+  if (!i) return null;
+  const primary = b.options[0];
+  const parts = i.unpriced.map((u): DealUnpricedPart => {
+    const way = b.options.find((o) => o.splitKits.includes(u.model));
+    const unread = b.kitsNotRead.includes(u.model);
+    const kit = way
+      ? { pageRead: true, parts: way.kitParts?.[u.model] ?? null, waiting: way.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched').length }
+      : unread ? { pageRead: false, parts: null, waiting: 0 } : undefined;
+    const questionId = u.state === 'review' ? questionOf(partKey(b.brand, u.model)) : null;
+    return { model: u.model, qty: u.qty, state: u.state, action: ACTION_OF[u.state], questionId, ...(kit ? { kit } : {}) };
+  });
+  const sold = (primary?.splitKits ?? []).map((k) => `Sold as ${k}'s ${primary?.kitParts?.[k] ?? 'listed'} parts`);
+  return {
+    ...incompleteOf(b)!,
+    cost: i.cost,
+    basis: feeBasis(fees),
+    parts,
+    notCounted: (primary?.unnamed ?? []).filter((x) => x.price === null).map((x) => x.name),
+    soldAs: sold.length ? sold.join('; ') : null,
   };
 }
 
@@ -278,6 +326,12 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'>, 
     sources,
     estimateBasis: ESTIMATE_BASIS,
     estimate: estimateOf(bundle, data.settings.settings.fees),
+    ...(bundle.incomplete
+      ? {
+          incompleteEstimate: incompleteEstimateOf(bundle, data.settings.settings.fees, (key) =>
+            data.review.questions.find((q) => q.answer === null && q.kind === 'match' && q.subject === key)?.id ?? null),
+        }
+      : {}),
     ...(t
       ? {
           watch: watchStateOf(t, id),

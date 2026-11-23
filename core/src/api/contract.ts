@@ -16,7 +16,7 @@ import type { FeeSettings } from '../money';
 import type { Schedule } from '../schedule';
 import type { PipelineView } from '../scan/pipeline';
 import type { AlertSettings, DiscoveryMode, EbaySettings, TrackingDepth } from '../settings';
-import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartPriceReading, ReportSection, ReviewItem } from '../scan/types';
+import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartPriceReading, ReportSection, ReviewItem, UnpricedState } from '../scan/types';
 import type { BogoView, FreeItem } from '../tracking/bogo';
 import type { BogoChoice, BogoGroup, BogoTag, ListedItem, PromoPageOutcome } from '../tracking/bogoPairs';
 import type { FbaEstimate } from '../tracking/fba';
@@ -267,6 +267,63 @@ export interface DealRow {
    * best: PCL265B +$61.50 est.", how many choices, and the best pair's deal id. Null when none.
    */
   bogoChoices?: { label: string; count: number; bestId: string | null; best: boolean } | null;
+  /**
+   * Nov 23 (the third real scan): set when the bundle has a price and a split but some model part has no counted price.
+   * `profit` and `roi` are then null: no headline estimate, never a part counted at $0. What the priced parts bring and
+   * the break-even instead, from the fee settings (rule 5). Absent or null otherwise.
+   */
+  incomplete?: DealIncomplete | null;
+}
+
+/**
+ * Nov 23: a bundle missing a price (BundleRow.incomplete, from the primary way to sell). Estimates from the fee settings,
+ * never the seller's real fees.
+ */
+export interface DealIncomplete {
+  /** Model parts with a counted price, of `total` (one per model; items with no model number are not counted). */
+  priced: number;
+  total: number;
+  /** What the priced parts bring after fees. */
+  pricedNet: number;
+  /** What the unpriced parts together must bring after fees for the bundle to pay for itself (cost - pricedNet, at least 0). */
+  breakEvenNet: number;
+  /** With one unpriced model: the Amazon price per unit that nets the break-even; null otherwise or when it is 0. */
+  breakEvenPrice: number | null;
+  /** The unpriced models, in part order. */
+  unpriced: string[];
+}
+
+/** Nov 23: what moves an unpriced part forward, one per part: its lookup, its Review answer, or a price the owner confirms. */
+export type UnpricedAction = 'look_up' | 'answer' | 'confirm_price';
+
+/** Nov 23: one unpriced part in a deal's incomplete estimate. */
+export interface DealUnpricedPart {
+  model: string;
+  qty: number;
+  /** waiting (not looked up yet), review (its match waits in Review), no_listing, inactive (its listing is not for sale now). */
+  state: UnpricedState;
+  action: UnpricedAction;
+  /** The open match question for the part, when `action` is 'answer'; else null. */
+  questionId: string | null;
+  /**
+   * When the part is a kit: whether its Home Depot page is read (`pageRead`), and when it lists its parts, how many
+   * (`parts`, models and items with no model number) and how many of its models still wait for a lookup. Absent for a part
+   * that is no kit the store knows.
+   */
+  kit?: { pageRead: boolean; parts: number | null; waiting: number };
+}
+
+/** Nov 23: GET /api/deals/:id's incomplete estimate: the row's figures, each unpriced part with its state, and the basis. */
+export interface DealIncompleteEstimate extends DealIncomplete {
+  /** The bundle price with tax and the inbound cost. */
+  cost: number;
+  /** The fee settings in words, ending with "An estimate from your fee settings, not your real Amazon fees." */
+  basis: string;
+  parts: DealUnpricedPart[];
+  /** Items with no model number the primary way leaves unpriced: not counted (not sold separately by default). */
+  notCounted: string[];
+  /** When the primary way sells a kit as its parts: "Sold as PCL1600K2's 19 parts"; else null. */
+  soldAs: string | null;
 }
 
 export interface DealsQuery {
@@ -296,7 +353,11 @@ export interface DealEstimate {
   afterFees: number;
   /** The fee settings in words: "15% referral (at least $0.30), $0.00 fulfillment, 0% tax, $0.00 inbound." */
   basis: string;
-  /** Parts no priced listing covers, counted at $0 (the liquidation rate is 0). */
+  /**
+   * Items with no model number (a charger, a bag) the way to sell leaves unpriced: not counted, at $0 (the liquidation
+   * rate is 0), until the owner confirms a price. Nov 23: since an estimate exists only when every model part is priced,
+   * no model part is ever here (before, a part with no listing was, and showed a $299 bundle "losing" $299).
+   */
   countedAtZero: string[];
 }
 
@@ -309,6 +370,8 @@ export interface DealDetail {
   estimateBasis: string;
   /** W4: the figures behind the row's profit; null when there is no estimate. */
   estimate?: DealEstimate | null;
+  /** Nov 23: in place of `estimate` while some model part has no counted price; null or absent otherwise. */
+  incompleteEstimate?: DealIncompleteEstimate | null;
   /** Tracking: whether the bundle is watched, by whom, since when; null when it never was. */
   watch?: WatchState | null;
   /** Tracking: the last scan's signals; null when the bundle is not watched or no scan has run since. */
@@ -935,4 +998,4 @@ export type AgentEventName = keyof AgentEvents;
 
 // ---------------------------------------------------------------- re-exports used by clients
 
-export type { DealSortKey, PaidAction, ReportSection };
+export type { DealSortKey, PaidAction, ReportSection, UnpricedState };

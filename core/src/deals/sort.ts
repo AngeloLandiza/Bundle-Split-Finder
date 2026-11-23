@@ -16,6 +16,8 @@ export type SortableDealRow = {
   roi?: number | null;
   roiLowest?: number | null;
   roiHighest?: number | null;
+  /** Nov 23: a bundle missing a price: what its unpriced parts must bring after fees to break even. */
+  breakEven?: number | null;
 };
 
 const metric = (row: SortableDealRow, sort: DealSortKey): number | null => {
@@ -28,10 +30,15 @@ const metric = (row: SortableDealRow, sort: DealSortKey): number | null => {
   return typeof row.profit === 'number' ? row.profit : null;
 };
 
-/** Highest first; rows with no figure last; ties keep input order. */
+const gap = (row: SortableDealRow): number => (typeof row.breakEven === 'number' ? row.breakEven : Infinity);
+
+/**
+ * Highest first; rows with no figure last; ties keep input order. Nov 23: of the rows with no figure, a bundle missing a
+ * price comes first, the smallest break-even first (the closest to paying for itself).
+ */
 export function sortDealRows<T extends SortableDealRow>(rows: readonly T[], sort: DealSortKey): T[] {
   return rows
     .map((row, i) => ({ row, i, v: metric(row, sort) }))
-    .sort((a, b) => (a.v === null ? (b.v === null ? 0 : 1) : b.v === null ? -1 : b.v - a.v) || a.i - b.i)
+    .sort((a, b) => (a.v === null ? (b.v === null ? gap(a.row) - gap(b.row) || 0 : 1) : b.v === null ? -1 : b.v - a.v) || a.i - b.i)
     .map((x) => x.row);
 }
