@@ -148,6 +148,12 @@
   color: var(--ink-2);
 }
 
+.install-helper {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
 .paired {
   list-style: none;
   margin: 0;

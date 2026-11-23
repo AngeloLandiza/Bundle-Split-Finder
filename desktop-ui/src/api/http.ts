@@ -158,6 +158,7 @@ export function createHttpClient(): ApiClient {
     decidePairing: async (requestId, allow) => void (await call('POST', allow ? '/api/pair/approve' : '/api/pair/deny', { requestId } satisfies C.PairDecisionBody)),
     pairedExtensions: () => call<C.PairedExtension[]>('GET', '/api/pair/extensions'),
     revokeExtension: async (extensionId) => void (await call('DELETE', `/api/pair/extensions/${id(extensionId)}`)),
+    installExtension: () => call<C.InstallExtensionResponse>('POST', '/api/setup/install-extension', {}),
 
     subscribe(onEvent, onStatus) {
       return openEventStream({

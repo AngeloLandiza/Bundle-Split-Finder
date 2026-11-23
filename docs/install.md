@@ -17,11 +17,14 @@ icon.
 
 ## 2. Install the extension
 
-1. The extension zip is inside the app: right-click Split Finder in Applications, Show
-   Package Contents, Contents, Resources, `bundle-split-finder-<version>-chrome.zip`.
-   (From a clone, `npm run package` makes the same zip in `output/`.)
-2. Unzip it to a folder you will keep, for example `Documents/split-finder`.
-3. In Chrome open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**
+1. In the app, open Settings, Chrome helper (or the first-run setup, step 1) and press
+   **Install the Chrome helper**. The app unpacks the extension into `Documents/split-finder`
+   and says where it went.
+   (The zip is also inside the app: right-click Split Finder in Applications, Show Package
+   Contents, Contents, Resources, `bundle-split-finder-<version>-chrome.zip`. Unzip it by hand
+   to a folder you will keep if the button is not there. From a clone, `npm run package`
+   makes the same zip in `output/`.)
+2. In Chrome open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**
    and choose that folder.
 
 To update, unzip the new zip over the same folder and click reload on the extension's card.

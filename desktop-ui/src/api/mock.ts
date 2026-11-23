@@ -288,6 +288,10 @@ export function createMockClient(): ApiClient {
       if (paired.length === 0) state.helper = { paired: false, connected: false, lastSeenAt: null, jobsWaiting: 0 };
       sync();
     },
+    async installExtension() {
+      await online(600);
+      return { ok: true, extensionDir: '/Users/you/Documents/split-finder', extensionReady: true, extensionMessage: 'Ready for Load unpacked in Chrome.', zipAvailable: true, lane: 'D' };
+    },
 
     subscribe(onEvent, onStatus) {
       if (mode === 'offline') {

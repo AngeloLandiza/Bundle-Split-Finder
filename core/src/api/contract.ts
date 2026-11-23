@@ -483,6 +483,21 @@ export interface PairedExtension {
   lastSeenAt: string | null;
 }
 
+// ---------------------------------------------------------------- browser helper folder
+
+/**
+ * POST /api/setup/install-extension (UI, no body): unpacks the bundled extension zip into `extensionDir` and checks the
+ * manifest. A failure is an error body (`unavailable` when the zip is not bundled, `bad_request` otherwise), not this.
+ */
+export interface InstallExtensionResponse {
+  ok: true;
+  extensionDir: string;
+  extensionReady: boolean;
+  extensionMessage: string;
+  zipAvailable: boolean;
+  lane: 'D';
+}
+
 // ---------------------------------------------------------------- worker jobs
 
 /** Home Depot reads only the owner's Chrome can make (Decision 4). */

@@ -2,7 +2,8 @@
 // call, the event stream read with fetch, the agent's own answers through map.ts. Nothing leaves the machine and no
 // search is spent (the agent runs without its timers).
 
-import { mkdtempSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -106,6 +107,24 @@ describe('the real client on the real agent', () => {
     expect((await client.state()).helper.paired).toBe(true);
     await client.revokeExtension(EXT);
     expect(await client.pairedExtensions()).toEqual([]);
+  });
+
+  it('installs the Chrome helper: the agent unpacks its zip into the folder and the client says where', async () => {
+    const src = mkdtempSync(join(tmpdir(), 'sf-helper-src-'));
+    writeFileSync(join(src, 'manifest.json'), JSON.stringify({ manifest_version: 3, name: 'Helper', version: '0.1.0', permissions: ['storage'] }));
+    writeFileSync(join(src, 'background.js'), '//');
+    const zip = join(mkdtempSync(join(tmpdir(), 'sf-helper-zip-')), 'bundle-split-finder-0.1.0-chrome.zip');
+    execFileSync('zip', ['-q', '-r', zip, '.'], { cwd: src });
+    const dir = join(mkdtempSync(join(tmpdir(), 'sf-helper-dir-')), 'split-finder');
+    vi.stubEnv('SPLIT_FINDER_EXTENSION_ZIP', zip);
+    vi.stubEnv('SPLIT_FINDER_EXTENSION_DIR', dir);
+    try {
+      const r = await client.installExtension();
+      expect(r).toMatchObject({ ok: true, extensionDir: dir, extensionReady: true, zipAvailable: true });
+      expect(existsSync(join(dir, 'manifest.json'))).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('streams the agent\'s events through fetch with the token, the state first and then a change', async () => {

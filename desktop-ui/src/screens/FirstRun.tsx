@@ -4,7 +4,7 @@ import { AppNotices } from '../components/Page';
 import { PairingNotices } from '../components/PairingNotice';
 import { StatusLine } from '../components/StatusLine';
 import { plural } from '../lib/format';
-import { KeyField } from './Settings';
+import { InstallHelper, KeyField } from './Settings';
 import './FirstRun.css';
 
 /**
@@ -42,6 +42,7 @@ export function FirstRun({ onSkip }: { onSkip: () => void }) {
             ) : (
               <>
                 <p>In Chrome, open the Split Finder side panel and press Connect to the app. Chrome then asks here; check that the code matches and allow it.</p>
+                <InstallHelper />
               </>
             )}
           </div>

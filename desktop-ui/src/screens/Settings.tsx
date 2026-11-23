@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import type * as C from '@core/api/contract';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type AppSettings, type KeyName, type Schedule, type SettingsPatch } from '../api/types';
 import { Button } from '../components/Button';
 import { Checkbox, RadioGroup, Select, Switch, TextField } from '../components/Fields';
 import { Page } from '../components/Page';
-import { ConfirmInline, LoadError, SkeletonRows } from '../components/States';
+import { ConfirmInline, LoadError, Notice, SkeletonRows } from '../components/States';
 import { count, money, when } from '../lib/format';
 import { forecast } from '../lib/forecast';
 import { mergePatch } from '../lib/patch';
@@ -369,6 +370,32 @@ export function KeyField({ name, label, help, fields }: { name: KeyName; label: 
   );
 }
 
+/**
+ * Unpacks the bundled Chrome helper into its folder (POST /api/setup/install-extension) and says where, in one sentence.
+ * Used by Settings › Chrome helper and by the first run's Connect Chrome step.
+ */
+export function InstallHelper() {
+  const [done, setDone] = useState<C.InstallExtensionResponse | null>(null);
+  const install = useAction(async () => {
+    setDone(null);
+    setDone(await api.installExtension());
+  });
+  return (
+    <div className="install-helper">
+      <Button size="sm" busy={install.busy} busyLabel="Installing…" onClick={() => void install.run()}>
+        Install the Chrome helper
+      </Button>
+      {install.error ? (
+        <Notice tone="attention" title="The helper was not installed.">
+          {install.error}
+        </Notice>
+      ) : done ? (
+        <Notice>{`Unpacked to ${done.extensionDir}. In Chrome, open chrome://extensions, turn on Developer mode, click Load unpacked and choose this folder.`}</Notice>
+      ) : null}
+    </div>
+  );
+}
+
 function ChromeRow() {
   const { state, refreshState, pairing } = useApp();
   const [res, reload] = useResource(() => api.pairedExtensions(), [], ['state']);
@@ -392,6 +419,7 @@ function ChromeRow() {
               <li>{pairing.requests.length ? 'Allow it in the band at the top of this page.' : 'Chrome then asks here; check the code and allow it.'}</li>
             </ol>
           ) : null}
+          <InstallHelper />
           {res.status === 'error' && !res.data ? <LoadError error={res.error} onRetry={reload} /> : null}
           {paired.length ? (
             <ul className="paired">

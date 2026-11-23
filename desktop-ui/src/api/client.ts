@@ -2,7 +2,7 @@
 // the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type { KeyValues } from '@core/api/contract';
+import type { InstallExtensionResponse, KeyValues } from '@core/api/contract';
 import { createHttpClient } from './http';
 import { createMockClient } from './mock';
 import type {
@@ -60,6 +60,8 @@ export interface ApiClient {
   decidePairing(requestId: string, allow: boolean): Promise<void>;
   pairedExtensions(): Promise<PairedExtension[]>;
   revokeExtension(extensionId: string): Promise<void>;
+  /** Unpacks the bundled Chrome helper to its folder (POST /api/setup/install-extension). Rejects with the agent's sentence. */
+  installExtension(): Promise<InstallExtensionResponse>;
 
   /** Server-sent events; reconnects with a growing wait by itself. Returns the unsubscribe. */
   subscribe(onEvent: (e: AgentEvent) => void, onStatus: (s: StreamStatus) => void): () => void;
