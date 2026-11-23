@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { ActivityError, AutopilotEntry, Run } from '../api/types';
-import { Button } from '../components/Button';
+import { Button, LinkButton } from '../components/Button';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
 import { EmptyState, LoadError, LoadingState } from '../components/States';
@@ -15,7 +16,16 @@ const RESULT: Record<Run['result'], string> = { finished: 'Finished', stopped: '
 
 /** What the agent did: errors to act on, Autopilot's answers with Undo, and every run with its spend. */
 export function ActivityScreen() {
+  const { navigate } = useApp();
   const [res, reload] = useResource(() => api.activity(), [], ['activity', 'review']);
+  // Autopilot is a setting the owner changes in Settings, in another window: ask again when this window is next in front.
+  const [prefs, reloadPrefs] = useResource(() => api.settings(), []);
+  useEffect(() => {
+    window.addEventListener('focus', reloadPrefs);
+    return () => window.removeEventListener('focus', reloadPrefs);
+  }, [reloadPrefs]);
+  const autopilot = prefs.data?.autopilot ?? null;
+  const toSettings = <LinkButton onClick={() => navigate({ screen: 'settings', id: 'ai' })}>Settings › AI</LinkButton>;
   const d = res.data;
   const sub = d ? (
     <>
@@ -37,9 +47,20 @@ export function ActivityScreen() {
           </Section>
         ) : null}
         {d ? (
-          <Section label="Autopilot" count={d.autopilot.length} flush={d.autopilot.length === 0}>
+          <Section
+            label="Autopilot"
+            count={d.autopilot.length}
+            flush={d.autopilot.length === 0}
+            note={autopilot === false && d.autopilot.length > 0 ? <>Autopilot is off now. Verified AI answers wait in Review for your approval. Turn it on in {toSettings}.</> : undefined}
+          >
             {d.autopilot.length === 0 ? (
-              <EmptyState compact title="Autopilot has not applied anything yet" cause="After each scan it applies AI answers that the code verified against the page. Everything else waits in Review." />
+              autopilot === false ? (
+                <EmptyState compact title="Autopilot is off" cause={<>Verified AI answers wait in Review for your approval. Turn it on in {toSettings}.</>} />
+              ) : autopilot === true ? (
+                <EmptyState compact title="Autopilot has not applied anything yet" cause="After each scan it applies AI answers that the code verified against the page. Everything else waits in Review." />
+              ) : (
+                <EmptyState compact title="Nothing applied by Autopilot" cause="Answers it applies are listed here with an Undo. Everything it does not apply waits in Review." />
+              )
             ) : (
               <ul className="rows">
                 {d.autopilot.map((a) => (
