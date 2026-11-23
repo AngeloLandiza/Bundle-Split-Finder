@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealRow, DealSection, DealSort } from '../api/types';
-import { Button } from '../components/Button';
+import { Button, LinkButton } from '../components/Button';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
 import { SearchField, Select } from '../components/Fields';
 import { InspectorSplit } from '../components/Layout';
@@ -369,6 +369,14 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
               plural(rows.length, 'bundle', 'bundles')
             )}
           </span>
+          {section !== 'all' ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>
+                Section: {SECTION_LABEL[section]} <LinkButton onClick={() => setSection('all')}>Show all sections</LinkButton>
+              </span>
+            </>
+          ) : null}
           <span aria-hidden="true">·</span>
           <span>Profit and ROI are estimates from your fee settings, not your real Amazon fees.</span>
         </p>

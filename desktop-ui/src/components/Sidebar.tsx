@@ -172,6 +172,12 @@ function SidebarStatus() {
             {agent.status === 'paused' ? 'No scheduled scan until you resume' : agent.nextScanAt ? `Next scan ${when(agent.nextScanAt)}` : 'Scans when you press Scan now'}
           </p>
         ) : null}
+        {!running && agent.lastScan ? (
+          <p className="sb-row sb-quiet">
+            Last scan {when(agent.lastScan.at)}
+            {agent.lastScan.result === 'finished' || agent.lastScan.userStopped ? '' : agent.lastScan.result === 'limit' ? ', stopped at the limit' : `, ${agent.lastScan.result}`}
+          </p>
+        ) : null}
         {budget.serpLeft === null ? (
           <p className="sb-row sb-quiet">Searches not checked yet</p>
         ) : (
