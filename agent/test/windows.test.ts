@@ -12,7 +12,8 @@ import {
   parseUserName,
   parseUserSid,
   reportAclProblem,
-  sddlCommandArgs,
+  icaclsSaveArgs,
+  sddlFromSaved,
   sddlProblem,
   setAclReporter,
 } from '../winAcl';
@@ -102,53 +103,77 @@ describe('owner-only files on Windows (winAcl)', () => {
     expect(sddlProblem('', U)).toBe('it has no access list');
   });
 
-  it('quotes the path for PowerShell', () => {
-    expect(sddlCommandArgs("C:\\Users\\o'brien\\keys.json")).toEqual([
-      '-NoProfile',
-      '-NonInteractive',
-      '-Command',
-      "(Get-Acl -LiteralPath 'C:\\Users\\o''brien\\keys.json').Sddl",
-    ]);
+  // icacls /save writes UTF-16LE with a BOM: the file's name, then its SDDL.
+  const saved = (sddl: string) => Buffer.from(`\ufeff${FILE}\r\n${sddl}\r\n`, 'utf16le');
+  const SDDL_OK = `D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${SID})`;
+  const SDDL_INHERITED = 'D:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FA;;;' + SID + ')';
+  const fakeIo = (contents: () => Uint8Array) => {
+    const removed: string[] = [];
+    return { removed, io: { tmpPath: () => 'C:\\Temp\\split-finder-acl-ab12.txt', read: () => contents(), remove: (p: string) => void removed.push(p) } };
+  };
+
+  it('decodes a real-shaped icacls /save file and builds the command', () => {
+    expect(sddlFromSaved(saved(SDDL_OK))).toBe(SDDL_OK);
+    expect(sddlProblem(sddlFromSaved(saved(SDDL_OK))!, SID)).toBeNull();
+    expect(sddlFromSaved(Buffer.from(`${FILE}\r\n`, 'utf16le'))).toBeNull();
+    expect(sddlFromSaved(Buffer.alloc(0))).toBeNull();
+    expect(icaclsSaveArgs(FILE, 'C:\\Temp\\x.txt')).toEqual([FILE, '/save', 'C:\\Temp\\x.txt', '/q']);
   });
 
-  const SDDL_OK = `O:BAG:S-1-5-21-1-2-3-513D:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${SID})`;
-  const SDDL_INHERITED = `O:BAG:S-1-5-21-1-2-3-513D:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FA;;;${SID})`;
-  const PS = `${SYS32}\\WindowsPowerShell\\v1.0\\powershell.exe`;
-
-  it('asks whoami once; per file: icacls to narrow, PowerShell to read the SDDL back, all from System32', () => {
+  it('asks whoami once; per file: icacls to narrow, icacls /save to read back, the temp file removed', () => {
     const calls: string[][] = [];
     const run = (file: string, args: string[]) => {
       calls.push([file, ...args]);
-      if (file.endsWith('whoami.exe')) return WHOAMI;
-      return file === PS ? SDDL_OK : 'Successfully processed 1 files';
+      return file.endsWith('whoami.exe') ? WHOAMI : 'Successfully processed 1 files';
     };
-    const acl = makeOwnerOnly(run, SYS32);
+    const { io, removed } = fakeIo(() => saved(SDDL_OK));
+    const acl = makeOwnerOnly(run, SYS32, io);
     expect(acl.ensure(FILE)).toBeNull();
     expect(acl.ensure(FILE)).toBeNull();
-    expect(calls.map((c) => c[0])).toEqual([`${SYS32}\\whoami.exe`, `${SYS32}\\icacls.exe`, PS, `${SYS32}\\icacls.exe`, PS]);
+    expect(calls.map((c) => c[0])).toEqual([`${SYS32}\\whoami.exe`, ...Array(4).fill(`${SYS32}\\icacls.exe`)]);
     expect(calls[1]!.slice(1)).toEqual(icaclsOwnerOnlyArgs(FILE, SID));
-    expect(calls[2]!.slice(1)).toEqual(sddlCommandArgs(FILE));
+    expect(calls[2]!.slice(1)).toEqual(icaclsSaveArgs(FILE, 'C:\\Temp\\split-finder-acl-ab12.txt'));
+    expect(removed).toHaveLength(2);
   });
 
   it('verify-then-report: a file that stays inherited is reported with the reason', () => {
-    const run = (file: string) => (file.endsWith('whoami.exe') ? WHOAMI : file === PS ? SDDL_INHERITED : '');
-    const why = makeOwnerOnly(run, SYS32).ensure(FILE);
-    expect(why).toContain('it still inherits permissions from its folder');
+    const run = (file: string) => (file.endsWith('whoami.exe') ? WHOAMI : '');
+    const result = makeOwnerOnly(run, SYS32, fakeIo(() => saved(SDDL_INHERITED)).io).ensure(FILE);
+    expect(result).toEqual({ wrong: expect.stringContaining('it still inherits permissions from its folder') });
     const sentences: string[] = [];
     setAclReporter((s) => sentences.push(s));
-    reportAclProblem('keys.json', why!);
+    reportAclProblem('keys.json', (result as { wrong: string }).wrong);
     setAclReporter(null);
     expect(sentences).toHaveLength(1);
     expect(sentences[0]).toMatch(/^Windows did not let Split Finder restrict keys\.json to your account: it still inherits .*\. It is readable by this PC's administrators\.$/);
   });
 
-  it('an icacls that throws is the reason when the read back fails too', () => {
-    const run = (file: string) => {
+  it('a read-back that cannot run, or cannot be read, is unverified: nothing for Activity', () => {
+    const stderrError = Object.assign(new Error('Command failed: icacls.exe'), { stderr: '\r\nThe system cannot find the path specified.\r\n' });
+    const failing = (file: string, args: string[]) => {
       if (file.endsWith('whoami.exe')) return WHOAMI;
-      if (file === PS) throw new Error('powershell.exe exited 1');
-      throw new Error('Access is denied.\nmore');
+      if (args.includes('/save')) throw stderrError;
+      return '';
     };
-    expect(makeOwnerOnly(run, SYS32).ensure(FILE)).toBe('Access is denied.');
+    const a = fakeIo(() => saved(SDDL_OK));
+    const r1 = makeOwnerOnly(failing, SYS32, a.io).ensure(FILE);
+    expect(r1).toEqual({ unverified: 'the read-back failed: Command failed: icacls.exe (The system cannot find the path specified.)' });
+    expect(a.removed).toHaveLength(1);
+    const ok = (file: string) => (file.endsWith('whoami.exe') ? WHOAMI : '');
+    expect(makeOwnerOnly(ok, SYS32, fakeIo(() => Buffer.from('garbage', 'utf16le')).io).ensure(FILE)).toEqual({ unverified: 'the read-back held no access list' });
+    expect(makeOwnerOnly(ok, SYS32, fakeIo(() => { throw new Error('ENOENT: no such file'); }).io).ensure(FILE)).toEqual({ unverified: 'the read-back failed: ENOENT: no such file' });
+  });
+
+  it('a narrowing that failed but a read-back that shows the right ACL is fine; a wrong one carries both reasons', () => {
+    const run = (file: string, args: string[]) => {
+      if (file.endsWith('whoami.exe')) return WHOAMI;
+      if (!args.includes('/save')) throw new Error('Access is denied.\nmore');
+      return '';
+    };
+    expect(makeOwnerOnly(run, SYS32, fakeIo(() => saved(SDDL_OK)).io).ensure(FILE)).toBeNull();
+    expect(makeOwnerOnly(run, SYS32, fakeIo(() => saved(SDDL_INHERITED)).io).ensure(FILE)).toEqual({
+      wrong: expect.stringMatching(/^Access is denied\.; it still inherits/),
+    });
     expect(aclSentence('keys.json', 'Access is denied.')).toBe(
       "Windows did not let Split Finder restrict keys.json to your account: Access is denied. It is readable by this PC's administrators.",
     );

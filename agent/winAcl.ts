@@ -4,7 +4,7 @@
 // user, SYSTEM and the Administrators group, as explicit entries (no inheritance), as Microsoft's OpenSSH does for keys.
 //
 // The narrowing is applied to the empty temp file before the content is written, and again to the FINAL path after
-// the rename (idempotent), and the result is read back as SDDL (no account names, so any Windows language). The first real Windows run (Nov 23, GitHub
+// the rename (idempotent), and the result is read back as SDDL with `icacls /save` (no account names, so any Windows language; PowerShell failed to run from the windowless sidecar on run 5). A read-back that cannot be run is not evidence about the file: it is logged for a developer, never put in Activity. The first real Windows run (Nov 23, GitHub
 // windows-latest) showed all three secret files with the folder's three inherited entries; the agent's only failure
 // signal was a console.warn in a windowless sidecar, which nobody sees. Microsoft documents that a same-volume
 // MoveFileEx keeps the moved file's security descriptor
@@ -17,7 +17,10 @@
 // Administrators): the normal state of %APPDATA%, which a standard other user cannot read.
 
 import { execFileSync } from 'node:child_process';
-import { win32 } from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, win32 } from 'node:path';
 
 export type Run = (file: string, args: string[]) => string;
 
@@ -99,9 +102,17 @@ export function ownerOnlyProblem(entries: AclEntry[], sid: string, name: string 
   return parts.join('; ');
 }
 
-/** PowerShell args that print the file's SDDL; the path is single-quoted (a quote doubled), so nothing in it is run. */
-export function sddlCommandArgs(path: string): string[] {
-  return ['-NoProfile', '-NonInteractive', '-Command', `(Get-Acl -LiteralPath '${path.replace(/'/g, "''")}').Sddl`];
+/** `icacls <path> /save <out> /q`: writes the file's name and its SDDL to `out` (UTF-16LE with a BOM). */
+export function icaclsSaveArgs(path: string, out: string): string[] {
+  return [path, '/save', out, '/q'];
+}
+
+/** The SDDL line of an icacls /save file (UTF-16LE, BOM, then the name line and the SDDL line), or null. */
+export function sddlFromSaved(buf: Uint8Array): string | null {
+  let text = Buffer.from(buf).toString('utf16le');
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '');
+  return lines.slice(1).find((l) => l.includes('D:')) ?? null;
 }
 
 const SDDL_ALIASES: Record<string, string> = { SY: 'S-1-5-18', BA: 'S-1-5-32-544' };
@@ -130,16 +141,35 @@ export function sddlProblem(sddl: string, sid: string): string | null {
   return parts.length ? parts.join('; ') : null;
 }
 
+/** Where the read-back puts its temp file: injected so tests need no disk. */
+export interface SavedFileIo {
+  tmpPath(): string;
+  read(path: string): Uint8Array;
+  remove(path: string): void;
+}
+
+export type Ensured =
+  | null
+  /** The read-back ran and the file's ACL is not the allowed one: this is what Activity says. */
+  | { wrong: string }
+  /** The read-back could not be run or understood: no evidence about the file, so a console line only. */
+  | { unverified: string };
+
 export interface OwnerOnly {
   /** Narrows `path` to the current user. Null when done, else why not. Does not read it back. */
   narrow(path: string): string | null;
-  /** Narrows, then reads the ACL back. Null only when the file holds exactly the allowed explicit entries. */
-  ensure(path: string): string | null;
+  /** Narrows, then reads the ACL back. Null when the file holds exactly the allowed explicit entries. */
+  ensure(path: string): Ensured;
 }
 
-export function makeOwnerOnly(run: Run, system32: string): OwnerOnly {
+export function makeOwnerOnly(run: Run, system32: string, io: SavedFileIo): OwnerOnly {
   let who: { sid: string; name: string | null } | null | undefined;
-  const first = (err: unknown) => (err instanceof Error ? err.message.split('\n')[0]! : String(err));
+  const first = (err: unknown): string => {
+    if (!(err instanceof Error)) return String(err);
+    const e = err as Error & { stderr?: unknown };
+    const stderr = (typeof e.stderr === 'string' ? e.stderr : Buffer.isBuffer(e.stderr) ? e.stderr.toString('utf8') : '').split(/\r?\n/).find((l) => l.trim() !== '');
+    return stderr ? `${e.message.split('\n')[0]!} (${stderr.trim()})` : e.message.split('\n')[0]!;
+  };
   const icacls = win32.join(system32, 'icacls.exe');
   const user = (): { sid: string; name: string | null } | null => {
     if (who === undefined) {
@@ -164,15 +194,28 @@ export function makeOwnerOnly(run: Run, system32: string): OwnerOnly {
     ensure(path) {
       const why = narrow(path);
       // Read back even when the grant call failed: the read says what the file really holds.
+      let sddl: string | null;
+      let sid: string;
+      const out = io.tmpPath();
       try {
         const me = user();
-        if (!me) return why ?? 'whoami did not name a SID';
-        const problem = sddlProblem(run(win32.join(system32, 'WindowsPowerShell', 'v1.0', 'powershell.exe'), sddlCommandArgs(path)), me.sid);
-        if (problem === null) return null;
-        return why ? `${why}; ${problem}` : problem;
+        if (!me) return { unverified: why ?? 'whoami did not name a SID' };
+        sid = me.sid;
+        run(icacls, icaclsSaveArgs(path, out));
+        sddl = sddlFromSaved(io.read(out));
       } catch (err) {
-        return why ?? first(err);
+        return { unverified: `${why ? `${why}; ` : ''}the read-back failed: ${first(err)}` };
+      } finally {
+        try {
+          io.remove(out);
+        } catch {
+          // already gone
+        }
       }
+      if (sddl === null) return { unverified: `${why ? `${why}; ` : ''}the read-back held no access list` };
+      const problem = sddlProblem(sddl, sid);
+      if (problem === null) return null;
+      return { wrong: why ? `${why}; ${problem}` : problem };
     },
   };
 }
@@ -205,7 +248,12 @@ export function setAclReporter(fn: Listener | null): void {
 
 const system32 = win32.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32');
 const run: Run = (file, args) => execFileSync(file, args, { encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
-const real: OwnerOnly | null = process.platform === 'win32' ? makeOwnerOnly(run, system32) : null;
+const io: SavedFileIo = {
+  tmpPath: () => join(tmpdir(), `split-finder-acl-${randomBytes(8).toString('hex')}.txt`),
+  read: (path) => readFileSync(path),
+  remove: (path) => rmSync(path, { force: true }),
+};
+const real: OwnerOnly | null = process.platform === 'win32' ? makeOwnerOnly(run, system32, io) : null;
 
 /** Windows: narrow the (temp) file to the current user before content goes in. Elsewhere the file mode does it. */
 export function restrictToOwner(path: string): boolean {
@@ -215,8 +263,13 @@ export function restrictToOwner(path: string): boolean {
 /** Windows: after the rename, narrow the final file, read it back and report when it is not owner-only. */
 export function ensureOwnerOnlyFinal(path: string, label: string): boolean {
   if (!real) return true;
-  const why = real.ensure(path);
-  if (why === null) return true;
-  reportAclProblem(label, why);
+  const result = real.ensure(path);
+  if (result === null) return true;
+  if ('unverified' in result) {
+    // Not evidence about the file: a line for a developer, nothing for the owner.
+    console.warn(`Could not check the permissions of ${label}: ${result.unverified}`);
+    return false;
+  }
+  reportAclProblem(label, result.wrong);
   return false;
 }
