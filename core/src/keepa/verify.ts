@@ -6,7 +6,8 @@
 //
 //   confirmed     the brand field is the part's brand, the part number (or model) field is the part's model by
 //                 sameModel (DEWALT exact; RYOBI with or without its one tool-only B), the manufacturer, when given,
-//                 is the brand too, and nothing in the fields or the title contradicts it (below)
+//                 is the brand too (or a recorded maker of it, or its name plus "Tools": brandAliases.ts makerAgrees),
+//                 and nothing in the fields or the title contradicts it (below)
 //   contradicted  a field plainly disagrees: another brand (and the manufacturer is not the part's brand either), or a
 //                 part number that is another model of the brand and not a longer or shorter form of the part's
 //   unknown       anything else: a field missing, a maker that is not the brand, a title or count that disagrees
@@ -20,7 +21,7 @@ import {
   PART_NAME, RENEWED, sameModel, type Wanted,
 } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
-import { brandAliasOf, type BrandAlias } from './brandAliases';
+import { brandAliasOf, makerAgrees, makerWords, type BrandAlias } from './brandAliases';
 import type { KeepaProduct } from './types';
 
 /** Where the fields came from: a Keepa product pull, or a SerpApi amazon_product page. */
@@ -158,10 +159,10 @@ export function withAlias<T extends IdentityCheck>(alias: BrandAlias, r: T): T {
 }
 
 /** The structured-identity check (the rule at the top of this file). */
-export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: { aliases?: boolean } = {}): IdentityCheck {
+export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: { aliases?: boolean; makers?: boolean } = {}): IdentityCheck {
   // A brand field that is a recorded alias of the part's brand (brandAliases.ts) counts as it; nothing else changes.
   const alias = opts.aliases === false ? null : brandAliasOf(want.brand, l.brand);
-  if (alias) return withAlias(alias, checkIdentity(want, { ...l, brand: want.brand }, { aliases: false }));
+  if (alias) return withAlias(alias, checkIdentity(want, { ...l, brand: want.brand }, { ...opts, aliases: false }));
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const from = where(l.source);
@@ -184,11 +185,14 @@ export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: { al
     return { status: 'unknown', reason: `${from} lists no part number that is ${model}` };
   }
   if (listed === null) return { status: 'unknown', reason: `${from} lists no brand` };
-  if (maker !== null && maker !== brand) return { status: 'unknown', reason: `${from} lists brand ${shown} but manufacturer ${l.manufacturer}` };
+  // The manufacturer field (brandAliases.ts makerAgrees): the brand, a recorded maker of it ("TTI"), or its name plus
+  // "Tools" ("RYOBI Tools") leave the listing to the other conditions; anything else holds it.
+  if (maker !== null && !makerAgrees(brand, l.manufacturer, opts)) return { status: 'unknown', reason: `${from} lists brand ${shown} but manufacturer ${l.manufacturer}` };
   const problem = titleOrCountProblem(want, l);
   if (problem) return { status: 'unknown', reason: problem };
   const id = field === 'part number' ? part! : alt!;
-  return { status: 'confirmed', reason: `${from} lists brand ${shown}, ${field} ${id}` };
+  const made = opts.makers === false ? null : makerWords(brand, l.manufacturer);
+  return { status: 'confirmed', reason: `${from} lists brand ${shown}, ${field} ${id}${made ? `; ${made}` : ''}` };
 }
 
 /** A Keepa product's identity fields. */

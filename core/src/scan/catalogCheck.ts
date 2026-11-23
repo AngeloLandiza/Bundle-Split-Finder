@@ -53,9 +53,9 @@ export interface CatalogOutcome {
 
 export const amazonListingLink = (asin: string): string => `https://www.amazon.com/dp/${encodeURIComponent(asin)}`;
 
-/** The listing ladder's version: 1 added rung 1 (keepa/listingFields.ts); 2 the brand aliases (keepa/brandAliases.ts), so an
- * unknown read before them is read again once, from the cached pull. */
-export const LADDER_VERSION = 2;
+/** The listing ladder's version: 1 added rung 1 (keepa/listingFields.ts); 2 the brand aliases (keepa/brandAliases.ts); 3 the
+ * manufacturer rule (brandAliases.ts makerAgrees), so an unknown read before them is read again once, from the cached pull. */
+export const LADDER_VERSION = 3;
 
 /** Whether a stored check still stands: an unknown from before rung 1 is read again once. */
 const stands = (c: CatalogCheckRecord): boolean => c.status !== 'unknown' || (c.ladder ?? 0) >= LADDER_VERSION;

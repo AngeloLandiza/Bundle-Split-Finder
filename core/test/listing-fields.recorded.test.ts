@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ADOPTED_RULES, checkListingFields } from '../src/keepa/listingFields';
 import { identityFromKeepa } from '../src/keepa/verify';
-import { applyCatalogCheck, catalogChecksWanted } from '../src/scan/catalogCheck';
+import { applyCatalogCheck, catalogChecksWanted, LADDER_VERSION } from '../src/scan/catalogCheck';
 import { wantedFor } from '../src/scan/classify';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { isConfirmedListing } from '../src/tracking/signals';
@@ -84,7 +84,7 @@ describe('rung 1, the listing fields', () => {
     expect(await catalogChecksWanted(store, parts)).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', recheck: true })]);
     await applyCatalogCheck({ store, catalog: new Map(), now: () => 5 }, { ...row('B07JPFHQKG', 'DCS334B').listing, source: 'keepa_catalog' });
     const m = await store.getMatch('DEWALT:DCS334B');
-    expect(m?.catalogChecks).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', status: 'confirmed', ladder: 2 })]);
+    expect(m?.catalogChecks).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', status: 'confirmed', ladder: LADDER_VERSION })]);
     expect(await catalogChecksWanted(store, parts)).toEqual([]);
   });
 });

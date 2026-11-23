@@ -11,7 +11,8 @@
 //   title      the model as a whole token in the title (what a title match already read, now with the catalog's brand)
 //   gtin       a listing barcode equal to the Home Depot part's UPC
 //
-// The gate, for every sub-rule: the brand field is the part's brand; the manufacturer, when given, is the brand too; the
+// The gate, for every sub-rule: the brand field is the part's brand; the manufacturer, when given, is the brand too (or a
+// recorded maker of it, or its name plus "Tools": brandAliases.ts makerAgrees); the
 // part number field, when given, is not another identifier (a variant or a European code is not the part's number); and
 // no contradiction (verify.ts titleOrCountProblem: pack or count, kit versus bare tool, renewed, "replacement",
 // "compatible", "for <brand>", another model of the brand in the title, a DEWALT battery size), nor a feature bullet
@@ -21,7 +22,7 @@
 import { toUpc12 } from '../identifiers';
 import { FOR_BRAND, AFTERMARKET, KIT_CONTENTS, MODEL_PATTERNS, NOT_INCLUDED_PHRASE, sameModel, type Wanted } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
-import { brandAliasOf } from './brandAliases';
+import { brandAliasOf, makerAgrees, makerWords } from './brandAliases';
 import { checkIdentity, titleOrCountProblem, withAlias, type IdentityCheck, type ListingIdentity } from './verify';
 
 export type FieldRule = 'id_field' | 'features' | 'title' | 'gtin';
@@ -64,13 +65,13 @@ function namesOnly(brand: string, model: string, text: string): 'only' | 'other'
 const tokens = (raw: string | null): string[] => (raw ?? '').toUpperCase().split(/[^A-Z0-9-]+/).filter((t) => t !== '');
 
 /** Why the gate refuses, or null. Also rung 3's contradiction check (listingJudge). */
-export function listingProblem(want: Wanted, l: ListingIdentity): string | null {
+export function listingProblem(want: Wanted, l: ListingIdentity, opts: { makers?: boolean } = {}): string | null {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const listed = brandKey(l.brand);
   if (listed !== brand) return listed === null ? 'the listing names no brand' : `the listing's brand is ${cleanBrand(l.brand)}`;
   const maker = brandKey(l.manufacturer);
-  if (maker !== null && maker !== brand) return `the listing's manufacturer is ${l.manufacturer}`;
+  if (maker !== null && !makerAgrees(brand, l.manufacturer, opts)) return `the listing's manufacturer is ${l.manufacturer}`;
   const part = (l.partNumber ?? '').toUpperCase().replace(/^#/, '').replace(/\s+/g, '');
   if (part !== '' && !sameModel(brand, part, model)) return `the listing's part number is ${part}`;
   const problem = titleOrCountProblem(want, l);
@@ -112,19 +113,21 @@ function evidence(want: Wanted, l: ListingIdentity, rules: readonly FieldRule[],
  * its unknown, the sub-rules `rules` (ADOPTED_RULES by default) under the gate above. Never contradicts.
  */
 export function checkListingFields(
-  want: Wanted, l: ListingIdentity, opts: { rules?: readonly FieldRule[]; hdUpc?: string | null; aliases?: boolean } = {},
+  want: Wanted, l: ListingIdentity, opts: { rules?: readonly FieldRule[]; hdUpc?: string | null; aliases?: boolean; makers?: boolean } = {},
 ): FieldCheck {
   // A brand field that is a recorded alias of the part's brand (brandAliases.ts) counts as it; nothing else changes.
   const alias = opts.aliases === false ? null : brandAliasOf(want.brand, l.brand);
   if (alias) return withAlias(alias, checkListingFields(want, { ...l, brand: want.brand }, { ...opts, aliases: false }));
-  const first = checkIdentity(want, l, { aliases: false });
+  const makers = opts.makers === false ? { makers: false } : {};
+  const first = checkIdentity(want, l, { aliases: false, ...makers });
   if (first.status !== 'unknown') return { ...first, rule: null };
   const rules = opts.rules ?? ADOPTED_RULES;
   const found = evidence(want, l, rules, opts.hdUpc ?? want.upc ?? null);
   if (!found) return { ...first, rule: null };
-  const problem = listingProblem(want, l);
+  const problem = listingProblem(want, l, makers);
   if (problem) return { status: 'unknown', reason: `${first.reason}; ${found.said}, but ${problem}`, rule: null };
   const shown = cleanBrand(l.brand) ?? want.brand;
   const where = l.source === 'keepa_catalog' ? "Amazon's catalog" : "Amazon's product page";
-  return { status: 'confirmed', reason: `${where} lists brand ${shown}, and ${found.said}`, rule: found.rule };
+  const made = opts.makers === false ? null : makerWords(want.brand, l.manufacturer);
+  return { status: 'confirmed', reason: `${where} lists brand ${shown}, and ${found.said}${made ? `; ${made}` : ''}`, rule: found.rule };
 }

@@ -11,6 +11,7 @@
 import { answerFrom } from '../ai/answer';
 import type { ModelProvider } from '../ai/types';
 import type { TokenUsage } from '../judge/types';
+import { makerAgrees, makerWords } from '../keepa/brandAliases';
 import { listingProblem } from '../keepa/listingFields';
 import type { ListingIdentity } from '../keepa/verify';
 import { MODEL_PATTERNS, sameModel, type Wanted } from '../match';
@@ -169,7 +170,7 @@ export type ListingJudgeOutcome =
  * field a found brand quote and no other maker), and rung 1's contradictions find nothing. Anything short of that is
  * cannot_tell; a "different" stays different (shown, never acted on).
  */
-export function checkListingJudge(want: Wanted, l: ListingIdentity, raw: ListingJudgeRaw): ListingJudgeOutcome {
+export function checkListingJudge(want: Wanted, l: ListingIdentity, raw: ListingJudgeRaw, opts: { makers?: boolean } = {}): ListingJudgeOutcome {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const checks: string[] = [];
@@ -187,14 +188,17 @@ export function checkListingJudge(want: Wanted, l: ListingIdentity, raw: Listing
   const brandQuoted = raw.quotes.some((q) => q.about === 'brand' && squash(q.quote).toUpperCase().includes(brand))
     && (l.title ?? '').trim().toUpperCase().startsWith(brand);
   if (listed !== null && listed !== brand) return { status: 'cannot_tell', reason: `the brand field is ${cleanBrand(l.brand)}`, checks };
-  if (maker !== null && maker !== brand) return { status: 'cannot_tell', reason: `the manufacturer is ${l.manufacturer}`, checks };
+  // The manufacturer rule of rungs 0 and 1 (brandAliases.ts makerAgrees): the brand, a recorded maker of it, or its name plus "Tools".
+  if (maker !== null && !makerAgrees(brand, l.manufacturer, opts)) return { status: 'cannot_tell', reason: `the manufacturer is ${l.manufacturer}`, checks };
   if (listed === null && !brandQuoted) return { status: 'cannot_tell', reason: 'the listing names no brand', checks };
   checks.push(listed !== null ? `the brand field is ${brand}` : `the listing's title begins with ${brand}`);
+  const made = opts.makers === false ? null : makerWords(brand, l.manufacturer);
+  if (made) checks.push(`the ${made}`);
   // Stricter than rung 1: a title that names any other model of the brand is not this part for an AI's say-so.
   const pattern = MODEL_PATTERNS[brand];
   const others = pattern ? Array.from((l.title ?? '').toUpperCase().matchAll(new RegExp(pattern.source, 'g')), (m) => m[0]).filter((m) => !sameModel(brand, m, model)) : [];
   if (others.length > 0) return { status: 'cannot_tell', reason: `the title also names ${others[0]}`, checks };
-  const problem = listingProblem(want, { ...l, brand: l.brand ?? brand });
+  const problem = listingProblem(want, { ...l, brand: l.brand ?? brand }, opts);
   if (problem) return { status: 'cannot_tell', reason: problem, checks };
   checks.push('nothing on the listing contradicts it (pack, kit, battery, replacement)');
   return { status: 'ai_checked', reason: raw.reason, checks };
