@@ -108,6 +108,19 @@ export class WorkerJobs {
     return next.status;
   }
 
+  /**
+   * W4: the agent gave up waiting (a timeout, a Stop): the job fails with `reason` and is never handed out again. A
+   * worker's late answer to it is refused (complete returns null). False when it was finished already.
+   */
+  cancel(id: string, reason: string): boolean {
+    const job = this.get(id);
+    if (!job || job.status === 'done' || job.status === 'failed') return false;
+    const failed: WorkerJob = { ...job, status: 'failed', finishedAt: new Date(this.now()).toISOString(), error: reason, leaseExpiresAt: null };
+    this.save(failed);
+    this.finished(failed);
+    return true;
+  }
+
   /** Resolves when the job is done or failed. */
   whenFinished(id: string): Promise<WorkerJob> {
     const job = this.get(id);
