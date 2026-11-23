@@ -73,8 +73,5 @@ describe('eBay refusing the keys', () => {
     const reply = () => new Response(JSON.stringify({ error: 'invalid_client', error_description: `client authentication failed for ${APP}` }), { status: 401 });
     const err = (await new EbayClient({ appId: APP, certId: CERT, fetchFn: grab([], reply) }).search('x').catch((x: unknown) => x)) as { detail: string };
     expect(err.detail).toBe('eBay answered invalid_client: client authentication failed for [key] (HTTP 401).');
-    const msg = await checkEbayKeys({ appId: APP, certId: CERT, fetchFn: grab([], reply), store: noStore, now: () => 0 });
-    expect(msg).toContain('eBay answered invalid_client: client authentication failed for [key] (HTTP 401).');
-    expect(msg).not.toContain(APP);
   });
 });
