@@ -1,6 +1,6 @@
 // Prototype trend baselines in the cache pattern (plan §6).
 
-import type { Cache } from '../serpapi/client';
+import type { Cache, SearchResult } from '../serpapi/client';
 import { centsToDollars } from './parse';
 import type { KeepaProduct } from './types';
 
@@ -18,6 +18,8 @@ export interface PartTrend {
   fbaFee?: number | null;
   /** The sum of Keepa's buyBoxEligibleOfferCounts (every condition together); null or absent when Keepa gave none. */
   buyBoxEligibleOffers?: number | null;
+  /** Keepa's referralFeePercentage for the listing (recorded: 12, 13.83); null or absent when Keepa gave none. */
+  referralPercent?: number | null;
 }
 
 export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTrend {
@@ -38,7 +40,42 @@ export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTre
     monthlySold: p.monthlySold ?? null,
     fbaFee: p.fbaPickAndPackFee == null ? null : Math.round(p.fbaPickAndPackFee) / 100,
     buyBoxEligibleOffers: p.buyBoxEligibleOfferCounts ? p.buyBoxEligibleOfferCounts.reduce((a, b) => a + b, 0) : null,
+    referralPercent: p.referralFeePercentage ?? null,
   };
+}
+
+/**
+ * Signals round 2: every Keepa product pull keeps its trend (monthlySold and when it was read, the FBA pick-and-pack fee,
+ * the referral percentage, the sales rank, the offer counts), not only a scan's refresh and identify steps. Wraps a pull
+ * (keepa/fetchStep.ts keepaProductSearchResult) so the lookup's price pull, the catalog check's pull and the sales pull
+ * between scans write the same `keepa:trend:<asin>` the scan writes. A cached answer writes its own time. A failed write
+ * never fails the pull.
+ */
+export function keepingTrends<A extends unknown[]>(
+  pull: (...args: A) => Promise<SearchResult>,
+  write: (trend: PartTrend) => void | Promise<void>,
+): (...args: A) => Promise<SearchResult> {
+  return async (...args: A) => {
+    const r = await pull(...args);
+    if (r.keepaProduct) {
+      try {
+        await write(partTrendFromProduct(r.keepaProduct, r.at));
+      } catch {
+        // The trend is a record; the pull's price is already in hand.
+      }
+    }
+    return r;
+  };
+}
+
+/** The stored trends of `asins`, read once, as a lookup (missing: undefined). Reads only. */
+export async function readTrends(cache: Cache, asins: Iterable<string>): Promise<(asin: string) => PartTrend | undefined> {
+  const found = new Map<string, PartTrend>();
+  for (const asin of new Set(asins)) {
+    const t = await readPartTrend(cache, asin).catch(() => undefined);
+    if (t) found.set(asin, t);
+  }
+  return (asin) => found.get(asin);
 }
 
 export interface AlertBaseline {

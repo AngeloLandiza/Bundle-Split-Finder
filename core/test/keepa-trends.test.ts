@@ -47,10 +47,10 @@ describe('the Keepa fields tracking reads, from the recorded product response', 
     const t = partTrendFromProduct(products.find((p) => p.asin === 'B09M3TL9BB')!, 5000);
     expect(t).toEqual({
       asin: 'B09M3TL9BB', amazonPrice: null, salesRank: null, offerCount: null, pulledAt: 5000,
-      monthlySold: 600, fbaFee: 7.6, buyBoxEligibleOffers: 40,
+      monthlySold: 600, fbaFee: 7.6, buyBoxEligibleOffers: 40, referralPercent: 12,
     });
     const bare = partTrendFromProduct({ asin: 'B0NONE' }, 1);
-    expect([bare.monthlySold, bare.fbaFee, bare.buyBoxEligibleOffers]).toEqual([null, null, null]);
+    expect([bare.monthlySold, bare.fbaFee, bare.buyBoxEligibleOffers, bare.referralPercent]).toEqual([null, null, null, null]);
   });
 
   // Recorded Nov 23 with stats (b40df37): Amazon itself (stats.current[0]) is -1 for all three, so the price is the lowest
