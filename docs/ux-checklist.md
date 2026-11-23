@@ -45,3 +45,33 @@ readable source.
 - Targets at least 24 px (WCAG 2.2 AA 2.5.8); focus always visible; every control named; full keyboard use (HIG,
   Microsoft).
 - Reduce Motion respected; no auto-dismissing toasts for anything he must read (HIG).
+
+## Long-running and background work
+Researched Nov 23 2026: NN/g progress indicators (https://www.nngroup.com/articles/progress-indicators/) and response
+times (https://www.nngroup.com/articles/response-times-3-important-limits/), Microsoft progress controls
+(https://learn.microsoft.com/en-us/windows/apps/design/controls/progress-controls). Apple's page could not be read.
+- A step of 10 seconds or more shows "N of M" or percent done, never a bare spinner (NN/g).
+- A time estimate appears only when it is reasonably accurate, as a rough figure ("about 3 min"); otherwise counts.
+  A permanent "estimating" fails this (NN/g).
+- Every step has a text label and a mark: done, running, waiting, failed, skipped (NN/g).
+- A scan is non-modal: a bar plus text, a clear Stop, and a status line that persists when he looks elsewhere
+  (Microsoft, NN/g).
+- Results appear as they arrive; one loading indicator at the top of the list, none per item (Microsoft).
+- A press is acknowledged at once ("Starting…") (NN/g).
+- A failure is visible state: the failed step, the reason, what was kept, and a retry for the failed part only (PAIR
+  errors chapter, https://pair.withgoogle.com/chapter/errors-failing/).
+
+## AI suggestions he approves
+Researched Nov 23 2026: Microsoft's Guidelines for Human-AI Interaction (https://www.microsoft.com/en-us/haxtoolkit/library/,
+G1–G18) and Google PAIR's guidebook (https://pair.withgoogle.com/chapter/explainability-trust/,
+https://pair.withgoogle.com/chapter/feedback-controls/, https://pair.withgoogle.com/chapter/errors-failing/).
+- Before the first suggestion the app says what the AI does and that it can be wrong (G1, G2).
+- Verification is a category tied to an action ("Verified: the page text quoted below says so" / "Not verified: check
+  the source"), never a score (PAIR explainability).
+- The why and the quoted source, with its link, sit next to the suggestion (G11, PAIR).
+- Accept, correct and dismiss are one action each (G7–G9); the suggested choice is preselected so one key accepts.
+- "Cannot tell" is its own state with the reason and the choices; the AI does not guess (G10, CLAUDE.md rule 4).
+- Autopilot is one switch that states its scope ("applies verified answers only"); everything it applied is listed with
+  Undo and says Autopilot applied it (G17, PAIR feedback and control).
+- The task can always be finished without the AI (PAIR).
+- Cost is a secondary line, shown where it affects a decision (inferred).
