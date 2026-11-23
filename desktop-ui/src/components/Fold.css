@@ -1,0 +1,81 @@
+/* A section he can fold away (the deal inspector's Parts, Ways to sell and History). Same disclosure mark as Review's Details. */
+.fold {
+  display: flex;
+  flex-direction: column;
+}
+
+.fold > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-block-size: 24px;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 24px;
+  font-weight: 600;
+  cursor: default;
+  list-style: none;
+}
+
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fold > summary::before {
+  content: '';
+  align-self: center;
+  flex: none;
+  inline-size: 5px;
+  block-size: 5px;
+  margin-inline-end: 4px;
+  border-right: 1.5px solid var(--label-2);
+  border-bottom: 1.5px solid var(--label-2);
+  transform: rotate(-45deg);
+  transition: transform 120ms ease-out;
+}
+
+.fold[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.fold > summary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+.fold-aside {
+  min-inline-size: 0;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--label-2);
+}
+
+.fold-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fold > summary::before {
+    transition: none;
+  }
+}
+
+/* A fold inside a section (a part's reference prices, how the split is known): the same mark, quieter type. */
+.fold-sub > summary {
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--label-2);
+}
+
+.fold-sub > summary:hover {
+  color: var(--label);
+}
+
+.fold-sub > .fold-body {
+  padding-top: 2px;
+}

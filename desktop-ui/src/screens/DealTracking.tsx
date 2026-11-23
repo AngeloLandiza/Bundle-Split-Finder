@@ -9,6 +9,7 @@ import type { BogoGroup, BogoView, DealDetail, DealSignals, FbaEstimate } from '
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { Profit, Roi } from '../components/Figure';
+import { Fold } from '../components/Fold';
 import { HistoryChart } from '../components/HistoryChart';
 import { SourceLink } from '../components/Source';
 import { Tag } from '../components/Tag';
@@ -82,10 +83,12 @@ export function WatchBar({ d }: { d: DealDetail }) {
 /** The last scan's verdict on a watched bundle: one sentence, then the figures it rests on. Estimates, labelled. */
 export function SignalsSection({ signals }: { signals: DealSignals }) {
   const v = verdictOf(signals);
+  // The verdict and its sentence are the answer; the figures it rests on fold under "Why", open only when one needs him.
+  const open = v.reasons.some((r) => r.tone === 'attention');
   return (
     <section className="detail-section" aria-labelledby="signals-title">
       <h3 className="detail-section-title" id="signals-title">
-        Signals <span className="muted">· judged {when(signals.at)}</span>
+        Verdict <span className="muted">· judged {when(signals.at)}</span>
       </h3>
       <div className="detail-box signals">
         <p className="signals-verdict">
@@ -94,25 +97,27 @@ export function SignalsSection({ signals }: { signals: DealSignals }) {
         </p>
         <p className="signals-sentence">{v.sentence}</p>
         {v.reasons.length > 0 ? (
-          <dl className="signals-reasons">
-            {v.reasons.map((r) => (
-              <div key={r.label} className={r.tone === 'attention' ? 'signals-attention' : undefined}>
-                <dt>{r.label}</dt>
-                <dd>
-                  {r.text}
-                  {r.sub ? <span className="signals-sub"> {r.sub}</span> : null}
-                  {r.asin ? (
-                    <>
-                      {' '}
-                      <SourceLink source={{ label: `${r.asin.model} on Amazon`, url: amazonUrl(r.asin.asin) }} />
-                    </>
-                  ) : null}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <Fold id="why" title="Why" aside={v.reasons.map((r) => r.label.toLowerCase()).join(', ')} defaultOpen={open} sub>
+            <dl className="signals-reasons">
+              {v.reasons.map((r) => (
+                <div key={r.label} className={r.tone === 'attention' ? 'signals-attention' : undefined}>
+                  <dt>{r.label}</dt>
+                  <dd>
+                    {r.text}
+                    {r.sub ? <span className="signals-sub"> {r.sub}</span> : null}
+                    {r.asin ? (
+                      <>
+                        {' '}
+                        <SourceLink source={{ label: `${r.asin.model} on Amazon`, url: amazonUrl(r.asin.asin) }} />
+                      </>
+                    ) : null}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Fold>
         ) : null}
-        <p className="detail-note">Estimates from your fee settings and Keepa’s monthly sales, as of the last scan. They change with the next one.</p>
+        <p className="detail-note">Estimates from your fee settings and Keepa’s monthly sales. The next scan judges again.</p>
       </div>
     </section>
   );
@@ -131,7 +136,7 @@ export function FbaLine({ fba }: { fba: FbaEstimate }) {
         </span>
       </div>
       <p className="detail-note">
-        {fba.label}, for {keepa} of {plural(fba.parts.length, 'part', 'parts')}: pick and pack only, in place of your flat fulfillment fee. It sits beside the estimate above and does not replace it. Still an estimate.
+        {fba.label}, for {keepa} of {plural(fba.parts.length, 'part', 'parts')}, in place of your flat fulfillment fee. Beside the estimate above, not instead of it. Still an estimate.
       </p>
     </div>
   );
@@ -225,10 +230,7 @@ export function BogoSection({ d, bogo }: { d: DealDetail; bogo: BogoView }) {
 export function BogoChoicesSection({ d, group }: { d: DealDetail; group: BogoGroup }) {
   const { navigate } = useApp();
   return (
-    <section className="detail-section" aria-labelledby="bogo-choices-title">
-      <h3 className="detail-section-title" id="bogo-choices-title">
-        BOGO choices <span className="fig muted">{group.choices.length}</span>
-      </h3>
+    <Fold id="bogo-choices" title="BOGO choices" aside={`${group.choices.length} free items to pick from`}>
       <div className="detail-box bogo">
         <p className="bogo-label">{group.label}</p>
         <p className="detail-note">
@@ -268,7 +270,7 @@ export function BogoChoicesSection({ d, group }: { d: DealDetail; group: BogoGro
           Found by the agent in Home Depot’s Featured BOGO listing: each choice is listed at the starter’s price ({money(group.choices[0]?.price ?? 0)}), so the free item is in its estimate. A free item may be a battery. Profit and ROI are estimates from your fee settings.
         </p>
       </div>
-    </section>
+    </Fold>
   );
 }
 
@@ -276,13 +278,11 @@ export function BogoChoicesSection({ d, group }: { d: DealDetail; group: BogoGro
 export function HistorySection({ d }: { d: DealDetail }) {
   if (d.history.length === 0 && d.watch?.watched !== true) return null;
   return (
-    <section className="detail-section" aria-labelledby="history-title">
-      <h3 className="detail-section-title" id="history-title">
-        History <span className="fig muted">{plural(d.history.length, 'scan', 'scans')}</span>
-      </h3>
+    <Fold id="history" title="History" aside={plural(d.history.length, 'scan', 'scans')}>
       <div className="detail-box">
         <HistoryChart history={d.history} />
       </div>
-    </section>
+    </Fold>
   );
 }
+

@@ -5,6 +5,7 @@ import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
 import { SourceLink } from '../components/Source';
+import { Fold } from '../components/Fold';
 import { LoadError, LoadingState, Notice } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
@@ -12,10 +13,10 @@ import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
 import { breakEvenWords, kitWords, pricedCount, UNPRICED_ACTION, UNPRICED_STATE } from '../lib/incomplete';
+import { PART_STATE_WORDS, partsSummary } from '../lib/matchWords';
 import { plainReason } from '../lib/questionWords';
 import { partMenu, type PartMenuId } from '../lib/menus';
 import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
-import { GRADE_LABEL } from './reviewModel';
 import './DealDetail.css';
 
 /** One bundle, in the inspector beside the Deals table. */
@@ -44,6 +45,12 @@ function Detail({ d }: { d: DealDetail }) {
   const [review] = useResource(() => (d.questionId ? api.review() : Promise.resolve(null)), [d.id, d.questionId], ['review']);
   const asked = d.questionId ? review.data?.questions.find((q) => q.id === d.questionId) : undefined;
   const why = asked ? plainReason(asked.reason, { brand: d.brand, model: d.model }).text : null;
+  // One primary action: the next step this bundle needs (answer a question, else look up its parts), and only when it needs
+  // nothing is Copy ASINs the primary one.
+  const next: 'answer' | 'lookup' | null = d.questionId ? 'answer' : d.lookup && !e ? 'lookup' : null;
+  const grades = d.parts.filter((p) => !p.unnamed).map((p) => p.grade);
+  const summary = partsSummary(grades);
+  const allConfirmed = grades.length > 0 && grades.every((g) => g === 'verified');
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(d.asins.join('\n'));
@@ -133,7 +140,7 @@ function Detail({ d }: { d: DealDetail }) {
               <p className="detail-none">{d.noEstimate}</p>
               {d.lookup && searches !== null ? (
                 <div className="detail-row">
-                  <Button variant="primary" busy={look.busy} busyLabel="Looking up…" disabled={scanRunning} onClick={() => void look.run(d.id)} cost={plural(searches, 'search', 'searches')}>
+                  <Button variant={next === 'lookup' ? 'primary' : 'secondary'} busy={look.busy} busyLabel="Looking up…" disabled={scanRunning} onClick={() => void look.run(d.id)} cost={plural(searches, 'search', 'searches')}>
                     Look up
                   </Button>
                   {scanRunning ? <span className="detail-note">A scan is running. Look up when it has finished.</span> : null}
@@ -149,25 +156,43 @@ function Detail({ d }: { d: DealDetail }) {
             tone="attention"
             title="Needs your answer."
             action={
-              <Button size="sm" onClick={() => navigate({ screen: 'review', id: d.questionId })}>
+              <Button size="sm" variant="primary" onClick={() => navigate({ screen: 'review', id: d.questionId })}>
                 Answer in Review
               </Button>
             }
           >
             {why ?? 'Its estimate waits for one question.'}
           </Notice>
+        ) : summary && !allConfirmed ? (
+          <Notice title="Not everything is confirmed.">{summary}</Notice>
         ) : null}
 
-        {d.bogoGroup ? <BogoChoicesSection d={d} group={d.bogoGroup} /> : null}
-        {d.bogo ? <BogoSection d={d} bogo={d.bogo} /> : null}
+        {d.parts.length ? (
+          <Fold id="parts" title="Parts" aside={summary ?? plural(d.parts.length, 'part', 'parts')} defaultOpen={d.parts.length <= 4}>
+            {d.splitEvidence?.length ? (
+              <Fold id="evidence" title="How we know what is inside" sub>
+                <ul className="evidence-list">
+                  {d.splitEvidence.map((e, i) => (
+                    <li key={i}>
+                      <span className="evidence-text">{e.text}</span> <SourceLink source={{ label: EVIDENCE_LABEL[e.kind], url: e.url ?? null }} />
+                    </li>
+                  ))}
+                </ul>
+              </Fold>
+            ) : null}
+            <ul className="detail-list">
+              {d.parts.map((p) => (
+                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} />
+              ))}
+            </ul>
+          </Fold>
+        ) : null}
 
-        <HistorySection d={d} />
+        {d.bogo ? <BogoSection d={d} bogo={d.bogo} /> : null}
+        {d.bogoGroup ? <BogoChoicesSection d={d} group={d.bogoGroup} /> : null}
 
         {d.ways.length > 1 ? (
-          <section className="detail-section">
-            <h3 className="detail-section-title">
-              Ways to sell <span className="fig muted">{d.ways.length}</span>
-            </h3>
+          <Fold id="ways" title="Other ways to sell" aside={`${d.ways.length} in all`}>
             <ul className="detail-list">
               {d.ways.map((w) => (
                 <li key={w.id} className="way">
@@ -193,40 +218,17 @@ function Detail({ d }: { d: DealDetail }) {
                 </li>
               ))}
             </ul>
-          </section>
+          </Fold>
         ) : null}
 
-        {d.parts.length ? (
-          <section className="detail-section">
-            <h3 className="detail-section-title">
-              Parts <span className="fig muted">{d.parts.length}</span>
-            </h3>
-            {d.splitEvidence?.length ? (
-              <div className="split-evidence">
-                <h4 className="detail-subtitle">How we know what is inside</h4>
-                <ul className="evidence-list">
-                  {d.splitEvidence.map((e, i) => (
-                    <li key={i}>
-                      <span className="evidence-text">{e.text}</span> <SourceLink source={{ label: EVIDENCE_LABEL[e.kind], url: e.url ?? null }} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            <ul className="detail-list">
-              {d.parts.map((p) => (
-                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} />
-              ))}
-            </ul>
-          </section>
-        ) : null}
+        <HistorySection d={d} />
       </div>
 
       <footer className="detail-foot">
         <span role="status" className="detail-note">
           {copied ?? (d.asins.length ? plural(d.asins.length, 'ASIN', 'ASINs') : 'No ASIN chosen yet')}
         </span>
-        <Button variant="primary" disabled={d.asins.length === 0} onClick={() => void copy()}>
+        <Button variant={next === null ? 'primary' : 'secondary'} disabled={d.asins.length === 0} onClick={() => void copy()}>
           {d.asins.length === 2 ? 'Copy both ASINs' : 'Copy ASINs'}
         </Button>
       </footer>
@@ -393,7 +395,7 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
           </>
         ) : (
           <>
-            <Tag tone={tone}>{GRADE_LABEL[part.grade]}</Tag>
+            <Tag tone={tone}>{PART_STATE_WORDS[part.grade]}</Tag>
             {part.asin ? (
               <a href={amazonUrl(part.asin)} target="_blank" rel="noopener noreferrer">
                 <span className="code">{part.asin}</span> on Amazon
@@ -406,8 +408,8 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
           </>
         )}
         {part.grade === 'title_match' && part.asin ? (
-          <Button size="sm" busy={verify.busy} busyLabel="Verifying…" disabled={scanRunning} onClick={() => void verify.run(dealId, part.model)} cost={plural(part.verifySearches ?? 1, 'search', 'searches')}>
-            Verify
+          <Button size="sm" busy={verify.busy} busyLabel="Confirming…" disabled={scanRunning} onClick={() => void verify.run(dealId, part.model)} cost={plural(part.verifySearches ?? 1, 'search', 'searches')}>
+            Confirm listing
           </Button>
         ) : null}
         {canConfirm ? (
@@ -420,11 +422,23 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
       {removePrice.error ? <p role="alert">{removePrice.error}</p> : null}
       {said ? <p className="detail-note" role="status">{said}</p> : null}
       {part.prices.length ? (
-        <ul className="prices">
-          {part.prices.map((line, i) => (
-            <PriceRow key={i} line={line} onRemove={line.confirmed ? remove : undefined} removeBusy={removePrice.busy} removeDisabled={scanRunning} />
-          ))}
-        </ul>
+        <>
+          {/* What counts in the estimate is the line he reads; the reference prices (list price, Home Depot's own) fold under it. */}
+          <ul className="prices">
+            {part.prices.filter((l) => l.counted).map((line, i) => (
+              <PriceRow key={i} line={line} onRemove={line.confirmed ? remove : undefined} removeBusy={removePrice.busy} removeDisabled={scanRunning} />
+            ))}
+          </ul>
+          {part.prices.some((l) => !l.counted) ? (
+            <Fold id={`other-prices-${dealId}-${part.model}`} title={part.prices.some((l) => l.counted) ? 'Other prices' : 'Prices'} aside="not counted" sub>
+              <ul className="prices">
+                {part.prices.filter((l) => !l.counted).map((line, i) => (
+                  <PriceRow key={i} line={line} onRemove={line.confirmed ? remove : undefined} removeBusy={removePrice.busy} removeDisabled={scanRunning} />
+                ))}
+              </ul>
+            </Fold>
+          ) : null}
+        </>
       ) : null}
     </li>
   );
