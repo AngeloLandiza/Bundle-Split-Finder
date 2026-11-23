@@ -89,7 +89,8 @@ pub fn run() {
       prefs::open_preferences,
       prefs::set_preferences_height,
       prefs::app_info,
-      prefs::reveal_data_folder
+      prefs::reveal_data_folder,
+      prefs::open_external
     ])
     .build(tauri::generate_context!())
     .expect("error while running tauri application")

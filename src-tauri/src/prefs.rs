@@ -144,6 +144,28 @@ pub fn app_info(app: AppHandle) -> AppInfo {
   }
 }
 
+/// Whether `url` is a plain web address the default browser may open: http or https, a host, no user info.
+pub fn is_web_url(url: &str) -> bool {
+  let rest = match url.strip_prefix("https://").or_else(|| url.strip_prefix("http://")) {
+    Some(r) => r,
+    None => return false,
+  };
+  let host = rest.split(|c| c == '/' || c == '?' || c == '#').next().unwrap_or("");
+  !host.is_empty() && !host.contains('@') && !url.chars().any(|c| c.is_control() || c == ' ')
+}
+
+/// Opens a web page in the default browser. A link in the app's page does nothing by itself inside the window (Nov 23:
+/// the owner clicked the Amazon and Home Depot links and nothing happened), so the page asks the shell.
+#[tauri::command]
+pub fn open_external(app: AppHandle, url: String) -> Result<(), String> {
+  if !is_web_url(&url) {
+    return Err("Only a web address can be opened.".to_string());
+  }
+  tauri_plugin_opener::OpenerExt::opener(&app)
+    .open_url(url, None::<&str>)
+    .map_err(|e| e.to_string())
+}
+
 /// Shows the agent's data folder in Finder.
 #[tauri::command]
 pub fn reveal_data_folder(app: AppHandle) -> Result<(), String> {

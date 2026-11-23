@@ -2,9 +2,13 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "prefs-ui",
   "description": "The Preferences window (served by the local agent) may switch tabs, fit its height to the pane, read the app's version and data folder, show that folder in Finder, and move its window from the title bar. Nothing else.",
-  "windows": ["preferences"],
+  "windows": [
+    "preferences"
+  ],
   "remote": {
-    "urls": ["http://127.0.0.1:8790/*"]
+    "urls": [
+      "http://127.0.0.1:8790/*"
+    ]
   },
   "permissions": [
     "allow-open-preferences",
@@ -12,6 +16,7 @@
     "allow-app-info",
     "allow-reveal-data-folder",
     "allow-agent-status",
-    "core:window:allow-start-dragging"
+    "core:window:allow-start-dragging",
+    "allow-open-external"
   ]
 }

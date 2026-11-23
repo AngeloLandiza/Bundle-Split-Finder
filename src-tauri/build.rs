@@ -11,6 +11,7 @@ fn main() {
         "set_preferences_height",
         "app_info",
         "reveal_data_folder",
+        "open_external",
       ]),
     ),
   )
