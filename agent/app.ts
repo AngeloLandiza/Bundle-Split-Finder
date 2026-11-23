@@ -715,6 +715,12 @@ export function createAgent(opts: AgentOptions): Agent {
       helper.version = version;
       reloadIfOutdated();
       mark('state');
+    } else if (version === undefined && helper.version === null && shipped !== null) {
+      // A helper built before Nov 23 sends no build at all (today's sends it in every heartbeat, the first one at
+      // start): it is older than the app, so the app says so instead of waiting for a job it cannot run.
+      helper.version = 'unversioned';
+      reloadIfOutdated();
+      mark('state');
     }
     return { ok: true };
   });

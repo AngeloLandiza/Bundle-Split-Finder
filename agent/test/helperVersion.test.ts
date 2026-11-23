@@ -55,6 +55,16 @@ async function pair(): Promise<string> {
 }
 
 describe('the helper build', () => {
+  it('a heartbeat with no build (a helper made before Nov 23) is outdated, and one reload is queued for it', async () => {
+    const token = await pair();
+    await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({}) });
+    expect(await helperState()).toMatchObject({ outdated: true });
+    expect(reloads()).toHaveLength(1);
+    // Today's helper then names the shipped build: no longer outdated.
+    await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({ version: SHIPPED }) });
+    expect(await helperState()).not.toHaveProperty('outdated');
+  });
+
   it('a heartbeat names the build; another build than the shipped one is outdated, and one reload is queued for it', async () => {
     const token = await pair();
     expect(await helperState()).not.toHaveProperty('outdated');
