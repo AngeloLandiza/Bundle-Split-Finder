@@ -200,7 +200,13 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
                 Buy now
               </Tag>
             ) : null}
-            {r.bogo ? <Tag title={r.bogo === 'choose' ? 'A BOGO promotion: the free tool is not chosen yet.' : 'A BOGO promotion with its free tool chosen.'}>BOGO</Tag> : null}
+            {r.bogoChoices ? (
+              <Tag title={`${r.bogoChoices.label}${r.bogoPair ? ` This pair: ${r.bogoPair.starterModel} with ${r.bogoPair.freeModel} free.` : ''} Found in Home Depot’s Featured BOGO listing.`}>
+                {r.bogoChoices.best ? 'BOGO best' : 'BOGO'}
+              </Tag>
+            ) : r.bogo ? (
+              <Tag title={r.bogo === 'choose' ? 'A BOGO promotion you entered: the free tool is not chosen yet.' : 'A BOGO promotion you entered, with its free tool chosen.'}>BOGO</Tag>
+            ) : null}
           </span>
           <span className="deal-sub">
             {r.brand} · <span className="code">{r.model}</span>

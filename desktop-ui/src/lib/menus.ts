@@ -31,7 +31,9 @@ export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] 
   const items: MenuItem[] = [{ id: 'open', label: 'Open', hint: '↩' }];
   if (row.link) items.push({ id: 'open-hd', label: 'Open on Home Depot' });
   items.push({ id: 'copy-model', label: 'Copy model', separatorBefore: true }, { id: 'copy-asins', label: 'Copy ASINs' });
-  const more: MenuItem[] = [row.watched ? { id: 'unwatch', label: 'Unwatch' } : { id: 'watch', label: 'Watch' }, { id: 'bogo', label: bogoMenuLabel(row.bogo) }];
+  // The owner's BOGO entry is the fallback for a promotion Home Depot lists no pairs for: not on a deal the agent grouped.
+  const more: MenuItem[] = [row.watched ? { id: 'unwatch', label: 'Unwatch' } : { id: 'watch', label: 'Watch' }];
+  if (!row.bogoChoices) more.push({ id: 'bogo', label: bogoMenuLabel(row.bogo) });
   if (row.lookup) {
     more.push({ id: 'lookup', label: `Look up · ${plural(row.lookup.searches, 'search', 'searches')}`, ...(o.scanRunning ? { disabled: SCAN_LATER } : {}) });
   }

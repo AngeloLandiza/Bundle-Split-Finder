@@ -6,7 +6,7 @@
 // same fee rule as core/src/money.ts, so the table, the pane and Today agree to the cent.
 
 import { unnamedPartOf } from './map';
-import { MOCK_ALERTS, MOCK_ELIGIBLE, mockBogoView, trackingFor, type TrackSeed } from './mockTracking';
+import { MOCK_ALERTS, MOCK_ELIGIBLE, mockBogoView, trackingFor, withMockBogoGroups, type PairSeed, type TrackSeed } from './mockTracking';
 import type {
   ActivityView,
   AppSettings,
@@ -159,6 +159,8 @@ interface DealSeed {
   track?: TrackSeed;
   /** A BOGO promotion the owner entered, with the free items Home Depot offers; the free tool is not chosen yet. */
   bogo?: boolean;
+  /** A starter + free tool pair the agent found in Home Depot's Featured BOGO listing (recorded models and prices). */
+  pair?: PairSeed;
 }
 
 function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
@@ -211,6 +213,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     signals: null,
     history: [],
     bogo: null,
+    bogoGroup: null,
     fbaEstimate: null,
   };
   const tracked = seed.track && !seed.questionId ? trackingFor(detail, seed.track, NOW, seed.was) : null;
@@ -226,6 +229,8 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     watched: tracked !== null,
     buyNow: tracked?.buyNow ?? false,
     bogo: detail.bogo?.status ?? null,
+    bogoPair: null,
+    bogoChoices: null,
     section: seed.section,
     price: seed.price,
     off,
@@ -247,6 +252,13 @@ const RYOBI_RECIP: PartSeed = { model: 'PCL515B', title: 'ONE+ 18V Cordless Reci
 const RYOBI_MULTI: PartSeed = { model: 'PCL430B', title: 'ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)', asin: 'B0B11CJ52Y', price: 53.73, grade: 'verified', listPrice: 57.08 };
 const RYOBI_LIGHT: PartSeed = { model: 'PCL660B', title: 'ONE+ 18V Cordless LED Flash Light (Tool Only)', asin: 'B0B1GKJXNB', price: 21.99, grade: 'needs_answer' };
 const RYOBI_15: PartSeed = { model: 'PBP002', title: 'ONE+ HP 18V 1.5 Ah Lithium-Ion Battery', asin: 'B08L339D94', price: 36.94, grade: 'verified' };
+
+// BOGO starters and their promotions as recorded on Nov 23 (fixtures/homedepot-pages/bogo-2026-11-23.json).
+const RYOBI_BOGO: PairSeed = { starterItemId: '317987584', starterModel: 'PCL1201K2', promotionId: '945815', endsAt: '2027-01-31', description: 'Purchase Select Ryobi Starter Kit and receive a select FREE Tool' };
+const DEWALT_BOGO: PairSeed = { starterItemId: '334337675', starterModel: 'DCK200D1P1', promotionId: '945972', endsAt: '2027-01-31', description: 'BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL' };
+// Invented parts of the DEWALT starter kit, for the mock's estimate.
+const DEWALT_ATOMIC_DRILL: PartSeed = { model: 'DCD708B', title: 'ATOMIC 20V MAX Brushless 1/2 in. Drill/Driver (Tool Only)', asin: 'B07D4VB6MQ', price: 99, grade: 'verified' };
+const DEWALT_ATOMIC_IMPACT: PartSeed = { model: 'DCF809B', title: 'ATOMIC 20V MAX 1/4 in. Impact Driver (Tool Only)', asin: 'B07VK3DWGB', price: 109, grade: 'title_match' };
 
 const SEEDS: DealSeed[] = [
   {
@@ -315,6 +327,40 @@ const SEEDS: DealSeed[] = [
     brand: 'DEWALT', model: 'DCK200D1P1W921B', title: 'ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit, Brushless 1/2 in. Impact Wrench w/ 5 Ah, 2 Ah Batteries, Charger',
     price: 299, was: 538, section: 'split', matchState: 'contents_unknown', updatedMin: 47, questionId: 'q-dck200',
     parts: [], noEstimate: 'No estimate yet: which impact wrench comes with this kit needs your answer.',
+    pair: DEWALT_BOGO,
+  },
+  {
+    itemId: '337440461', slug: 'DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-FLEXVOLT-20V-60V-6-0Ah-20V-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1WB606',
+    brand: 'DEWALT', model: 'DCK200D1P1WB606', title: 'ATOMIC 20V Lithium-Ion Cordless 2-Tool Combo Kit with FLEXVOLT 20V/60V 6.0Ah, 20V 5 Ah and 2 Ah Batteries and Charger',
+    price: 299, was: 498, section: 'confirmed', matchState: 'title_match', updatedMin: 47,
+    // The kit's parts are invented; DCB606's Amazon price is the recorded Keepa lowest New (fixtures/keepa, Nov 23).
+    parts: [DEWALT_ATOMIC_DRILL, DEWALT_ATOMIC_IMPACT, { model: 'DCB606', title: 'FLEXVOLT 20V/60V MAX 6.0Ah Battery', asin: 'B01H9BL8EO', price: 105.96, grade: 'verified' }],
+    unnamed: ['20V Charger'], leaves: ['DCB205', 'DCB203'],
+    pair: DEWALT_BOGO,
+  },
+  {
+    itemId: '324903619', slug: 'RYOBI-ONE-18V-3-Tool-Combo-Kit-PCL1201K2-PCL515B',
+    brand: 'RYOBI', model: 'PCL1201K2-PCL515B', title: 'ONE+ 18V 3 Tool Combo Kit With 1/2 in. Drill/Driver, Circular Saw and Reciprocating Saw',
+    price: 179, was: 268, section: 'confirmed', matchState: 'verified', updatedMin: 47,
+    parts: [RYOBI_DRILL, RYOBI_CIRC, { ...RYOBI_15, qty: 2 }, RYOBI_RECIP], unnamed: ['18V Charger'], leaves: ['18V Charger'],
+    pair: RYOBI_BOGO,
+  },
+  {
+    itemId: '337486151', slug: 'RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Impact-Wrench-PCL1201K2-PCL265B',
+    brand: 'RYOBI', model: 'PCL1201K2-PCL265B', title: 'ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ Cordless 1/2 in. Impact Wrench',
+    price: 179, was: 318, section: 'confirmed', matchState: 'verified', updatedMin: 47,
+    // PCL265B's Amazon listing and price are invented.
+    parts: [RYOBI_DRILL, RYOBI_CIRC, { ...RYOBI_15, qty: 2 }, { model: 'PCL265B', title: 'ONE+ 18V Cordless 1/2 in. Impact Wrench (Tool Only)', asin: 'B0B5R1ZQ9T', price: 89, grade: 'verified' }],
+    unnamed: ['18V Charger'], leaves: ['18V Charger'],
+    pair: RYOBI_BOGO,
+  },
+  {
+    itemId: '324904496', slug: 'RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-Multi-Tool-PCL1201K2-PCL430B',
+    brand: 'RYOBI', model: 'PCL1201K2-PCL430B', title: 'ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger',
+    price: 179, was: 258, section: 'waiting', matchState: 'waiting', updatedMin: 47, lookup: 1,
+    parts: [RYOBI_DRILL, RYOBI_CIRC, { ...RYOBI_15, qty: 2 }, { ...RYOBI_MULTI, asin: null, price: null, grade: 'not_looked_up' }],
+    noEstimate: 'No estimate yet: 1 part still needs an Amazon lookup.',
+    pair: RYOBI_BOGO,
   },
   {
     itemId: '324869940', slug: 'DEWALT-20-Volt-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-DCKTS681D1P1',
@@ -346,7 +392,7 @@ const SEEDS: DealSeed[] = [
   },
 ];
 
-const BUILT = SEEDS.map(build);
+const BUILT = withMockBogoGroups(SEEDS.map((seed) => ({ ...build(seed), pair: seed.pair, was: seed.was })));
 export const DEALS: DealRow[] = BUILT.map((b) => b.row);
 export const DETAILS: Record<string, DealDetail> = Object.fromEntries(BUILT.map((b) => [b.detail.id, b.detail]));
 

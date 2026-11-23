@@ -17,6 +17,10 @@ describe('a deal row\'s menu', () => {
     expect(label('choose')).toBe('Choose the free tool…');
     expect(label('chosen')).toBe('Change the free tool…');
   });
+  it('offers no BOGO entry on a deal the agent grouped: the owner’s entry is the fallback for a promotion with no pairs', () => {
+    const grouped = row({ bogoChoices: { label: 'BOGO: 11 free-tool choices \u2014 best: PCL265B +$61.50 est.', count: 11, bestId: 'hd-337486151', best: false } });
+    expect(ids(dealMenu(grouped, { scanRunning: false }))).not.toContain('bogo');
+  });
   it('offers Watch for a deal that is not watched and Unwatch for one that is', () => {
     expect(ids(dealMenu(row(), { scanRunning: false }))).toContain('watch');
     const watched = dealMenu(row({ watched: true }), { scanRunning: false });

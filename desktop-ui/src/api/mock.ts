@@ -301,6 +301,7 @@ export function createMockClient(): ApiClient {
       await online(350);
       const d = details[id];
       if (!d) throw new ApiError('server', 'No such deal.');
+      if (d.bogoGroup) throw new ApiError('refused', 'Home Depot lists this bundle as a BOGO pair: its free tool is already in it.');
       const prior = d.bogo;
       const toItem = (x: FreeItemBody): FreeItem => ({ brand: (x.brand?.trim() || d.brand).toUpperCase(), model: x.model.trim().toUpperCase(), title: x.title?.trim() || null, itemId: x.itemId ?? null, link: x.link?.trim() || null, parts: x.parts ?? null });
       const eligible = 'eligible' in body ? (body.eligible ? body.eligible.map(toItem) : null) : (prior?.eligible ?? null);

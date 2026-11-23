@@ -12,7 +12,7 @@ import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
 import { partMenu, type PartMenuId } from '../lib/menus';
-import { BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
+import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
 import { GRADE_LABEL } from './reviewModel';
 import './DealDetail.css';
 
@@ -149,6 +149,7 @@ function Detail({ d }: { d: DealDetail }) {
           </Notice>
         ) : null}
 
+        {d.bogoGroup ? <BogoChoicesSection d={d} group={d.bogoGroup} /> : null}
         {d.bogo ? <BogoSection d={d} bogo={d.bogo} /> : null}
 
         <HistorySection d={d} />

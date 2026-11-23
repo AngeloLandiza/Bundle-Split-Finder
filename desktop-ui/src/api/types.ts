@@ -3,7 +3,7 @@
 // another form (a flatter row, a labelled price line, the pipeline in words) are defined below and
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
-import type { ActivityError, BogoView, DealHistoryPoint, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState } from '@core/api/contract';
+import type { ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PipelineView } from '@core/scan/pipeline';
 
@@ -11,6 +11,9 @@ export type {
   ActivityError,
   AppSettings,
   BogoBody as BogoRequest,
+  BogoChoice,
+  BogoGroup,
+  BogoTag,
   BogoView,
   DealHistoryPoint,
   DealSignals,
@@ -112,6 +115,10 @@ export interface DealRow {
   buyNow: boolean;
   /** A BOGO promotion he entered: 'choose' until he picks the free tool. */
   bogo: 'choose' | 'chosen' | null;
+  /** BOGO found by the agent: this bundle is a starter + free tool pair Home Depot lists at the starter's price. */
+  bogoPair: BogoTag | null;
+  /** The automatic BOGO group this bundle is a choice of (or starts): its label, size and best pair. */
+  bogoChoices: { label: string; count: number; bestId: string | null; best: boolean } | null;
   section: DealSection;
   price: number | null;
   /** Whole percent off, or null. */
@@ -252,6 +259,8 @@ export interface DealDetail {
   history: DealHistoryPoint[];
   /** The BOGO promotion he entered, with its estimate; null when none. */
   bogo: BogoView | null;
+  /** BOGO found by the agent: the starter's pairs, ranked by each pair's estimate; null when the deal is in none. */
+  bogoGroup: BogoGroup | null;
   /** The estimate with Amazon's FBA fee estimate from Keepa, beside the main one; null when no part has a Keepa fee. */
   fbaEstimate: FbaEstimate | null;
 }

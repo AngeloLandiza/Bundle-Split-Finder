@@ -3,9 +3,9 @@
 // where its figures came from; every profit and ROI here is an estimate, and says so.
 
 import { Fragment } from 'react';
-import { api, useAction } from '../api/hooks';
-import type { BogoView, DealDetail, DealSignals, FbaEstimate } from '../api/types';
-import { Button } from '../components/Button';
+import { api, useAction, useApp } from '../api/hooks';
+import type { BogoGroup, BogoView, DealDetail, DealSignals, FbaEstimate } from '../api/types';
+import { Button, LinkButton } from '../components/Button';
 import { Profit, Roi } from '../components/Figure';
 import { HistoryChart } from '../components/HistoryChart';
 import { SourceLink } from '../components/Source';
@@ -27,8 +27,8 @@ export function WatchBar({ d }: { d: DealDetail }) {
         <Button size="sm" glyph={watched ? 'star-fill' : 'star'} aria-pressed={watched} busy={toggle.busy} busyLabel={watched ? 'Stopping…' : 'Watching…'} onClick={() => void toggle.run(d.id, !watched)} title={watched ? 'Stop watching: scans stop judging this bundle' : 'Watch this bundle: every scan judges whether it is worth buying'}>
           {watched ? 'Unwatch' : 'Watch'}
         </Button>
-        {d.bogo === null ? (
-          <Button size="sm" variant="quiet" onClick={() => ui.openBogo({ dealId: d.id, model: d.model, bogo: null })} title="This bundle is on a BOGO promotion: you choose the free tool">
+        {d.bogo === null && d.bogoGroup === null ? (
+          <Button size="sm" variant="quiet" onClick={() => ui.openBogo({ dealId: d.id, model: d.model, bogo: null })} title="Only for a promotion Home Depot lists no starter + free tool pairs for: you enter the free tool">
             Mark as BOGO…
           </Button>
         ) : null}
@@ -172,13 +172,63 @@ export function BogoSection({ d, bogo }: { d: DealDetail; bogo: BogoView }) {
             <SourceLink source={{ label: 'The promotion on Home Depot', url: bogo.link }} />
           </p>
         ) : null}
-        <p className="detail-note">You entered this promotion; Home Depot’s pages do not mark it yet. Profit and ROI are estimates from your fee settings.</p>
+        <p className="detail-note">You entered this promotion, the fallback for one Home Depot lists no starter + free tool pairs for. Profit and ROI are estimates from your fee settings.</p>
         <div className="bogo-foot">
           <Button size="sm" variant="danger" busy={remove.busy} busyLabel="Removing…" onClick={() => void remove.run(d.id)} title="This deal stops being a BOGO and the free tool is forgotten">
             Remove
           </Button>
           {remove.error ? <span role="alert">{remove.error}</span> : null}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * BOGO found by the agent: the starter's pairs from Home Depot's Featured BOGO listing, each the starter kit with one
+ * free item at the kit's price, ranked by the pair's own estimate. Each links to its Home Depot page and opens its deal,
+ * where its parts are. Estimates, labelled.
+ */
+export function BogoChoicesSection({ d, group }: { d: DealDetail; group: BogoGroup }) {
+  const { navigate } = useApp();
+  return (
+    <section className="detail-section" aria-labelledby="bogo-choices-title">
+      <h3 className="detail-section-title" id="bogo-choices-title">
+        BOGO choices <span className="fig muted">{group.choices.length}</span>
+      </h3>
+      <div className="detail-box bogo">
+        <p className="bogo-label">{group.label}</p>
+        <p className="detail-note">
+          Buy <SourceLink source={{ label: group.starterModel, url: group.starterLink }} /> and choose one free item
+          {group.endsAt ? `; it ends ${new Date(`${group.endsAt}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : ''}.{group.description ? ` Home Depot: “${group.description}”.` : ''}
+        </p>
+        <ol className="bogo-choices">
+          {group.choices.map((c) => (
+            <li key={c.key} className={c.key === d.id ? 'bogo-choice bogo-choice-this' : 'bogo-choice'}>
+              <span className="bogo-choice-name">
+                <span className="code">{c.freeModel}</span>
+                {c.key === group.best?.key ? <Tag title="The best estimate of these choices">Best</Tag> : null}
+              </span>
+              <span className="bogo-choice-figures">
+                {c.profit !== null ? (
+                  <>
+                    <Profit value={c.profit} />
+                    {c.roi !== null ? <Roi value={c.roi} /> : null}
+                  </>
+                ) : (
+                  <span className="muted">no estimate yet</span>
+                )}
+              </span>
+              <span className="bogo-choice-links">
+                <SourceLink source={{ label: c.model, url: c.link }} />
+                {c.key === d.id ? <span className="muted">this deal</span> : <LinkButton onClick={() => navigate({ screen: 'deals', id: c.key })}>Parts</LinkButton>}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <p className="detail-note">
+          Found by the agent in Home Depot’s Featured BOGO listing: each choice is listed at the starter’s price ({money(group.choices[0]?.price ?? 0)}), so the free item is in its estimate. A free item may be a battery. Profit and ROI are estimates from your fee settings.
+        </p>
       </div>
     </section>
   );

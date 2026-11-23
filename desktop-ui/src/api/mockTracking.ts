@@ -3,7 +3,8 @@
 // file is INVENTED for the look of the screens: no recording holds a Keepa monthlySold, a sales rank, a history point, an FBA fee
 // or a BOGO eligible list. The sentences are written the way core/src/tracking/signals.ts words them, from the invented numbers.
 
-import type { BogoView, DealDetail, DealHistoryPoint, DealSignals, FbaEstimate, FreeItem, OptionSignals, Signal, Velocity, WatchState } from './types';
+import { bogoGroups, bogoTagOf, type BogoPair } from '@core/tracking/bogoPairs';
+import type { BogoView, DealDetail, DealRow, DealHistoryPoint, DealSignals, FbaEstimate, FreeItem, OptionSignals, Signal, Velocity, WatchState } from './types';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const usd = (n: number): string => (n < 0 ? `-$${(-n).toFixed(2)}` : `$${n.toFixed(2)}`);
@@ -212,4 +213,47 @@ export function mockBogoView(d: DealDetail, state: { eligible: FreeItem[] | null
     notCounted,
     note: !chosen ? `+ ${free} not counted yet` : notCounted.length > 0 ? `+ ${notCounted.map((n) => `${n.model} not counted yet (${n.why})`).join('; ')}` : null,
   };
+}
+
+// ---------------------------------------------------------------- BOGO found by the agent
+
+/** A pair's starter and promotion (the recorded ones, mockData.ts). */
+export interface PairSeed {
+  starterItemId: string;
+  starterModel: string;
+  promotionId: string;
+  endsAt: string;
+  description: string;
+}
+
+/**
+ * Tags the pair deals and groups them by starter with core's own bogoGroups, ranked by each pair's mock estimate (the
+ * estimates are the mock's, built from invented Amazon prices; the models, item ids and Home Depot prices are recorded).
+ */
+export function withMockBogoGroups<T extends { row: DealRow; detail: DealDetail; pair?: PairSeed; was: number | null }>(built: T[]): T[] {
+  const pairs: BogoPair[] = [];
+  for (const b of built) {
+    if (!b.pair || b.row.price === null || !b.row.itemId) continue;
+    const joiner = b.row.brand === 'DEWALT' ? 'W' : '-';
+    pairs.push({
+      key: b.row.id, itemId: b.row.itemId, brand: b.row.brand, model: b.row.model, title: b.row.title, price: b.row.price,
+      wasPrice: b.was, link: b.row.link ?? `https://www.homedepot.com/p/${b.row.itemId}`,
+      promotionId: b.pair.promotionId, starterItemId: b.pair.starterItemId, starterModel: b.pair.starterModel,
+      freeModel: b.row.model.slice(b.pair.starterModel.length + joiner.length), endsAt: b.pair.endsAt, description: b.pair.description,
+    });
+  }
+  const rows = built.map((b) => ({
+    key: b.row.id, section: b.row.section,
+    estimate: b.row.profit !== null && b.row.roi !== null ? { profit: b.row.profit, roi: b.row.roi, cost: 0, netRevenue: 0 } : null,
+  }));
+  const groups = bogoGroups(pairs, rows);
+  for (const b of built) {
+    const pair = pairs.find((p) => p.key === b.row.id);
+    const group = groups.find((g) => g.choices.some((c) => c.key === b.row.id));
+    if (!pair || !group) continue;
+    b.row.bogoPair = bogoTagOf(pair);
+    b.row.bogoChoices = { label: group.label, count: group.choices.length, bestId: group.best?.key ?? null, best: group.best?.key === b.row.id };
+    b.detail.bogoGroup = group;
+  }
+  return built;
 }

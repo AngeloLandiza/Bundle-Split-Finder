@@ -121,6 +121,11 @@ describe('a deal row\'s tracking flags', () => {
     expect(mapRow(wire({ watched: true, buyNow: true, bogo: 'choose' }))).toMatchObject({ watched: true, buyNow: true, bogo: 'choose' });
   });
   it('reads an older agent that sends none of them as not watched, not worth buying now and no promotion', () => {
-    expect(mapRow(wire({}))).toMatchObject({ watched: false, buyNow: false, bogo: null });
+    expect(mapRow(wire({}))).toMatchObject({ watched: false, buyNow: false, bogo: null, bogoPair: null, bogoChoices: null });
+  });
+  it('reads the BOGO pair and its group as sent (the recorded DEWALT pair)', () => {
+    const bogoPair = { promotionId: '945972', starterItemId: '334337675', starterModel: 'DCK200D1P1', freeModel: '921B', endsAt: '2027-01-31', description: 'BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL' };
+    const bogoChoices = { label: 'BOGO: 2 free-tool choices \u2014 none has an estimate yet', count: 2, bestId: null, best: false };
+    expect(mapRow(wire({ bogoPair, bogoChoices }))).toMatchObject({ bogoPair, bogoChoices });
   });
 });

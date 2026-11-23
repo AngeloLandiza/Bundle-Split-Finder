@@ -136,6 +136,51 @@
   color: var(--attention);
 }
 
+.bogo-choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.bogo-choice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 4px 0;
+  border-top: 1px solid var(--separator);
+}
+
+.bogo-choice:first-child {
+  border-top: 0;
+}
+
+.bogo-choice-this {
+  font-weight: 600;
+}
+
+.bogo-choice-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bogo-choice-figures {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.bogo-choice-links {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+  color: var(--label-2);
+}
+
 .bogo-foot {
   display: flex;
   align-items: center;

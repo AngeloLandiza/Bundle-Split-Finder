@@ -97,6 +97,8 @@ export function mapRow(r: C.DealRow): DealRow {
     watched: r.watched ?? false,
     buyNow: r.buyNow ?? false,
     bogo: r.bogo ?? null,
+    bogoPair: r.bogoPair ?? null,
+    bogoChoices: r.bogoChoices ?? null,
     section: r.section,
     price: r.price,
     off: r.off,
@@ -275,6 +277,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     signals: d.signals ?? null,
     history: d.history ?? [],
     bogo: d.bogo ?? null,
+    bogoGroup: d.bogoGroup ?? null,
     fbaEstimate: d.fbaEstimate ?? null,
   };
 }

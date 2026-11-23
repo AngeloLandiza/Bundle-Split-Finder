@@ -79,6 +79,9 @@ export function BogoSheet({ target, onClose }: { target: BogoTarget; onClose: ()
           ? `Pick the ${free} you will take with this bundle. Its parts are counted in the estimate once they are priced on Amazon.`
           : 'Home Depot’s list of eligible tools is not read yet. Enter the tool you will take: a model number is enough, and the title and link help you check it later.'}
       </p>
+      <p className="bg-fine">
+        This is for a promotion Home Depot lists no starter + free tool pairs for. When it lists them, the agent finds them by itself each scan and shows them under BOGO choices.
+      </p>
 
       <form
         className="bg-form"
