@@ -304,7 +304,8 @@ describe('fetchPagesInTab', () => {
     vi.stubGlobal('fetch', async (url: string) => {
       const id = url.split('/').pop()!;
       started.push(id);
-      await new Promise((r) => setTimeout(r, id === 'b' ? 5 : 20));
+      // 'b' answers at once (microtasks only); 'a' waits one macrotask, so 'b' is always refused first however busy the machine.
+      if (id !== 'b') await new Promise((r) => setImmediate(r));
       if (id === 'b') {
         refusedAt = started.length;
         return { status: 403, text: async () => 'no' };
@@ -342,14 +343,19 @@ describe('fetchPagesInTab', () => {
   it('runs from its own source against a stubbed fetch, in input order, within the concurrency limit', async () => {
     let active = 0;
     let peak = 0;
-    const delays: Record<string, number> = { a: 30, b: 5, c: 1, d: 10, e: 1 };
+    // 'a' stays in flight until 'c' has thrown, so the worker that finishes 'a' can never reach 'd' first (no timing).
+    let cThrew!: () => void;
+    const afterC = new Promise<void>((r) => (cThrew = r));
     vi.stubGlobal('fetch', async (url: string) => {
       const id = url.split('/').pop()!;
       active++;
       peak = Math.max(peak, active);
-      await new Promise((r) => setTimeout(r, delays[id] ?? 1));
+      if (id === 'a') await afterC;
       active--;
-      if (id === 'c') throw new Error('network');
+      if (id === 'c') {
+        cThrew();
+        throw new Error('network');
+      }
       if (id === 'd') return { status: 403, text: async () => 'refused' };
       return { status: 200, text: async () => `x<script>window.__APOLLO_STATE__={"id":"${id}"}</script><script>y</script>` };
     });
