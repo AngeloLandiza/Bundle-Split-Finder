@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  min-block-size: 22px;
+  min-block-size: 24px;
   padding: 3px 10px;
   border-radius: 5px;
 }

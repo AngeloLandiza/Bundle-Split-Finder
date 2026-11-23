@@ -154,6 +154,17 @@
   cursor: pointer;
 }
 
+/* A link on its own line ("Approve all 4", "Show 3 more") has a 24px hit area; inside a sentence the exemption applies anyway. */
+.link-btn {
+  position: relative;
+}
+
+.link-btn::after {
+  content: '';
+  position: absolute;
+  inset: -5px -2px;
+}
+
 .link-btn:hover {
   text-decoration: underline;
 }
@@ -161,4 +172,29 @@
 .link-btn:disabled {
   color: var(--label-3);
   text-decoration: none;
+}
+
+/* Targets are at least 24px (WCAG 2.2 AA 2.5.8; docs/ux-checklist.md). The push button keeps AppKit's 22px look and the
+   small one its 20px, so the toolbar rhythm does not change; an invisible layer carries the hit area out to 24px. Windows
+   draws them at 32px and 24px already. */
+.btn {
+  position: relative;
+}
+
+.btn:not(.btn-toolbar, .btn-lg)::after {
+  content: '';
+  position: absolute;
+  inset: -1px 0;
+}
+
+.btn-sm:not(.btn-toolbar, .btn-lg)::after {
+  inset: -2px 0;
+}
+
+.btn-sm.btn-icon::after {
+  inset: -2px;
+}
+
+:root[data-platform='windows'] .btn::after {
+  content: none;
 }

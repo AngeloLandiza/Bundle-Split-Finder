@@ -390,3 +390,19 @@
   accent-color: var(--accent);
   flex: none;
 }
+
+/* Hit areas of 24px (WCAG 2.2 AA 2.5.8) around the 18px switch and the 20px and 18px segments, without drawing them larger. */
+.switch::after,
+.seg-option::after {
+  content: '';
+  position: absolute;
+  inset: -3px 0;
+}
+
+.seg-option::after {
+  inset: -2px 0;
+}
+
+.seg-sm .seg-option::after {
+  inset: -3px 0;
+}
