@@ -70,7 +70,7 @@
   color: #ffffff;
 }
 
-:root[data-window-active] .qitem[aria-current='true'] :is(.qitem-sub, .code) {
+:root[data-window-active] .qitem[aria-current='true'] :is(.qitem-sub, .qitem-ai, .code) {
   color: rgb(255 255 255 / 0.9);
 }
 
@@ -87,6 +87,14 @@
 .qitem:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: -3px;
+}
+
+.qitem-ai {
+  flex: none;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+  white-space: nowrap;
 }
 
 .qitem-main {

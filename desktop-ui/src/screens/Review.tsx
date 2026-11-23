@@ -19,7 +19,7 @@ import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
 import { plainReason } from '../lib/questionWords';
-import { KIND_LABEL, groupQuestions, parseTyped, preselected, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
+import { KIND_LABEL, groupQuestions, parseTyped, preselected, rowChip, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -245,12 +245,24 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
                 {KIND_LABEL[q.kind]} · <span className="code">{q.subject}</span>
               </span>
             </span>
-            {q.suggestion?.status === 'verified' ? <Tag tone="verified">AI verified</Tag> : q.suggestion?.status === 'unverified' || q.suggestion?.status === 'unmatched' ? <Tag tone="attention">Not verified</Tag> : q.suggestion?.status === 'cannot_tell' ? <Tag>AI unsure</Tag> : null}
+            <RowSuggestion q={q} />
           </button>
         </li>
       ))}
     </ul>
   );
+}
+
+/**
+ * What a list row says about the AI: a green Verified chip only for an answer the code checked (so "Approve all" has
+ * something to point at), a quiet "AI suggested" for one it could not check, and nothing otherwise. A chip on every row
+ * says nothing; the full Verified / Not verified state, and why, is in the answer pane.
+ */
+function RowSuggestion({ q }: { q: ReviewQuestion }) {
+  const chip = rowChip(q.suggestion);
+  if (chip === 'verified') return <Tag tone="verified">Verified</Tag>;
+  if (chip === 'suggested') return <span className="qitem-ai">AI suggested</span>;
+  return null;
 }
 
 function Question({

@@ -121,7 +121,7 @@ function NeedsYou({ res, onRetry }: { res: ReturnType<typeof useResource<{ quest
                     {q.bundle.brand} · <span className="code">{q.bundle.model}</span> · {KIND_LABEL[q.kind]}
                   </span>
                 </span>
-                {q.suggestion?.status === 'verified' ? <Tag tone="verified">AI verified</Tag> : <Tag tone="attention">Needs you</Tag>}
+                {q.suggestion?.status === 'verified' ? <Tag tone="verified">Verified</Tag> : null}
                 <Glyph name="chevron-right" size={12} className="nav-chevron" />
               </button>
             </li>

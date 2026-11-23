@@ -2,11 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { QUESTIONS } from '../api/mockData';
 import realData from '../api/mockReal.json';
 import { mapReview } from '../api/map';
-import { groupQuestions, parseTyped, preselected, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
+import { groupQuestions, parseTyped, preselected, rowChip, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 
 const byId = (id: string) => QUESTIONS.find((q) => q.id === id)!;
 
 describe('review model', () => {
+  it('chips a list row only when the code verified the AI’s answer, says "suggested" quietly for an unchecked one, and nothing else', () => {
+    expect(rowChip(byId('q-dck200').suggestion)).toBe('verified');
+    expect(rowChip(byId('q-pcl500').suggestion)).toBe('suggested');
+    expect(rowChip({ ...byId('q-pcl500').suggestion!, status: 'unmatched', choiceId: null })).toBe('suggested');
+    expect(rowChip({ ...byId('q-pcl500').suggestion!, status: 'cannot_tell', choiceId: null })).toBeNull();
+    expect(rowChip(null)).toBeNull();
+    // The owner's 15 real questions: none is verified, so none carries a chip (it is "Not verified" on all 15 that was noise).
+    const real = mapReview(realData.review as never).questions;
+    expect(real.filter((q) => rowChip(q.suggestion) === 'verified')).toHaveLength(0);
+  });
   it('puts only verified suggestions in the AI group', () => {
     const g = groupQuestions(QUESTIONS);
     expect(g.verified.map((q) => q.id)).toEqual(['q-dck200', 'q-pcl660', 'q-dckts']);

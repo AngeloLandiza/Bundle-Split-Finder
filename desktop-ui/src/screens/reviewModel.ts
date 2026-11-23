@@ -51,6 +51,13 @@ export function suggestionChip(s: AiSuggestion): { label: string; tone: 'verifie
   return null;
 }
 
+/** What a list row shows of the AI: a chip when the code verified its answer, quiet words when it only suggested one, else nothing. */
+export function rowChip(s: AiSuggestion | null): 'verified' | 'suggested' | null {
+  if (!s) return null;
+  if (s.status === 'verified') return 'verified';
+  return s.status === 'unverified' || s.status === 'unmatched' ? 'suggested' : null;
+}
+
 /**
  * The footer's key hint: Enter saves the selected choice and moves to the next question. Without a choice it says what
  * is missing instead of a key that would do nothing.
