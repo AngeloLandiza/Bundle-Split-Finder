@@ -20,7 +20,13 @@ import type { ScanJob } from './types';
  * slow, and not needed for an estimate). The step list the owner reads is in this order.
  */
 export const STEP_IDS = ['hdPages', 'bundlePages', 'kitPages', 'amazon', 'partPrices', 'ebay', 'judge', 'finish'] as const;
-export type StepId = (typeof STEP_IDS)[number];
+/**
+ * Nov 23, the desktop app's steps after the runner: the AI's answers on the Review cards, then the listings an automatic
+ * rung reads. Long work with a count of its own, so "Finishing up" is only the short tail (agent/work.ts keeps them; the
+ * runner and the extension know nothing of them, and `STEP_IDS` stays the runner's eight).
+ */
+export const TAIL_IDS = ['review', 'confirm'] as const;
+export type StepId = (typeof STEP_IDS)[number] | (typeof TAIL_IDS)[number];
 /** Step 15: `failed`: the step ran and its reader or service failed; the reason is `skippedReason`. */
 export type StepState = 'next' | 'now' | 'done' | 'skipped' | 'failed';
 
@@ -67,6 +73,11 @@ export function newPipeline(hdPagesTotal: number | null): PipelineStep[] {
   }));
 }
 
+/** The steps after the runner, waiting. */
+export function newTailSteps(): PipelineStep[] {
+  return TAIL_IDS.map((id) => ({ id, state: 'next' as StepState, unitsDone: 0, unitsTotal: null }));
+}
+
 /**
  * The record a job without one would have had, from its phase and counts: how a job from an older build, or one
  * continued after the worker was evicted before any save, is shown. Nothing is measured on it. Not stored.
@@ -80,7 +91,7 @@ export function derivePipeline(job: ScanJob): PipelineStep[] {
   const done = (id: StepId, units: number): PipelineStep => ({ id, state: 'done', unitsDone: units, unitsTotal: units });
   const hdDone = n(c.pagesFetched) + n(c.catalogPages);
   const steps: PipelineStep[] = newPipeline(null);
-  const set = (id: StepId, step: PipelineStep): void => void (steps[STEP_IDS.indexOf(id)] = step);
+  const set = (id: (typeof STEP_IDS)[number], step: PipelineStep): void => void (steps[STEP_IDS.indexOf(id)] = step);
   if (listing) {
     set('hdPages', { id: 'hdPages', state: queued > 0 ? 'now' : 'done', unitsDone: hdDone, unitsTotal: hdDone + queued });
     return steps;
@@ -278,6 +289,10 @@ export function unitKindOf(s: Pick<PipelineStep, 'id' | 'model'>): UnitKind | nu
       return 'ebayCall';
     case 'judge':
       return `judgeCall:${s.model ?? 'unknown'}`;
+    case 'review':
+      return 'askAi';
+    case 'confirm':
+      return 'confirmRead';
     case 'finish':
       return null;
   }
@@ -344,7 +359,7 @@ export const MIN_TIMED_UNITS = 3;
  * What a unit of this step's kind costs in time right now: this scan's own measurement of that kind once it has timed
  * MIN_TIMED_UNITS (it is the freshest), else the median of earlier scans, else the seed.
  */
-function stepSeconds(steps: PipelineStep[], step: PipelineStep, rates: UnitRates): number | null {
+function stepSeconds(steps: PipelineStep[], step: PipelineStep, rates: UnitRates, measuredOnly = false): number | null {
   const kind = unitKindOf(step);
   if (kind === null) return 0;
   let ms = 0;
@@ -356,7 +371,10 @@ function stepSeconds(steps: PipelineStep[], step: PipelineStep, rates: UnitRates
     }
   }
   if (units >= MIN_TIMED_UNITS && ms > 0) return ms / 1000 / units;
-  return secondsPerUnit(rates, kind)?.seconds ?? null;
+  const earlier = secondsPerUnit(rates, kind);
+  // Nov 23: a seed is a guess, and a guess is not shown as a time left (docs/ux-checklist.md, no fake precision).
+  if (earlier && measuredOnly && !earlier.measured) return null;
+  return earlier?.seconds ?? null;
 }
 
 /**
@@ -369,7 +387,14 @@ function stepSeconds(steps: PipelineStep[], step: PipelineStep, rates: UnitRates
  * signature so a caller that wants to measure a step in flight can, and so the row passes the one clock it has.
  */
 export function estimate(job: ScanJob, rates: UnitRates, _now?: number): Estimate {
-  const steps = pipelineOf(job);
+  return estimateSteps(pipelineOf(job), rates);
+}
+
+/**
+ * `estimate` over a list of steps. `measuredOnly`: only a rate this scan or an earlier one measured counts; a step whose
+ * rate is a seed (a guess) makes the time not known, so none is shown rather than a made-up one.
+ */
+export function estimateSteps(steps: PipelineStep[], rates: UnitRates, measuredOnly = false): Estimate {
   let seconds = 0;
   let unknownTotal = false;
   for (const step of steps) {
@@ -380,7 +405,7 @@ export function estimate(job: ScanJob, rates: UnitRates, _now?: number): Estimat
     }
     const left = Math.max(0, step.unitsTotal - step.unitsDone);
     if (left === 0) continue;
-    const each = stepSeconds(steps, step, rates);
+    const each = stepSeconds(steps, step, rates, measuredOnly);
     if (each === null) return { kind: 'estimating', seconds: 0 };
     seconds += left * each;
   }
@@ -399,6 +424,8 @@ export const STEP_NAMES: Readonly<Record<StepId, string>> = {
   ebay: 'eBay listings',
   judge: 'Listing check (Claude)',
   amazon: 'Amazon lookups',
+  review: 'Review cards',
+  confirm: 'Listing confirmation',
   finish: 'Finish',
 };
 
@@ -414,13 +441,34 @@ export const CURRENT_LABELS: Readonly<Record<StepId, string>> = {
   ebay: 'Checking eBay listings',
   judge: 'Checking listings',
   amazon: 'Looking up parts',
+  review: 'Review cards',
+  confirm: 'Confirming listings',
   finish: 'Finishing up',
 };
+
+/**
+ * The desktop app's words for the long steps, so the line reads "eBay prices 34 of 80" and "Review cards 3 of 9", and
+ * "Finishing up" is only the short tail. The extension keeps the spec's words (STEP_NAMES, CURRENT_LABELS).
+ */
+export const DESKTOP_STEP_WORDS: Readonly<Partial<Record<StepId, { name: string; current: string }>>> = {
+  ebay: { name: 'eBay prices', current: 'eBay prices' },
+  judge: { name: 'Listing check', current: 'Listing check' },
+  finish: { name: 'Finishing up', current: 'Finishing up' },
+};
+
+export interface ViewOptions {
+  /** The estimate's text while it is not known: the extension says "estimating"; the desktop app passes '' (counts only). */
+  unknown?: string;
+  /** Show a time left only from rates that were measured (no seeds). The desktop app sets it. */
+  measuredOnly?: boolean;
+  /** Other words for some steps (DESKTOP_STEP_WORDS). */
+  words?: Readonly<Partial<Record<StepId, { name: string; current: string }>>>;
+}
 
 /** Free scan: the hdPages step's name and current label when the bundle lists were read in Chrome. */
 export const CHROME_LIST_NAME = 'Home Depot bundle lists';
 export const CHROME_LIST_LABEL = 'Reading bundle lists';
-const nameOf = (s: PipelineStep): string => (s.id === 'hdPages' && s.source === 'chrome' ? CHROME_LIST_NAME : STEP_NAMES[s.id]);
+const nameOf = (s: PipelineStep, words?: ViewOptions['words']): string => (s.id === 'hdPages' && s.source === 'chrome' ? CHROME_LIST_NAME : words?.[s.id]?.name ?? STEP_NAMES[s.id]);
 
 export interface PipelineView {
   /** The row's first line: `${label} · ${count}`; count is empty when the step has nothing to count yet. */
@@ -476,6 +524,10 @@ function figureOf(s: PipelineStep): string {
       if (s.state === 'next') return s.costEstimate === undefined ? '' : `est. ${dollars(s.costEstimate)}`;
       if (s.costSoFar === undefined) return s.state === 'now' ? countOf(s) : '';
       return s.state === 'now' ? `${dollars(s.costSoFar)} so far` : dollars(s.costSoFar);
+    case 'review':
+      return s.state === 'now' ? countOf(s) : s.state === 'done' ? `${s.unitsDone} done` : '';
+    case 'confirm':
+      return s.state === 'now' ? countOf(s) : s.state === 'done' ? `${s.unitsDone} read` : '';
     case 'finish':
       return '';
   }
@@ -486,21 +538,21 @@ function figureOf(s: PipelineStep): string {
  * rate; otherwise steps done over steps in all (a step skipped counts as done). A step weighs its units times its
  * seconds a unit; a step of no weight (the finish) moves the bar only through the count.
  */
-function fractionOf(steps: PipelineStep[], rates: UnitRates): number {
+function fractionOf(steps: PipelineStep[], rates: UnitRates, measuredOnly = false): number {
   const live = steps.filter((s) => s.state !== 'skipped');
   const byCount = steps.length === 0 ? 0 : steps.filter((s) => s.state === 'done' || s.state === 'skipped' || s.state === 'failed').length / steps.length;
   let total = 0;
   let got = 0;
   for (const s of live) {
     if (s.state === 'done' || s.state === 'failed') {
-      const each = stepSeconds(steps, s, rates);
+      const each = stepSeconds(steps, s, rates, measuredOnly);
       if (each === null) return byCount;
       total += s.unitsDone * each;
       got += s.unitsDone * each;
       continue;
     }
     if (s.unitsTotal === null) return byCount;
-    const each = stepSeconds(steps, s, rates);
+    const each = stepSeconds(steps, s, rates, measuredOnly);
     if (each === null) return byCount;
     total += s.unitsTotal * each;
     got += Math.min(s.unitsDone, s.unitsTotal) * each;
@@ -513,28 +565,32 @@ function fractionOf(steps: PipelineStep[], rates: UnitRates): number {
  * Everything the progress row says, from the job, the rates and the clock. Pure. `unknown`: the estimate's text while
  * it is not known: the extension's row says "estimating"; the desktop app passes '' and shows the counts only (step 15).
  */
-export function pipelineView(job: ScanJob, rates: UnitRates, now: number, opts: { unknown?: string } = {}): PipelineView {
-  const steps = pipelineOf(job);
+export function pipelineView(job: ScanJob, rates: UnitRates, now: number, opts: ViewOptions = {}): PipelineView {
+  return pipelineViewOf(pipelineOf(job), rates, now, opts);
+}
+
+/** `pipelineView` over a list of steps: the job's, or the job's with the steps the desktop app adds after the runner. */
+export function pipelineViewOf(steps: PipelineStep[], rates: UnitRates, now: number, opts: ViewOptions = {}): PipelineView {
   const at = steps.findIndex((s) => s.state === 'now');
   const index = at >= 0 ? at : Math.max(0, steps.findIndex((s) => s.state === 'next') >= 0 ? steps.findIndex((s) => s.state === 'next') : steps.length - 1);
   const cur = steps[index]!;
-  const est = estimate(job, rates, now);
+  const est = estimateSteps(steps, rates, opts.measuredOnly === true);
   const m = minutes(est.seconds);
   const unknown = opts.unknown ?? 'estimating';
   const estimateText = est.kind === 'estimating' ? unknown : est.kind === 'underMinute' ? 'under a minute' : est.kind === 'about' ? `about ${m} min` : `at least ${m} min`;
   const left = est.kind === 'estimating' ? (unknown === '' ? 'time left not known yet' : 'estimating time left')
     : est.kind === 'underMinute' ? 'less than a minute left'
     : `${est.kind === 'about' ? 'about' : 'at least'} ${plural(m, 'minute', 'minutes')} left`;
-  const label = cur.id === 'hdPages' && cur.source === 'chrome' ? CHROME_LIST_LABEL : CURRENT_LABELS[cur.id];
+  const label = cur.id === 'hdPages' && cur.source === 'chrome' ? CHROME_LIST_LABEL : opts.words?.[cur.id]?.current ?? CURRENT_LABELS[cur.id];
   return {
-    current: { label, count: cur.state === 'now' ? countOf(cur) : '' },
+    current: { label, count: cur.state === 'now' && cur.id !== 'finish' ? countOf(cur) : '' },
     estimateText,
     stepsDone: steps.filter((s) => s.state === 'done' || s.state === 'skipped' || s.state === 'failed').length,
     stepsTotal: steps.length,
-    fraction: fractionOf(steps, rates),
+    fraction: fractionOf(steps, rates, opts.measuredOnly === true),
     ariaValueText: `Step ${index + 1} of ${steps.length}, ${lowerFirst(label)}, ${left}`,
     steps: steps.map((s) => ({
-      label: nameOf(s), state: s.state, figure: figureOf(s),
+      label: nameOf(s, opts.words), state: s.state, figure: figureOf(s),
       ...(s.state === 'now' || s.state === 'done' || s.state === 'failed' ? { done: s.unitsDone } : {}),
       ...((s.state === 'now' || s.state === 'done' || s.state === 'failed') && s.unitsTotal !== null ? { total: s.unitsTotal } : {}),
     })),

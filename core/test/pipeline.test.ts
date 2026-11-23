@@ -23,7 +23,7 @@ function job(steps: Partial<PipelineStep>[], over: Partial<ScanJob> = {}): ScanJ
   return {
     id: '1', startedAt: NOW, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing', queue: [], deferred: [], searchesUsed: 0,
     counts: { pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0, catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0 },
-    pipeline: base.map((s) => ({ ...s, ...(steps[WRITTEN.indexOf(s.id)] ?? {}) })),
+    pipeline: base.map((s) => ({ ...s, ...(steps[WRITTEN.indexOf(s.id as (typeof WRITTEN)[number])] ?? {}) })),
     ...over,
   };
 }
