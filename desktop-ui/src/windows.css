@@ -1,0 +1,710 @@
+/* Windows 11 (docs/design.md, Desktop app > Windows). The app is drawn in macOS conventions; here the same markup takes
+   Fluent's: Segoe UI Variable at 14px, 4px controls and 8px surfaces, a toggle with a knob that grows under the pointer,
+   buttons with a hairline and a bottom stroke, a 2px outer focus ring, a quiet selection with an accent pill, thin
+   scrollbars. Everything is scoped to <html data-platform="windows"> (lib/platform.ts), so a Mac reads none of it.
+
+   Mica: the window's ground is the solid Mica base colour. When the shell has put the real Mica behind the window it
+   says so (`__SPLIT_FINDER_SHELL__.backdrop = 'mica'` -> <html data-backdrop="mica">) and the ground goes clear, so the
+   material shows through the sidebar and the title area; the content sits on a layer above it either way. */
+
+:root[data-platform='windows'] {
+  /* Type: Segoe UI Variable, 14/20 body as in WinUI. */
+  --font: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Mono', Consolas, ui-monospace, monospace;
+
+  /* Text (WinUI TextFillColorPrimary, Secondary, Tertiary) */
+  --label: light-dark(rgb(0 0 0 / 0.894), #ffffff);
+  --label-2: light-dark(rgb(0 0 0 / 0.606), rgb(255 255 255 / 0.786));
+  --label-3: light-dark(rgb(0 0 0 / 0.447), rgb(255 255 255 / 0.543));
+  --label-4: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.12));
+  --placeholder: light-dark(rgb(0 0 0 / 0.447), rgb(255 255 255 / 0.543));
+
+  /* Lines and fills */
+  --separator: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.084));
+  --grid: light-dark(#ebebeb, #2d2d2d);
+  --fill: light-dark(rgb(0 0 0 / 0.037), rgb(255 255 255 / 0.06));
+  --fill-2: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.084));
+  --hover: light-dark(rgb(0 0 0 / 0.037), rgb(255 255 255 / 0.06));
+
+  /* Grounds: the Mica base, a layer above it, cards on that layer. */
+  --window-bg: light-dark(#f3f3f3, #202020);
+  --content-bg: light-dark(#fbfbfb, #272727);
+  --grouped-bg: light-dark(#f6f6f6, #272727);
+  --group-bg: light-dark(#ffffff, #2d2d2d);
+  --text-bg: light-dark(#fdfdfd, #2d2d2d);
+  --control-bg: light-dark(#fdfdfd, #2d2d2d);
+  --sidebar-bg: transparent;
+  --toolbar-bg: transparent;
+  --button-bg: light-dark(#fdfdfd, rgb(255 255 255 / 0.06));
+  --button-edge: light-dark(rgb(0 0 0 / 0.058), rgb(255 255 255 / 0.07));
+  --button-bottom: light-dark(rgb(0 0 0 / 0.162), transparent);
+  --popover-bg: light-dark(rgb(249 249 249 / 0.92), rgb(44 44 44 / 0.92));
+  --sheet-bg: light-dark(#f9f9f9, #2b2b2b);
+  --dim: light-dark(rgb(0 0 0 / 0.3), rgb(0 0 0 / 0.5));
+  --notice-bg: light-dark(#fff4ce, #433519);
+
+  /* Accent: the user's Windows accent where the webview reads it (CSS AccentColor), else the default blue. */
+  --system-accent: light-dark(#005fb8, #60cdff);
+  --on-accent: #ffffff;
+  --win-selection: color-mix(in srgb, var(--accent) 16%, transparent);
+  --focus-stroke: light-dark(#000000, #ffffff);
+  --focus-ring: var(--focus-stroke);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+
+  /* Shape and size: 4px controls, 8px surfaces, 32px controls and rows. */
+  --radius: 4px;
+  --radius-lg: 8px;
+  --row: 32px;
+  --row-2: 48px;
+  --control-h: 32px;
+  --control-h-lg: 36px;
+  --toolbar-h: 52px;
+
+  /* Meaning colours: Fluent's system fills. */
+  --system-green: light-dark(#0f7b0f, #6ccb5f);
+  --system-red: light-dark(#c42b1c, #ff99a4);
+  --system-orange: light-dark(#9d5d00, #fce100);
+  --profit: var(--system-green);
+  --loss: var(--system-red);
+  --attention: light-dark(#9d5d00, #fce100);
+}
+
+@supports (color: AccentColor) {
+  :root[data-platform='windows'] {
+    --system-accent: light-dark(AccentColor, color-mix(in srgb, AccentColor 55%, white));
+  }
+}
+
+/* Black text on the lighter dark-mode accent, as Windows does; a chosen accent keeps white. */
+:root[data-platform='windows']:is(:not([data-accent]), [data-accent='system']) {
+  --on-accent: light-dark(#ffffff, #000000);
+}
+
+:root[data-platform='windows'][data-density='compact'] {
+  --row: 28px;
+  --row-2: 40px;
+  --control-h: 28px;
+}
+
+/* ---- the window: the Mica ground, the sidebar and the title area clear of paint, the content a layer */
+:root[data-platform='windows'] body {
+  background: var(--window-bg);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: auto;
+}
+
+:root[data-platform='windows']:is([data-backdrop='mica'], [data-chrome='unified']) body,
+:root[data-platform='windows']:is([data-backdrop='mica'], [data-chrome='unified'])[data-window='preferences'] body {
+  background: transparent;
+}
+
+:root[data-platform='windows'] * {
+  scrollbar-width: thin;
+  scrollbar-color: light-dark(rgb(0 0 0 / 0.46) transparent, rgb(255 255 255 / 0.54) transparent);
+}
+
+:root[data-platform='windows'] .window-content {
+  background: transparent;
+}
+
+:root[data-platform='windows'] .page {
+  background: transparent;
+}
+
+/* Native title bar above: no band for traffic lights, no hairline under the toolbar. */
+:root[data-platform='windows'] .sidebar {
+  background: transparent;
+  border-right: 0;
+}
+
+:root[data-platform='windows'] .sidebar-titlebar {
+  display: none;
+}
+
+:root[data-platform='windows'] .sidebar-scroll {
+  padding: 8px 8px 12px;
+}
+
+:root[data-platform='windows'] .sidebar-foot,
+:root[data-platform='windows'][data-chrome='unified'] .sidebar-foot {
+  border-top: 0;
+}
+
+:root[data-platform='windows'] .toolbar {
+  border-bottom: 0;
+  background: transparent;
+}
+
+:root[data-platform='windows'] .page-body {
+  border-top: 1px solid var(--separator);
+  border-left: 1px solid var(--separator);
+  border-top-left-radius: 8px;
+  background: var(--content-bg);
+}
+
+:root[data-platform='windows'] .page-body-grouped {
+  background: var(--grouped-bg);
+}
+
+/* ---- type */
+:root[data-platform='windows'] :is(.t-title, .t-headline, .t-figure, .page-title, .prefs-title, .pop-name, .shortcuts-title) {
+  font-family: var(--font-display);
+}
+
+:root[data-platform='windows'] .t-title {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: 0;
+}
+
+:root[data-platform='windows'] .t-small {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:root[data-platform='windows'] :is(.btn, .field-input, .field-label, .search-input, .popup-select, .switch-label, .radio, .source-item, .frow-label, .ctx-menu, .palette-input, .table, .toolbar-title .page-title) {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+:root[data-platform='windows'] .toolbar-title .page-title {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+/* ---- focus: 2px outer ring in the text colour, a hair off the control */
+:root[data-platform='windows'] :focus-visible,
+:root[data-platform='windows'] .btn:focus-visible,
+:root[data-platform='windows'] .source-item:focus-visible,
+:root[data-platform='windows'] .qitem:focus-visible,
+:root[data-platform='windows'] .pop-row:focus-visible,
+:root[data-platform='windows'] .pop-more:focus-visible,
+:root[data-platform='windows'] .pop-menu-item:focus-visible {
+  outline: 2px solid var(--focus-stroke);
+  outline-offset: 1px;
+  border-radius: var(--radius);
+}
+
+:root[data-platform='windows'] .source-item:focus-visible,
+:root[data-platform='windows'] .qitem:focus-visible {
+  outline-offset: -2px;
+}
+
+:root[data-platform='windows'] .look:has(input:focus-visible) .look-thumb,
+:root[data-platform='windows'] .seg-option:has(input:focus-visible) {
+  outline: 2px solid var(--focus-stroke);
+  outline-offset: 2px;
+}
+
+:root[data-platform='windows'] :is(.field-input, .search-input, .popup-select, .palette-input):focus-visible {
+  outline: none;
+}
+
+/* ---- buttons: a hairline all round and a stronger stroke under it */
+:root[data-platform='windows'] .btn {
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0 12px;
+}
+
+:root[data-platform='windows'] .btn-sm {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:root[data-platform='windows'] .btn-lg {
+  border-radius: var(--radius);
+}
+
+:root[data-platform='windows'] :is(.btn-secondary, .btn-danger) {
+  border-color: var(--button-edge);
+  background: var(--button-bg);
+  box-shadow: inset 0 -1px 0 var(--button-bottom);
+}
+
+:root[data-platform='windows'] :is(.btn-secondary, .btn-danger):hover:not(:disabled) {
+  background: light-dark(#f9f9f9, rgb(255 255 255 / 0.084));
+}
+
+:root[data-platform='windows'] :is(.btn-secondary, .btn-danger):active:not(:disabled) {
+  background: light-dark(#f9f9f9, rgb(255 255 255 / 0.03));
+  color: var(--label-2);
+  box-shadow: none;
+}
+
+:root[data-platform='windows'] .btn-primary {
+  border-color: color-mix(in srgb, var(--accent) 88%, black);
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.25);
+}
+
+:root[data-platform='windows'] .btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 90%, black);
+}
+
+:root[data-platform='windows'] .btn-primary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 80%, black);
+  box-shadow: none;
+}
+
+:root[data-platform='windows'] .btn-toolbar {
+  height: 32px;
+  border-color: transparent;
+  border-radius: var(--radius);
+}
+
+:root[data-platform='windows'] .btn-icon {
+  width: 32px;
+}
+
+:root[data-platform='windows'] .btn-sm.btn-icon {
+  width: 24px;
+}
+
+:root[data-platform='windows'] .btn:disabled {
+  opacity: 0.4;
+}
+
+/* ---- text fields: a hairline, a stronger line under, the accent line under while typing */
+:root[data-platform='windows'] :is(.field-box, .search, .popup) {
+  border-radius: var(--radius);
+  background: var(--text-bg);
+  box-shadow:
+    inset 0 0 0 1px var(--button-edge),
+    inset 0 -1px 0 light-dark(rgb(0 0 0 / 0.45), rgb(255 255 255 / 0.54));
+}
+
+:root[data-platform='windows'] .search {
+  height: 32px;
+}
+
+:root[data-platform='windows'] :is(.field-box, .search):focus-within {
+  background: var(--text-bg);
+  box-shadow:
+    inset 0 0 0 1px var(--button-edge),
+    inset 0 -2px 0 var(--accent);
+}
+
+:root[data-platform='windows'] .popup {
+  background: var(--button-bg);
+  box-shadow:
+    inset 0 0 0 1px var(--button-edge),
+    inset 0 -1px 0 var(--button-bottom);
+}
+
+:root[data-platform='windows'] .popup:focus-within {
+  box-shadow:
+    inset 0 0 0 1px var(--button-edge),
+    inset 0 -2px 0 var(--accent);
+}
+
+:root[data-platform='windows'] .popup-select {
+  padding: 0 32px 0 11px;
+}
+
+:root[data-platform='windows'] .popup-arrows {
+  right: 8px;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background: transparent;
+  color: var(--label-2);
+}
+
+:root[data-platform='windows'] .field-input {
+  padding: 0 10px;
+}
+
+/* ---- toggle switch: a 40 x 20 pill, a knob that grows when the pointer is over it */
+:root[data-platform='windows'] .switch {
+  width: 40px;
+  height: 20px;
+  margin-top: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px light-dark(rgb(0 0 0 / 0.606), rgb(255 255 255 / 0.786));
+  transition: background 83ms linear;
+}
+
+:root[data-platform='windows'] .switch:hover:not(:disabled) {
+  background: var(--fill);
+}
+
+:root[data-platform='windows'] .switch[aria-checked='true'] {
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+:root[data-platform='windows'] .switch[aria-checked='true']:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 90%, black);
+}
+
+:root[data-platform='windows'] .switch-knob {
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background: light-dark(rgb(0 0 0 / 0.606), rgb(255 255 255 / 0.786));
+  box-shadow: none;
+  transition:
+    transform 167ms cubic-bezier(0, 0, 0, 1),
+    width 167ms cubic-bezier(0, 0, 0, 1),
+    height 167ms cubic-bezier(0, 0, 0, 1),
+    top 167ms cubic-bezier(0, 0, 0, 1),
+    left 167ms cubic-bezier(0, 0, 0, 1);
+}
+
+:root[data-platform='windows'] .switch:hover:not(:disabled) .switch-knob {
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+}
+
+:root[data-platform='windows'] .switch:active:not(:disabled) .switch-knob {
+  top: 3px;
+  left: 3px;
+  width: 17px;
+  height: 14px;
+  border-radius: 7px;
+}
+
+:root[data-platform='windows'] .switch[aria-checked='true'] .switch-knob {
+  background: var(--on-accent);
+  transform: translateX(20px);
+}
+
+:root[data-platform='windows'] .switch[aria-checked='true']:hover:not(:disabled) .switch-knob {
+  left: 3px;
+}
+
+:root[data-platform='windows'] .switch[aria-checked='true']:active:not(:disabled) .switch-knob {
+  transform: translateX(17px);
+}
+
+/* ---- segmented control: a sunken track, the chosen segment a raised key with the accent line under it */
+:root[data-platform='windows'] .seg-track {
+  border-radius: var(--radius);
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--button-edge);
+}
+
+:root[data-platform='windows'] .seg-option {
+  height: 28px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+:root[data-platform='windows'] .seg-on {
+  background: var(--button-bg);
+  box-shadow:
+    inset 0 0 0 1px var(--button-edge),
+    inset 0 -2px 0 var(--accent);
+}
+
+/* ---- the source list: a quiet fill and a 3px accent pill on the chosen item */
+:root[data-platform='windows'] .source-item {
+  position: relative;
+  border-radius: var(--radius);
+}
+
+:root[data-platform='windows'] .source-item:hover {
+  background: var(--fill);
+}
+
+:root[data-platform='windows'] .source-item[aria-current='page'],
+:root[data-platform='windows'] .sidebar:focus-within .source-item[aria-current='page']:focus-visible {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+:root[data-platform='windows'] .source-item[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+:root[data-platform='windows'] .sidebar:focus-within .source-item[aria-current='page']:focus-visible :is(.source-glyph, .source-count) {
+  color: var(--label-2);
+}
+
+:root[data-platform='windows'] .source-head-btn {
+  font-size: 12px;
+  color: var(--label-2);
+}
+
+/* ---- selection in tables and lists: a tint, not a solid accent, so the text keeps its own colours */
+:root[data-platform='windows'] :is(.tr-on td, .table tbody tr.tr-on:hover td),
+:root[data-platform='windows'][data-window-active] :is(.tr-on td, .table tbody tr.tr-on:hover td) {
+  background: var(--win-selection);
+  color: var(--label);
+}
+
+:root[data-platform='windows'] .tr-on td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on :is(.code, .fig) {
+  color: inherit;
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on :is(.muted, .deal-sub, .cell-time, .cell-words, .figure-range) {
+  color: var(--label-2);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on .cell-none {
+  color: var(--label-3);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on .figure-profit {
+  color: var(--profit);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on :is(.loss, .figure-profit.loss) {
+  color: var(--loss);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on .tag {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on .watch-toggle {
+  color: var(--label-2);
+}
+
+:root[data-platform='windows'][data-window-active] .tr-on .watch-on,
+:root[data-platform='windows'][data-window-active] .tr-on .watch-toggle:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+:root[data-platform='windows'] .qitem[aria-current='true'],
+:root[data-platform='windows'][data-window-active] .qitem[aria-current='true'] {
+  background: var(--win-selection);
+  color: var(--label);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+:root[data-platform='windows'][data-window-active] .qitem[aria-current='true'] :is(.qitem-sub, .code) {
+  color: var(--label-2);
+}
+
+:root[data-platform='windows'][data-window-active] .qitem[aria-current='true'] .tag {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+/* ---- floating surfaces: 8px radius, an acrylic-like translucent layer, a hairline and a soft shadow */
+:root[data-platform='windows'] :is(.ctx-menu, .popover, .palette) {
+  border-radius: 8px;
+  background: var(--popover-bg);
+  -webkit-backdrop-filter: blur(30px) saturate(1.25);
+  backdrop-filter: blur(30px) saturate(1.25);
+  box-shadow:
+    0 0 0 1px light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.1)),
+    0 8px 24px rgb(0 0 0 / 0.18),
+    0 0 4px rgb(0 0 0 / 0.1);
+}
+
+:root[data-platform='windows'] .ctx-item {
+  min-block-size: 32px;
+  border-radius: var(--radius);
+  padding: 5px 11px;
+}
+
+:root[data-platform='windows'] .ctx-active {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+:root[data-platform='windows'] .ctx-active .ctx-hint {
+  color: var(--label-2);
+}
+
+:root[data-platform='windows'] .palette-row-on {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+:root[data-platform='windows'] .palette-row-on .palette-detail,
+:root[data-platform='windows'] .palette-row-on .palette-hint {
+  color: var(--label-2);
+}
+
+/* A sheet is a content dialog on Windows: centred over a dimmed window, 8px corners. */
+:root[data-platform='windows'] .sheet-layer {
+  align-items: center;
+}
+
+:root[data-platform='windows'] .sheet {
+  margin-top: 0;
+  align-self: center;
+  max-height: calc(100vh - 80px);
+  border-radius: 8px;
+  animation: dialog-in 167ms cubic-bezier(0, 0, 0, 1);
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+:root[data-platform='windows'] .kbd {
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px var(--separator);
+  font-size: 12px;
+  height: 20px;
+}
+
+/* ---- Preferences (Settings): a page header, left-aligned labels, tabs with an accent underline */
+:root[data-platform='windows'][data-window='preferences'] body {
+  background: var(--window-bg);
+}
+
+:root[data-platform='windows'] .prefs {
+  background: transparent;
+  --glyph-knock: var(--window-bg);
+}
+
+:root[data-platform='windows'] .prefs-bar {
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-platform='windows'] .prefs-titleband {
+  justify-content: flex-start;
+  height: 52px;
+  padding: 0 24px;
+}
+
+:root[data-platform='windows'] .prefs-title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+
+:root[data-platform='windows'] .prefs-saved {
+  right: 24px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:root[data-platform='windows'] .prefs-tabs {
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 0 20px 8px;
+}
+
+:root[data-platform='windows'] .prefs-tab {
+  position: relative;
+  width: 84px;
+  height: 56px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:root[data-platform='windows'] .prefs-tab[aria-selected='true'] {
+  background: var(--fill-2);
+}
+
+:root[data-platform='windows'] .prefs-tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 16px;
+  height: 3px;
+  margin-left: -8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+:root[data-platform='windows'] .prefs-pane {
+  margin-left: 12px;
+  border-top: 1px solid var(--separator);
+  border-left: 1px solid var(--separator);
+  border-top-left-radius: 8px;
+  background: var(--content-bg);
+}
+
+:root[data-platform='windows'] .prefs-content {
+  padding: 20px 28px 28px;
+}
+
+:root[data-platform='windows'] .frow-label {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+:root[data-platform='windows'] :is(.frow-help, .frow-note, .pane-lead) {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:root[data-platform='windows'] .look-thumb {
+  border-radius: 8px;
+}
+
+:root[data-platform='windows'] .look-name {
+  border-radius: var(--radius);
+}
+
+/* ---- the notification area flyout: the same content in a Windows 11 flyout */
+:root[data-platform='windows'][data-surface='popover'] .pop {
+  background: var(--popover-bg);
+  -webkit-backdrop-filter: blur(30px) saturate(1.25);
+  backdrop-filter: blur(30px) saturate(1.25);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.1)),
+    0 8px 16px rgb(0 0 0 / 0.14);
+  padding: 12px 0 4px;
+}
+
+:root[data-platform='windows'] .pop {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+:root[data-platform='windows'] .pop-name {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+:root[data-platform='windows'] :is(.pop-row, .pop-more) {
+  border-radius: var(--radius);
+  padding: 5px 8px;
+}
+
+:root[data-platform='windows'] .pop-menu-item {
+  height: 30px;
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+:root[data-platform='windows'] .pop-menu-item:hover {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+:root[data-platform='windows'] .pop-menu-item:hover .pop-key {
+  opacity: 1;
+}
+
+:root[data-platform='windows'] .pop-key {
+  font-size: 12px;
+}
