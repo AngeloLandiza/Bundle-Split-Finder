@@ -19,6 +19,11 @@ import type {
   DealsView,
   KeyName,
   LookupsRun,
+  OutcomesResponse,
+  PartOutcomeBody,
+  PurchasePatch,
+  PurchaseResponse,
+  RecordPurchaseBody,
   PairedExtension,
   PendingPairRequest,
   ReviewAnswer,
@@ -56,6 +61,21 @@ export interface ApiClient {
   askAi(id: string, o?: { force?: boolean }): Promise<AskAiResult>;
   askAll(): Promise<void>;
   approve(ids: string[]): Promise<{ approved: number; skipped: { id: string; reason: string }[] }>;
+
+  /** Outcomes: what he bought and what became of each part, with the scorecard's records (GET /api/outcomes). */
+  outcomes(): Promise<OutcomesResponse>;
+  /** "I bought this" (POST /api/outcomes): the agent freezes the deal's estimate at this moment. */
+  recordPurchase(body: RecordPurchaseBody): Promise<PurchaseResponse>;
+  /** Corrects the date, price paid or quantity of a purchase (PATCH /api/outcomes/:id); the frozen estimate cannot be changed. */
+  editPurchase(id: string, patch: PurchasePatch): Promise<PurchaseResponse>;
+  /** Sold, still holding, or returned / not sold, for one part (POST /api/outcomes/:id/parts/:part). */
+  recordPart(id: string, partId: string, body: PartOutcomeBody): Promise<PurchaseResponse>;
+  /** Removes a purchase record (DELETE /api/outcomes/:id); the entry it returns takes it back. */
+  removePurchase(id: string): Promise<{ entryId: string }>;
+  /** Takes back one recorded change (POST /api/outcomes/entries/:id/undo). */
+  undoOutcome(entryId: string): Promise<void>;
+  /** Saves the outcomes as CSV (GET /api/outcomes/export.csv). */
+  downloadOutcomesCsv(): Promise<void>;
 
   activity(): Promise<ActivityView>;
   undo(autopilotId: string): Promise<void>;

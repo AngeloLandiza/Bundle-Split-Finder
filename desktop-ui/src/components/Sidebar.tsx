@@ -6,7 +6,7 @@ import { isMac as mac, isWindows, words as systemWords } from '../lib/platform';
 import type { Route } from '../lib/route';
 import { setupProgress } from '../lib/setup';
 import { sidebarStatus } from '../lib/sidebarStatus';
-import { DEAL_VIEWS, VIEW_LABEL, viewCounts, type DealView } from '../lib/views';
+import { BOUGHT_LABEL, BOUGHT_VIEW, DEAL_VIEWS, VIEW_LABEL, viewCounts, type DealView, type ListView } from '../lib/views';
 import { Glyph, type GlyphName } from './Glyph';
 import { ProgressBar, Spinner } from './States';
 import { Count } from './Tag';
@@ -44,6 +44,8 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
   const { state } = useApp();
   const [deals] = useResource(() => api.deals(), [], ['deals']);
   const counts = deals.data ? viewCounts(deals.data.rows) : null;
+  // Outcomes: how many purchases he recorded (the list is his records, not a view of the rows).
+  const [bought] = useResource(() => api.outcomes(), [], ['deals']);
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const toggle = (group: string) =>
     setCollapsed((cur) => {
@@ -55,8 +57,8 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
       }
       return next;
     });
-  const go = (screen: Screen, view?: DealView) => onGo({ screen, id: null, ...(view && view !== 'all' ? { view } : {}) });
-  const on = (screen: Screen, view?: DealView) => route.screen === screen && (screen !== 'deals' || (route.view ?? 'all') === (view ?? 'all'));
+  const go = (screen: Screen, view?: ListView) => onGo({ screen, id: null, ...(view && view !== 'all' ? { view } : {}) });
+  const on = (screen: Screen, view?: ListView) => route.screen === screen && (screen !== 'deals' || (route.view ?? 'all') === (view ?? 'all'));
   // The count is what needs him; the questions the app is still checking are said in its label, not added to it.
   const review = state?.counts.review ?? 0;
   const working = state?.counts.reviewWorking ?? 0;
@@ -80,6 +82,13 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
               end={counts ? v === 'buy-now' && counts[v] > 0 ? <Count n={counts[v]} attention label={`${counts[v]} worth buying now`} /> : <span className="source-count fig">{count(counts[v])}</span> : null}
             />
           ))}
+          <Item
+            glyph="check"
+            label={BOUGHT_LABEL}
+            current={on('deals', BOUGHT_VIEW)}
+            onClick={() => go('deals', BOUGHT_VIEW)}
+            end={bought.data ? <span className="source-count fig">{count(bought.data.purchases.length)}</span> : null}
+          />
         </Group>
         <Group title="Agent" collapsed={collapsed.includes('agent')} onToggle={() => toggle('agent')}>
           <Item

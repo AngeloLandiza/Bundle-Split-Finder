@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
+  ActivityError, OutcomeEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -13,6 +13,15 @@ import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 export type {
   ActivityError,
   AppSettings,
+  OutcomeEntry,
+  OutcomeScorecard,
+  OutcomesResponse,
+  PartOutcomeBody,
+  PartResult,
+  PurchaseResponse,
+  PurchasePatch,
+  PurchaseView,
+  RecordPurchaseBody,
   BogoBody as BogoRequest,
   BogoChoice,
   BogoGroup,
@@ -565,6 +574,8 @@ export interface ActivityView {
   /** The answers he saved, newest first. */
   answers: OwnerAnswer[];
   errors: ActivityError[];
+  /** What he recorded about purchases and sales, one sentence each, newest first, with Undo while it applies. */
+  outcomes: OutcomeEntry[];
   /** This month's spend, from the agent's own count. */
   month: { searches: number; keepaTokens: number; aiUsd: number };
 }

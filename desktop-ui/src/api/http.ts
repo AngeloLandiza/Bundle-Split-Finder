@@ -158,6 +158,14 @@ export function createHttpClient(): ApiClient {
     askAll: async () => void (await call<C.QueuedResponse>('POST', '/api/review/ask-all', {})),
     approve: (ids) => call<C.ApproveResponse>('POST', '/api/review/approve', { ids } satisfies C.ApproveBody).then((r) => ({ approved: r.approved.length, skipped: r.skipped })),
 
+    outcomes: () => call<C.OutcomesResponse>('GET', '/api/outcomes'),
+    recordPurchase: (body) => call<C.PurchaseResponse>('POST', '/api/outcomes', body satisfies C.RecordPurchaseBody),
+    editPurchase: (pid, patch) => call<C.PurchaseResponse>('PATCH', `/api/outcomes/${id(pid)}`, patch satisfies C.PurchasePatch),
+    recordPart: (pid, partId, body) => call<C.PurchaseResponse>('POST', `/api/outcomes/${id(pid)}/parts/${id(partId)}`, body satisfies C.PartOutcomeBody),
+    removePurchase: async (pid) => ({ entryId: (await call<{ removed: true; entryId: string }>('DELETE', `/api/outcomes/${id(pid)}`)).entryId }),
+    undoOutcome: async (entryId) => void (await call<C.OutcomeUndoResponse>('POST', `/api/outcomes/entries/${id(entryId)}/undo`, {})),
+    downloadOutcomesCsv: () => saveAs('/api/outcomes/export.csv', 'split-finder-outcomes.csv'),
+
     activity: async () => {
       const [raw, titles] = await Promise.all([call<C.ActivityResponse>('GET', '/api/activity'), titlesOfDeals()]);
       return mapActivity(raw, titles);

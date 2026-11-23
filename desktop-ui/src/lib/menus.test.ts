@@ -8,8 +8,8 @@ const ids = (items: { id: string }[]) => items.map((i) => i.id);
 
 describe('a deal row\'s menu', () => {
   it('always opens, copies the model and the ASINs, and opens Home Depot when it has the page', () => {
-    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins', 'watch', 'bogo']);
-    expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins', 'watch', 'bogo']);
+    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins', 'bought', 'watch', 'bogo']);
+    expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins', 'bought', 'watch', 'bogo']);
   });
   it('words the BOGO item by where the promotion stands', () => {
     const label = (bogo: DealRow['bogo']) => dealMenu(row({ bogo }), { scanRunning: false }).find((i) => i.id === 'bogo')!.label;
@@ -43,7 +43,7 @@ describe('a deal row\'s menu', () => {
   });
   it('puts a hairline before the copies and before the actions that spend or move', () => {
     const items = dealMenu(row({ lookup: { searches: 2 }, needsAnswer: true }), { scanRunning: false });
-    expect(items.filter((i) => i.separatorBefore).map((i) => i.id)).toEqual(['copy-model', 'watch']);
+    expect(items.filter((i) => i.separatorBefore).map((i) => i.id)).toEqual(['copy-model', 'bought']);
   });
 });
 

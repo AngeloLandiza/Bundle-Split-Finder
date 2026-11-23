@@ -1,0 +1,91 @@
+/* Bought: one grouped section per purchase; its parts are the rows of that section's one box. */
+.bought {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--gutter) var(--gutter) 32px;
+}
+
+.bought-said {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+.bought-head {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--separator);
+}
+
+.bought-line {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.bought-progress {
+  color: var(--label);
+  font-weight: 500;
+}
+
+.bought-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
+}
+
+.bpart {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+}
+
+.bpart-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bpart-title,
+.bpart-sub,
+.bpart-state {
+  margin: 0;
+}
+
+.bpart-units {
+  color: var(--label-2);
+}
+
+.bpart-sub {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
+}
+
+.bpart-state {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.bpart-open {
+  color: var(--label-2);
+}
+
+.bpart-actions {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.bpart-actions .btn[aria-pressed='true'] {
+  font-weight: 600;
+}

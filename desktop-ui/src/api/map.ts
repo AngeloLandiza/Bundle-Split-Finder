@@ -723,6 +723,7 @@ export function mapActivity(r: C.ActivityResponse, titles: ReadonlyMap<string, {
     }),
     answers: (r.answers ?? []).map((a) => ({ id: a.id, questionId: a.questionId, title: a.title, answer: a.answer, at: a.at, undone: Boolean(a.undoneAt), undoable: !a.undoneAt && a.undoable })),
     errors: r.errors ?? [],
+    outcomes: r.outcomes ?? [],
     month: { searches: r.spend.serpSearches, keepaTokens: r.spend.keepaTokens, aiUsd: r.spend.aiUsd },
   };
 }

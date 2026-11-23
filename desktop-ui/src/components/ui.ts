@@ -5,6 +5,7 @@ import { createContext, useContext } from 'react';
 import type { Look } from '../lib/appearance';
 import type { BogoTarget } from './BogoSheet';
 import type { ConfirmTarget } from './ConfirmPriceSheet';
+import type { PartTarget, PurchaseTarget } from './OutcomeSheets';
 
 export interface UiValue {
   inspectorShown: boolean;
@@ -23,6 +24,10 @@ export interface UiValue {
   openConfirmPrice: (target: ConfirmTarget) => void;
   /** The BOGO sheet for one deal: choose the free tool, or mark the deal as a BOGO promotion. */
   openBogo: (target: BogoTarget) => void;
+  /** Outcomes: "I bought this" on a deal, or a correction of a recorded purchase. */
+  openPurchase: (target: PurchaseTarget) => void;
+  /** Outcomes: what became of one part (sold for, returned or not sold). */
+  openPart: (target: PartTarget) => void;
 }
 
 export const UiContext = createContext<UiValue | null>(null);

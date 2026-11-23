@@ -1,6 +1,6 @@
 import { Fragment, useEffect, type ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { ActivityError, AutopilotEntry, OwnerAnswer, Run } from '../api/types';
+import type { ActivityError, AutopilotEntry, OutcomeEntry, OwnerAnswer, Run } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { Fold } from '../components/Fold';
 import { Glyph } from '../components/Glyph';
@@ -53,6 +53,11 @@ export function ActivityScreen() {
             ) : (
               <DayRows items={d.answers} at={(a) => a.at} row={(a) => <OwnerAnswerRow key={a.id} a={a} />} />
             )}
+          </Section>
+        ) : null}
+        {d && d.outcomes.length > 0 ? (
+          <Section label="Purchases and sales you recorded" count={d.outcomes.length}>
+            <DayRows items={d.outcomes} at={(o) => o.at} row={(o) => <OutcomeRow key={o.id} o={o} />} />
           </Section>
         ) : null}
         {d ? (
@@ -134,6 +139,33 @@ function OwnerAnswerRow({ a }: { a: OwnerAnswer }) {
         <Tag>Undone</Tag>
       ) : a.undoable ? (
         <Button size="sm" busy={undo.busy} busyLabel="Undoing…" onClick={() => void undo.run(a.id)}>
+          Undo
+        </Button>
+      ) : null}
+    </li>
+  );
+}
+
+/** A purchase or sale he recorded, as one sentence, with Undo while it still applies (a later change to the same purchase must be taken back first). */
+function OutcomeRow({ o }: { o: OutcomeEntry }) {
+  const { navigate } = useApp();
+  const undo = useAction(api.undoOutcome);
+  return (
+    <li className="arow">
+      <span className="arow-time">{clock(o.at)}</span>
+      <div className="arow-main">
+        <p className="arow-title">{o.sentence}</p>
+        {o.undoneAt ? <p className="arow-sub">Undone.</p> : null}
+        {!o.undoneAt && !o.undoable ? <p className="arow-sub">A later change to this purchase must be taken back first, or it was removed.</p> : null}
+        <p className="arow-sub">
+          <LinkButton onClick={() => navigate({ screen: 'deals', id: null, view: 'bought' })}>Open Bought</LinkButton>
+        </p>
+        {undo.error ? <p className="arow-sub arow-error" role="alert">{undo.error}</p> : null}
+      </div>
+      {o.undoneAt ? (
+        <Tag>Undone</Tag>
+      ) : o.undoable ? (
+        <Button size="sm" busy={undo.busy} busyLabel="Undoing…" onClick={() => void undo.run(o.id)}>
           Undo
         </Button>
       ) : null}

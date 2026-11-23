@@ -18,7 +18,7 @@ export interface MenuItem {
   separatorBefore?: boolean;
 }
 
-export type DealMenuId = 'open' | 'open-hd' | 'copy-model' | 'copy-asins' | 'watch' | 'unwatch' | 'bogo' | 'lookup' | 'verify' | 'review';
+export type DealMenuId = 'open' | 'open-hd' | 'copy-model' | 'copy-asins' | 'bought' | 'watch' | 'unwatch' | 'bogo' | 'lookup' | 'verify' | 'review';
 export type DetailMenuId = 'bogo' | 'lookup' | 'open-hd' | 'copy-model';
 export type QuestionMenuId = 'ask' | 'approve' | 'open-deal' | 'open-hd' | 'copy-question';
 export type PartMenuId = 'open-amazon' | 'copy-asin' | 'confirm' | 'remove';
@@ -33,7 +33,8 @@ export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] 
   if (row.link) items.push({ id: 'open-hd', label: 'Open on Home Depot' });
   items.push({ id: 'copy-model', label: 'Copy model', separatorBefore: true }, { id: 'copy-asins', label: 'Copy ASINs' });
   // The owner's BOGO entry is the fallback for a promotion Home Depot lists no pairs for: not on a deal the agent grouped.
-  const more: MenuItem[] = [row.watched ? { id: 'unwatch', label: 'Unwatch' } : { id: 'watch', label: 'Watch' }];
+  // Outcomes: the purchase is recorded with the estimate as it stands now, so it is offered on every row.
+  const more: MenuItem[] = [{ id: 'bought', label: 'I bought this…' }, row.watched ? { id: 'unwatch', label: 'Unwatch' } : { id: 'watch', label: 'Watch' }];
   if (!row.bogoChoices) more.push({ id: 'bogo', label: bogoMenuLabel(row.bogo) });
   if (row.lookup) {
     more.push({ id: 'lookup', label: `Look up · ${plural(row.lookup.searches, 'search', 'searches')}`, ...(o.scanRunning ? { disabled: SCAN_LATER } : {}) });

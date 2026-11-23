@@ -559,5 +559,6 @@ export const ACTIVITY: ActivityView = {
   errors: [
     { id: 'e1', at: ago(406), sentence: 'SerpApi did not answer during the scan at 4:00 PM, so 3 bundles kept their older prices. Retry the scan.', retry: { label: 'Retry scan', searches: 5, usd: 0 } },
   ],
+  outcomes: [],
   month: { searches: 63, keepaTokens: 820, aiUsd: 4.12 },
 };

@@ -4,7 +4,7 @@
 
 import { Fragment } from 'react';
 import { useState } from 'react';
-import { api, useAction, useApp } from '../api/hooks';
+import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { BogoGroup, BogoView, DealDetail, DealSignals, FbaEstimate } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
@@ -17,6 +17,7 @@ import { useUi } from '../components/ui';
 import { amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, plural, when } from '../lib/format';
 import { detailMenu, type DetailMenuId } from '../lib/menus';
+import { boughtWords } from '../lib/outcomes';
 import { verdictOf } from '../lib/signals';
 import './DealTracking.css';
 
@@ -27,9 +28,13 @@ export function WatchBar({ d }: { d: DealDetail }) {
   const watched = d.watch?.watched === true;
   const toggle = useAction(api.watch);
   const look = useAction(api.lookUp);
-  const { state } = useApp();
+  const { state, navigate } = useApp();
   const scanRunning = state?.agent.status === 'scanning';
   const [said, setSaid] = useState<string | null>(null);
+  // Outcomes: I bought this, and what he already recorded for this deal.
+  const [outcomes] = useResource(() => api.outcomes(), [], ['deals']);
+  const mine = (outcomes.data?.purchases ?? []).filter((p) => p.dealId === d.id);
+  const buy = () => ui.openPurchase({ mode: 'new', dealId: d.id, title: d.title, model: d.model, price: d.price, estimate: d.estimate?.profit ?? null });
   const pick = (id: string) => {
     switch (id as DetailMenuId) {
       case 'lookup':
@@ -52,6 +57,9 @@ export function WatchBar({ d }: { d: DealDetail }) {
         <Button size="sm" glyph={watched ? 'star-fill' : 'star'} aria-pressed={watched} busy={toggle.busy} busyLabel={watched ? 'Stopping…' : 'Watching…'} onClick={() => void toggle.run(d.id, !watched)} title={watched ? 'Stop watching: scans stop judging this bundle' : 'Watch this bundle: every scan judges whether it is worth buying'}>
           {watched ? 'Unwatch' : 'Watch'}
         </Button>
+        <Button size="sm" onClick={buy} title="Record that you bought this deal. The estimate as it stands now is saved with it.">
+          I bought this…
+        </Button>
         <Button
           size="sm"
           glyph="more"
@@ -64,6 +72,11 @@ export function WatchBar({ d }: { d: DealDetail }) {
       {said ? (
         <p className="detail-note" role="status">
           {said}
+        </p>
+      ) : null}
+      {mine.length ? (
+        <p className="detail-note">
+          <Tag>Bought</Tag> {mine.length === 1 ? boughtWords(mine[0]!) : `${mine.length} purchases recorded`} · <LinkButton onClick={() => navigate({ screen: 'deals', id: null, view: 'bought' })}>Open Bought</LinkButton>
         </p>
       ) : null}
       {watched ? (

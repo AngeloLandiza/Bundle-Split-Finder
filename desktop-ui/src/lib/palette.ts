@@ -8,7 +8,7 @@ import { modLabel, SCREENS, type Screen } from './keys';
 import { wordsFor } from './platform';
 import { PREF_TABS, TAB_LABEL, type PrefTab } from './prefs';
 import type { Route } from './route';
-import { DEAL_VIEWS, VIEW_LABEL } from './views';
+import { BOUGHT_LABEL, BOUGHT_VIEW, DEAL_VIEWS, VIEW_LABEL } from './views';
 
 export type PaletteSection = 'Go to' | 'Actions' | 'Deals' | 'Questions';
 export const PALETTE_SECTIONS: readonly PaletteSection[] = ['Go to', 'Actions', 'Deals', 'Questions'];
@@ -56,6 +56,7 @@ export function goToItems(mac: boolean, windows = !mac): PaletteItem[] {
         if (v === 'all') continue;
         out.push({ id: `go:deals:${v}`, section: 'Go to', title: `Deals · ${VIEW_LABEL[v]}`, keywords: `${VIEW_LABEL[v]} view`, action: { type: 'go', route: { screen: 'deals', id: null, view: v } } });
       }
+      out.push({ id: `go:deals:${BOUGHT_VIEW}`, section: 'Go to', title: `Deals · ${BOUGHT_LABEL}`, keywords: 'bought purchases outcomes sold', action: { type: 'go', route: { screen: 'deals', id: null, view: BOUGHT_VIEW } } });
     }
   });
   for (const tab of PREF_TABS) {

@@ -80,6 +80,9 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   const { navigate, state } = useApp();
   const ui = useUi();
   const [res, reload] = useResource(() => api.deals(), [], ['deals']);
+  // Outcomes: the deals he recorded buying are marked Bought.
+  const [outcomes] = useResource(() => api.outcomes(), [], ['deals']);
+  const bought = useMemo(() => new Set((outcomes.data?.purchases ?? []).map((p) => p.dealId)), [outcomes.data]);
   const [sort, setSortState] = useState(readSort);
   const [section, setSection] = useState<Filter>('all');
   const [query, setQuery] = useState('');
@@ -223,6 +226,9 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       case 'unwatch':
         setWatch(r, id === 'watch');
         return;
+      case 'bought':
+        ui.openPurchase({ mode: 'new', dealId: r.id, title: r.title, model: r.model, price: r.price, estimate: r.profit });
+        return;
       case 'bogo':
         // The sheet needs the promotion as it stands (its eligible list), which the row does not carry.
         api
@@ -263,6 +269,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             <span className="deal-title" title={r.title}>
               {r.title}
             </span>
+            {bought.has(r.id) ? <Tag title="You recorded buying this deal. Open Bought to see what became of it.">Bought</Tag> : null}
             {r.buyNow ? (
               <Tag tone="buy" title="The last scan found this worth buying now: above your profit and ROI numbers, selling well, and better than before.">
                 Buy now

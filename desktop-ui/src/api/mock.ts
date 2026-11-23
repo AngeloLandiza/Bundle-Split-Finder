@@ -19,6 +19,8 @@ import { followUpVariants } from './mockFollowUp';
 import real from './mockReal.json';
 import { applyFees } from './mockFees';
 import { mockBogoView } from './mockTracking';
+import { createMockOutcomes } from './mockOutcomes';
+import type { BundleRow } from '@core/scan/types';
 import { parseListingLink } from '@core/scan/listingLink';
 import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type KeyCheck, type KeyName, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
@@ -134,6 +136,14 @@ export function createMockClient(): ApiClient {
   const details: Record<string, DealDetail> = clone(DETAILS);
   let questions: ReviewQuestion[] = clone(QUESTIONS);
   const activity = clone(ACTIVITY);
+  // Outcomes run the agent's own pure logic on the real recorded deals (mockOutcomes.ts); each change is also a sentence in Activity.
+  const outcomes = createMockOutcomes(
+    (dealId) => {
+      const found = (real.scan3.details as unknown as Record<string, { bundle: BundleRow; estimate?: { basis: string } | null; row?: { buyNow?: boolean } }>)[dealId];
+      return found ? { bundle: found.bundle, basis: found.estimate?.basis ?? 'An estimate from your fee settings, not your real Amazon fees.', buyNow: found.row?.buyNow === true } : undefined;
+    },
+    () => emit({ type: 'deals' }),
+  );
   /** The questions he answered, by answer id, for Undo. */
   const kept = new Map<string, ReviewQuestion>();
   let settings: AppSettings = clone(SETTINGS);
@@ -424,9 +434,36 @@ export function createMockClient(): ApiClient {
       return { approved: ok.length, skipped: ids.filter((i) => !ok.some((q) => q.id === i)).map((id) => ({ id, reason: 'Only a verified suggestion can be approved.' })) };
     },
 
+    async outcomes() {
+      await online();
+      return outcomes.outcomes();
+    },
+    async recordPurchase(body) {
+      await online();
+      return outcomes.recordPurchase(body);
+    },
+    async editPurchase(id, patch) {
+      await online();
+      return outcomes.editPurchase(id, patch);
+    },
+    async recordPart(id, partId, body) {
+      await online();
+      return outcomes.recordPart(id, partId, body);
+    },
+    async removePurchase(id) {
+      await online();
+      return outcomes.removePurchase(id);
+    },
+    async undoOutcome(entryId) {
+      await online();
+      outcomes.undoOutcome(entryId);
+    },
+    async downloadOutcomesCsv() {
+      await online();
+    },
     async activity() {
       await online();
-      return clone(activity);
+      return { ...clone(activity), outcomes: outcomes.outcomes().entries };
     },
     async undo(id) {
       await online();

@@ -19,6 +19,14 @@ export const VIEW_LABEL: Record<DealView, string> = {
   watchlist: 'Watchlist',
 };
 
+/**
+ * Outcomes: the list of what he bought. It is not a view of the deal rows (a bought deal may have left the list, and its figures
+ * are the ones frozen at purchase), so it sits beside DealView, in the same sidebar group and the same route.
+ */
+export const BOUGHT_VIEW = 'bought';
+export const BOUGHT_LABEL = 'Bought';
+export type ListView = DealView | typeof BOUGHT_VIEW;
+
 export function inView(r: DealRow, view: DealView): boolean {
   switch (view) {
     case 'buy-now':

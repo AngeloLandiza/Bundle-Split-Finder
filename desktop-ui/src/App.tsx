@@ -4,6 +4,7 @@ import { ApiError, type AgentEvent, type AppState, type PendingPairRequest } fro
 import { CommandPalette } from './components/CommandPalette';
 import { BogoSheet, type BogoTarget } from './components/BogoSheet';
 import { ConfirmPriceSheet, type ConfirmTarget } from './components/ConfirmPriceSheet';
+import { PartSheet, PurchaseSheet, type PartTarget, type PurchaseTarget } from './components/OutcomeSheets';
 import { MenuProvider } from './components/ContextMenu';
 import { ShortcutsSheet } from './components/ShortcutsSheet';
 import { Sidebar } from './components/Sidebar';
@@ -15,6 +16,7 @@ import { DEFAULT_ROUTE, hashOf, parseRoute, type Route } from './lib/route';
 import { isMac, isWindows } from './lib/platform';
 import { openPreferences } from './lib/shell';
 import { ActivityScreen } from './screens/Activity';
+import { BoughtScreen } from './screens/Bought';
 import { DealsScreen } from './screens/Deals';
 import { ReviewScreen } from './screens/Review';
 import { TodayScreen } from './screens/Today';
@@ -69,7 +71,9 @@ export function App() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null);
   const [bogoTarget, setBogoTarget] = useState<BogoTarget | null>(null);
-  const sheetOpen = confirmTarget !== null || bogoTarget !== null;
+  const [purchaseTarget, setPurchaseTarget] = useState<PurchaseTarget | null>(null);
+  const [partTarget, setPartTarget] = useState<PartTarget | null>(null);
+  const sheetOpen = confirmTarget !== null || bogoTarget !== null || purchaseTarget !== null || partTarget !== null;
   // Where focus was when the palette or a sheet opened, so closing it puts him back.
   const returnTo = useRef<HTMLElement | null>(null);
   const [look, setLookState] = useState<Look>(readLook);
@@ -342,6 +346,8 @@ export function App() {
       openShortcuts: () => openOver(() => setShortcutsOpen(true)),
       openConfirmPrice: (target) => openOver(() => setConfirmTarget(target)),
       openBogo: (target) => openOver(() => setBogoTarget(target)),
+      openPurchase: (target) => openOver(() => setPurchaseTarget(target)),
+      openPart: (target) => openOver(() => setPartTarget(target)),
     }),
     [inspector, setInspectorShown, look, openOver],
   );
@@ -363,7 +369,8 @@ export function App() {
             <Sidebar route={route} onGo={navigate} />
             <main className="window-content">
               {route.screen === 'today' ? <TodayScreen /> : null}
-              {route.screen === 'deals' ? <DealsScreen openId={route.id} view={route.view ?? 'all'} /> : null}
+              {route.screen === 'deals' && route.view === 'bought' ? <BoughtScreen /> : null}
+              {route.screen === 'deals' && route.view !== 'bought' ? <DealsScreen openId={route.id} view={route.view ?? 'all'} /> : null}
               {route.screen === 'review' ? <ReviewScreen openId={route.id} /> : null}
               {route.screen === 'activity' ? <ActivityScreen /> : null}
             </main>
@@ -373,6 +380,8 @@ export function App() {
           {shortcutsOpen ? <ShortcutsSheet onClose={() => closeOver(() => setShortcutsOpen(false))} /> : null}
           {confirmTarget ? <ConfirmPriceSheet target={confirmTarget} onClose={() => closeOver(() => setConfirmTarget(null))} /> : null}
           {bogoTarget ? <BogoSheet target={bogoTarget} onClose={() => closeOver(() => setBogoTarget(null))} /> : null}
+          {purchaseTarget ? <PurchaseSheet target={purchaseTarget} onClose={() => closeOver(() => setPurchaseTarget(null))} /> : null}
+          {partTarget ? <PartSheet target={partTarget} onClose={() => closeOver(() => setPartTarget(null))} /> : null}
         </MenuProvider>
       </UiContext.Provider>
     </AppContext.Provider>

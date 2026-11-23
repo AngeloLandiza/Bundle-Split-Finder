@@ -6,6 +6,7 @@ import { Roi, RoiRangeLine, RowProfit } from '../components/Figure';
 import { Glyph } from '../components/Glyph';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
+import { ScorecardRows } from '../components/Scorecard';
 import { EmptyState, LoadError, LoadingState, Meter } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
@@ -15,6 +16,7 @@ import { isBeforeFulfillment } from '../lib/order';
 import { rowState } from '../lib/reviewBrief';
 import { SCREEN_KEYS } from '../lib/notices';
 import { bestDeals, buyNowDeals, dealVerdict, estimatesBeforeFulfillment } from '../lib/today';
+import { scorecard } from '../lib/scorecard';
 import type { DealView } from '../lib/views';
 import { KIND_LABEL, workingNote } from './reviewModel';
 import './Today.css';
@@ -69,11 +71,35 @@ export function TodayScreen() {
               />
             )}
             <NeedsYou res={review} onRetry={reloadReview} />
+            <ScorecardBlock rows={deals.data?.rows ?? null} review={review.data?.questions ?? null} />
           </div>
           <div className="today-side">{state ? <AgentBlock state={state} /> : <Section label="Agent">{online ? <LoadingState label="Loading the agent" compact /> : <EmptyState title="The agent is not running" compact />}</Section>}</div>
         </div>
       </div>
     </Page>
+  );
+}
+
+/**
+ * The scorecard: what he recorded against what was estimated (lib/scorecard.ts). It reads the agent's own records and says nothing
+ * it cannot back: with no purchases it says so and what to do.
+ */
+function ScorecardBlock({ rows, review }: { rows: DealRow[] | null; review: ReviewQuestion[] | null }) {
+  const { state, navigate } = useApp();
+  const [out, reloadOut] = useResource(() => api.outcomes(), [], ['deals', 'activity']);
+  const [act] = useResource(() => api.activity(), [], ['activity']);
+  const questions = review ? { open: review.filter((q) => !isWorking(q.followUp)).length, working: review.filter((q) => isWorking(q.followUp)).length } : null;
+  const card = out.data ? scorecard({ outcomes: out.data, rows, questions, month: act.data ? { searches: act.data.month.searches, aiUsd: act.data.month.aiUsd } : null, aiCapUsd: state?.budget.aiCapUsd ?? null }) : null;
+  return (
+    <Section
+      label="Scorecard"
+      action={out.data && out.data.purchases.length ? <LinkButton onClick={() => navigate({ screen: 'deals', id: null, view: 'bought' })}>Open Bought</LinkButton> : null}
+      note="Realised figures are what you recorded. Estimates come from your fee settings, not your real Amazon fees."
+    >
+      {out.status === 'loading' ? <LoadingState compact /> : null}
+      {out.status === 'error' && !out.data ? <LoadError error={out.error} onRetry={reloadOut} /> : null}
+      {card ? <ScorecardRows card={card} action={<Button onClick={() => navigate({ screen: 'deals', id: null, view: 'buy-now' })}>Open the deals</Button>} /> : null}
+    </Section>
   );
 }
 
