@@ -1083,6 +1083,12 @@ export interface WorkerResultResponse {
 
 // ---------------------------------------------------------------- events (GET /api/events)
 
+/** POST /api/notify/test-telegram: one test message to the saved bot and chat. `problem` is Telegram's refusal in plain words, never a key. */
+export interface TelegramTestResponse {
+  ok: boolean;
+  problem?: string;
+}
+
 /** The shell turns this into a native notification (src-tauri/src/events.rs reads title, body, kind, count). */
 export interface NotifyEvent {
   id: string;

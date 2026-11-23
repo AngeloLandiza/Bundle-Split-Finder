@@ -37,6 +37,7 @@ import { AnswerRefused } from '../core/src/scan/answers';
 import { planConfirmedPrice, planRemoveConfirmedPrice } from '../core/src/scan/confirmed';
 import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
+import { testTelegram } from './alerts';
 import { Auth, type PairError } from './auth';
 import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './dataPane';
 import { measuredByDefault, modelIdentity } from './autopilot';
@@ -518,6 +519,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return HANDLED;
   });
   r.post('/api/notify/test', 'ui', () => notify({ kind: 'scan', title: 'Split Finder', body: 'Notifications from the agent work.' }));
+  r.post('/api/notify/test-telegram', 'ui', () => testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram));
 
   // ------------------------------------------------------------ settings and keys
   r.get('/api/settings', 'any', () => settingsResponse({ settings: store.get('settings'), keys: store.get('keys') }));

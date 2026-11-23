@@ -91,6 +91,8 @@ export interface ApiClient {
 
   /** Asks the agent for one notification on this Mac (POST /api/notify/test), so the owner can see how they arrive. */
   testNotification(): Promise<void>;
+  /** Sends one test message to the saved Telegram bot and chat (POST /api/notify/test-telegram). `problem` is Telegram's refusal in plain words. */
+  testTelegram(): Promise<{ ok: boolean; problem?: string }>;
 
   /** Chrome's pairing requests waiting for the owner, newest last. */
   pairRequests(): Promise<PendingPairRequest[]>;

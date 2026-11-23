@@ -39,6 +39,15 @@ export function NotificationsPane() {
   const a = settings.alerts;
   const test = useAction(api.testNotification);
   const [sent, setSent] = useState(false);
+  const [tg, setTg] = useState<{ busy: boolean; result: { ok: boolean; problem?: string } | null }>({ busy: false, result: null });
+  const sendTelegramTest = async () => {
+    setTg({ busy: true, result: null });
+    try {
+      setTg({ busy: false, result: await api.testTelegram() });
+    } catch (e) {
+      setTg({ busy: false, result: { ok: false, problem: e instanceof Error ? e.message : 'The agent did not answer.' } });
+    }
+  };
   const setKind = (kind: keyof typeof n.kinds, on: boolean) => update({ notifications: { kinds: { [kind]: on } } });
   const telegram = state?.keys.telegram ?? false;
 
@@ -118,18 +127,39 @@ export function NotificationsPane() {
       </Row>
       <Rule />
       <Row label="Telegram" align="start" help="The same digest, sent to your phone. It follows the digest setting above, not quiet hours, and never carries a key.">
-        <div className="key-status">
-          {state === null ? null : telegram ? (
-            <span className="key-saved">
-              <Glyph name="check" size={12} />
-              Set up
-            </span>
-          ) : (
-            <span className="muted">Not set up</span>
-          )}
-          <Button size="sm" onClick={() => goTo('keys')}>
-            {telegram ? 'Change in Keys' : 'Set up in Keys'}
-          </Button>
+        <div className="stack">
+          <div className="key-status">
+            {state === null ? null : telegram ? (
+              <span className="key-saved">
+                <Glyph name="check" size={12} />
+                Set up
+              </span>
+            ) : (
+              <span className="muted">Not set up</span>
+            )}
+            <Button size="sm" onClick={() => goTo('keys')}>
+              {telegram ? 'Change in Keys' : 'Set up in Keys'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!telegram}
+              busy={tg.busy}
+              busyLabel="Sending…"
+              onClick={() => void sendTelegramTest()}
+            >
+              Send a test message
+            </Button>
+          </div>
+          {tg.result?.ok ? (
+            <p className="field-status field-status-ok" role="status">
+              Sent. Check Telegram for “Split Finder can reach you here.”
+            </p>
+          ) : null}
+          {tg.result && !tg.result.ok ? (
+            <p className="field-status field-status-error" role="alert">
+              {tg.result.problem ?? 'The test message did not go through.'}
+            </p>
+          ) : null}
         </div>
       </Row>
       <Row label="Test" align="start" help={`Sends one notification to this ${words.computer}, so you can see how they arrive.`}>

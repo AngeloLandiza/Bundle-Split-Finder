@@ -183,6 +183,7 @@ export function createHttpClient(): ApiClient {
     deleteKey: async (name) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}`)),
 
     testNotification: async () => void (await call('POST', '/api/notify/test', {})),
+    testTelegram: () => call<C.TelegramTestResponse>('POST', '/api/notify/test-telegram', {}),
 
     pairRequests: () => call<C.PendingPairRequest[]>('GET', '/api/pair/requests'),
     decidePairing: async (requestId, allow) => void (await call('POST', allow ? '/api/pair/approve' : '/api/pair/deny', { requestId } satisfies C.PairDecisionBody)),

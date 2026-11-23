@@ -561,6 +561,10 @@ export function createMockClient(): ApiClient {
     async testNotification() {
       await online(300);
     },
+    async testTelegram() {
+      await online(400);
+      return state.keys.telegram ? { ok: true } : { ok: false, problem: 'Telegram is not set up. Add a bot token and chat id in Keys first.' };
+    },
     async patchSettings(patch) {
       await online(150);
       const before = settings;

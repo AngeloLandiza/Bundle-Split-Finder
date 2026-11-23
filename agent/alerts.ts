@@ -5,7 +5,7 @@
 // questions alert only when one is new since the last message. Profit and ROI are
 // estimates from the fee settings and the message says so (rule 5). No key is ever in a message.
 
-import type { NotifyEvent } from '../core/src/api/contract';
+import type { NotifyEvent, TelegramTestResponse } from '../core/src/api/contract';
 import type { BundleRow, ReviewItem, ScanReport } from '../core/src/scan/types';
 import { estimateRoiPercent, type AlertSettings } from '../core/src/settings';
 import type { SignalLine } from '../core/src/tracking/state';
@@ -145,7 +145,12 @@ export interface TelegramKeys {
 }
 
 /** Telegram's own words, without the token, short. */
-const scrub = (text: string, keys: TelegramKeys): string => text.split(keys.botToken).join('[token]').slice(0, 200);
+const scrub = (text: string, keys: TelegramKeys): string => {
+  // The whole token, and the secret half after the colon in case Telegram echoes only that.
+  const secret = keys.botToken.includes(':') ? keys.botToken.slice(keys.botToken.indexOf(':') + 1) : '';
+  const clean = text.split(keys.botToken).join('[token]');
+  return (secret.length >= 6 ? clean.split(secret).join('[token]') : clean).slice(0, 200);
+};
 
 /**
  * One sendMessage call (core.telegram.org/bots/api, read Nov 22, 2026: POST https://api.telegram.org/bot<token>/METHOD,
@@ -153,7 +158,12 @@ const scrub = (text: string, keys: TelegramKeys): string => text.split(keys.botT
  * {ok, result} or {ok: false, error_code, description}). The token is in the address Telegram defines; it is never
  * in a message, a log line or an error sentence.
  */
-export async function sendTelegram(fetchFn: typeof fetch, keys: TelegramKeys, text: string, signal?: AbortSignal): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function sendTelegram(
+  fetchFn: typeof fetch,
+  keys: TelegramKeys,
+  text: string,
+  signal?: AbortSignal,
+): Promise<{ ok: true } | { ok: false; error: string; /** Telegram's HTTP status; absent when it could not be reached. */ status?: number; /** Telegram's own description, token scrubbed. */ description?: string }> {
   let res: Response;
   try {
     res = await fetchFn(`https://api.telegram.org/bot${keys.botToken}/sendMessage`, {
@@ -167,8 +177,30 @@ export async function sendTelegram(fetchFn: typeof fetch, keys: TelegramKeys, te
   }
   const body = (await res.json().catch(() => ({}))) as { ok?: unknown; description?: unknown };
   if (res.ok && body.ok === true) return { ok: true };
-  const said = typeof body.description === 'string' ? `: ${scrub(body.description, keys)}` : '';
-  return { ok: false, error: `Telegram refused the message (HTTP ${res.status}${said}).` };
+  const description = typeof body.description === 'string' ? scrub(body.description, keys) : undefined;
+  const said = description !== undefined ? `: ${description}` : '';
+  return { ok: false, error: `Telegram refused the message (HTTP ${res.status}${said}).`, status: res.status, ...(description !== undefined ? { description } : {}) };
+}
+
+/** What the "Send a test message" button sends. */
+export const TELEGRAM_TEST_TEXT = 'Split Finder can reach you here.';
+
+/** Telegram's refusal in plain words, with its own description after it. Never the token (scrubbed already). */
+export function telegramProblemWords(status: number | undefined, description: string | undefined): string {
+  const theirs = description ? ` Telegram said: ${description}.` : '';
+  if (status === undefined) return 'Telegram could not be reached. Check this computer’s internet connection and try again.';
+  if (status === 401 || status === 404) return `Telegram did not accept the bot token. Copy it again from BotFather in Keys.${theirs}`;
+  if (status === 429) return `Telegram asks you to wait a moment before sending again. Try again shortly.${theirs}`;
+  if (status === 403) return `The bot is not allowed to message this chat. Open the bot in Telegram and press Start, then try again.${theirs}`;
+  if (status === 400 && /chat not found/i.test(description ?? '')) return `Telegram cannot find that chat id. Send your bot a message first, then check the chat id in Keys.${theirs}`;
+  return `Telegram refused the message (HTTP ${status}).${theirs}`;
+}
+
+/** The test message: one send to the saved bot and chat, answered as the owner reads it. */
+export async function testTelegram(fetchFn: typeof fetch, keys: TelegramKeys | undefined): Promise<TelegramTestResponse> {
+  if (!keys) return { ok: false, problem: 'Telegram is not set up. Add a bot token and chat id in Keys first.' };
+  const r = await sendTelegram(fetchFn, keys, TELEGRAM_TEST_TEXT);
+  return r.ok ? { ok: true } : { ok: false, problem: telegramProblemWords(r.status, r.description) };
 }
 
 /**
