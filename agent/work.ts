@@ -8,7 +8,7 @@
 // never touches the reserve; Scan now may, as in the extension), Keepa through KeepaClient + TokenBudget, models through
 // pipelinesFrom. Keys come from the store and are never in a sentence this file writes (scrub).
 
-import { appendFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { AppSettings, AskResponse, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
@@ -45,6 +45,7 @@ import {
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ReviewItem, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
+import { parseLedger, searchesLeftNow } from '../core/src/serpapi/balance';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import {
@@ -165,12 +166,17 @@ export function scrub(text: string, keys: StoredKeys): string {
   return out;
 }
 
+const SERP_LEDGER = 'serpapi-ledger.jsonl';
+
 const sentenceOf = (err: unknown): string => (err instanceof Error && err.message ? err.message : 'Something went wrong.');
 
 /** Step 15: Look up all's search cap: the per-scan cap, or `maxSearches` when that is lower. */
 function lookupsCap(ext: ExtensionSettings, maxSearches: number | undefined): ExtensionSettings {
   return maxSearches === undefined ? ext : { ...ext, searchesPerScan: Math.min(ext.searchesPerScan, Math.max(0, Math.floor(maxSearches))) };
 }
+
+/** The policy that spends the owner's reserve is the manual one; every other search keeps it, whoever started the run. */
+const reserveTrigger = (explicit: boolean): ScanTrigger => (explicit ? 'manual' : 'scheduled');
 
 export class AgentWork {
   readonly scanStore: ScanStore;
@@ -738,12 +744,63 @@ export class AgentWork {
 
   private ledger(file: string) {
     return (entry: unknown) => {
+      // The balance shown counts this row at once; the file is the record that survives a restart.
+      if (file === SERP_LEDGER && typeof (entry as { at?: unknown }).at === 'string') this.serpRows().push({ at: (entry as { at: string }).at });
       try {
         appendFileSync(join(this.d.dataDir, file), `${JSON.stringify(entry)}\n`);
       } catch {
         // The account check is the budget's truth; the ledger is the record.
       }
     };
+  }
+
+  /** The rows of serpapi-ledger.jsonl, read once and then kept up to date by every spend this agent records. */
+  private serpLedgerRows: { at: string }[] | null = null;
+  /** Set when a scan's account check found the balance at or below the reserve and no explicit yes: it spends no search. */
+  private reserveHeld: { left: number; reserve: number } | null = null;
+
+  private serpRows(): { at: string }[] {
+    if (!this.serpLedgerRows) {
+      try {
+        this.serpLedgerRows = parseLedger(readFileSync(join(this.d.dataDir, SERP_LEDGER), 'utf8'));
+      } catch {
+        this.serpLedgerRows = [];
+      }
+    }
+    return this.serpLedgerRows;
+  }
+
+  /**
+   * Searches left now: the last account check less the ledger rows written after it (core/src/serpapi/balance.ts). What
+   * the state shows and what the checks that gate spending read; the spend itself is held to a fresh account check.
+   */
+  serpLeft(): number | null {
+    return searchesLeftNow(this.d.store.get('runtime').serp, this.serpRows());
+  }
+
+  /** The last account check, kept for the balance (runtime.serp). The rows it already counts are dropped from memory. */
+  private noteAccount(a: AccountInfo): void {
+    const at = new Date(this.d.now()).toISOString();
+    this.d.store.update('runtime', (r) => ({ ...r, serp: { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at } }));
+    const t = Date.parse(at);
+    this.serpLedgerRows = this.serpRows().filter((row) => !(Date.parse(row.at) <= t));
+  }
+
+  /** What rung 2's gate reads of the balance: the corrected figure (null before any account check). */
+  private gateSerp(): { left: number } | null {
+    const left = this.serpLeft();
+    return left === null ? null : { left };
+  }
+
+  /** The free account check once more (no search is spent), so the balance is the account's own figure again. Never throws. */
+  private async refreshAccount(): Promise<void> {
+    const key = this.d.store.get('keys').serpapi;
+    if (!key) return;
+    try {
+      this.noteAccount(await SerpApiClient.account(key, this.d.fetchFn, this.d.serpBaseUrl));
+    } catch {
+      // The ledger-corrected balance stays; the next check tries again.
+    }
   }
 
   /**
@@ -805,7 +862,7 @@ export class AgentWork {
    * lower, and the hourly limit; like Scan now, the owner's click may spend the reserve), with no Home Depot page, no
    * brand page, no Chrome read, no eBay and no AI. Answers before it starts with what it is planned to make on each.
    */
-  async lookUpAll(maxSearches?: number): Promise<LookupsRunResponse> {
+  async lookUpAll(maxSearches?: number, useReserve = false): Promise<LookupsRunResponse> {
     const none = (reason: string): LookupsRunResponse => ({ started: false, reason, viaKeepa: 0, viaSerpapi: 0 });
     if (this.live.busy) return none(this.busySentence('scan'));
     if (this.answering > 0) return none('An answer is being applied. Try again in a moment.');
@@ -826,7 +883,8 @@ export class AgentWork {
     try {
       const account = await SerpApiClient.account(keys.serpapi, this.d.fetchFn, this.d.serpBaseUrl);
       this.keyProblem('serpapi', null);
-      serp = new SearchBudget(account, budgetPolicyFor(lookupsCap(ext, maxSearches), 'manual', 0));
+      this.noteAccount(account);
+      serp = new SearchBudget(account, budgetPolicyFor(lookupsCap(ext, maxSearches), reserveTrigger(useReserve), 0));
     } catch (err) {
       if (err instanceof SerpApiError && err.status === 401) this.keyProblem('serpapi', err.message);
       return none(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
@@ -838,7 +896,7 @@ export class AgentWork {
       return none(`Nothing can pay for a lookup now: ${lookupsSentence({ waiting: work.lookups.length, keepa: 0, serpapi: 0, blockedBy: plan.blockedBy, refillPerMin: store.get('runtime').keepa?.refillRate ?? null })}`);
     }
     try {
-      this.begin('scan', () => this.scan('manual', undefined, { maxSearches }));
+      this.begin('scan', () => this.scan('manual', undefined, { maxSearches, useReserve }));
     } catch (err) {
       if (err instanceof WorkRefused) return none(err.message);
       throw err;
@@ -850,9 +908,10 @@ export class AgentWork {
   }
 
   /** `again`: Read again (readPagesAgain), with the searches the last scan used. `lookups`: Look up all (lookUpAll). */
-  private async scan(trigger: ScanTrigger, again?: { usedBefore: number }, lookups?: { maxSearches?: number }): Promise<void> {
+  private async scan(trigger: ScanTrigger, again?: { usedBefore: number }, lookups?: { maxSearches?: number; useReserve?: boolean }): Promise<void> {
     const { store } = this.d;
     const startedAt = this.d.now();
+    this.reserveHeld = null;
     const run: RunRecord = {
       id: `run-${startedAt}`, kind: 'scan', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running',
       searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Scanning.', trigger, stopReason: null, error: null,
@@ -942,6 +1001,8 @@ export class AgentWork {
       if (tg) notes.push(tg);
     }
 
+    // The scan's searches are in the ledger already; the free account check puts the account's own figure back.
+    await this.refreshAccount();
     run.aiCostUsd = Math.round(((run.judgeCostUsd ?? 0) + (ai?.costUsd ?? 0)) * 10_000) / 10_000;
     run.questionsAsked = ai?.asked ?? 0;
     run.autopilotApplied = applied;
@@ -981,6 +1042,16 @@ export class AgentWork {
       });
       if (sentence) parts.push(sentence);
     }
+    const held = this.reserveHeld;
+    if (held) {
+      const waiting = job?.lookupsWaiting ?? 0;
+      const ext = extensionSettingsOf(this.d.store.get('settings'));
+      const may = Math.min(Math.max(0, Math.floor(ext.searchesPerScan)), waiting, held.left);
+      const left = `${held.left} ${held.left === 1 ? 'search' : 'searches'} left, you keep ${held.reserve}`;
+      parts.push(waiting > 0 && may > 0
+        ? `Searches are at your reserve (${left}), so this scan spent none. To look these up, use searches for them: up to ${may} of your ${held.left} left.`
+        : `Searches are at your reserve (${left}), so this scan spent none.`);
+    }
     const verified = job ? catalogSentence(job.matchesVerified ?? 0, job.matchesRemoved ?? 0) : null;
     if (verified) parts.push(verified);
     if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
@@ -990,7 +1061,7 @@ export class AgentWork {
     return [...parts, ...notes].join(' ');
   }
 
-  private async runTheScan(trigger: ScanTrigger, keys: StoredKeys, notes: string[], again?: { usedBefore: number }, lookups?: { maxSearches?: number }): Promise<ScanJob> {
+  private async runTheScan(trigger: ScanTrigger, keys: StoredKeys, notes: string[], again?: { usedBefore: number }, lookups?: { maxSearches?: number; useReserve?: boolean }): Promise<ScanJob> {
     const { store } = this.d;
     const app = store.get('settings');
     const ext = extensionSettingsOf(app);
@@ -1008,13 +1079,15 @@ export class AgentWork {
       throw new WorkRefused(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
     }
     this.keyProblem('serpapi', null);
-    const at = new Date(this.d.now()).toISOString();
-    store.update('runtime', (r) => ({ ...r, serp: { left: account.totalSearchesLeft, perMonth: account.searchesPerMonth, rateLimitPerHour: account.rateLimitPerHour, at } }));
+    this.noteAccount(account);
 
     const newest = (await this.scanStore.listScans())[0];
     const continued = newest?.status === 'running' ? newest : undefined;
-    const budget = new SearchBudget(account, budgetPolicyFor(lookups ? lookupsCap(ext, lookups.maxSearches) : ext, trigger, again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
-    const serpLedger = this.ledger('serpapi-ledger.jsonl');
+    // Nov 23: the reserve is the owner's, and only the owner's explicit say-so (Look up with "Use searches for these") spends it:
+    // a manual scan keeps it like a scheduled one, and says so when the balance is already at or below it.
+    this.reserveHeld = !lookups?.useReserve && account.totalSearchesLeft <= ext.reserve ? { left: account.totalSearchesLeft, reserve: ext.reserve } : null;
+    const budget = new SearchBudget(account, budgetPolicyFor(lookups ? lookupsCap(ext, lookups.maxSearches) : ext, reserveTrigger(lookups?.useReserve === true), again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
+    const serpLedger = this.ledger(SERP_LEDGER);
     const client = new SerpApiClient({
       apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
       onSpend: (e: LedgerEntry) => serpLedger(e),
@@ -1733,7 +1806,7 @@ export class AgentWork {
     const ext = extensionSettingsOf(app);
     // Round 2: no free account check, and no wake, while rung 2 cannot read today.
     if (!rung2CanRun({
-      enabled: app.lookups?.autoVerify !== false, hasKey: Boolean(keys.serpapi), paused: store.get('agent').paused, serp: store.get('runtime').serp,
+      enabled: app.lookups?.autoVerify !== false, hasKey: Boolean(keys.serpapi), paused: store.get('agent').paused, serp: this.gateSerp(),
       reserve: ext.reserve, perDay: app.lookups?.verifySearchesPerDay, state: store.get('runtime').autoConfirm, now,
     })) return null;
     if (mode === 'drip' && this.autoConfirmNextAt !== null && now < this.autoConfirmNextAt) return null;
@@ -1746,7 +1819,7 @@ export class AgentWork {
     const wanted = await autoConfirmWanted(base);
     this.autoConfirmNextAt = now + AUTO_CONFIRM_EVERY_MS;
     if (wanted.length === 0) return null;
-    const ledger = this.ledger('serpapi-ledger.jsonl');
+    const ledger = this.ledger(SERP_LEDGER);
     const startedAt = this.d.now();
     const stop = (): boolean => (mode === 'drip' ? !this.dripAllowed() || this.dripCtl.signal.aborted : this.stopCtl.signal.aborted);
     let done: AutoConfirmDone;
@@ -1757,7 +1830,7 @@ export class AgentWork {
         account: async () => {
           const a = await SerpApiClient.account(keys.serpapi!, this.d.fetchFn, this.d.serpBaseUrl);
           // Round 2: the last known account decides, without a call, whether rung 2 can read (rung2CanRun).
-          store.update('runtime', (r) => ({ ...r, serp: { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at: new Date(this.d.now()).toISOString() } }));
+          this.noteAccount(a);
           return a;
         },
         verify: (t, budget) => runPaid({
@@ -1799,7 +1872,7 @@ export class AgentWork {
       && keepaCanPull(runtime.keepa, ext.keepaReserve);
     // Round 2: rung 2 is queued only when it can read today (an allowance of 0, off, or no key: not queued).
     const verifyOn = rung2CanRun({
-      enabled: app.lookups?.autoVerify !== false, hasKey: Boolean(keys.serpapi), paused: store.get('agent').paused, serp: runtime.serp,
+      enabled: app.lookups?.autoVerify !== false, hasKey: Boolean(keys.serpapi), paused: store.get('agent').paused, serp: this.gateSerp(),
       reserve: ext.reserve, perDay: app.lookups?.verifySearchesPerDay, state: runtime.autoConfirm, now,
     });
     const signals = store.get('tracking').signals;
@@ -1854,7 +1927,7 @@ export class AgentWork {
     const budget = new SearchBudget(account, budgetPolicyFor(ext, 'manual', 0));
     const quote = quotePaid(action, await savedAnswers(this.scanStore), budget);
     if (quote.refusal) throw new WorkRefused(quote.refusal);
-    const ledger = this.ledger('serpapi-ledger.jsonl');
+    const ledger = this.ledger(SERP_LEDGER);
     const client = new SerpApiClient({ apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl, onSpend: (e) => ledger(e) });
     const startedAt = this.d.now();
     const run: RunRecord = { id: `run-${startedAt}`, kind: kind === 'verify' ? 'verify' : 'lookup', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: '', trigger: 'manual' };

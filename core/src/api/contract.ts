@@ -153,10 +153,16 @@ export interface LastScanSummary {
 /**
  * Step 15, POST /api/lookups/run (UI, the owner's "Look up all"): the parts that wait for an Amazon lookup, looked up
  * now within the same budgets as a scan (Keepa's tokens above its reserve first, then searches within the per-scan cap,
- * the monthly reserve and the hourly limit). `maxSearches` lowers the search cap for this run only.
+ * the monthly reserve and the hourly limit). `maxSearches` lowers the search cap for this run only; `useReserve` is the
+ * owner's yes to spend from the reserve.
  */
 export interface LookupsRunRequest {
   maxSearches?: number;
+  /**
+   * Nov 23: the owner's explicit say-so to spend searches from the reserve ("Use searches for these (up to N of your M
+   * left)"). Without it a lookup run keeps the reserve, whoever started it: at or below it, it spends no search.
+   */
+  useReserve?: boolean;
 }
 
 /** `viaKeepa` / `viaSerpapi`: the lookups the run is planned to make on each; `reason` says why it did not start. */

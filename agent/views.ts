@@ -636,6 +636,11 @@ export interface LiveView {
   helperOutdated?: boolean;
   /** Step 15: the drip of Keepa lookups between scans (work.ts dripState). */
   drip?: DripState;
+  /**
+   * Searches left now: the last account check less the ledger rows written after it (core/src/serpapi/balance.ts). Absent:
+   * the last check's own figure (a state built without the agent's ledger).
+   */
+  serpLeft?: number | null;
 }
 
 /** Nov 23: the last scan, with whether Read again can start now (some page unread, Chrome connected, nothing running). */
@@ -675,7 +680,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       ...(live.helperVersion ? { version: live.helperVersion } : {}),
     },
     budget: {
-      serpLeft: data.runtime.serp?.left ?? null,
+      serpLeft: live.serpLeft !== undefined ? live.serpLeft : data.runtime.serp?.left ?? null,
       serpMonthly: data.runtime.serp?.perMonth ?? null,
       serpPerScan: data.settings.settings.searchesPerScan,
       serpReserve: data.settings.settings.reserve,

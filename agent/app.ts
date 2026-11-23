@@ -476,7 +476,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const live = work.state();
     return agentState(data, {
       ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
-      ...(live.drip ? { drip: live.drip } : {}),
+      ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(),
     });
   };
 
@@ -840,7 +840,8 @@ export function createAgent(opts: AgentOptions): Agent {
     if ('maxSearches' in b && (typeof b.maxSearches !== 'number' || !Number.isInteger(b.maxSearches) || b.maxSearches < 0)) {
       throw new HttpError('bad_request', 'maxSearches must be a whole number of 0 or more.');
     }
-    return work.lookUpAll(typeof b.maxSearches === 'number' ? b.maxSearches : undefined);
+    if ('useReserve' in b && typeof b.useReserve !== 'boolean') throw new HttpError('bad_request', 'useReserve must be true or false.');
+    return work.lookUpAll(typeof b.maxSearches === 'number' ? b.maxSearches : undefined, b.useReserve === true);
   });
 
   // ------------------------------------------------------------ pairing
