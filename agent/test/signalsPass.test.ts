@@ -385,18 +385,97 @@ describe('buy safety: a buy waits for its listings to be confirmed (Nov 23)', ()
 });
 
 describe('checking the app\'s own work: a held deal is never Buy now until the owner looks', () => {
-  const HELD = bundleKey('322961591');
-  const ASIN = 'B0DGLWKS9S';
-
   /**
-   * The Nov 24 case (fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json) on one part: the $39.99 adaptor plate
-   * DWST08017, confirmed by Amazon's catalog part number on a $389 DWST60122-1 backpack; its Keepa figures stored, so the
-   * deal would be a buy but for the hold.
+   * The case the first line lets through (found by npm run audit:sanity on the owner's data, Nov 24): Amazon's B0FD253MKS
+   * "RYOBI 18V Cordless Hand Vacuums PCL700B & PCL702B (Tools Only)", two tools, counted for PCL700B alone. Built from
+   * after-scan5's own records (scan/matches.json RYOBI:PCL700B, a title match the catalog could not settle; partPrices.json:
+   * Home Depot sells PCL700B alone at $94, page 319962849) with the $299 the owner's deals counted for the listing. At 3.2
+   * times Home Depot's price it is under the price guard's 4 (core/src/scan/priceGuard.ts), and no field confirmation is
+   * involved, so only the second line sees it. The deal here is PCL700B on its own at Home Depot's price; Keepa's figures
+   * are stored, so without the hold it would "look worth buying" (its listing not confirmed yet).
    */
-  async function wrongConfirmation(): Promise<void> {
+  const HELD = bundleKey('319962849');
+  const ASIN = 'B0FD253MKS';
+  const LISTING = `listing|RYOBI:PCL700B|${ASIN}`;
+
+  async function twoToolListing(): Promise<void> {
     const store = agent.work.scanStore;
     await store.putBundle({
-      key: HELD, retailer: 'homedepot', itemId: '322961591', title: 'Adaptor Plate for TOUGHSYSTEM 2.0', brand: 'DEWALT', model: 'DWST08017',
+      key: HELD, retailer: 'homedepot', itemId: '319962849', title: 'ONE+ 18V Cordless Hand Vacuum with Powered Brush (Tool Only)', brand: 'RYOBI', model: 'PCL700B',
+      upc: null, price: 94, regularPrice: 94, percentOff: null, link: 'https://www.homedepot.com/p/319962849', seenAt: T0,
+      split: { components: ['PCL700B'], status: 'resolved', notes: [] },
+    });
+    await store.putPartPrice({
+      key: 'RYOBI:PCL700B', brand: 'RYOBI', model: 'PCL700B', itemId: '319962849', matchedModel: 'PCL700B', price: 94,
+      title: 'ONE+ 18V Cordless Hand Vacuum with Powered Brush (Tool Only)', link: 'https://www.homedepot.com/p/319962849', seenAt: T0, checkedAt: T0,
+    });
+    await store.putListing({ asin: ASIN, brand: 'RYOBI', title: 'RYOBI 18V Cordless Hand Vacuums PCL700B & PCL702B (Tools Only)', models: ['PCL700B', 'PCL702B'], image: null, price: 299, reviews: null, seenAt: T0, checkedAt: T0 });
+    await store.putPrice({ asin: ASIN, price: 299, reviews: null, seenAt: T0, checkedAt: T0 });
+    await store.putMatch({
+      key: 'RYOBI:PCL700B', brand: 'RYOBI', model: 'PCL700B', status: 'matched', asin: ASIN, grade: 'probable', alternatives: [], decidedBy: 'auto',
+      updatedAt: T0, waitingSince: null,
+      catalogChecks: [{ asin: ASIN, status: 'unknown', reason: "Amazon's catalog lists no part number that is PCL700B", at: T0, ladder: 2 }],
+    });
+    await writePartTrend(agent.work.cache, { asin: ASIN, amazonPrice: 299, salesRank: 1000, offerCount: 5, pulledAt: T0, monthlySold: 500, fbaFee: 8.02 });
+    await agent.work.refresh();
+  }
+  const view = (key = HELD) => {
+    const data = { deals: agent.store.get('deals'), review: agent.store.get('review'), runtime: agent.store.get('runtime'), settings: agent.store.get('settings'), tracking: agent.store.get('tracking') };
+    return { row: dealsResponse(data, { sort: 'profit' }, clock).rows.find((r) => r.id === key)!, detail: dealDetail(data, key)! };
+  };
+
+  it('the first line lets it through; the second holds it on three checks: Needs a look with the links, no buy, nothing sent', async () => {
+    await twoToolListing();
+    // Through the first line: still the counted listing, an estimate on it.
+    expect(await agent.work.scanStore.getMatch('RYOBI:PCL700B')).toMatchObject({ status: 'matched', asin: ASIN });
+    const { row: r, detail } = view();
+    expect(r.profit).toBeGreaterThan(100);
+    expect(r.buyNow).toBe(false);
+    expect(r.needsLook).toMatchObject({
+      kind: 'title_extra_model', part: 'PCL700B', asin: ASIN, clearKey: LISTING,
+      sentence: 'The Amazon listing counted for PCL700B also names PCL702B: "RYOBI 18V Cordless Hand Vacuums PCL700B & PCL702B (Tools Only)". It may sell more than the part.',
+    });
+    expect(r.needsLook!.links.map((l) => l.url)).toEqual(['https://www.homedepot.com/p/319962849', 'https://www.homedepot.com/p/319962849', `https://www.amazon.com/dp/${ASIN}`]);
+    expect(detail.needsLook!.map((f) => f.kind)).toEqual(['title_extra_model', 'price_vs_home_depot', 'too_good']);
+    expect(detail.needsLook![1]!.sentence).toBe("Amazon's $299.00 for PCL700B is 3.18 times Home Depot's $94.00 for it sold alone.");
+    const s = agent.store.get('tracking').signals[HELD]!;
+    expect(s.buyNow).toBeNull();
+    // Without the hold it would read "Looks worth buying" (its listing not confirmed yet); held, it never does.
+    expect(s.verdict).toMatch(/^Not worth buying now: needs a look: The Amazon listing counted for PCL700B also names PCL702B/);
+    expect(telegram).toEqual([]);
+  });
+
+  it('"This is right" on each finding is remembered; with nothing left to look at, the deal is judged as any other', async () => {
+    await twoToolListing();
+    await agent.work.settleNeedsLook(HELD, LISTING, 'right');
+    expect(view().row.needsLook).toMatchObject({ kind: 'too_good' });
+    await agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'right');
+    expect(view().row.needsLook).toBeUndefined();
+    expect(agent.store.get('tracking').sanityCleared).toEqual([`bundle|${KEY}|too_good`, LISTING, `bundle|${HELD}|too_good`]);
+    // Judged as any other: a title match not confirmed yet, so "looks worth buying", never announced.
+    expect(agent.store.get('tracking').signals[HELD]!.verdict).toMatch(/^Looks worth buying: .* — 1 listing not confirmed yet\.$/);
+    await agent.work.refresh();
+    expect(agent.store.get('deals').sanity!.filter((f) => f.bundleId === HELD)).toEqual([]);
+    await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'right')).rejects.toThrow('already settled');
+  });
+
+  it('"Wrong listing" withdraws the match: no listing, never chosen again for the part, the findings go with it', async () => {
+    await twoToolListing();
+    await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'wrong')).rejects.toThrow('about the estimate');
+    await agent.work.settleNeedsLook(HELD, LISTING, 'wrong');
+    expect(await agent.work.scanStore.getMatch('RYOBI:PCL700B')).toMatchObject({ status: 'none', asin: null, rejectedAsins: [ASIN] });
+    expect(view().row.needsLook).toBeUndefined();
+    expect(view().row.profit).toBeNull();
+  });
+
+  it('the layering: the Nov 24 example (B0DGLWKS9S for DWST08017, 9.7 times Home Depot) is refused by the first line and never reaches the audit', async () => {
+    // fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json on one part: the $39.99 adaptor plate, a $389 backpack
+    // confirmed by Amazon's wrong catalog part number.
+    const store = agent.work.scanStore;
+    const NOV24 = bundleKey('322961591');
+    const asin = 'B0DGLWKS9S';
+    await store.putBundle({
+      key: NOV24, retailer: 'homedepot', itemId: '322961591', title: 'Adaptor Plate for TOUGHSYSTEM 2.0', brand: 'DEWALT', model: 'DWST08017',
       upc: null, price: 39.99, regularPrice: 39.99, percentOff: null, link: 'https://www.homedepot.com/p/322961591', seenAt: T0,
       split: { components: ['DWST08017'], status: 'resolved', notes: [] },
     });
@@ -404,60 +483,20 @@ describe('checking the app\'s own work: a held deal is never Buy now until the o
       key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017', itemId: '322961591', matchedModel: 'DWST08017', price: 39.99,
       title: 'Adaptor Plate for TOUGHSYSTEM 2.0', link: 'https://www.homedepot.com/p/322961591', seenAt: T0, checkedAt: T0,
     });
-    await store.putListing({ asin: ASIN, brand: 'DEWALT', title: 'DWST60122-1 Dewalt Pro Backpack x McLaren F1 Team, Limited Edition', models: [], image: null, price: 389, reviews: null, seenAt: T0, checkedAt: T0 });
-    await store.putPrice({ asin: ASIN, price: 389, reviews: null, seenAt: T0, checkedAt: T0 });
+    await store.putListing({ asin, brand: 'DEWALT', title: 'DWST60122-1 Dewalt Pro Backpack x McLaren F1 Team, Limited Edition', models: [], image: null, price: 389, reviews: null, seenAt: T0, checkedAt: T0 });
+    await store.putPrice({ asin, price: 389, reviews: null, seenAt: T0, checkedAt: T0 });
     await store.putMatch({
-      key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017', status: 'matched', asin: ASIN, grade: 'strong', alternatives: [], decidedBy: 'auto',
+      key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017', status: 'matched', asin, grade: 'strong', alternatives: [], decidedBy: 'auto',
       updatedAt: T0, waitingSince: null, source: 'page', verifiedBy: 'keepa_catalog',
-      verifyEvidence: `Amazon's catalog lists brand DEWALT, part number DWST08017: https://www.amazon.com/dp/${ASIN}`,
+      verifyEvidence: `Amazon's catalog lists brand DEWALT, part number DWST08017: https://www.amazon.com/dp/${asin}`,
     });
-    await writePartTrend(agent.work.cache, { asin: ASIN, amazonPrice: 389, salesRank: 1000, offerCount: 5, pulledAt: T0, monthlySold: 500, fbaFee: 8.02 });
     await agent.work.refresh();
-  }
-  const view = () => {
-    const data = { deals: agent.store.get('deals'), review: agent.store.get('review'), runtime: agent.store.get('runtime'), settings: agent.store.get('settings'), tracking: agent.store.get('tracking') };
-    return { row: dealsResponse(data, { sort: 'profit' }, clock).rows.find((r) => r.id === HELD)!, detail: dealDetail(data, HELD)! };
-  };
-
-  it('held by three checks: the row and the inspector say "Needs a look" with the links; no buy, nothing sent', async () => {
-    await wrongConfirmation();
-    const { row: r, detail } = view();
-    expect(r.buyNow).toBe(false);
-    expect(r.needsLook).toMatchObject({
-      kind: 'title_other_model', part: 'DWST08017', asin: ASIN, clearKey: `listing|DEWALT:DWST08017|${ASIN}`,
-      sentence: 'The Amazon listing confirmed for DWST08017 is titled "DWST60122-1 Dewalt Pro Backpack x McLaren F1 Team, Limited Edition", which names DWST60122-1 and not DWST08017.',
-    });
-    expect(r.needsLook!.links.map((l) => l.url)).toEqual(['https://www.homedepot.com/p/322961591', 'https://www.homedepot.com/p/322961591', `https://www.amazon.com/dp/${ASIN}`]);
-    expect(detail.needsLook!.map((f) => f.kind).sort()).toEqual(['price_vs_home_depot', 'title_other_model', 'too_good']);
-    const s = agent.store.get('tracking').signals[HELD]!;
-    expect(s.buyNow).toBeNull();
-    expect(s.verdict).toMatch(/^Not worth buying now: needs a look: The Amazon listing confirmed for DWST08017 is titled/);
-    expect(telegram).toEqual([]);
-    // The stored match and estimate are untouched: the owner decides.
-    expect(await agent.work.scanStore.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'matched', asin: ASIN });
-    expect(r.profit).toBeGreaterThan(250);
-  });
-
-  it('"This is right" on each finding is remembered; with nothing left to look at, the deal is judged as any other', async () => {
-    await wrongConfirmation();
-    await agent.work.settleNeedsLook(HELD, `listing|DEWALT:DWST08017|${ASIN}`, 'right');
-    expect(view().row.needsLook).toMatchObject({ kind: 'too_good' });
-    await agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'right');
-    expect(view().row.needsLook).toBeUndefined();
-    expect(agent.store.get('tracking').sanityCleared).toEqual([`bundle|${KEY}|too_good`, `listing|DEWALT:DWST08017|${ASIN}`, `bundle|${HELD}|too_good`]);
-    expect(agent.store.get('tracking').signals[HELD]!.buyNow).toMatchObject({ kind: 'buyNow' });
-    // Rebuilt again: still cleared.
-    await agent.work.refresh();
-    expect(agent.store.get('deals').sanity!.filter((f) => f.bundleId === HELD)).toEqual([]);
-    await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'right')).rejects.toThrow('already settled');
-  });
-
-  it('"Wrong listing" withdraws the match: no listing, never chosen again for the part, the findings go with it', async () => {
-    await wrongConfirmation();
-    await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'wrong')).rejects.toThrow('about the estimate');
-    await agent.work.settleNeedsLook(HELD, `listing|DEWALT:DWST08017|${ASIN}`, 'wrong');
-    expect(await agent.work.scanStore.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'none', asin: null, rejectedAsins: [ASIN] });
-    expect(view().row.needsLook).toBeUndefined();
-    expect(view().row.profit).toBeNull();
+    // The first line (the price guard, before the agent publishes) held it for the owner's Review answer: no listing counted.
+    expect(await store.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'review', asin: null });
+    expect((await store.getReview('match:DEWALT:DWST08017'))?.reason).toMatch(/^Amazon's price is 9\.7× Home Depot's price/);
+    // So the second line has nothing to hold: no finding, no estimate, no buy.
+    expect(agent.store.get('deals').sanity!.filter((f) => f.bundleId === NOV24)).toEqual([]);
+    expect(view(NOV24).row).toMatchObject({ profit: null, buyNow: false });
+    expect(view(NOV24).row.needsLook).toBeUndefined();
   });
 });
