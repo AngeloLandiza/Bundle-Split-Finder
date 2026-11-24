@@ -118,4 +118,18 @@ describe('discoveryNote', () => {
     expect(discoveryNote({ chromeListing: { done: true, pages: 2, bundles: 0, itemPagesRead: 0, complete: true, lists: empty, empty: true } }))
       .toBe('Home Depot\'s bundle lists came back empty (DEWALT list for "dewalt 20v combo kit": empty; DEWALT list without search words: empty); the bundles found before are kept.');
   });
+
+  it("Home Depot's pace: says the lists read in the last day are read again tomorrow", () => {
+    expect(discoveryNote({ chromeListing: { done: true, pages: 0, bundles: 0, itemPagesRead: 0, complete: true, readToday: 6 } })).toBe('6 bundle lists were read in the last day and are read again tomorrow.');
+    expect(discoveryNote({ chromeListing: { done: true, pages: 2, bundles: 24, itemPagesRead: 0, complete: true, readToday: 1 } })).toBe('Bundle lists read in Chrome: 24 bundles. 1 bundle list was read in the last day and is read again tomorrow.');
+  });
+});
+
+describe("discoveryFor while Home Depot's pace is paused after a refusal", () => {
+  it('reads no list in Chrome and searches none on SerpApi in its place, even for a scan the owner started', () => {
+    const d = discoveryFor({ ...base, trigger: 'manual', hdPaused: true });
+    expect(d.source).toBe('none');
+    expect(d.chromeListing).toBeUndefined();
+    expect(d.settings.queries).toEqual([]);
+  });
 });

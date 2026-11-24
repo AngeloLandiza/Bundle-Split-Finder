@@ -99,9 +99,13 @@ export function bundleListsOf(job: Pick<ScanJob, 'chromeListing'> | null | undef
 /** The run's sentence about the lists read in Chrome ("Bundle lists read in Chrome: 24 bundles."); null when none were. */
 export function discoveryNote(job: Pick<ScanJob, 'chromeListing'> | null | undefined): string | null {
   const c = job?.chromeListing;
+  // Home Depot's pace: the lists read through in the last day are not read again (they change slowly).
+  const today = c?.readToday ?? 0;
+  const slow = today > 0 ? ` ${today} bundle ${today === 1 ? 'list was' : 'lists were'} read in the last day and ${today === 1 ? 'is' : 'are'} read again tomorrow.` : '';
+  if (c?.done && c.pages === 0 && today > 0) return slow.trim();
   if (!c?.done || c.pages === 0) return null;
   // Fix round: the counts per list, so a live run shows whether the list with the search words or without them lists more.
   const per = c.lists && c.lists.length > 0 ? listCounts(c.lists) : '';
   if (c.empty) return `Home Depot's bundle lists came back empty${per ? ` (${per})` : ''}; the bundles found before are kept.`;
-  return `Bundle lists read in Chrome: ${c.bundles} ${c.bundles === 1 ? 'bundle' : 'bundles'}${c.complete ? '' : ' so far'}${per ? ` (${per})` : ''}.`;
+  return `Bundle lists read in Chrome: ${c.bundles} ${c.bundles === 1 ? 'bundle' : 'bundles'}${c.complete ? '' : ' so far'}${per ? ` (${per})` : ''}.${slow}`;
 }

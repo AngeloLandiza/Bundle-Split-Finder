@@ -1734,6 +1734,11 @@ export async function readPartPricesFor(r: PartPriceRun): Promise<{ asked: numbe
 async function readPartPricesPass(run: Run): Promise<void> {
   const { store, job } = run;
   if (!run.readPartPrices || run.shouldStop()) return;
+  // Home Depot's pace: a part price is two pages (its search and its page); with fewer left, none is read in this scan.
+  if (run.hdPagesLeft && run.hdPagesLeft() < 2) {
+    await nothingToRead(run, 'partPrices', 'page limit reached');
+    return;
+  }
   const before = job.pipeline?.find((p) => p.id === 'partPrices')?.unitsDone ?? 0;
   let started = false;
   let counted = 0;
