@@ -296,13 +296,13 @@ export interface DealRow {
   /**
    * One line on how far the parts are matched ("2 of 3 parts matched"), or null. Nov 23: the code `waiting_page` when the
    * bundle's own Home Depot page is not read yet (core/src/scan/matchState.ts WAITING_PAGE; shown as "Waiting for its
-   * Home Depot page", under Waiting for a lookup, never a question: `needsAnswer` is false).
+   * Home Depot page", under Waiting for data, never a question: `needsAnswer` is false).
    */
   matchState: string | null;
   /**
    * Nov 23: `waiting_page` beside matchState for such a bundle; absent otherwise. Step 15: `waiting_parts` when its split
    * waits for Home Depot's part pages (core/src/scan/matchState.ts WAITING_PARTS; shown as "Waiting for Home Depot's part
-   * pages", under Waiting for a lookup, never a question: `needsAnswer` is false).
+   * pages", under Waiting for data, never a question: `needsAnswer` is false).
    */
   matchKind?: 'waiting_page' | 'waiting_parts' | null;
   profit: number | null;

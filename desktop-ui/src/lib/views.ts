@@ -13,7 +13,7 @@ export const VIEW_LABEL: Record<DealView, string> = {
   all: 'All deals',
   confirmed: 'Confirmed',
   'needs-answer': 'Needs an answer',
-  waiting: 'Waiting for a lookup',
+  waiting: 'Waiting for data',
   'missing-price': 'Missing a price',
   losing: 'Losing money',
   watchlist: 'Watchlist',

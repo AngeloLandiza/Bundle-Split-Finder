@@ -91,7 +91,7 @@ describe('a scan from the app', () => {
     expect(state).toMatchObject({ firstRun: false, agent: { status: 'idle' }, budget: { serpMonthly: 250, serpPerScan: 1, serpLeft: 250 } });
 
     // Nov 23: with Chrome closed no bundle page is read, so a bundle the title does not split waits for its page: it is
-    // under Waiting for a lookup (waiting_page) and is not a question.
+    // under Waiting for data (waiting_page) and is not a question.
     const waiting = (await json<DealsResponse>('/api/deals')).rows.find((r) => r.id === 'homedepot:320243741')!;
     expect(waiting).toMatchObject({ matchState: 'waiting_page', matchKind: 'waiting_page', needsAnswer: false });
     expect((await json<ReviewResponse>('/api/review')).questions.some((x) => x.id === 'split:homedepot:320243741')).toBe(false);

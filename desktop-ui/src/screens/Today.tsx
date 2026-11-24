@@ -295,7 +295,15 @@ function AgentBlock({ state }: { state: AppState }) {
                 ) : null}
               </span>
               <span className="fact-sub">
-                <span className="fig">{count(budget.serpReserve)}</span> held in reserve
+                {budget.serpLeft !== null && budget.serpLeft <= budget.serpReserve ? (
+                  <>
+                    All held in reserve (your reserve is <span className="fig">{count(budget.serpReserve)}</span>)
+                  </>
+                ) : (
+                  <>
+                    <span className="fig">{count(budget.serpReserve)}</span> held in reserve
+                  </>
+                )}
               </span>
               {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
             </>

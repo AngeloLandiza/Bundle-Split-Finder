@@ -16,11 +16,11 @@ describe('deal views', () => {
     expect(inView(r, 'confirmed')).toBe(false);
     expect(inView(r, 'losing')).toBe(false);
   });
-  it('puts a bundle with parts still to look up under Waiting for a lookup', () => {
+  it('puts a bundle with parts still to look up under Waiting for data', () => {
     expect(inView(row('PCL1600K2-P553'), 'waiting')).toBe(true);
     expect(inView(row('PCL1200K2'), 'waiting')).toBe(false);
   });
-  it('puts a bundle waiting for its Home Depot page under Waiting for a lookup, never under Needs an answer', () => {
+  it('puts a bundle waiting for its Home Depot page under Waiting for data, never under Needs an answer', () => {
     const r: DealRow = { ...row('PCL1600K2'), needsAnswer: false, matchKind: 'waiting_page', profit: null };
     expect(inView(r, 'waiting')).toBe(true);
     expect(inView(r, 'needs-answer')).toBe(false);

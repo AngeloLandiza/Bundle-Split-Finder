@@ -59,7 +59,7 @@ When you first open the app, a welcome window shows three steps. You can use the
 - **Losing money.** The estimate is below zero.
 - **Watchlist.** Bundles you starred. The app tracks them from scan to scan.
 
-There are also All deals, Confirmed, Needs an answer and Waiting for a lookup.
+There are also All deals, Confirmed, Needs an answer and Waiting for data.
 
 **Reading one deal.** Click a row. You see the estimated profit and ROI, and what the bundle costs, what the parts sell for and what is left after fees. "Open on Home Depot" opens the bundle's page. Each part links to its Amazon listing. Some bundles show **BOGO choices**: buy the starter and pick one free item. The app lists the choices and marks the best estimate. It never picks one for you. If a part has no price, press **Confirm a price**. Enter a price you have seen and a link. It counts in the estimate until an Amazon New price replaces it.
 
