@@ -1184,3 +1184,65 @@ listing check use the words "eBay prices 34 of 80" and "Listing check" in the ap
 The time left is shown only from a measured rate (this scan's own after 3 timed items, else the median of earlier scans):
 a seed is a guess and is not shown, so the answer is "no time", not "less than a minute". The AI's per-card time is kept
 for the next scan (`askAi`). The extension is unchanged.
+### Home Depot's pace: read less, slower, in a better order (Nov 23)
+What was refused (`fixtures/e2e-2026-11-23/after-scan5`, scans.json and activity.json): scan 5 read 22 list pages, then
+25 bundle pages (three at a time, a second apart: the helper's page reader ran `concurrency 3`, `pauseMs 1000`) and 15 set
+item pages, some 62 pages in about five minutes, plus the BOGO listings before them. Home Depot then answered "Error Page"
+("Home Depot refused a set item page; the rest are read next scan"); the part-price step was skipped and 139 sets were
+left waiting. Reading on at that rate would never clear them, and a refusal is never retried or worked around (no loop,
+no header trick, no new tab, no SerpApi search in its place). The only fixes are to read less, slower, in a better order.
+
+- **One gate for every Home Depot read of the agent** (`core/src/scan/hdPace.ts HdPace`, the agent's `AgentWork.pace`,
+  `remoteReaders(..., gate)`): lists, bundle pages, set item pages, kit pages, part prices (a search and a page: two),
+  BOGO pages and an AI question's research pages, in a scan and between scans. One read at a time; a page job asks for one
+  page (`onePageAtATime`), so the gap holds between pages too. State in `runtime.hdPace` (survives a restart).
+  - `HD_GAP_MS` 10 s + `HD_GAP_JITTER_MS` 0 to 5 s from the end of one read to the start of the next, whatever its kind: a
+    person reads a product page every 10 to 60 s; scan 5 read three a second.
+  - `HD_PAGES_PER_SCAN` 40, every kind together (scan 5 was refused at about 62). A scan, Read again and an AI ask each
+    start their count at 0 (`beginRun` at claim). `pageReadsPerScan` (60) and the passes' own limits still hold beneath it.
+  - Cool-down: the first refusal pauses every read for `HD_COOLDOWN_MS` 30 min, the rest of the scan included; a refusal
+    right after a cool-down doubles it (1 h, 2 h, 4 h), never past `HD_COOLDOWN_MAX_MS` 8 h; a page read resets it. A
+    refusal is a page outcome `refused`, a list or research answer that says it refused, or a part price `not_read` (that
+    status also covers a page the helper could not parse; it counts as a refusal, the careful side). Chrome not answering
+    is not a refusal. During the cool-down a scan reads no Home Depot page, searches no list on SerpApi in its place
+    (`discoveryFor hdPaused`), runs its Amazon steps as usual and says "Home Depot paused reading until 6:40 PM; the rest
+    continue then."; Read again is refused with that sentence; a pasted Home Depot link (mode `owner`: the gap and the
+    cool-down, no cap) says it too.
+  - Between scans: `HD_DRIP_GAP_MS` 90 s, so at most 40 pages an hour, and `HD_DRIP_PAGES_PER_DAY` 240 (six hours of it).
+  - Settings do not expose the cap: no obvious place, and a number the owner raises is the one that gets him refused.
+- **The order** (`core/src/scan/hdOrder.ts`): bundles and sets by their Home Depot saving: any saving before none, the
+  biggest percent off first (the listing's `percentOff`, the set's own `percentageOff`, or was − now), then dollars off,
+  then newest. A set's unread items are queued together, so the first pages read finish whole sets; an item several sets
+  list is one page (it already was; `pagesWanted` and `readSetItemsFor` keep it so, tested). Bundle pages and set item
+  pages share one plan (`pagePlan`) cut at what the scan may still read. A part price that completes an estimate (a waiting
+  split of a bundle whose other part already has an Amazon price) is read before every other part, and a scan keeps its
+  two pages each (`priceReserveOf`) before the page passes take theirs. *Changed for every caller:* the command line and
+  the tests read bundle pages in this order now, not newest first.
+- **Lists at most once a day** (`listingSource.ts`, a cursor per list in the scan cache, `homedepot:list:<brand>:<kind>:<query>`):
+  a list read through (its end, or its own page limit) is not read again for `HD_LIST_REREAD_MS` 22 h (not 24, so a scan
+  at the same hour each day still reads it); one the scan's pages (or a refusal, a stop) cut continues at its next page the
+  next scan. The BOGO listings the same way (`runtime.bogoReadAt`, set only when every brand was read through). Prices a
+  list carries are therefore refreshed daily, not every scan.
+- **The slow read between scans** (`AgentWork.hdDripOne`, run by the tick's `drip()`): while the helper is connected, the
+  agent is not paused, nothing else runs and Home Depot is not paused, one read each time its gap has passed, in the scan's
+  order (completing part price, then the pages bundles wait for, then a kit page, then the other part prices). What it
+  settles goes through the scan's own code: `readSetItemsFor` saves each item on every set that lists it and as the item's
+  part price, `splitOne` splits the sets it finished, `settleWaitingSplits` the waiting splits, then the deals are rebuilt
+  and their signals judged (`refresh`); the Keepa drip looks the new parts up as before. No SerpApi, no Keepa, no AI in it.
+  One Activity run an hour: "Read 2 Home Depot pages between scans (free); 1 bundle settled. 138 sets wait for 218 …". The
+  Keepa drip no longer reads Home Depot itself (its part-price and kit-page reads moved here).
+- **Honest words, from the constants** (`backlogSentence`): "139 sets wait for 220 Home Depot pages; between scans at most
+  40 are read an hour (240 a day), and each scan reads up to 40.", the pause first while paused. In the scan's summary in
+  place of "— Read again (free)", in `AgentState.agent.homeDepot` (figures and sentence), and on each row waiting for its
+  page (`DealRow.pageWait`, the waiting tag's hover). No finishing time is promised: the rate is a ceiling.
+- **Replayed on after-scan5** (`core/test/hd-order.test.ts`): 139 sets wait for **220 distinct item pages** (347 item
+  places; 74 items are listed by more than one set). The 71 sets with a saving need 106 of them, all read first. The drip
+  alone reads the 220 in **5.5 hours** at 40 an hour (106 in 2.65 h), within its 240 a day; each scan adds up to 40 (less
+  its lists, once a day 22 pages, and its part prices). 11 parts wait for a part price, 1 of them completing an estimate
+  (PSBCK102K2), read first.
+- *Not changed:* the unpaired extension's own scan (side panel) still reads with its own reader's `concurrency 3`; every
+  agent job now asks it for one page. Each page job still loads its doorway first (the doorway rule), so Home Depot sees
+  up to two loads a counted page. The UI's raw `POST /api/worker/jobs` is not paced.
+- *Live checks:* that 40 pages a scan at 10 to 15 s apart and 40 an hour between scans are not refused (the first refusal
+  shows in Activity with its time and what was read); that a scan's length stays reasonable (40 pages at about 20 s each
+  is some 13 minutes of reading); the helper still answers one-id page jobs as before.
