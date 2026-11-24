@@ -1338,3 +1338,75 @@ B0HMV5V9L7 and B0HQQZWYTX.
 model (a question, the safe side); the family forms are the recorded ones, and a third brand or a new line of models needs
 its own; the price guard needs Home Depot's price for the part sold alone, so a part with none (a set item never sold
 alone) is guarded by rule 1 only.
+## Checking the app's own work (Nov 24, after a wrong "Confirmed listing" reached the owner)
+
+What happened (`fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json`): Amazon's catalog record of B0DGLWKS9S, a $389
+DWST60122-1 backpack, carries part number DWST08017, a $39.99 TOUGHSYSTEM adaptor plate. The catalog rule confirmed it, and
+the set "Adaptor Plate … and 10-Compartment … Organizer" ($54.87) read +$259.45, ROI 473%. The owner caught it by eye. The
+rule itself is being fixed apart (keepa/verify.ts, a price guard at confirmation). This is a second line that does not care
+which rule erred: it reads only what the app decided and stored (the deals, `BundleRow`), so it catches this class of mistake
+whatever produced it.
+
+- **Where** (`core/src/audit/sanity.ts`, pure; `agent/signalsPass.ts checkOwnWork`): every time the deals are written
+  (`work.ts publish`: after a scan, after every rebuild between scans, after an owner's answer), the checks run and their
+  findings are stored beside the deals (`deals.sanity`). A `hold` is passed to the signals (`SignalOpts.held`, a scan's and
+  the between-scans pass alike): the deal is never Buy now and never "looks worth buying", its verdict starts "Needs a look:".
+  A held buy keeps its `buyPending` bookkeeping, so the catalog check still reads its listings first (the contradicted case
+  is still removed by the rule). A `note` is shown, holds nothing. Nothing changes a match or an estimate (rule 4).
+- **The owner decides** (POST `/api/deals/:id/needs-look`): "This is right" remembers the finding's `clearKey`
+  (`tracking.sanityCleared`): `listing|BRAND:MODEL|ASIN` for a listing (on every deal), `bundle|<id>|too_good` for an
+  estimate. "Wrong listing" withdraws the match the way the catalog check withdraws a contradicted listing (status none, the
+  ASIN in `rejectedAsins`, so no later scan chooses it for the part; `decidedBy` stays auto so the part can be matched again
+  to another listing). Reset scan data forgets both with the rest of tracking.
+- **UI**: an attention tag "Needs a look" and the reason line "Needs a look: <sentence>" on the row; in the inspector, a
+  "Needs a look" section above the verdict: each finding's sentence, its links (Home Depot's bundle, Home Depot's page of the
+  part sold alone, the Amazon listing), This is right, Wrong listing (only for a finding about one listing).
+- **Red-teaming a data set**: `npm run audit:sanity -- <data folder | desktop audit export>` (a table, exit 1 on any hold;
+  what the owner marked right is left out unless `--all`). The extension's export holds no deals and is refused.
+
+**Checks adopted**, each measured; "right" and "wrong" from the answer keys (the validation labels of Nov 18 with Home
+Depot's sold-alone prices, the audit corpus, `docs/decisions.md` on B0FD253MKS) and the Nov 24 case:
+
+| check | severity | threshold | flags on right answers | flags on wrong ones |
+| --- | --- | --- | --- | --- |
+| `title_other_model`: a counted listing (not one the owner chose) whose title names another model and not the part's | hold | a model-like token: 1 to 6 letters, then at least 3 digits in all, optional "-1" | validation candidates: 0 | validation: 841; the Nov 24 case |
+| `title_extra_model`: the title names the part and another model too; not for a kit (DEWALT DCK, RYOBI …K, …K2, PSK, any kit a way splits) | hold | as above | validation: 1 (P119, a charger listing that names what it charges); corpus: 1 (the same) | validation: 137; corpus: 192; after-scan5: B0FD253MKS "PCL700B & PCL702B" (two tools) |
+| `price_vs_home_depot` high: Amazon's counted price over Home Depot's price for the part sold alone | hold | more than 3 times | highest right ratio 2.80 (A98401, Home Depot at $9.97) in after-scan5, 1.00 in the validation set (24) | validation: 2 (a two-tool "P326-PCL406B" listing); PCL702B 4.04; the Nov 24 case 9.73 |
+| `price_vs_home_depot` low | note | under 0.3 | lowest right ratio 0.39 (validation), 0.41 (after-scan5 DCB205) | validation: 82 (accessories, spare parts). A note only: too low lowers an estimate, a deal missed, never a bad buy |
+| `too_good`: a way to sell's estimated ROI, or its priced parts' Amazon total against the bundle's regular price (its price when no regular) | hold | ROI above 100%; total above 1.5 times | highest right ROI 44%, total 1.27 (after-scan5); after-scan3 0.92 | PCL702B deal 107% and 1.79; the Nov 24 case 473% (526% at default fees) and 5.53 |
+| `listing_two_models`: one ASIN counted for two models that are not the same model (RYOBI's PCL515 and PCL515B are one) | hold | any | after-scan5: 0 (B0B88R7HWB for PCL515/PCL515B is the twin) | none recorded; caught in the mutation test |
+| `pack_counted_as_one`: the title says a pack of N ("2-Pack", "pack of 3", "Double Pack") and the part's model has no "-N" | hold | N of 2 to 50 | corpus: 1 (PBP2003, itself a 2-pack: "This is right" clears it once) | corpus: 42 |
+
+On the stored deals: **after-scan5** (258 deals, 46 confirmed listings, every one's title names its model) holds one deal,
+PCL1201K2-PCL702B, on three checks (two-tool listing, 4.04 times Home Depot, ROI 107%); **after-scan3** flags nothing;
+after-scan5 rebuilt by today's report flags PCL702B's listing once (`title_extra_model`). The Nov 24 case, rebuilt from
+after-scan5 with the owner's later records, is held by three independent checks: title, part price, estimate.
+
+**Checks dropped**:
+- A confirmed listing whose title names no model at all: after-scan5 has none, but the corpus's 16 such rows are all
+  `uncertain` and Amazon's own listings often omit the model (B0B88R7HWB "ONE+ 18V Cordless Reciprocating Saw …" is PCL515B):
+  noise. Only a title that names *another* model is held.
+- The parts' Home Depot sold-alone prices against the bundle's regular price: right answers run from 0.53 (a set whose "was"
+  price is Home Depot's) to 2.16 (PSK1212SB, a $99 starter kit whose battery alone is $129); no wrong case in the data. Any
+  threshold flags right answers or nothing.
+- A set item of quantity 2 priced as 1: every set item with a quantity above 1 in after-scan5 waits for its page, so nothing to
+  measure; and it would lower an estimate (a deal missed), not raise it.
+- A separate "part matched to the whole bundle's listing" check: folded into `title_extra_model`, whose sentence says when the
+  other model is a part of this bundle.
+
+**Mutation tests** (`core/test/sanity-mutation.test.ts`): after-scan5's 41 confirmed records that a deal counts, each
+corrupted one way at a time in the scan store, the report rebuilt by the app's code, the checks run. Another product's
+listing confirmed by part number: 41 of 41 held. Title swapped for another product's: 41 of 41. Quantity doubled (a 2-pack
+title at twice the price): 41 of 41. Price times ten: 39 of 41 (38 before the estimate check was changed to count the parts
+priced so far, not only complete ways to sell). **What gets through**: a price times ten on PBP002 and A10FB1G, parts with nothing to
+compare a price with (no Home Depot sold-alone price, no list price, no eBay price), in kits whose other parts have no price
+yet, so no deal has an estimate a buy could rest on. Once one does, only `too_good` stands between such a price and Buy now;
+no check the data supports would do better (a battery at $280 is 0.62 of a $448 kit).
+
+**The model's second opinion, a harness only** (`scripts/redteam-listings-cli.ts`, `npm run redteam:listings`): per
+confirmed listing, the listing judge's prompt and code check (core/src/listingJudge) over the recorded title and brand, the
+disagreements listed for a person. Without `--spend` it reads no key and calls nothing; with it, the estimate is printed
+first (after-scan5: 46 listings, about $0.01 on claude-haiku-5-5), `--max-cost` stops it. Not run; the main session decides.
+
+*For the rewrite*: the thresholds rest on 2 wrong cases in the owner's data and the labelled search rows; re-measure them on
+every new audit export (`npm run audit:sanity`), and add each real wrong case the owner catches as a fixture and a test.

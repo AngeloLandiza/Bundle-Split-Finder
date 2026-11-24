@@ -110,3 +110,34 @@ to the corpus, which already holds those pairs.
   question to the checker like those of an answered one (title, price, reviews; never the reasons or a grade), so a row
   with an empty brand field that the scan never saved as a listing can still be labelled. Older files lack the field.
 - Only the primary way to sell is exported: the items of a split kit option are not audited.
+
+## Checking the app's own work
+
+The audit above scores the matcher against labels. This is the second line for what the app has already decided: it reads
+the stored deals, not the rules, so it catches a wrong confirmation whatever rule made it (the Nov 24 case: a $389 backpack
+confirmed for a $39.99 adaptor plate by Amazon's wrong catalog part number). The checks, their thresholds and what each was
+measured on are in docs/decisions.md ("Checking the app's own work"); the code is `core/src/audit/sanity.ts`.
+
+In the app, the checks run every time the deals are written. A deal with a `hold` is never Buy now; its row says
+"Needs a look: <why>" and the inspector lists each finding with its Home Depot and Amazon links. **This is right** is
+remembered for that listing; **Wrong listing** withdraws the match and the listing is never chosen for the part again.
+
+On any data set, free and offline:
+
+    npm run audit:sanity -- fixtures/e2e-2026-11-23/after-scan5
+    npm run audit:sanity -- ~/Downloads/split-finder-audit-2026-11-24.json      # Settings, Data, Export audit file
+    npm run audit:sanity -- <export> --all                                     # also what the owner marked right
+
+It prints one row a finding (severity, check, deal, part, listing, why) and the links of each hold, and exits 1 when
+anything holds, so a script or a person sees it before the owner does. When the owner catches a wrong listing by eye that
+this missed, record it as a fixture (as `fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json`), add a test, and add a
+check only if the recorded data shows it would not flag right answers.
+
+`core/test/sanity-mutation.test.ts` is the red team for the rules: real confirmed records corrupted one thing at a time
+(another product's listing, a swapped title, a price times ten, a 2-pack) and the report rebuilt; none that a buy could rest
+on may come out confirmed and unflagged.
+
+A model's second opinion is a harness, not run by tests: `npm run redteam:listings -- <dir or export>` prints how many
+confirmed listings it would ask about and the estimated cost, and calls nothing. With `--spend` (and `--max-cost`) it asks
+the listing judge's question per listing and lists where the model disagrees, for a person to look at. It never decides and
+changes nothing; the main session decides whether to spend on it.
