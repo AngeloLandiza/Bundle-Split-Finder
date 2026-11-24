@@ -1,6 +1,9 @@
 // What the agent's endpoints answer, built from the store (pure functions; the contract's shapes).
 
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
+import { backlogSentence, dripPagesPerHour, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
+import { dayOf } from '../core/src/tracking/state';
+import type { HomeDepotPaceState } from '../core/src/api/contract';
 import type {
   ActivityResponse,
   AgentState,
@@ -254,12 +257,38 @@ export function confirmingNote(r: DealRow, data: WithTracking<'runtime'>, now: n
   };
 }
 
+/**
+ * Home Depot's pace for the state and the waiting rows: what the agent last counted waiting (runtime.hdBacklog) and the
+ * pace's own state (runtime.hdPace), in figures and in the words built from them. Null before anything was counted and
+ * while reading is not paused.
+ */
+export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): HomeDepotPaceState | null {
+  const b = data.runtime.hdBacklog;
+  const s = paceStateOf(data.runtime.hdPace);
+  const paused = s.pausedUntil !== null && s.pausedUntil > now ? s.pausedUntil : null;
+  if (!b && paused === null) return null;
+  const pages = b?.pages ?? 0;
+  return {
+    pausedUntil: paused === null ? null : new Date(paused).toISOString(),
+    pagesWaiting: pages, setsWaiting: b?.sets ?? 0, bundlesWaiting: b?.bundles ?? 0,
+    perHour: dripPagesPerHour(), perDay: HD_LIMITS.dripPagesPerDay, perScan: HD_LIMITS.pagesPerScan,
+    readToday: s.day === dayOf(now) ? s.dripPages : 0,
+    sentence: backlogSentence({ pages, sets: b?.sets ?? 0, bundles: b?.bundles ?? 0, pausedUntil: paused }) ?? (paused !== null ? pausedSentence(paused) : null),
+  };
+}
+
+/** Home Depot's pace: a row waiting for its Home Depot page says how many pages wait in all and when they are read. */
+export function pageWaitNote(r: DealRow, hd: HomeDepotPaceState | null): DealRow {
+  return r.matchKind === WAITING_PAGE && hd?.sentence ? { ...r, pageWait: hd.sentence } : r;
+}
+
 export function dealsResponse(
   data: WithTracking<'deals' | 'review' | 'runtime' | 'settings'>,
   query: { sort: DealSortKey; section?: ReportSection },
   now: number,
 ): DealsResponse {
-  const rows = allRows(data).filter((r) => !query.section || r.section === query.section).map((r) => confirmingNote(r, data, now));
+  const hd = homeDepotView(data, now);
+  const rows = allRows(data).filter((r) => !query.section || r.section === query.section).map((r) => pageWaitNote(confirmingNote(r, data, now), hd));
   const ordered = DEAL_SECTION_ORDER.flatMap((s) =>
     sortDealRows(
       rows.filter((r) => r.section === s).map((r) => ({
@@ -673,6 +702,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       lastScan: lastScanOf(data, live),
       ...(data.agent.problem ? { problem: data.agent.problem } : {}),
       ...(live.drip ? { drip: live.drip } : {}),
+      ...(homeDepotView(data, live.now) ? { homeDepot: homeDepotView(data, live.now)! } : {}),
     },
     helper: {
       paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting,

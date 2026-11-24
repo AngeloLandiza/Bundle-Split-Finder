@@ -173,6 +173,24 @@ export interface LookupsRunResponse {
   viaSerpapi: number;
 }
 
+/** Home Depot's pace (core/src/scan/hdPace.ts): what waits for a free Home Depot read, and when reading goes on. */
+export interface HomeDepotPaceState {
+  /** No Home Depot page is read before this (ISO), after Home Depot refused one; null when reading is not paused. */
+  pausedUntil: string | null;
+  /** Distinct Home Depot pages the stored bundles wait for (a set's item pages, a bundle's own page), and who waits. */
+  pagesWaiting: number;
+  setsWaiting: number;
+  bundlesWaiting: number;
+  /** The pace's limits: pages between scans an hour and a day at most, and pages a scan reads at most. */
+  perHour: number;
+  perDay: number;
+  perScan: number;
+  /** Pages the slow read between scans made today. */
+  readToday: number;
+  /** The words, from these figures; null when nothing waits and reading is not paused. */
+  sentence: string | null;
+}
+
 /** Step 15: the drip, which looks up waiting parts with Keepa between scans as its tokens refill. */
 export interface DripState {
   /** A lookup is being made now. */
@@ -222,6 +240,8 @@ export interface AgentState {
     problem?: string;
     /** Step 15: the drip of Keepa lookups between scans; absent before the agent has looked. */
     drip?: DripState;
+    /** Home Depot's pace: what waits for a Home Depot read and when reading goes on; absent before the agent has counted. */
+    homeDepot?: HomeDepotPaceState;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
   helper: {
@@ -305,6 +325,12 @@ export interface DealRow {
    * pages", under Waiting for data, never a question: `needsAnswer` is false).
    */
   matchKind?: 'waiting_page' | 'waiting_parts' | null;
+  /**
+   * Home Depot's pace: for a bundle waiting for its Home Depot pages, how many pages wait in all and when they are read, from
+   * the pace's own figures ("Home Depot paused reading until 6:40 PM; the rest continue then. 139 sets wait for 220 Home
+   * Depot pages; between scans at most 40 are read an hour (240 a day), and each scan reads up to 40."). Absent otherwise.
+   */
+  pageWait?: string;
   profit: number | null;
   roi: number | null;
   roiRange: { low: number | null; high: number | null };

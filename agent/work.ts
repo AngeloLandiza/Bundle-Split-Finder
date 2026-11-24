@@ -42,7 +42,7 @@ import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
 import {
-  keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readKitPagesFor, readPartPricesFor, runScan, settleWaitingSplits, withdrawUnreadSplitQuestions,
+  keepaLookupOne, kitPagesWanted, type LookupStep, pageRead, partPricesWanted, plannedWork, readKitPagesFor, readPartPricesFor, readSetItemsFor, runScan, settleWaitingSplits, splitOne, withdrawUnreadSplitQuestions,
 } from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
@@ -71,7 +71,8 @@ import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
 import { remoteReaders, type ReadGate, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
-import { HdPace, type HdMode, paceStateOf } from '../core/src/scan/hdPace';
+import { backlogSentence, HD_LIST_REREAD_MS, HdPace, type HdMode, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
+import { backlogOf, pagesWanted } from '../core/src/scan/hdOrder';
 import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
@@ -94,16 +95,19 @@ export class WorkRefused extends Error {}
 
 /**
  * Nov 23: what the run found, leading the summary. "Found 16 bundles; 0 estimated because their Home Depot pages were not
- * read — Read again (free)." when every bundle without an estimate waits for its page; else how many wait.
+ * read — Read again (free)." when every bundle without an estimate waits for its page; else how many wait. Home Depot's
+ * pace: with `backlog` (backlogSentence: how many pages wait and at what pace they are read), that sentence follows in
+ * place of the Read again hint.
  */
-export function outcomeSentence(report: ScanReport): string {
+export function outcomeSentence(report: ScanReport, backlog?: string | null): string {
   const n = report.bundles.length;
   const estimated = report.bundles.filter((b) => b.estimate !== null).length;
   const waiting = report.bundles.filter((b) => b.waitingPage === true).length;
   const found = `Found ${n} ${n === 1 ? 'bundle' : 'bundles'}; ${estimated} estimated`;
-  if (waiting === 0) return `${found}.`;
-  if (waiting === n - estimated) return `${found} because ${waiting === 1 ? 'its Home Depot page was' : 'their Home Depot pages were'} not read — Read again (free).`;
-  return `${found}; ${waiting} ${waiting === 1 ? 'waits for its' : 'wait for their'} Home Depot ${waiting === 1 ? 'page' : 'pages'} — Read again (free).`;
+  if (waiting === 0) return backlog ? `${found}. ${backlog}` : `${found}.`;
+  const tail = backlog ? `. ${backlog}` : ' — Read again (free).';
+  if (waiting === n - estimated) return `${found} because ${waiting === 1 ? 'its Home Depot page was' : 'their Home Depot pages were'} not read${tail}`;
+  return `${found}; ${waiting} ${waiting === 1 ? 'waits for its' : 'wait for their'} Home Depot ${waiting === 1 ? 'page' : 'pages'}${tail}`;
 }
 
 export interface WorkDeps {
@@ -234,6 +238,14 @@ export class AgentWork {
       load: () => paceStateOf(deps.store.get('runtime').hdPace),
       save: (s) => deps.store.update('runtime', (r) => ({ ...r, hdPace: s })),
     });
+  }
+
+  /** Home Depot's pace: the pages the stored bundles wait for (hdOrder.ts), counted now and kept for the state and the rows. */
+  async noteBacklog(): Promise<{ pages: number; sets: number; bundles: number }> {
+    const b = backlogOf(pagesWanted(await this.scanStore.listBundles()));
+    const at = this.d.now();
+    this.d.store.update('runtime', (r) => ({ ...r, hdBacklog: { ...b, at } }));
+    return b;
   }
 
   /** Home Depot's pace bound to a kind of run, for the readers (remoteReaders' gate). */
@@ -405,6 +417,9 @@ export class AgentWork {
     if (!last) return 'No scan has run yet: Scan now first.';
     if (!last.pagesUnread) return 'Every Home Depot page of the last scan is read.';
     if (!this.d.helperConnected()) return 'Chrome is closed: open Chrome with the Split Finder helper, then read again.';
+    // Home Depot's pace: after a refusal nothing is read until the cool-down ends; Read again does not get past it.
+    const until = this.pace.pausedUntil();
+    if (until !== null) return pausedSentence(until);
     return null;
   }
 
@@ -528,11 +543,21 @@ export class AgentWork {
    * PART_PRICE_MS. Quiet hours hold only the messages (notifyPolicy), never the work. Resolves when the round ends.
    */
   async drip(): Promise<void> {
-    if (this.dripping || !this.dripAllowed()) return;
-    if (this.dripNextAt !== null && this.d.now() < this.dripNextAt) return;
+    if (this.dripping) return;
+    const keepaDue = this.dripAllowed() && (this.dripNextAt === null || this.d.now() >= this.dripNextAt);
+    // Home Depot's pace: the slow free read between scans, one page when its gap has passed (hdDripOne).
+    const hdDue = this.hdDripDue();
+    if (!keepaDue && !hdDue) return;
     this.dripCtl = new AbortController();
     // The listing ladder, rung 2: after the round's catalog check, the listings it left unconfirmed (agent/autoConfirm.ts).
-    this.dripping = this.dripRound().then(() => this.autoConfirmPass('drip')).then(() => this.noteConfirmQueue()).finally(() => {
+    const round = async (): Promise<void> => {
+      if (hdDue) await this.hdDripOne();
+      if (!keepaDue || this.dripCtl.signal.aborted) return;
+      await this.dripRound();
+      await this.autoConfirmPass('drip');
+      await this.noteConfirmQueue();
+    };
+    this.dripping = round().finally(() => {
       this.dripping = null;
       this.dripActive = false;
       this.d.changed();
@@ -551,13 +576,8 @@ export class AgentWork {
     this.dripNextAt = now + DRIP_POLL_MS;
     // Step 15: the free part prices first (the parts a waiting split needs come first); a read that saved anything may
     // settle a waiting split, whose parts then join the lookups below. Review is rebuilt with what it opened (refresh).
-    let prices = await this.dripPartPrices(settings);
-    // Nov 23: then the pages of the kits with no Amazon listing for sale, so their items join the lookups below.
-    prices += await this.dripKitPages();
-    if (prices > 0) {
-      const settled = await settleWaitingSplits(this.scanStore, this.d.now());
-      prices += settled.resolved + settled.opened + (await this.recheck());
-    }
+    // Home Depot's pace: the free Home Depot reads between scans are hdDripOne's, one page at the drip's gap (drip).
+    const prices = 0;
     const { work, steps } = await plannedWork(this.scanStore, settings, this.d.now(), pairs);
     this.dripWaiting = work.lookups.length;
     // Catalog check: with no lookup waiting, the drip still runs for title matches and questions Amazon's catalog may settle.
@@ -708,35 +728,118 @@ export class AgentWork {
     await this.afterChange(report, fresh > 0 ? { text, count: fresh } : undefined);
   }
 
-  /** Step 15: the free Home Depot part prices a scan left, read in the paired Chrome while nothing else runs. Returns how many were saved. */
-  private async dripPartPrices(settings: ReturnType<typeof toScanSettings>): Promise<number> {
-    if (!this.d.helperConnected()) return 0;
-    const signal = this.dripCtl.signal;
-    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal, gate: this.gate('drip') });
-    try {
-      const out = await readPartPricesFor({
-        store: this.scanStore, settings, readPartPrices: readers.readPartPrices, now: this.d.now, maxMs: PART_PRICE_MS, waiting: true,
-        extra: await wantedReads(this.scanStore, this.d.store.get('suggestions')),
-        shouldStop: () => signal.aborted || !this.dripAllowed(),
-      });
-      return out.saved;
-    } catch {
-      // A read Chrome could not make: the parts are asked for again next time.
-      return 0;
-    }
+  // ------------------------------------------------------------------ Home Depot's pace: the slow free read between scans
+
+  /** Home Depot pages the drip read in the current hour's Activity run, and what they finished. */
+  private hdRun: { record: RunRecord; startedAt: number; pages: number; sets: number; prices: number } | null = null;
+
+  /**
+   * Whether the drip's next Home Depot page is due: the helper connected, the agent not paused, nothing else running, Home
+   * Depot not paused after a refusal, today's drip pages not used up, and the drip's gap since the last read passed.
+   */
+  private hdDripDue(): boolean {
+    if (!this.d.helperConnected() || this.d.store.get('agent').paused || this.live.busy !== null || this.answering > 0) return false;
+    if (this.pace.blocked('drip') !== null) return false;
+    const last = this.pace.state().lastEndedAt;
+    return last === null || this.d.now() - last >= this.pace.limits.dripGapMs;
   }
 
-  /** Nov 23: the free Home Depot pages of kits that do not sell whole (runner.ts readKitPagesFor). Returns how many were saved. */
-  private async dripKitPages(): Promise<number> {
-    if (!this.d.helperConnected()) return 0;
+  /**
+   * Home Depot's pace, between scans: the next waiting Home Depot read, one at a time at the drip's gap, in the scan's order:
+   * a part price that completes an estimate (its search and its page), then the pages the bundles wait for (hdOrder.ts: a
+   * saving first, biggest percent off first, a set's items together), then a kit's page, then the other part prices. What
+   * it settles goes through the scan's own code (the split, the waiting splits, the deals and their signals). Free: no
+   * search, no Keepa, no AI. A refusal pauses every read (the pace's cool-down). Returns how many pages it read.
+   */
+  async hdDripOne(): Promise<number> {
     const signal = this.dripCtl.signal;
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal, gate: this.gate('drip') });
+    const settings = toScanSettings(extensionSettingsOf(this.d.store.get('settings')));
+    const store = this.scanStore;
+    const stop = (): boolean => signal.aborted || !this.d.helperConnected() || this.pace.blocked('drip') !== null;
+    const now = this.d.now;
+    let pages = 0;
+    let settled = 0;
+    let prices = 0;
     try {
-      return await readKitPagesFor({ store: this.scanStore, readPages: readers.readPages, now: this.d.now, shouldStop: () => signal.aborted || !this.dripAllowed() });
+      const extra = await wantedReads(store, this.d.store.get('suggestions'));
+      const parts = await partPricesWanted(store, settings, now(), true, extra);
+      const wants = pagesWanted(await store.listBundles());
+      if (parts[0]?.completes || (wants.length === 0 && (await kitPagesWanted(store, true)).length === 0 && parts.length > 0)) {
+        // One part's Home Depot price: its search and its page, two reads, each after the drip's gap.
+        const out = await readPartPricesFor({ store, settings, readPartPrices: readers.readPartPrices, now, waiting: true, extra, cap: 1, shouldStop: stop });
+        pages += out.asked > 0 ? 2 : 0;
+        prices += out.saved;
+      } else if (wants[0]?.kind === 'item') {
+        const out = await readSetItemsFor({ store, read: readers.readPromoPages, itemIds: [wants[0].itemId], now });
+        pages += 1;
+        if (out.read > 0) settled += await this.splitAgain(out.sets);
+      } else if (wants[0]?.kind === 'bundle') {
+        const id = wants[0].itemId;
+        const key = wants[0].bundle;
+        const got = (await readers.readPages([id])).find((o) => o.itemId === id);
+        pages += 1;
+        const b = await store.getBundle(key);
+        if (got?.kind === 'read' && b) {
+          await store.putBundle({ ...b, page: { ...got.content, readAt: now() } });
+          settled += await this.splitAgain([key]);
+        }
+      } else {
+        const read = await readKitPagesFor({ store, readPages: readers.readPages, now, max: 1, shouldStop: stop });
+        pages += read > 0 ? 1 : 0;
+        prices += read;
+      }
     } catch {
-      // A page Chrome could not read: asked for again next time.
-      return 0;
+      // A read Chrome could not make, or the pace allowing none now: asked for again at the next look.
     }
+    if (prices > 0) {
+      const s = await settleWaitingSplits(store, now());
+      settled += s.resolved + s.opened + (await this.recheck());
+    }
+    if (pages === 0) return 0;
+    await this.noteBacklog().catch(() => null);
+    this.hdRecord(pages, settled, prices);
+    // What a read settled is published, and its signals judged, as after a scan's reads; the Keepa drip looks up its parts.
+    if (settled > 0 || prices > 0) await this.refresh();
+    else this.d.changed();
+    return pages;
+  }
+
+  /** The bundles a page read changed, split again with the scan's own rules (splitOne). Returns how many are settled now. */
+  private async splitAgain(keys: readonly string[]): Promise<number> {
+    const known = await knownModels(this.scanStore);
+    let resolved = 0;
+    for (const key of keys) {
+      const b = await this.scanStore.getBundle(key);
+      if (!b) continue;
+      const { split } = await splitOne(this.scanStore, b, known, this.d.now(), true);
+      if (split.status === 'resolved') resolved += 1;
+    }
+    return resolved;
+  }
+
+  /** One Activity run an hour of the free Home Depot reads between scans: "Read 38 Home Depot pages between scans; 12 bundles settled." */
+  private hdRecord(pages: number, settled: number, prices: number): void {
+    const now = this.d.now();
+    if (!this.hdRun || now - this.hdRun.startedAt >= DRIP_RUN_MS) {
+      const record: RunRecord = {
+        id: `run-${now}-hd`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: null, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0,
+        aiCostUsd: 0, summary: '', trigger: 'scheduled',
+      };
+      this.hdRun = { record, startedAt: now, pages: 0, sets: 0, prices: 0 };
+    }
+    const r = this.hdRun;
+    r.pages += pages;
+    r.sets += settled;
+    r.prices += prices;
+    r.record.finishedAt = new Date(now).toISOString();
+    const backlog = this.d.store.get('runtime').hdBacklog;
+    const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil() }) : null;
+    r.record.summary = [
+      `Read ${r.pages} Home Depot ${r.pages === 1 ? 'page' : 'pages'} between scans (free)${r.sets > 0 ? `; ${r.sets} ${r.sets === 1 ? 'bundle' : 'bundles'} settled` : ''}${r.prices > 0 ? `; ${r.prices} part ${r.prices === 1 ? 'price' : 'prices'} read` : ''}.`,
+      ...(waits ? [waits] : []),
+    ].join(' ');
+    this.record({ ...r.record });
   }
 
   /** The deals with an estimate now, by key. */
@@ -1143,7 +1246,11 @@ export class AgentWork {
     run.finishedAt = new Date(this.d.now()).toISOString();
     // Nov 23: the bundles whose own Home Depot page is still not read, for Read again.
     const pagesUnread = (await this.scanStore.listBundles().catch(() => [])).filter((b) => !pageRead(b)).length;
-    run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, notes, again !== undefined, job)}`;
+    // Home Depot's pace: how many pages wait and when they are read, from the pace's own figures (the pause first).
+    const backlog = await this.noteBacklog().catch(() => null);
+    const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil() }) : null;
+    const said = waits ? notes.filter((n) => !waits.includes(n)) : notes;
+    run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, said, again !== undefined, job, waits)}`;
     this.record(run);
     const open = report ? report.review.length + (asksAboutEbay(store.get('settings')) ? report.ebayQuestions?.length ?? 0 : 0) : 0;
     store.update('activity', (a) => ({
@@ -1164,10 +1271,11 @@ export class AgentWork {
   }
 
   /** Nov 23: the run's outcome first ("Found 16 bundles; 0 estimated because ..."), then what it spent, then the problems. */
-  private summaryOf(report: ScanReport | null, run: RunRecord, notes: string[], again = false, job: ScanJob | null = null): string {
+  private summaryOf(report: ScanReport | null, run: RunRecord, notes: string[], again = false, job: ScanJob | null = null, backlog: string | null = null): string {
     const parts: string[] = [];
     if (again) parts.push('Read again.');
-    if (report) parts.push(outcomeSentence(report));
+    if (report) parts.push(outcomeSentence(report, backlog));
+    else if (backlog) parts.push(backlog);
     // Step 15: what the lookups did and the real cause of any that wait ("12 Amazon lookups wait for Keepa tokens ...").
     if (job?.lookupsVia) {
       const via = job.lookupsVia;
@@ -1227,11 +1335,14 @@ export class AgentWork {
       onSpend: (e: LedgerEntry) => serpLedger(e),
     });
     const keepa = await this.keepaDeps(ext, keys, notes);
-    const connected = !lookups && this.d.helperConnected();
+    // Home Depot's pace: after a refusal no Home Depot page is read until the cool-down ends (lists, pages, part prices).
+    const pausedUntil = lookups ? null : this.pace.pausedUntil();
+    const connected = !lookups && this.d.helperConnected() && pausedUntil === null;
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal, gate: this.gate('scan') });
     if (lookups) {
       // Look up all reads nothing in Chrome.
-    } else if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
+    } else if (pausedUntil !== null) notes.push(pausedSentence(pausedUntil));
+    else if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
     // BOGO found by itself, free, before the scan: the pairs it finds are bundles the scan then reads, splits and matches.
     else await this.bogoPass(ext, readers, notes);
     const ebay = lookups ? null : this.ebayStep(app, keys, notes);
@@ -1242,7 +1353,7 @@ export class AgentWork {
     const partPricesExtra = connected ? await wantedReads(this.scanStore, store.get('suggestions')) : [];
     // Free scan: the bundle lists from Chrome when it can, else SerpApi within the budget; no brand page when Keepa looks up.
     const discovery = again || lookups ? null : discoveryFor({
-      app, trigger, chromeConnected: connected, serpCanPay: budget.blockReason(1) === null,
+      app, trigger, chromeConnected: connected, ...(pausedUntil !== null ? { hdPaused: true } : {}), serpCanPay: budget.blockReason(1) === null,
       keepaCanLookUp: Boolean(keepa.keepaLookup) && keepa.keepaScale?.tokensLeft != null, settings: scanSettings, readers,
     });
     if (discovery?.note) notes.push(discovery.note);
@@ -1253,7 +1364,9 @@ export class AgentWork {
       client, budget, store: this.watched(this.scanStore), settings: discovery?.settings ?? scanSettings, now: this.d.now, labelPrefix: 'agent',
       ...(discovery?.chromeListing ? { chromeListing: discovery.chromeListing } : {}),
       shouldStop: () => this.stopCtl.signal.aborted,
-      ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: lookups ? 'not in this run' : 'Chrome closed' }),
+      ...(connected
+        ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices, readItemPages: readers.readPromoPages, hdPagesLeft: () => this.pace.left('scan') }
+        : { noReaderReason: lookups ? 'not in this run' : pausedUntil !== null ? 'Home Depot paused' : 'Chrome closed' }),
       ...(ebay ? { ebay } : {}),
       ...keepa,
       cache: this.cache,
@@ -1272,6 +1385,9 @@ export class AgentWork {
    */
   private async bogoPass(ext: ExtensionSettings, readers: RemoteReaders, notes: string[]): Promise<void> {
     const now = this.d.now();
+    // Home Depot's pace: the BOGO listings are a list too: read through once, they are read again a day later.
+    const readAt = this.d.store.get('runtime').bogoReadAt;
+    if (readAt !== undefined && now >= readAt && now - readAt < HD_LIST_REREAD_MS) return;
     let results: BogoBrandResult[];
     try {
       results = await readBogoPass({
@@ -1292,6 +1408,7 @@ export class AgentWork {
       }
     }
     this.d.store.update('tracking', (t) => ({ ...t, bogoPairs: pairs }));
+    if (results.every((r) => r.complete)) this.d.store.update('runtime', (r) => ({ ...r, bogoReadAt: now }));
     const short = results.filter((r) => !r.complete && r.problem !== 'stopped');
     if (short.length > 0) notes.push(`BOGO: ${short.map((r) => r.brand).join(' and ')} not read in full (${short[0]!.problem}); the pairs found before are kept.`);
   }

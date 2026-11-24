@@ -140,10 +140,11 @@ describe('BOGO found by the agent', () => {
     const activity = await json<ActivityResponse>('/api/activity');
     expect(activity.runs[0]!.summary).not.toMatch(/BOGO/);
 
-    // A second scan the same day reads the listings again but no item page.
+    // A second scan the same day reads nothing of them: Home Depot's pace reads the BOGO listings, once read through, a day
+    // later (HD_LIST_REREAD_MS), and the pairs found stay.
     worked = [];
     await scan();
-    expect(worked.map((j) => j.kind)).toEqual(['bogoListing', 'bogoListing', 'bogoListing', 'bogoListing']);
+    expect(worked.map((j) => j.kind)).toEqual([]);
     expect(Object.keys(agent.store.get('tracking').bogoPairs)).toHaveLength(13);
     live = false;
     await polling;

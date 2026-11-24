@@ -55,12 +55,18 @@ export function discoveryFor(i: {
   chromeConnected: boolean;
   /** SerpApi can pay for one search now (the scan's SearchBudget). */
   serpCanPay: boolean;
+  /**
+   * Home Depot's pace: Home Depot refused a page and reading is paused (the scan's own note says until when). No list is read
+   * in Chrome, and none is searched on SerpApi in its place: a refusal is waited out, never worked around.
+   */
+  hdPaused?: boolean;
   /** Keepa has a key, Amazon lookups go through it, and its token count was read. */
   keepaCanLookUp: boolean;
   settings: ScanSettings;
   readers: Pick<RemoteReaders, 'readBundleListing' | 'readPromoPages'>;
 }): Discovery {
   const s = scanSourceOf(i.app);
+  if (i.hdPaused) return { source: 'none', settings: { ...i.settings, queries: [], catalogPagesPerScan: i.keepaCanLookUp ? 0 : i.settings.catalogPagesPerScan }, note: null };
   const choice = chooseListingSource({ setting: s.listingSource, chromeConnected: i.chromeConnected, trigger: i.trigger, serpWhenChromeClosed: s.serpWhenChromeClosed, serpCanPay: i.serpCanPay });
   const catalogPagesPerScan = i.keepaCanLookUp ? 0 : i.settings.catalogPagesPerScan;
   if (choice.source === 'chrome') {

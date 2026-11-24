@@ -224,6 +224,8 @@ export interface AgentRuntime {
   hdPace?: HdPaceState;
   /** When the BOGO pass last read every brand's listing through (epoch ms): it is read again a day later (HD_LIST_REREAD_MS). */
   bogoReadAt?: number;
+  /** Home Depot's pace: the pages the stored bundles wait for (core/src/scan/hdOrder.ts backlogOf), as last counted (epoch ms). */
+  hdBacklog?: { pages: number; sets: number; bundles: number; at: number };
   /** The listing ladder, rung 2 (agent/autoConfirm.ts): today's searches and every listing it read. */
   autoConfirm?: { day: string; spent: number; tried: string[]; exhaustedDay?: string; queue?: string[]; nextAt?: number | null; unconfirmable?: Record<string, { key: string; model: string; reason: string }>; searchedAt?: Record<string, number> };
   /** Deal keys already named in a message: a deal alerts once. */
