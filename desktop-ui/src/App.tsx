@@ -12,6 +12,8 @@ import { INSPECTOR_DEFAULT, UiContext, clampInspector, type UiValue } from './co
 import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } from './lib/appearance';
 import { globalKey, pressOf, windowsKey } from './lib/keys';
 import { tabForSettingsId } from './lib/prefs';
+import { onRunStepRequest } from './lib/runStep';
+import { wantRunStep } from './screens/WelcomeRun';
 import { DEFAULT_ROUTE, hashOf, parseRoute, type Route } from './lib/route';
 import { isMac, isWindows } from './lib/platform';
 import { openPreferences } from './lib/shell';
@@ -84,6 +86,16 @@ export function App() {
   // The look on <html>; the shell's chrome; whether the window is key (selection is the accent only then).
   useEffect(() => applyLook(look), [look]);
   useEffect(() => onLookChange(setLookState), []);
+  // Settings, Scanning has "Recommended schedule…"; the Preferences window is another page, so it asks from there.
+  useEffect(
+    () =>
+      onRunStepRequest(() => {
+        wantRunStep();
+        setSetupOpen(true);
+        window.focus();
+      }),
+    [],
+  );
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.chrome = shellChrome();

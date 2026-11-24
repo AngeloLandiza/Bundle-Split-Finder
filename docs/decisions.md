@@ -1246,3 +1246,8 @@ no header trick, no new tab, no SerpApi search in its place). The only fixes are
 - *Live checks:* that 40 pages a scan at 10 to 15 s apart and 40 an hour between scans are not refused (the first refusal
   shows in Activity with its time and what was read); that a scan's length stays reasonable (40 pages at about 20 s each
   is some 13 minutes of reading); the helper still answers one-id page jobs as before.
+
+## Nov 23: Settings, Scanning was blank; the accuracy percent near zero
+- **Settings, Scanning showed a blank window** in the build first prepared for the PM. Cause: the "Recommended schedule…" button (added Nov 23) called `useUi()`, which exists only in the main window; the Preferences window is a page of its own (main.tsx). Found while recording a walkthrough, not by a test. Fix: the button reads the context if there is one, and from Preferences asks the main window through a localStorage `storage` event (lib/runStep.ts), the way the look is carried across windows. If the main window is closed to the menu bar the sheet opens there unseen; accepted for now. **Guard:** a test walks every Preferences pane and every component a pane imports and fails on any `useUi()` call, and a script (scratch, to be moved into the repo's checks when the UI gets a browser test) opens all eight tabs.
+- **No accuracy percent against an estimate within $5 of zero.** The first recorded sample made +$9.70 against −$0.99 estimated and read "+1079.8%". The dollar difference always shows; the percent shows only when the estimate is at least $5 either way (`MIN_ESTIMATE_FOR_PERCENT`).
+

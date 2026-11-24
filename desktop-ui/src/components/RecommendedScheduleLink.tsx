@@ -1,19 +1,27 @@
+import { useContext } from 'react';
 import { Button } from './Button';
-import { useUi } from './ui';
+import { UiContext } from './ui';
+import { askMainForRunStep } from '../lib/runStep';
 import { wantRunStep } from '../screens/WelcomeRun';
 
 /**
- * "Recommended schedule…": opens the welcome sheet at its last step, "Let it run by itself", from Settings. A shared
- * component so a Settings pane adds it as one element.
+ * "Recommended schedule…": opens the welcome sheet at its last step, "Let it run by itself". The sheet lives in the
+ * main window. In the main window this opens it directly. The Preferences window is a page of its own with no
+ * UiContext (the first build of this link called useUi() there, which threw and left Settings, Scanning blank), so
+ * from there it asks the main window through localStorage (lib/runStep.ts).
  */
 export function RecommendedScheduleLink() {
-  const ui = useUi();
+  const ui = useContext(UiContext);
   return (
     <Button
       size="sm"
       onClick={() => {
-        wantRunStep();
-        ui.openSetup();
+        if (ui) {
+          wantRunStep();
+          ui.openSetup();
+        } else {
+          askMainForRunStep();
+        }
       }}
     >
       Recommended schedule…

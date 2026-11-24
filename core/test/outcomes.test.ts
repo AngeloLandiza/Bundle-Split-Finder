@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import type { Purchase } from '../src/api/contract';
 import { DEFAULT_FEES } from '../src/money';
 import {
-  applyPartOutcome, newPurchase, OutcomeRefused, outcomesCsv, partSentence, patchPurchase, purchaseCost, purchaseResult, scorecardOf, snapshotOf,
+  applyPartOutcome, newPurchase, OutcomeRefused, outcomesCsv, partSentence, patchPurchase, percentOf, purchaseCost, purchaseResult, scorecardOf, snapshotOf,
 } from '../src/outcomes/outcomes';
 import type { BundleRow } from '../src/scan/types';
 
@@ -190,5 +190,14 @@ describe('the CSV', () => {
     expect(lines[1]).toContain('PCL1201K2,1,B0DSCG26GL');
     expect(lines[1]).toContain('sold,2026-11-25,150,127.5,fees_estimated');
     expect(lines[2]).toContain(',open,');
+  });
+});
+
+describe('the accuracy percent', () => {
+  it('is not shown against an estimate within $5 of zero (the first sample read +1079.8%)', () => {
+    expect(percentOf(10.69, -0.99)).toBeNull();
+    expect(percentOf(3, 0)).toBeNull();
+    expect(percentOf(-15.63, 6.63)).toBe(-235.7);
+    expect(percentOf(10, 43.19)).toBe(23.2);
   });
 });

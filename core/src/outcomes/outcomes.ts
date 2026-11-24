@@ -289,9 +289,15 @@ export function purchaseResult(p: Purchase): PurchaseResult {
   };
 }
 
-/** Whole-number-free percent: the difference as a share of the estimate's size; null against an estimate of zero. */
-function percentOf(diff: number, estimated: number): number | null {
-  return estimated === 0 ? null : Math.round((diff / Math.abs(estimated)) * 1000) / 10;
+/** Below this size an estimate is too close to zero for a percent of it to mean anything. */
+export const MIN_ESTIMATE_FOR_PERCENT = 5;
+
+/**
+ * The difference as a share of the estimate's size, to one decimal. Null against an estimate within $5 of zero: seen on
+ * the first recorded sample (made +$9.70 against −$0.99 estimated), which read "+1079.8%". The dollars always show.
+ */
+export function percentOf(diff: number, estimated: number): number | null {
+  return Math.abs(estimated) < MIN_ESTIMATE_FOR_PERCENT ? null : Math.round((diff / Math.abs(estimated)) * 1000) / 10;
 }
 
 export function viewOf(p: Purchase): PurchaseView {
