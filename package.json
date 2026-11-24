@@ -37,6 +37,7 @@
     "desktop:build:windows": "node desktop/build-windows.mjs",
     "test:e2e": "SPLIT_FINDER_E2E=1 wxt build && SPLIT_FINDER_E2E=1 playwright test",
     "audit": "tsx scripts/audit.ts",
+    "audit:sanity": "tsx scripts/audit-sanity.ts",
     "measure:autoconfirm": "tsx scripts/measure-autoconfirm.ts",
     "listing-judge:eval": "tsx scripts/listing-judge-eval.ts"
   },
