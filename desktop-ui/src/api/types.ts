@@ -216,6 +216,8 @@ export interface DealRow {
   needsAnswer: boolean;
   /** 'waiting_page': the bundle's own Home Depot page could not be read, so its parts are not known yet (not a question for him). */
   matchKind?: 'waiting_page' | 'waiting_parts' | null;
+  /** Home Depot's pace, on a 'waiting_page' row: how many Home Depot pages wait in all and when they are read (the agent's words). */
+  pageWait?: string;
   updatedAt: string;
   /** Parts still to look up, and what a lookup of them would cost in searches (the row has no button; the inspector's menu does). */
   lookup: { searches: number } | null;

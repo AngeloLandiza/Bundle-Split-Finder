@@ -307,7 +307,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       hideBelow: 720,
       render: (r) =>
         waitingState(r) ? (
-          <Tag title={WAITING_WHY[r.matchKind ?? 'lookup']}>{waitingState(r)}</Tag>
+          <Tag title={(r.matchKind === 'waiting_page' && r.pageWait) || WAITING_WHY[r.matchKind ?? 'lookup']}>{waitingState(r)}</Tag>
         ) : r.needsAnswer ? (
           <Tag tone="attention">Needs your answer</Tag>
         ) : (
@@ -511,7 +511,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
 /** What a waiting tag says on hover: why it waits and what moves it. */
 const WAITING_WHY: Record<'lookup' | 'waiting_page' | 'waiting_parts', string> = {
   lookup: 'Its parts wait for an Amazon lookup. Keepa looks them up as its tokens refill; Look up now (above the table) spends searches.',
-  waiting_page: 'Home Depot’s page for this bundle was not read. The next scan, or Read pages again, reads it; there is nothing to answer yet.',
+  waiting_page: 'Home Depot’s page for this bundle was not read. The app reads it at a slow pace, between scans and in the next scan; there is nothing to answer yet.',
   waiting_parts: 'Home Depot’s own pages for its parts are not read yet. A free read in the next scan settles what is inside; there is nothing to answer yet.',
 };
 

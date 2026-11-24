@@ -213,6 +213,11 @@ describe('a deal row\'s tracking flags', () => {
     expect(mapRow(wire({ needsAnswer: true }))).toMatchObject({ needsAnswer: true });
     expect(mapRow(wire({}))).not.toHaveProperty('matchKind');
   });
+  it("keeps Home Depot's pace words on a row waiting for its page, and on no other row", () => {
+    const pageWait = '139 sets wait for 220 Home Depot pages; between scans at most 40 are read an hour (240 a day), and each scan reads up to 40.';
+    expect(mapRow({ ...wire({}), matchKind: 'waiting_page', pageWait } as C.DealRow)).toMatchObject({ matchKind: 'waiting_page', pageWait });
+    expect(mapRow({ ...wire({}), pageWait } as C.DealRow)).not.toHaveProperty('pageWait');
+  });
   it('reads the BOGO pair and its group as sent (the recorded DEWALT pair)', () => {
     const bogoPair = { promotionId: '945972', starterItemId: '334337675', starterModel: 'DCK200D1P1', freeModel: '921B', endsAt: '2027-01-31', description: 'BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL' };
     const bogoChoices = { label: 'BOGO: 2 free-tool choices \u2014 none has an estimate yet', count: 2, bestId: null, best: false };

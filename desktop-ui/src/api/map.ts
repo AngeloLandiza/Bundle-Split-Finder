@@ -237,6 +237,8 @@ export function mapRow(r: C.DealRow): DealRow {
     // Without its page the parts are not known, so there is no question to answer yet.
     needsAnswer: r.needsAnswer && matchKind === null,
     ...(matchKind ? { matchKind } : {}),
+    // Home Depot's pace: how many pages wait and when they are read, only on a row that waits for its page.
+    ...(matchKind === 'waiting_page' && typeof r.pageWait === 'string' && r.pageWait !== '' ? { pageWait: r.pageWait } : {}),
     updatedAt: r.updatedAt,
     lookup: r.lookup ?? null,
     ...(r.incomplete ? { incomplete: r.incomplete } : {}),
