@@ -22,6 +22,10 @@ import { FAMILY_PATTERNS, MODEL_PATTERNS, otherModelNamed, sameModel, type Wante
 import type { KeepaProduct } from '../core/src/keepa/types';
 import { parseSearchResponse } from '../core/src/keepa/parse';
 import { wantedFor } from '../core/src/scan/classify';
+import { applyPriceGuard, priceCheckOf, PRICE_RATIO_LIMIT } from '../core/src/scan/priceGuard';
+import { buildReport } from '../core/src/scan/report';
+import { DEFAULT_SCAN_SETTINGS, type ScanReport } from '../core/src/scan/types';
+import { loadScanFolder } from './data-folder';
 import { answerKeys, LIVE_HELD, scan5MakerRows } from './measure-autoconfirm';
 import { measureIdentity } from './measure-identity';
 import { ROOT } from './node-store';
@@ -265,6 +269,97 @@ export function priceRatios(root = ROOT): RatioRow[] {
   return [...rows.values()].sort((a, b) => b.ratio - a.ratio);
 }
 
+// ---------------------------------------------------------------- the replay: the owner's fifth scan, and the set
+
+export interface SetReading {
+  section: string;
+  /** The primary way to sell's estimated profit, or null when it has none. */
+  profit: number | null;
+  /** Parts priced of the parts the way to sell holds, when the estimate is incomplete. */
+  priced: string | null;
+  /** DWST08017's row: status, listing, grade and counted price. */
+  part: string;
+}
+
+export interface Scan5Replay {
+  /** Automatic matches of the stored scan. */
+  matches: number;
+  /** Stored automatic matches whose listing title the family rule reads differently (rule 1). */
+  familyChanged: string[];
+  /** Matches the price guard holds (rule 2). */
+  guardHeld: string[];
+  /** The stored ratio closest under the limit, untouched. */
+  highestKept: { key: string; asin: string; ratio: number } | null;
+  /** The set "Adaptor Plate for TOUGHSYSTEM 2.0 and 10-Compartment …" (homedepot:339422000) with the example's match. */
+  set: { before: SetReading; after: SetReading; question: { reason: string; candidates: string[] } | null; evidence: string | null };
+  /** The report after both rules: the set's row and its Review question, as the agent publishes them. */
+  report: ScanReport;
+}
+
+/**
+ * The owner's fifth scan (fixtures/e2e-2026-11-23/after-scan5) under both rules, read from what it stored: rule 1 on every
+ * automatic match's stored listing title (the fixture holds no pull, so the title is what can change), rule 2 by the guard
+ * itself (applyPriceGuard). Then the set the example came from, with only what is recorded: its two items (the set's link
+ * and the fixture name DWST08017, item 322961591, the set's unread item; DWST14925 is read), Home Depot's $39.99 for
+ * DWST08017 sold alone and the example's match on B0DGLWKS9S at $389 (fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json).
+ * DWST14925 is as the fifth scan stored it (B0799RHJ7W, confirmed, $14.88). Read with the app's default fee settings; the
+ * owner's own settings read +$259.45.
+ */
+export async function replayScan5(root = ROOT): Promise<Scan5Replay> {
+  const store = await loadScanFolder(join(root, 'fixtures/e2e-2026-11-23/after-scan5'));
+  const now = Date.UTC(2026, 10, 24, 12);
+  const matches = (await store.listMatches()).filter((m) => m.decidedBy === 'auto');
+  const familyChanged: string[] = [];
+  let highestKept: Scan5Replay['highestKept'] = null;
+  for (const m of matches) {
+    if (m.status !== 'matched' || m.asin === null) continue;
+    const title = (await store.getListing(m.asin))?.title ?? '';
+    const after = otherModelNamed(m.brand, m.model, title);
+    if (otherModelNamed(m.brand, m.model, title, MODEL_PATTERNS) !== after) familyChanged.push(`${m.key} on ${m.asin}: its title names ${after}`);
+    const price = await store.getPrice(m.asin);
+    const hd = await store.getPartPrice(m.key);
+    if (price?.price && hd?.price && sameModel(m.brand, hd.matchedModel ?? hd.model, m.model) && !(await priceCheckOf(store, m))) {
+      const ratio = price.price / hd.price;
+      if (highestKept === null || ratio > highestKept.ratio) highestKept = { key: m.key, asin: m.asin, ratio };
+    }
+  }
+  const guardHeld = (await applyPriceGuard(store, now)).map((o) => `${o.key} on ${o.asin}: ${o.reason}`);
+
+  // The set, with the example's match as the owner's app stored it.
+  const ex = wrongExample(root);
+  const SET = 'homedepot:339422000';
+  const set = (await store.getBundle(SET))!;
+  await store.putBundle({ ...set, split: { components: ['DWST08017', 'DWST14925'], status: 'resolved', notes: [] } });
+  await store.putPartPrice({
+    key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017', itemId: '322961591', matchedModel: 'DWST08017', price: ex.homeDepotPrice,
+    title: 'Adaptor Plate for TOUGHSYSTEM 2.0', link: 'https://www.homedepot.com/p/322961591', seenAt: now - 60_000, checkedAt: now - 60_000,
+  });
+  await store.putMatch({
+    key: ex.match.key, brand: 'DEWALT', model: 'DWST08017', status: 'matched', asin: ex.match.asin, grade: 'strong', alternatives: ex.match.alternatives,
+    decidedBy: 'auto', updatedAt: now - 60_000, waitingSince: null, source: 'page', verifiedBy: 'keepa_catalog', verifyEvidence: ex.match.verifyEvidence,
+  });
+  await store.putPrice({ asin: ex.match.asin, price: ex.amazonPrice, reviews: null, seenAt: now - 60_000, checkedAt: now - 60_000 });
+  const reading = async (): Promise<SetReading> => {
+    const row = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles.find((b) => b.key === SET)!;
+    const o = row.options[0]!;
+    const inc = o.incomplete ?? null;
+    return {
+      section: row.section, profit: o.estimate?.profit ?? null,
+      priced: inc ? `${inc.priced} of ${inc.total} priced: ${inc.unpriced.map((u) => `${u.model} ${u.state}`).join(', ')}` : null,
+      part: o.parts.map((p) => `${p.model} ${p.status} ${p.asin ?? 'no listing'} ${p.grade ?? ''}${p.price !== null ? ` $${p.price}` : ''}`.replace(/\s+/g, ' ').trim()).join('; '),
+    };
+  };
+  const before = await reading();
+  await applyPriceGuard(store, now);
+  const after = await reading();
+  const q = await store.getReview('match:DEWALT:DWST08017');
+  return {
+    report: await buildReport(store, DEFAULT_SCAN_SETTINGS),
+    matches: matches.length, familyChanged, guardHeld, highestKept,
+    set: { before, after, question: q ? { reason: q.reason, candidates: q.candidates.map((c) => c.asin) } : null, evidence: (await store.getMatch(ex.match.key))?.verifyEvidence ?? null },
+  };
+}
+
 if (process.argv[1] && /measure-wrong-confirm\.ts$/.test(process.argv[1])) {
   const showRows = process.argv.includes('--rows');
   console.log('Family forms in recorded titles (not of MODEL_PATTERNS), brand field = the brand:');
@@ -286,7 +381,14 @@ if (process.argv[1] && /measure-wrong-confirm\.ts$/.test(process.argv[1])) {
     const k = (x: Key) => b.filter((r) => r.key === x).length;
     console.log(`  ${`${lo}–${hi === Infinity ? '' : hi}×`.padEnd(10)} ${String(b.length).padStart(3)}  is ${k('is')}, not ${k('not')}, uncertain ${k('uncertain')}, no key ${k('no key')}`);
   }
-  for (const r of ratios.filter((x) => showRows || x.ratio >= 2 || x.ratio < 0.5)) {
+  for (const r of ratios.filter((x) => showRows || x.ratio >= 2 || (x.ratio < 0.45 && x.key === 'is'))) {
     console.log(`  ${r.ratio.toFixed(2).padStart(6)}×  ${r.model.padEnd(12)} ${r.asin} $${r.amazon} / $${r.homeDepot}  key ${r.key}  ${r.from}${r.samePage ? '' : ' (twin page)'}`);
   }
+  const is = ratios.filter((r) => r.key === 'is').map((r) => r.ratio);
+  console.log(`  right listings: ${Math.min(...is).toFixed(2)}× to ${Math.max(...is).toFixed(2)}×; above the limit (${PRICE_RATIO_LIMIT}×): ${ratios.filter((r) => r.ratio > PRICE_RATIO_LIMIT).map((r) => `${r.asin} for ${r.model} (key ${r.key})`).join(', ')}`);
+  const r = await replayScan5();
+  console.log(`\nReplay, after-scan5: ${r.matches} automatic matches; rule 1 changes ${r.familyChanged.length}${r.familyChanged.length ? `: ${r.familyChanged.join('; ')}` : ''}; the price guard holds ${r.guardHeld.length}${r.guardHeld.length ? `: ${r.guardHeld.join('; ')}` : ''}; highest kept ${r.highestKept ? `${r.highestKept.key} on ${r.highestKept.asin} at ${r.highestKept.ratio.toFixed(2)}×` : 'none'}`);
+  console.log(`  the set, before: ${JSON.stringify(r.set.before)}`);
+  console.log(`  the set, after:  ${JSON.stringify(r.set.after)}`);
+  console.log(`  its question: ${JSON.stringify(r.set.question)}`);
 }

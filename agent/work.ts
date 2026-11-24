@@ -33,6 +33,7 @@ import {
   addSamples, DESKTOP_STEP_WORDS, endStep, finishUnit, moveUnits, newTailSteps, type PipelineStep, pipelineOf, pipelineViewOf, samplesOf, skipStep, startStep, type PipelineView, type StepState,
 } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
+import { applyPriceGuard } from '../core/src/scan/priceGuard';
 import { partRowsFor } from '../core/src/scan/report';
 import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
 import {
@@ -1858,6 +1859,8 @@ export class AgentWork {
 
   /** The report rebuilt and published, without judging signals. */
   private async rebuild(): Promise<ScanReport> {
+    // The price guard over what is stored (core/src/scan/priceGuard.ts): free, and never beside a scan, whose end runs it.
+    if (this.live.busy !== 'scan') await applyPriceGuard(this.scanStore, this.d.now());
     const report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
     await this.publish(report);
     return report;

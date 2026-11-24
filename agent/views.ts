@@ -518,6 +518,9 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
     const bundle = data.deals.bundles.find((b) => b.key === bundleId);
     const sources: SourceLink[] = [];
     if (bundle?.link) sources.push({ label: `Home Depot: ${bundle.brand} ${bundle.model}`, url: bundle.link, source: 'homedepot' });
+    // A listing question: Home Depot's page of the part sold alone too, beside its price (the price guard compares the two).
+    const hdPart = q.kind === 'match' ? bundle?.parts.find((p) => p.model === q.model)?.prices.find((o) => o.kind === 'homedepot' && o.link) : undefined;
+    if (hdPart?.link) sources.push({ label: `Home Depot: ${q.brand} ${q.model} sold alone, $${hdPart.price}`, url: hdPart.link, source: 'homedepot' });
     for (const c of q.candidates) if (c.asin) sources.push({ label: `Amazon: ${c.title || c.asin}`, url: amazonLink(c.asin), source: 'amazon' });
     const live = liveSuggestion(data.suggestions, q) ?? null;
     const shown = live ?? latestSuggestion(data.suggestions, q.id);
