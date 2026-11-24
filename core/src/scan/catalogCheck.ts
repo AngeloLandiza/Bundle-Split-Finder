@@ -13,7 +13,9 @@
 // confirm as the catalog does, with verifiedBy 'listing_fields'. No new call.
 //
 // Each listing is checked once per part (catalogChecks): a brand or part number does not go stale. The owner's own
-// decisions are never touched. Pure TypeScript over the ScanStore; the pull itself is the caller's (the scan's queue, the
+// decisions are never touched. A rule that holds more (LADDER_VERSION 4: a title that names another model of the brand's
+// family) reads every stored confirmation by fields again once, from the cached pull: confirmed, it stands; contradicted,
+// it is removed as above; unknown, the part is held for the owner (hold.ts: the Review "Which listing" question). Pure TypeScript over the ScanStore; the pull itself is the caller's (the scan's queue, the
 // agent's drip), always on Keepa at 1 token.
 
 import type { Catalog } from '../decompose';
@@ -22,6 +24,7 @@ import type { IdentityStatus, ListingIdentity } from '../keepa/verify';
 import { BRAND_IN_TITLE_ONLY, BRAND_NOT_CONFIRMED, KIT_NOT_KNOWN } from '../match';
 import { RESOLVED_BY_SCAN } from './answers';
 import { wantedFor } from './classify';
+import { holdForOwner } from './hold';
 import type { CatalogCheckRecord, MatchRecord, ReviewItem, ScanStore } from './types';
 
 /** The candidate reasons whose question a catalog check may settle: the brand, or whether the listing is a kit. */
@@ -45,8 +48,11 @@ export interface CatalogOutcome {
   asin: string;
   status: IdentityStatus;
   reason: string;
-  /** verified: the part is matched to the listing, verified; removed: the listing is no longer the part's; kept: nothing changed. */
-  change: 'verified' | 'removed' | 'kept';
+  /**
+   * verified: the part is matched to the listing, verified; removed: the listing is no longer the part's; held: a stored
+   * confirmation read again is not one any more, and the part waits for the owner (hold.ts); kept: nothing changed.
+   */
+  change: 'verified' | 'removed' | 'held' | 'kept';
   /** Rung 1's sub-rule when it, not the catalog check, confirmed. */
   rule?: string;
 }
@@ -54,12 +60,25 @@ export interface CatalogOutcome {
 export const amazonListingLink = (asin: string): string => `https://www.amazon.com/dp/${encodeURIComponent(asin)}`;
 
 /** The listing ladder's version: 1 added rung 1 (keepa/listingFields.ts); 2 the brand aliases (keepa/brandAliases.ts); 3 the
- * manufacturer rule (brandAliases.ts makerAgrees), so an unknown read before them is read again once, from the cached pull. */
-export const LADDER_VERSION = 3;
+ * manufacturer rule (brandAliases.ts makerAgrees), so an unknown read before them is read again once, from the cached pull;
+ * 4 the family rule (match.ts FAMILY_PATTERNS), a rule that holds, so a confirmation by fields read before it is read again
+ * once too (CONFIRMATION_LADDER). */
+export const LADDER_VERSION = 4;
+/** The version from which a stored confirmation by fields stands without a new read. */
+export const CONFIRMATION_LADDER = 4;
 
-/** Whether a stored check still stands: an unknown from before rung 1 is read again once. */
+/** Whether a stored check still stands: an unknown from before the current ladder is read again once. */
 const stands = (c: CatalogCheckRecord): boolean => c.status !== 'unknown' || (c.ladder ?? 0) >= LADDER_VERSION;
 const checkedFor = (m: MatchRecord, asin: string): boolean => (m.catalogChecks ?? []).some((c) => c.asin === asin && stands(c));
+/** What a rung confirmed from a listing's fields (not a barcode, not the owner): read again under a rule that holds more. */
+const BY_FIELDS: readonly string[] = ['keepa_catalog', 'serpapi_product', 'listing_fields'];
+/**
+ * A stored automatic confirmation by fields (rung 0 or 1, or a re-pick) that no check at CONFIRMATION_LADDER or later has
+ * confirmed: read once more, from the cached pull, under the current rules.
+ */
+export const confirmationToReread = (m: MatchRecord): boolean =>
+  m.decidedBy === 'auto' && m.status === 'matched' && m.asin !== null && m.grade === 'strong' && BY_FIELDS.includes(m.verifiedBy ?? '')
+  && !(m.catalogChecks ?? []).some((c) => c.asin === m.asin && c.status === 'confirmed' && (c.ladder ?? 0) >= CONFIRMATION_LADDER);
 /** Whether the listing was read before (an unknown read again): its pull may come from the cache. */
 const readBefore = (m: MatchRecord, asin: string): boolean => (m.catalogChecks ?? []).some((c) => c.asin === asin);
 const isTitleMatch = (m: MatchRecord): boolean => m.decidedBy === 'auto' && m.status === 'matched' && m.asin !== null && m.grade === 'probable';
@@ -85,6 +104,8 @@ export async function catalogChecksWanted(
     if (isTitleMatch(m) && !checkedFor(m, m.asin!)) {
       found.push({ key: m.key, brand: m.brand, model: m.model, asin: m.asin!, holds: 'match', saving: part.saving, ...(readBefore(m, m.asin!) ? { recheck: true } : {}) });
     }
+    // Ladder 4: a stored confirmation by fields is read again once, from the cached pull (the listing was pulled to confirm it).
+    if (confirmationToReread(m)) found.push({ key: m.key, brand: m.brand, model: m.model, asin: m.asin!, holds: 'match', saving: part.saving, recheck: true });
     if (m.status !== 'review') continue;
     const q = await openQuestion(store, m.key);
     for (const c of q?.candidates ?? []) {
@@ -110,8 +131,9 @@ export async function applyCatalogCheck(
   const asin = identity.asin;
   const out: CatalogOutcome[] = [];
   for (const m of await store.listMatches()) {
-    if (m.decidedBy !== 'auto' || checkedFor(m, asin)) continue;
-    const onMatch = m.status === 'matched' && m.asin === asin && m.grade !== 'exact' && m.grade !== 'strong';
+    const reread = confirmationToReread(m) && m.asin === asin;
+    if (m.decidedBy !== 'auto' || (checkedFor(m, asin) && !reread)) continue;
+    const onMatch = m.status === 'matched' && m.asin === asin && (reread || (m.grade !== 'exact' && m.grade !== 'strong'));
     const q = m.status === 'review' ? await openQuestion(store, m.key) : null;
     const offered = q?.candidates.some((c) => c.asin === asin) ?? false;
     if (!onMatch && !offered) continue;
@@ -121,7 +143,16 @@ export async function applyCatalogCheck(
     const evidence = `${res.reason}: ${amazonListingLink(asin)}`;
     const rejected = [...new Set([...(m.rejectedAsins ?? []), asin])];
     let change: CatalogOutcome['change'] = 'kept';
-    if (res.status === 'confirmed') {
+    if (reread && res.status === 'confirmed') {
+      // The stored confirmation stands under the current rules: only the check is recorded.
+      await store.putMatch({ ...m, catalogChecks: checks });
+    } else if (reread && res.status === 'unknown') {
+      // B0DGLWKS9S (Nov 24): confirmed from its part number, its title names another model. Not removed (nothing contradicts
+      // it): the owner decides, with the reason and the listing's link.
+      const held = await holdForOwner(store, { ...m, catalogChecks: checks }, { reason: res.reason, evidence: `${res.reason}: ${amazonListingLink(asin)}`, now, title: identity.title });
+      if (!held) await store.putMatch({ ...m, catalogChecks: checks });
+      change = held ? 'held' : 'kept';
+    } else if (res.status === 'confirmed') {
       const source = res.rule !== null ? 'listing_fields' : identity.source === 'keepa_catalog' ? 'keepa_catalog' : 'serpapi_product';
       // As a Verify from a page: the listings kept beside it were of its old grade, and no scan judges it again from search rows.
       await store.putMatch({
@@ -135,8 +166,12 @@ export async function applyCatalogCheck(
       if (onMatch) {
         const next = m.alternatives.filter((a) => !rejected.includes(a));
         if (next.length > 0) {
-          const { verifyEvidence: _old, ...rest } = m;
-          await store.putMatch({ ...rest, asin: next[0]!, alternatives: next.slice(1), rejectedAsins: rejected, catalogChecks: checks, updatedAt: now });
+          const { verifyEvidence: _old, verifiedBy: _by, ...rest } = m;
+          // A confirmation read again (a re-pick's switch) falls back to the listing it switched from, a title match again.
+          await store.putMatch({
+            ...rest, asin: next[0]!, alternatives: next.slice(1), rejectedAsins: rejected, catalogChecks: checks, updatedAt: now,
+            ...(reread ? { grade: 'probable' as const } : m.verifiedBy ? { verifiedBy: m.verifiedBy } : {}),
+          });
         } else {
           await store.putMatch({ ...m, status: 'none', asin: null, grade: null, alternatives: [], rejectedAsins: rejected, catalogChecks: checks, verifyEvidence: evidence, updatedAt: now });
         }
