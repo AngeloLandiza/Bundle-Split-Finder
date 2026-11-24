@@ -61,6 +61,10 @@ When you first open the app, a welcome window shows three steps. You can use the
 
 There are also All deals, Confirmed, Needs an answer and Waiting for data.
 
+**Sets.** Some rows read "Set · N items" where a model number would be. These are Home Depot's own sets: Home Depot lists exactly which items are inside, so the app never asks you what a set contains. It reads each item's page for its model and price, then looks the items up on Amazon like any other part.
+
+**Why some bundles are still waiting.** The app reads Home Depot slowly on purpose: a pause of 10 to 15 seconds between pages, 40 pages at most in one scan, and up to 40 an hour between scans while Chrome is open. Discounted bundles are read first. If Home Depot refuses a page, the app stops reading for a while and says when it continues; it never tries to get around that. A first scan can leave many bundles under Waiting for data. They fill in over the next hours without you doing anything.
+
 **Reading one deal.** Click a row. You see the estimated profit and ROI, and what the bundle costs, what the parts sell for and what is left after fees. "Open on Home Depot" opens the bundle's page. Each part links to its Amazon listing. Some bundles show **BOGO choices**: buy the starter and pick one free item. The app lists the choices and marks the best estimate. It never picks one for you. If a part has no price, press **Confirm a price**. Enter a price you have seen and a link. It counts in the estimate until an Amazon New price replaces it.
 
 **Review** holds the questions the app will not guess, such as "which parts are in this bundle". The app looks things up itself first. It only asks when it could not settle it. A card shows:
