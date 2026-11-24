@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-11-24",
+  "source": "Keepa product record as the owner's app stored it (cache/keepa), slimmed to the identity fields; and what the app did with it (scan/matches.json, scan/prices.json, scan/partPrices.json)",
+  "what": "Amazon's own catalog record carries the wrong part number. The listing is a DWST60122-1 backpack; its partNumber and model fields say DWST08017 (a TOUGHSYSTEM adaptor plate, $39.99 at Home Depot). The catalog rule confirmed it for DWST08017 and switched to it from another listing; the set 'Adaptor Plate for TOUGHSYSTEM 2.0 and 10-Compartment Shallow Pro Small Parts Organizer' ($54.87) then read +$259.45, ROI 473%. The owner caught it by eye. The title check missed it because the DEWALT model pattern knows only DC… models.",
+  "wanted": { "brand": "DEWALT", "model": "DWST08017", "homeDepotPriceSoldAlone": 39.99 },
+  "product": {
+    "asin": "B0DGLWKS9S",
+    "title": "DWST60122-1 Dewalt Pro Backpack x McLaren F1 Team, Limited Edition",
+    "brand": "DEWALT",
+    "manufacturer": "DEWALT",
+    "partNumber": "DWST08017",
+    "model": "DWST08017",
+    "packageQuantity": 1,
+    "numberOfItems": 1,
+    "type": "PORTABLE_TOOL_BOX",
+    "eanList": ["3253561601224"]
+  },
+  "amazonPrice": 389,
+  "match": {
+    "key": "DEWALT:DWST08017", "status": "matched", "asin": "B0DGLWKS9S", "grade": "strong", "verifiedBy": "keepa_catalog",
+    "alternatives": ["B0C3TN1Z7P", "B0HMV5V9L7", "B0HQQZWYTX"],
+    "verifyEvidence": "switched from B0C3TN1Z7P (no part number in Amazon's record) to B0DGLWKS9S: Amazon's catalog lists brand DEWALT, part number DWST08017: https://www.amazon.com/dp/B0DGLWKS9S"
+  },
+  "answer": "wrong: not the part"
+}
