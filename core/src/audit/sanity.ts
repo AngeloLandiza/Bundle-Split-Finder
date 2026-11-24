@@ -59,6 +59,7 @@ export interface SanityFinding {
  * The thresholds, each from the measured distribution (docs/decisions.md has the numbers):
  * - priceRatio 3: right answers reach 2.80 (A98401, Home Depot on clearance at $9.97); the wrong ones are 4.04 (PCL702B on a
  *   two-vacuum listing) and 9.73 (DWST08017 on a $389 backpack).
+ * - priceRatioLow 0.3 (a note): right answers go down to 0.39; 82 wrong search rows that name the part are below it.
  * - roi 1.0 (100%): right estimates reach 44%; the wrong ones read 107% and 473%.
  * - amazonOverRegular 1.5: the Amazon total of a way to sell's priced parts (all of them or only those priced so far)
  *   reaches 1.27 times the bundle's regular price on right answers; 1.79 and 5.53 on the wrong ones.
