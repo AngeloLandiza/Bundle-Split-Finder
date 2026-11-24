@@ -1251,3 +1251,90 @@ no header trick, no new tab, no SerpApi search in its place). The only fixes are
 - **Settings, Scanning showed a blank window** in the build first prepared for the PM. Cause: the "Recommended schedule…" button (added Nov 23) called `useUi()`, which exists only in the main window; the Preferences window is a page of its own (main.tsx). Found while recording a walkthrough, not by a test. Fix: the button reads the context if there is one, and from Preferences asks the main window through a localStorage `storage` event (lib/runStep.ts), the way the look is carried across windows. If the main window is closed to the menu bar the sheet opens there unseen; accepted for now. **Guard:** a test walks every Preferences pane and every component a pane imports and fails on any `useUi()` call, and a script (scratch, to be moved into the repo's checks when the UI gets a browser test) opens all eight tabs.
 - **No accuracy percent against an estimate within $5 of zero.** The first recorded sample made +$9.70 against −$0.99 estimated and read "+1079.8%". The dollar difference always shows; the percent shows only when the estimate is at least $5 either way (`MIN_ESTIMATE_FOR_PERCENT`).
 
+
+## Nov 24: a wrong "Confirmed listing": a title that names another model; a price far above Home Depot's
+
+**The example** (`fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json`). The set "Adaptor Plate for TOUGHSYSTEM 2.0
+and 10-Compartment Shallow Pro Small Parts Organizer" ($54.87) holds DEWALT DWST08017, $39.99 at Home Depot sold alone.
+Amazon's own record for B0DGLWKS9S says brand DEWALT, part number DWST08017, model DWST08017, but the listing is "DWST60122-1
+Dewalt Pro Backpack x McLaren F1 Team, Limited Edition" at $389. The catalog rule (rung 0) confirmed it, round 2's re-pick
+switched the part to it from B0C3TN1Z7P, and the set read +$259.45, ROI 473%, "Confirmed listing". The owner caught it by
+eye. An audit of his 69 matched listings found this one wrong and no other.
+
+**Why the measured rules missed it.** The title guard (`titleOrCountProblem`'s "title names X, not MODEL") reads model
+numbers with `MODEL_PATTERNS`, written and measured on tools: DEWALT's is DC… only, so "DWST60122-1" was no model to it.
+Every "zero wrong" measured so far was measured on tools, batteries, chargers and kits. Home Depot's sets (Nov 23) brought
+a new population, DEWALT storage, hand tools and accessories (DWST…, DWMT…, DWHT…, DW…) and RYOBI accessories (A98401,
+RHCM04 …), which no measured rule had seen. **A "zero wrong" holds only for the populations it was measured on**; a new
+source of parts needs the measurements run again on its own listings.
+
+**Rule 1: a title that names another model of the brand's family holds the confirmation** (`match.ts FAMILY_PATTERNS`,
+`otherModelNamed`). `MODEL_PATTERNS` is not widened: it also finds and chooses listings (title matching, search), and a
+wider pattern there was not measured. `FAMILY_PATTERNS` is used for one thing only, to stop a confirmation by structured
+fields: rungs 0 and 1 and the judge's check (`titleOrCountProblem`, through `listingProblem`), the re-pick switch (it
+confirms through rungs 0 and 1), and the grader's part number match (`grade`: strong becomes review, a question, when
+the title names another model of the family). The forms are those the recorded titles hold (`familyForms`): DEWALT DW,
+up to three letters, three to six digits, then letters or digits and an optional "-digit" (100 forms recorded, e.g.
+DWST08017, DWST60122-1, DWMT74195, DW0100, DWAMF1235RL), plus the DC form; RYOBI A and five or six digits, A with two
+digits, one or two letters and one to three digits (A98401, A32HF01, A10FB1G, A90FS01A), RH…, FV…, STM… (15 forms), plus
+the P form. The part's own model named in the title clears it as before. The reason reads "its title names DWST60122-1,
+not DWST08017".
+
+| Measured (`npx tsx scripts/measure-wrong-confirm.ts`) | Rows | Changed | Right | Right lost | Wrong after |
+|---|---|---|---|---|---|
+| Rungs 0 and 1: every `measureIdentity` row, the two live listings, after-scan5's quoted checks, the audit corpus (279), the example | 612 | 1 | 1 (B0DGLWKS9S) | 0 | 0 |
+| The part number grade: recorded Keepa products whose part number is the part's | 16 | 3 | 1 (B0DGLWKS9S) | 0 | — |
+| The listing judge's check: 215 recorded judgements, and a judge that says "same" to everything | 215 | 0 | — | 0 | 0 |
+| after-scan5's 99 automatic matches, on their stored titles | 99 | 0 | — | 0 | — |
+
+The part number grade's two other changes are listings whose key is uncertain, each a title that names another written
+model (B0DY31QJ4Q for PCL001K names PCL001B; B09SN6Y6TS for P215 names P215BN): a question is the right answer to both.
+
+**Rule 2: the price guard** (`core/src/scan/priceGuard.ts`). An automatic match whose counted Amazon price (the
+featured price while active, as the report counts it) is more than **4×** Home Depot's own price for the part sold alone
+(its own page, `matchedModel` the part) is not counted, whatever confirmed it: the part goes to Review's "Which listing"
+(`hold.ts holdForOwner`) with "Amazon's price is 9.7× Home Depot's price for this part: check the listing", the held
+listing first and the part's other listings after it, Home Depot's page of the part sold alone among the question's
+sources and both links in the match's record. A lower grade, never a rejection (no `rejectedAsins`): the owner may choose
+the same listing, and his answer (decidedBy user) stands. With the part in review the bundle has no estimate ("1 of 2
+priced: DWST08017 review") and no buy. The guard reads only the store, so it runs free at a scan's end (`postScanWork`)
+and before the agent publishes a report (`rebuild`, never beside a scan).
+
+| Amazon ÷ Home Depot, 265 listings with both prices | Listings | Key: the part | Key: not | Uncertain | No key (stored, counted) |
+|---|---|---|---|---|---|
+| below 0.25× | 82 | 0 | 82 | 0 | 0 |
+| 0.25–0.5× | 58 | 4 | 52 | 0 | 2 |
+| 0.5–0.8× | 51 | 12 | 30 | 6 | 3 |
+| 0.8–1.25× | 52 | 9 | 21 | 4 | 18 |
+| 1.25–2× | 16 | 1 | 11 | 2 | 2 |
+| 2–3× | 3 | 0 | 2 | 0 | 1 (A98401, 2.80×) |
+| 3–6× | 0 | 0 | 0 | 0 | 0 |
+| above 6× | 3 | 0 | 3 (B0F3N79KTM for PCL406/PCL406B 6.72×; B0DGLWKS9S 9.73×) | 0 | 0 |
+
+Sources: every matched listing of the three stored scans (`prices.json` over `partPrices.json`), every audit corpus pair
+whose part Home Depot priced (`fixtures/validation/hd-part-prices-2026-11-18.json`), and the example. **The threshold**:
+listings keyed as the part reach 1.63×; listings the owner's scans counted reach 2.80× (A98401 on B09V1PG5R1, $27.93
+against $9.97; the owner's live data, every right listing at or below 2.8×); above that only wrong listings, the lowest at
+6.72×. 4× sits in the gap (its geometric middle is 4.3×, rounded down toward catching), with room on both sides.
+Measured: 3 rows above it, all wrong; 0 right held; 0 of after-scan5's matches changed. **The mirror (far below Home
+Depot's) is not adopted**: below 0.25× all 82 rows are wrong, but they are search rows the grader already rejects
+(`match-corpus.test.ts`), no listing any rung confirmed or counted was below 0.41×, and right listings reach 0.41× (DCB205,
+$68.95 against $169), too thin a margin for a rule with no case to answer.
+
+**Stored data is read again** (`catalogCheck.ts`, `LADDER_VERSION` 4, `CONFIRMATION_LADDER`). Every stored automatic
+confirmation by fields (grade strong, verifiedBy keepa_catalog, serpapi_product or listing_fields) with no confirmed check
+at ladder 4 is queued once, from its cached pull (the pull that confirmed it), under the current rules: confirmed, the
+check is recorded and nothing else changes; contradicted, removed as before (a re-pick falls back to the listing it switched
+from, as a title match); unknown, held for the owner as rule 2 holds (`change: 'held'`). The price guard needs no version:
+it reads the stored prices each time. The owner's B0DGLWKS9S is withdrawn by both without a scan, a search or AI.
+
+**Replay** (`replayScan5`, `core/test/price-guard.test.ts`): after-scan5 itself changes nowhere under either rule. The
+set with the example's match as the owner's app stored it (Home Depot's $39.99, B0DGLWKS9S at $389, DWST14925 as stored,
+B0799RHJ7W $14.88, the app's default fees): before, "confirmed", +$288.43 (+$259.45 with the owner's own fee settings);
+after, no estimate, "1 of 2 priced: DWST08017 review", the question "Which listing" offering B0DGLWKS9S, B0C3TN1Z7P,
+B0HMV5V9L7 and B0HQQZWYTX.
+
+*Known gaps:* the judge's own quote check reads model numbers with `MODEL_PATTERNS` and so never confirms a DW… or A…
+model (a question, the safe side); the family forms are the recorded ones, and a third brand or a new line of models needs
+its own; the price guard needs Home Depot's price for the part sold alone, so a part with none (a set item never sold
+alone) is guarded by rule 1 only.
