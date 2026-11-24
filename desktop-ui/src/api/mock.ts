@@ -539,7 +539,13 @@ export function createMockClient(): ApiClient {
       await online(80);
       return deals.find((d) => d.id === id)?.lookup?.searches ?? 0;
     },
-    async lookUp(id) {
+    async settleNeedsLook(id) {
+      await online(400);
+      deals = deals.map((d) => (d.id === id ? { ...d, needsLook: null } : d));
+      sync();
+      emit({ type: 'deals' });
+    },
+        async lookUp(id) {
       await online(900);
       deals = deals.map((d) => (d.id === id ? { ...d, lookup: null } : d));
       state.budget.serpLeft = (state.budget.serpLeft ?? 0) - 2;

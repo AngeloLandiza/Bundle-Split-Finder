@@ -19,6 +19,52 @@ import { partMenu, type PartMenuId } from '../lib/menus';
 import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
 import './DealDetail.css';
 
+/**
+ * Checking the app's own work (core/src/audit/sanity.ts): what looks wrong about this deal, each with where to check it by
+ * eye, and his answer. "This is right" is remembered for that listing (or this deal's estimate); "Wrong listing" withdraws
+ * the part's listing. Nothing here changes an estimate by itself; the agent rebuilds the deal.
+ */
+function NeedsLookSection({ d }: { d: DealDetail }) {
+  const settle = useAction(api.settleNeedsLook);
+  const looks = d.needsLook ?? [];
+  return (
+    <section className="detail-section" aria-labelledby="needs-look-title">
+      <h3 className="detail-section-title" id="needs-look-title">
+        Needs a look
+      </h3>
+      <div className="detail-box needs-look">
+        {looks.map((f) => (
+          <div className="needs-look-item" key={f.clearKey + f.kind}>
+            <p className="needs-look-sentence">
+              {f.severity === 'hold' ? 'Not a buy until you look: ' : ''}
+              {f.sentence}
+            </p>
+            <p className="needs-look-links">
+              {f.links.map((l, i) => (
+                <Fragment key={l.url + i}>
+                  {i > 0 ? ' · ' : null}
+                  <SourceLink source={{ label: l.label, url: l.url }} />
+                </Fragment>
+              ))}
+            </p>
+            <p className="needs-look-actions">
+              <Button size="sm" busy={settle.busy} busyLabel="Saving…" onClick={() => void settle.run(d.id, f.clearKey, 'right')}>
+                This is right
+              </Button>
+              {f.part && f.asin ? (
+                <Button size="sm" disabled={settle.busy} onClick={() => void settle.run(d.id, f.clearKey, 'wrong')}>
+                  Wrong listing
+                </Button>
+              ) : null}
+            </p>
+          </div>
+        ))}
+        {settle.error ? <p className="detail-note">{settle.error}</p> : null}
+      </div>
+    </section>
+  );
+}
+
 /** One bundle, in the inspector beside the Deals table. */
 export function DealDetailPane({ id }: { id: string }) {
   const [res, reload] = useResource(() => api.deal(id), [id], ['deals']);
@@ -83,6 +129,8 @@ function Detail({ d }: { d: DealDetail }) {
           </p>
           <WatchBar d={d} />
         </header>
+
+        {d.needsLook && d.needsLook.length > 0 ? <NeedsLookSection d={d} /> : null}
 
         {d.signals ? (
           <SignalsSection signals={d.signals} />

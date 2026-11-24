@@ -369,3 +369,21 @@
 .part-fact {
   margin-top: 4px;
 }
+
+/* Checking the app's own work: one plain list in the box, hairlines between findings (no card in the card). */
+.needs-look-item + .needs-look-item {
+  border-top: 1px solid var(--separator);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+.needs-look-sentence {
+  margin: 0;
+}
+.needs-look-links {
+  margin: 4px 0 0;
+}
+.needs-look-actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 0;
+}

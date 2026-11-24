@@ -182,6 +182,8 @@ export function createHttpClient(): ApiClient {
     resume: async () => void (await call<C.PauseResponse>('POST', '/api/agent/resume', {})),
     lookupQuote: async (dealId) => (await call<C.PaidResponse>('GET', `/api/deals/${id(dealId)}/lookup`)).searches,
     lookUp: async (dealId) => void (await call<C.PaidResponse>('POST', `/api/deals/${id(dealId)}/lookup`, {})),
+    settleNeedsLook: async (dealId, clearKey, verdict) =>
+      void (await call<C.NeedsLookResponse>('POST', `/api/deals/${id(dealId)}/needs-look`, { clearKey, verdict } satisfies C.NeedsLookBody)),
     verify: async (dealId, model) => void (await call<C.PaidResponse>('POST', `/api/deals/${id(dealId)}/verify`, { model })),
     confirmPrice: async (dealId, model, body) => void (await call<C.ConfirmPriceResponse>('POST', `/api/deals/${id(dealId)}/parts/${id(model)}/price`, body satisfies C.ConfirmPriceBody)),
     watch: async (dealId, watch) => void (await call<C.WatchResponse>('POST', `/api/deals/${id(dealId)}/watch`, { watch } satisfies C.WatchBody)),

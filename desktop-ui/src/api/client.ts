@@ -98,6 +98,8 @@ export interface ApiClient {
   /** What a Look up of this bundle's unmatched parts would spend now, in searches. Free. */
   lookupQuote(dealId: string): Promise<number>;
   lookUp(dealId: string): Promise<void>;
+  /** His verdict on a "Needs a look" finding (POST /api/deals/:id/needs-look): right remembers it, wrong withdraws the listing. */
+  settleNeedsLook(dealId: string, clearKey: string, verdict: 'right' | 'wrong'): Promise<void>;
   verify(dealId: string, model: string): Promise<void>;
   /** Confirms a sell price for one part of a deal (POST /api/deals/:id/parts/:part/price). The agent never makes up a figure. */
   confirmPrice(dealId: string, model: string, body: ConfirmPriceRequest): Promise<void>;

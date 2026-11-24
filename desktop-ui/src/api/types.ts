@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  ActivityError, OutcomeEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
+  NeedsLook, ActivityError, OutcomeEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -43,6 +43,7 @@ export type {
   KeyCheckRecord,
   KeyName,
   KeysPresence,
+  NeedsLook,
   PairedExtension,
   PendingPairRequest,
   ReviewAnswer,
@@ -226,6 +227,8 @@ export interface DealRow {
    * the break-even (the agent's figures, estimates from the fee settings). Absent or null for a complete estimate.
    */
   incomplete?: DealIncomplete | null;
+  /** Checking the app's own work: the first finding that holds this deal from Buy now ("Needs a look: …"); null when none. */
+  needsLook?: NeedsLook | null;
 }
 
 export interface DealsView {
@@ -382,6 +385,8 @@ export interface DealDetail {
   splitEvidence?: SplitEvidence[];
   /** The estimate with Amazon's FBA fee estimate from Keepa, beside the main one; null when no part has a Keepa fee. */
   fbaEstimate: FbaEstimate | null;
+  /** Checking the app's own work: every finding on this deal, holds first, each with its links; empty when none. */
+  needsLook?: NeedsLook[];
 }
 
 // ------------------------------------------------------------------ GET /api/review

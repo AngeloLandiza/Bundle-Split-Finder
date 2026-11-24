@@ -223,6 +223,7 @@ export function mapRow(r: C.DealRow): DealRow {
     buyNow: r.buyNow ?? false,
     signalNote: r.signalNote ?? null,
     beforeFulfillment: r.beforeFulfillment ?? null,
+    needsLook: r.needsLook ?? null,
     bogo: r.bogo ?? null,
     bogoPair: r.bogoPair ?? null,
     bogoChoices: r.bogoChoices ?? null,
@@ -434,6 +435,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     bogo: d.bogo ?? null,
     bogoGroup: d.bogoGroup ?? null,
     fbaEstimate: d.fbaEstimate ?? null,
+    needsLook: d.needsLook ?? [],
     ...(splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence) ? { splitEvidence: splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence)! } : {}),
   };
 }

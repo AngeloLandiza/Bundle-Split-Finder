@@ -70,6 +70,11 @@ function sortValue(r: DealRow, key: Col): number | string | null {
 
 /** The line under a title: the agent's verdict as one short line (the whole sentence on hover), else the reason the columns do not say. */
 function lineOf(r: DealRow, matchShown: boolean): { text: string; full: string } | null {
+  // Checking the app's own work: a held deal says why first; the inspector has the links and his two answers.
+  if (r.needsLook) {
+    const look = `Needs a look: ${r.needsLook.sentence}`;
+    return { text: oneLine(look), full: look };
+  }
   const note = r.signalNote?.trim();
   if (note) return { text: oneLine(note), full: note };
   const reason = dealReason(r, { matchShown });
@@ -271,6 +276,11 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
               {r.title}
             </span>
             {bought.has(r.id) ? <Tag title="You recorded buying this deal. Open Bought to see what became of it.">Bought</Tag> : null}
+            {r.needsLook ? (
+              <Tag tone="attention" title={`Needs a look: ${r.needsLook.sentence} Never Buy now until you look. Open the deal to check the listing.`}>
+                Needs a look
+              </Tag>
+            ) : null}
             {r.buyNow ? (
               <Tag tone="buy" title="The last scan found this worth buying now: above your profit and ROI numbers, selling well, and better than before.">
                 Buy now
