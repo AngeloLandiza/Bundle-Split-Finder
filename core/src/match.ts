@@ -72,6 +72,35 @@ export const MODEL_PATTERNS: Record<string, RegExp> = {
   DEWALT: /(?<![A-Z0-9])DC[A-Z]{1,3}[0-9]{3,4}[A-Z0-9]*(?:-[0-9])?(?![A-Z0-9])/g,
 };
 
+// The brand's wider family of model numbers, for one use only: a title that names one of them, and not the part's
+// own model, stops a confirmation by structured fields (keepa/verify.ts titleOrCountProblem, and the grader's part
+// number match). Never used to find, choose or confirm a listing: MODEL_PATTERNS keep that job, measured on tools.
+// Home Depot's sets (Nov 23) brought parts MODEL_PATTERNS never saw. Each form is one the recorded data holds
+// (scripts/measure-wrong-confirm.ts lists them; docs/decisions.md, "A title that names another model"):
+//   DEWALT  DW, up to three letters, three to six digits, then letters or digits, with an optional "-" and one digit:
+//           DWST08017, DWST60122-1 (B0DGLWKS9S), DWMT74195, DWHT16148, DW0100, DW08302CG, DWAMF1235RL; plus the DC form.
+//   RYOBI   A and five or six digits (A98401, A967001), or A, two digits, one or two letters and one to three digits
+//           (A32HF01, A32BR720, A10FB1G, A90FS01A); RH with letters (RHCM04, RHSDM3501); FV with letters (FVC51K,
+//           FVD50K); STM and three digits (STM201); plus the P form.
+export const FAMILY_PATTERNS: Record<string, RegExp> = {
+  RYOBI: new RegExp(
+    `${MODEL_PATTERNS.RYOBI!.source}|(?<![A-Z0-9])(?:A[0-9]{5,6}|A[0-9]{2}[A-Z]{1,2}[0-9]{1,3}|RH[A-Z]{1,3}[0-9]{2,4}|FV[A-Z]{1,3}[0-9]{2}|STM[0-9]{3})[A-Z0-9]*(?![A-Z0-9])`,
+    'g',
+  ),
+  DEWALT: new RegExp(`${MODEL_PATTERNS.DEWALT!.source}|(?<![A-Z0-9])DW[A-Z]{0,3}[0-9]{3,6}[A-Z0-9]*(?:-[0-9])?(?![A-Z0-9])`, 'g'),
+};
+
+/**
+ * The first model of the brand's family (FAMILY_PATTERNS) a title names when it names none that is the part's own model
+ * (sameModel); null when it names the part's, or no model of the family. `patterns` MODEL_PATTERNS reads as before.
+ */
+export function otherModelNamed(brand: string, model: string, title: string, patterns: Record<string, RegExp> = FAMILY_PATTERNS): string | null {
+  const pattern = patterns[brand.trim().toUpperCase()];
+  if (!pattern) return null;
+  const named = Array.from(title.toUpperCase().matchAll(new RegExp(pattern.source, 'g')), (m) => m[0]);
+  return named.length > 0 && !named.some((m) => sameModel(brand, m, model)) ? named[0]! : null;
+}
+
 // Kit extras: for a part that is itself a kit, a title that sells the kit with more. Recorded (DCK240C2,
 // the validation's responses), each labelled not the part:
 //   "DCK240C2 … Drill Driver/Impact Combo Kit (1.3Ah) with 20V MAX Circular Saw"              (B0722GYTWL)
@@ -305,7 +334,13 @@ export function grade(want: Wanted, cand: Candidate): Graded {
 
   const graded = ((): Graded => {
     if (upcOk) return out('exact', 'barcode match', ...(partOk || titleOk ? ['model number match'] : []));
-    if (partOk) return out('strong', 'manufacturer part number match');
+    if (partOk) {
+      // B0DGLWKS9S: a part number is Amazon's record, and a record can be wrong; a title that names another model of the
+      // brand's family, and not this one, makes it a question (FAMILY_PATTERNS), never a confirmation.
+      const other = otherModelNamed(want.brand, want.model, cand.title);
+      if (other) return out('review', `its title names ${other}, not ${want.model.trim().toUpperCase()}`, 'manufacturer part number match');
+      return out('strong', 'manufacturer part number match');
+    }
     if (titleOk) {
       if (makerPrefix) return out('review', BRAND_IN_TITLE_ONLY);
       if (!brandField && !brandPrefix) return out('review', BRAND_NOT_CONFIRMED);

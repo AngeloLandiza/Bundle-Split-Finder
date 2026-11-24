@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import type { DealRow } from '../../core/src/api/contract';
@@ -7,8 +10,10 @@ import { MemoryScanStore } from '../../core/src/scan/memoryStore';
 import type { ListingRecord, MatchRecord } from '../../core/src/scan/types';
 import type { BundleSignals } from '../../core/src/tracking/signals';
 import { LIVE_HELD, measureNarrowBrandRule } from '../../scripts/measure-autoconfirm';
+import { wrongExample } from '../../scripts/measure-wrong-confirm';
+import { ROOT } from '../../scripts/node-store';
 import { confirmationQueue, repickTargets, rung2CanRun, unconfirmableOf, type AutoConfirmState } from '../autoConfirm';
-import { repickUnconfirmed } from '../verifyMatches';
+import { onlyConfirmed, repickUnconfirmed } from '../verifyMatches';
 import { confirmingNote } from '../views';
 
 // The listing ladder, round 2, on the two listings the owner's live deals held (Nov 23): PBP004 on B09HDZ5MPV ("TTI Ryobi
@@ -118,6 +123,20 @@ describe('round 2: re-pick before giving up', () => {
       asin: 'B0TESTPCG2', grade: 'strong', verifiedBy: 'keepa_catalog', alternatives: ['B0B1QRQYK2'],
       verifyEvidence: "switched from B0B1QRQYK2 (brand ONEAND) to B0TESTPCG2: Amazon's catalog lists brand RYOBI, part number PCG002: https://www.amazon.com/dp/B0TESTPCG2",
     });
+  });
+
+  it('the owner\'s example (Nov 24): a record whose part number is the part but whose title names another model is no switch', async () => {
+    // fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json: the switch that happened, from B0C3TN1Z7P to the backpack.
+    const ex = wrongExample();
+    expect(onlyConfirmed('DEWALT', 'DWST08017', 'B0C3TN1Z7P', [], [ex.listing])).toBeNull();
+    const store = new MemoryScanStore();
+    await store.putMatch({ ...titleMatch('X', 'B0C3TN1Z7P'), key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017' });
+    const fixtureProduct = (JSON.parse(readFileSync(join(ROOT, 'fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json'), 'utf8')) as { product: KeepaProduct }).product;
+    const done = await repickUnconfirmed({
+      store, now: () => T, keepaBudget: budget, shouldStop: () => false, searchedAt: {}, saveSearched: () => {}, keepaSearch: async () => [fixtureProduct],
+    }, [{ key: 'DEWALT:DWST08017', model: 'DWST08017', asin: 'B0C3TN1Z7P', reason: "no part number in Amazon's record" }]);
+    expect(done.switched).toEqual([]);
+    expect(await store.getMatch('DEWALT:DWST08017')).toMatchObject({ asin: 'B0C3TN1Z7P', grade: 'probable' });
   });
 
   it('no search while the Keepa tokens are not above the reserve', async () => {

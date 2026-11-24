@@ -13,7 +13,7 @@ import type { ModelProvider } from '../ai/types';
 import type { TokenUsage } from '../judge/types';
 import { makerAgrees, makerWords } from '../keepa/brandAliases';
 import { listingProblem } from '../keepa/listingFields';
-import type { ListingIdentity } from '../keepa/verify';
+import type { CheckOptions, ListingIdentity } from '../keepa/verify';
 import { MODEL_PATTERNS, sameModel, type Wanted } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
 
@@ -170,7 +170,7 @@ export type ListingJudgeOutcome =
  * field a found brand quote and no other maker), and rung 1's contradictions find nothing. Anything short of that is
  * cannot_tell; a "different" stays different (shown, never acted on).
  */
-export function checkListingJudge(want: Wanted, l: ListingIdentity, raw: ListingJudgeRaw, opts: { makers?: boolean } = {}): ListingJudgeOutcome {
+export function checkListingJudge(want: Wanted, l: ListingIdentity, raw: ListingJudgeRaw, opts: Pick<CheckOptions, 'makers' | 'family'> = {}): ListingJudgeOutcome {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const checks: string[] = [];

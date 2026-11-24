@@ -18,7 +18,7 @@
 
 import {
   addsToKit, AFTERMARKET, FOR_BRAND, KIT_CONTENTS, KIT_WITH_EXTRAS, KIT_WORDS, MAYBE_SPARE_PART, MODEL_PATTERNS, MULTI, NOT_INCLUDED_PHRASE, OEM_PART_NUMBER,
-  PART_NAME, RENEWED, sameModel, type Wanted,
+  otherModelNamed, PART_NAME, RENEWED, sameModel, type Wanted,
 } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
 import { brandAliasOf, makerAgrees, makerWords, type BrandAlias } from './brandAliases';
@@ -113,8 +113,16 @@ export function dewaltAmpHourConflict(model: string, title: string): string | nu
   return `title says ${odd[0]}Ah, but in ${m} ${said}`;
 }
 
+/** The checks' options: each `false` turns one measured rule off, for the measurements only (scripts/measure-*.ts). */
+export interface CheckOptions {
+  aliases?: boolean;
+  makers?: boolean;
+  /** The title's other model of the brand's wider family (match.ts FAMILY_PATTERNS); false reads MODEL_PATTERNS only. */
+  family?: boolean;
+}
+
 /** Why the title or the counts stop a confirmation, or null. Never a reason to contradict: a title is not the catalog. */
-export function titleOrCountProblem(want: PartIdentity, l: ListingIdentity): string | null {
+export function titleOrCountProblem(want: PartIdentity, l: ListingIdentity, opts: Pick<CheckOptions, 'family'> = {}): string | null {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const title = l.title ?? '';
@@ -144,11 +152,10 @@ export function titleOrCountProblem(want: PartIdentity, l: ListingIdentity): str
       if (ah) return ah;
     }
   }
-  const pattern = MODEL_PATTERNS[brand];
-  if (pattern) {
-    const named = Array.from(title.toUpperCase().matchAll(new RegExp(pattern.source, 'g')), (m) => m[0]);
-    if (named.length > 0 && !named.some((m) => sameModel(brand, m, model))) return `title names ${named[0]}, not ${model}`;
-  }
+  // B0DGLWKS9S (Nov 24): part number DWST08017 in Amazon's record, title "DWST60122-1 Dewalt Pro Backpack …". The brand's
+  // wider family (match.ts FAMILY_PATTERNS) sees the DWST model MODEL_PATTERNS did not.
+  const other = otherModelNamed(brand, model, title, opts.family === false ? MODEL_PATTERNS : undefined);
+  if (other) return `its title names ${other}, not ${model}`;
   return null;
 }
 
@@ -159,7 +166,7 @@ export function withAlias<T extends IdentityCheck>(alias: BrandAlias, r: T): T {
 }
 
 /** The structured-identity check (the rule at the top of this file). */
-export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: { aliases?: boolean; makers?: boolean } = {}): IdentityCheck {
+export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: CheckOptions = {}): IdentityCheck {
   // A brand field that is a recorded alias of the part's brand (brandAliases.ts) counts as it; nothing else changes.
   const alias = opts.aliases === false ? null : brandAliasOf(want.brand, l.brand);
   if (alias) return withAlias(alias, checkIdentity(want, { ...l, brand: want.brand }, { ...opts, aliases: false }));
@@ -188,7 +195,7 @@ export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: { al
   // The manufacturer field (brandAliases.ts makerAgrees): the brand, a recorded maker of it ("TTI"), or its name plus
   // "Tools" ("RYOBI Tools") leave the listing to the other conditions; anything else holds it.
   if (maker !== null && !makerAgrees(brand, l.manufacturer, opts)) return { status: 'unknown', reason: `${from} lists brand ${shown} but manufacturer ${l.manufacturer}` };
-  const problem = titleOrCountProblem(want, l);
+  const problem = titleOrCountProblem(want, l, opts);
   if (problem) return { status: 'unknown', reason: problem };
   const id = field === 'part number' ? part! : alt!;
   const made = opts.makers === false ? null : makerWords(brand, l.manufacturer);

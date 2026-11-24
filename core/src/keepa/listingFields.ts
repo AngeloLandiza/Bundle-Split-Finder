@@ -23,7 +23,7 @@ import { toUpc12 } from '../identifiers';
 import { FOR_BRAND, AFTERMARKET, KIT_CONTENTS, MODEL_PATTERNS, NOT_INCLUDED_PHRASE, sameModel, type Wanted } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
 import { brandAliasOf, makerAgrees, makerWords } from './brandAliases';
-import { checkIdentity, titleOrCountProblem, withAlias, type IdentityCheck, type ListingIdentity } from './verify';
+import { checkIdentity, titleOrCountProblem, withAlias, type CheckOptions, type IdentityCheck, type ListingIdentity } from './verify';
 
 export type FieldRule = 'id_field' | 'features' | 'title' | 'gtin';
 
@@ -65,7 +65,7 @@ function namesOnly(brand: string, model: string, text: string): 'only' | 'other'
 const tokens = (raw: string | null): string[] => (raw ?? '').toUpperCase().split(/[^A-Z0-9-]+/).filter((t) => t !== '');
 
 /** Why the gate refuses, or null. Also rung 3's contradiction check (listingJudge). */
-export function listingProblem(want: Wanted, l: ListingIdentity, opts: { makers?: boolean } = {}): string | null {
+export function listingProblem(want: Wanted, l: ListingIdentity, opts: Pick<CheckOptions, 'makers' | 'family'> = {}): string | null {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const listed = brandKey(l.brand);
@@ -74,7 +74,7 @@ export function listingProblem(want: Wanted, l: ListingIdentity, opts: { makers?
   if (maker !== null && !makerAgrees(brand, l.manufacturer, opts)) return `the listing's manufacturer is ${l.manufacturer}`;
   const part = (l.partNumber ?? '').toUpperCase().replace(/^#/, '').replace(/\s+/g, '');
   if (part !== '' && !sameModel(brand, part, model)) return `the listing's part number is ${part}`;
-  const problem = titleOrCountProblem(want, l);
+  const problem = titleOrCountProblem(want, l, opts);
   if (problem) return problem;
   for (const f of l.features ?? []) {
     if (!want.isKit && KIT_CONTENTS.test(f.replace(NOT_INCLUDED_PHRASE, ' ')) && /\b(?:comes with|includes?|included|kit)\b/i.test(f.replace(NOT_INCLUDED_PHRASE, ' '))) {
@@ -113,12 +113,12 @@ function evidence(want: Wanted, l: ListingIdentity, rules: readonly FieldRule[],
  * its unknown, the sub-rules `rules` (ADOPTED_RULES by default) under the gate above. Never contradicts.
  */
 export function checkListingFields(
-  want: Wanted, l: ListingIdentity, opts: { rules?: readonly FieldRule[]; hdUpc?: string | null; aliases?: boolean; makers?: boolean } = {},
+  want: Wanted, l: ListingIdentity, opts: { rules?: readonly FieldRule[]; hdUpc?: string | null } & CheckOptions = {},
 ): FieldCheck {
   // A brand field that is a recorded alias of the part's brand (brandAliases.ts) counts as it; nothing else changes.
   const alias = opts.aliases === false ? null : brandAliasOf(want.brand, l.brand);
   if (alias) return withAlias(alias, checkListingFields(want, { ...l, brand: want.brand }, { ...opts, aliases: false }));
-  const makers = opts.makers === false ? { makers: false } : {};
+  const makers = { ...(opts.makers === false ? { makers: false } : {}), ...(opts.family === false ? { family: false } : {}) };
   const first = checkIdentity(want, l, { aliases: false, ...makers });
   if (first.status !== 'unknown') return { ...first, rule: null };
   const rules = opts.rules ?? ADOPTED_RULES;
