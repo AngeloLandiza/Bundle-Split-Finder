@@ -60,8 +60,8 @@ export interface SanityFinding {
  * - priceRatio 3: right answers reach 2.80 (A98401, Home Depot on clearance at $9.97); the wrong ones are 4.04 (PCL702B on a
  *   two-vacuum listing) and 9.73 (DWST08017 on a $389 backpack).
  * - roi 1.0 (100%): right estimates reach 44%; the wrong ones read 107% and 473%.
- * - amazonOverRegular 1.5: the parts' Amazon total reaches 1.27 times the bundle's regular price on right answers; 1.79
- *   and 5.53 on the wrong ones.
+ * - amazonOverRegular 1.5: the Amazon total of a way to sell's priced parts (all of them or only those priced so far)
+ *   reaches 1.27 times the bundle's regular price on right answers; 1.79 and 5.53 on the wrong ones.
  */
 export const SANITY_LIMITS = { priceRatio: 3, priceRatioLow: 0.3, roi: 1, amazonOverRegular: 1.5 } as const;
 
@@ -212,19 +212,23 @@ function bundleFindings(b: BundleRow): SanityFinding[] {
   let tooGood: SanityFinding | null = null;
   for (const o of options) {
     const est = o.estimate;
-    const total = o.parts.every((p) => p.price !== null) && o.parts.length > 0 ? o.parts.reduce((n, p) => n + p.price! * p.qty, 0) : null;
-    const over = total !== null && b.regularPrice !== null && b.regularPrice > 0 ? total / b.regularPrice : null;
+    // The parts priced so far, even before every part has a price: a part's price alone can already be too much (the
+    // mutation tests: a price times ten on a part Home Depot does not sell alone, in a deal with no estimate yet).
+    const priced = o.parts.filter((p) => p.status === 'matched' && p.price !== null);
+    const regular = b.regularPrice ?? b.price;
+    const total = priced.reduce((n, p) => n + p.price! * p.qty, 0);
+    const over = priced.length > 0 && regular !== null && regular > 0 ? total / regular : null;
     const roiHigh = est !== null && est.roi > SANITY_LIMITS.roi;
     const overHigh = over !== null && over > SANITY_LIMITS.amazonOverRegular;
     if (!roiHigh && !overHigh) continue;
     const roiPct = est ? Math.round(est.roi * 100) : null;
     const words = [
       roiHigh ? `an estimated ROI of ${roiPct}%` : null,
-      overHigh ? `parts that sell on Amazon for ${round2(over!)} times Home Depot's regular ${usd(b.regularPrice!)}` : null,
+      overHigh ? `parts that sell on Amazon for ${round2(over!)} times Home Depot's regular ${usd(regular!)}` : null,
     ].filter((x): x is string => x !== null);
     const f: SanityFinding = {
       kind: 'too_good', severity: 'hold', bundleId: b.key, clearKey: `bundle|${b.key}|too_good`,
-      links: [...homeDepotLinks(b), ...o.parts.flatMap((p) => (p.asin ? [amazon(p.asin)] : []))],
+      links: [...homeDepotLinks(b), ...priced.flatMap((p) => (p.asin ? [amazon(p.asin)] : []))],
       numbers: { ...(est ? { roi: est.roi, profit: est.profit } : {}), ...(over !== null ? { amazonOverRegular: round2(over) } : {}) },
       sentence: `${words.join(' and ')} is more than any checked deal reached; one of the listings may not be the part.`,
     };
