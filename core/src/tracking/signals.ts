@@ -328,6 +328,11 @@ export interface SignalInput {
   keepa?: boolean;
   /** The owner's flat fulfillment fee, for the words of an estimate before fulfillment (signals round 3). Default $0. */
   flatFee?: number;
+  /**
+   * Checking the app's own work (core/src/audit/sanity.ts): the sentence of a `hold` finding on this bundle. Such a
+   * bundle is never worth buying now and never "looks worth buying" until the owner looks; nothing else changes.
+   */
+  held?: string;
 }
 
 const SECTION_WORDS: Record<ReportSection, string> = {
@@ -460,6 +465,9 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       if (meets) fails.unshift(unconfirmedWords(pendingAsins.length));
       else fails.push(unconfirmedWords(pendingAsins.length));
     }
+    // A sanity hold binds first: the deal waits for the owner's look, whatever else holds or fails. A buy held back for its
+    // listings keeps its buyPending (the catalog check still reads those listings first), but is never "looks worth buying".
+    if (input.held) fails.unshift(`needs a look: ${input.held.replace(/\.$/, '')}`);
     const notBuyNow = fails.length > 0 ? `${capital(fails.join('; '))}.` : null;
     const buyNow = notBuyNow === null;
     if (buyNow) buys.push({ kind: 'buyNow', optionId: o.id, reason: `${why} ${velocity.reason}`, numbers });
@@ -473,7 +481,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     const figures = () => `+${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month`;
     verdicts.set(o.id, buyNow
       ? `Worth buying now: ${figures()}, ${whyShort || 'improved'}`
-      : pending
+      : pending && !input.held
         ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
         : `Not worth buying now: ${fails.join('; ')}`);
   }

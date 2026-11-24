@@ -270,12 +270,16 @@ export interface SanityOptions {
   cleared?: Iterable<string>;
 }
 
-/** Every finding on the deals, holds first, then by deal and part. */
+/** Within a deal, what the owner reads first: what the listing's own title says, then prices, then the estimate. */
+const KIND_ORDER: readonly SanityKind[] = ['title_other_model', 'title_extra_model', 'listing_two_models', 'pack_counted_as_one', 'price_vs_home_depot', 'too_good'];
+
+/** Every finding on the deals: holds first, then by deal, by KIND_ORDER, and by part. */
 export function sanityFindings(bundles: readonly BundleRow[], opts: SanityOptions = {}): SanityFinding[] {
   const cleared = new Set(opts.cleared ?? []);
   const all = [...bundles.flatMap(bundleFindings), ...twoModelFindings(bundles)].filter((f) => !cleared.has(f.clearKey));
   const rank = (s: SanitySeverity) => (s === 'hold' ? 0 : 1);
-  return all.sort((a, b) => rank(a.severity) - rank(b.severity) || a.bundleId.localeCompare(b.bundleId) || (a.part ?? '').localeCompare(b.part ?? '') || a.kind.localeCompare(b.kind));
+  return all.sort((a, b) =>
+    rank(a.severity) - rank(b.severity) || a.bundleId.localeCompare(b.bundleId) || KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || (a.part ?? '').localeCompare(b.part ?? ''));
 }
 
 /** The deals a hold keeps from Buy now, each with its first hold's sentence ("Needs a look: …"). */

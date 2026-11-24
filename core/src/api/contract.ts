@@ -16,6 +16,7 @@ import type { SplitEvidence } from '../decompose';
 import type { ReviewFollowUp } from '../research/followUp';
 import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
+import type { SanityKind, SanitySeverity } from '../audit/sanity';
 import type { FeeSettings } from '../money';
 import type { Schedule } from '../schedule';
 import type { PipelineView } from '../scan/pipeline';
@@ -379,6 +380,39 @@ export interface DealRow {
    * the break-even instead, from the fee settings (rule 5). Absent or null otherwise.
    */
   incomplete?: DealIncomplete | null;
+  /**
+   * Checking the app's own work (core/src/audit/sanity.ts): the deal's first `hold` finding. Such a row is never Buy now
+   * nor "looks worth buying" until the owner looks ("This is right" or "Wrong listing", POST /api/deals/:id/needs-look);
+   * the row and the inspector say "Needs a look: <sentence>". Absent when nothing holds it.
+   */
+  needsLook?: NeedsLook;
+}
+
+/** One sanity finding as the app shows it, with where to check it by eye (Home Depot first, then Amazon). */
+export interface NeedsLook {
+  kind: SanityKind;
+  severity: SanitySeverity;
+  sentence: string;
+  /** The part and its Amazon listing, for a finding about one listing; null for one about the deal's estimate. */
+  part: string | null;
+  asin: string | null;
+  links: { label: string; url: string }[];
+  /** What "This is right" remembers (SanityFinding.clearKey). */
+  clearKey: string;
+}
+
+/**
+ * POST /api/deals/:id/needs-look: the owner's verdict on one finding. `right` remembers the clearKey (that listing, or that
+ * deal's estimate, is never flagged again); `wrong` withdraws the part's match from that listing (a finding with a part and
+ * an ASIN only) and the listing is never chosen for the part again. Neither changes an estimate by itself; the deals are
+ * rebuilt and judged again.
+ */
+export interface NeedsLookBody {
+  clearKey: string;
+  verdict: 'right' | 'wrong';
+}
+export interface NeedsLookResponse {
+  ok: true;
 }
 
 /**
@@ -528,6 +562,8 @@ export interface DealDetail {
    * Absent when the split was read from the model number and page alone, or chosen by the owner.
    */
   splitEvidence?: SplitEvidence[];
+  /** Checking the app's own work: every finding on this deal, holds first (DealRow.needsLook is the first hold). */
+  needsLook?: NeedsLook[];
 }
 
 export type { SplitEvidence };

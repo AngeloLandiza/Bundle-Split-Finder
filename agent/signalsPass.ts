@@ -10,6 +10,7 @@
 // asked about is pulled once (1 token, above the reserve, after the lookups), so its sales figure is not left missing.
 
 import type { NotifyEvent } from '../core/src/api/contract';
+import { heldDeals, sanityFindings, type SanityFinding } from '../core/src/audit/sanity';
 import type { TokenBudget } from '../core/src/keepa/budget';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
 import { keepingTrends, readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
@@ -25,6 +26,23 @@ import { freshSignals, retrackReport, type TrackingState } from '../core/src/tra
 import { buildDigest } from './alerts';
 import type { NotifyPolicy } from './notifyPolicy';
 import type { Store } from './store';
+
+/**
+ * Checking the app's own work: every time the deals are written (after a scan, and whenever an estimate or a match changes
+ * between scans: agent/work.ts publish), the sanity checks run on them (core/src/audit/sanity.ts) and their findings are
+ * stored beside them, less those the owner marked "This is right". A `hold` keeps its deal from Buy now (sanityHolds, read
+ * by the signals of a scan and of this pass); nothing here changes a match or an estimate.
+ */
+export function checkOwnWork(store: Store, bundles: readonly BundleRow[]): SanityFinding[] {
+  const findings = sanityFindings(bundles, { cleared: store.get('tracking').sanityCleared ?? [] });
+  store.update('deals', (d) => ({ ...d, sanity: findings }));
+  return findings;
+}
+
+/** The deals a sanity hold keeps from Buy now, each with its first hold's sentence (SignalOpts.held). */
+export function sanityHolds(store: Pick<Store, 'get'>): Record<string, string> {
+  return Object.fromEntries([...heldDeals(store.get('deals').sanity ?? [])].map(([k, f]) => [k, f.sentence]));
+}
 
 /** One Keepa product pull as the agent makes it (keepa/fetchStep.ts keepaProductSearchResult). */
 export type ProductPull = (asin: string, label: string, maxAgeMs?: number) => Promise<SearchResult>;
@@ -77,7 +95,7 @@ export async function evaluateSignals(d: SignalsDeps, report: Pick<ScanReport, '
   const trend = await trendsOfReport(d.cache, report);
   let evaluated: string[] = [];
   store.update('tracking', (t) => {
-    const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa(), ...(d.flatFee ? { flatFee: d.flatFee() } : {}) });
+    const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa(), ...(d.flatFee ? { flatFee: d.flatFee() } : {}), held: sanityHolds(store) });
     evaluated = r.evaluated;
     return { ...t, watch: r.state.watch, history: r.state.history, signals: r.state.signals };
   });

@@ -62,9 +62,15 @@ export function bundlesWithOpenQuestions(report: Pick<ScanReport, 'bundles' | 'r
 export interface SignalOpts {
   keepa?: boolean;
   flatFee?: number;
+  /** The sanity holds by bundle key (core/src/audit/sanity.ts heldDeals): each such bundle's sentence (SignalInput.held). */
+  held?: Readonly<Record<string, string>>;
 }
 
-const signalOpts = (o: SignalOpts) => ({ ...(o.keepa !== undefined ? { keepa: o.keepa } : {}), ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}) });
+const signalOpts = (o: SignalOpts, key: string) => ({
+  ...(o.keepa !== undefined ? { keepa: o.keepa } : {}),
+  ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}),
+  ...(o.held?.[key] !== undefined ? { held: o.held[key] } : {}),
+});
 
 /**
  * After a scan: bundles that are now confirmed and discounted become watched (unless the owner unwatched them), every
@@ -86,7 +92,7 @@ export function trackReport(
   for (const row of report.bundles) {
     if (!watch[row.key] && autoWatch(row)) watch[row.key] = { watched: true, by: 'auto', since: now };
     const before = state.history[row.key] ?? [];
-    signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts) });
+    signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts, row.key) });
     history[row.key] = appendHistory(before, historyPoint(row, open.has(row.key), trend, now), now);
   }
   // Bundles this report does not hold keep their history until it is too old.
@@ -156,7 +162,7 @@ export function retrackReport(
     const last = before.at(-1);
     const same = last !== undefined && sameFigures(last, point);
     const prior = same ? before.slice(0, -1) : before;
-    const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts) });
+    const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts, row.key) });
     const old = state.signals[row.key];
     if (!same || !old || verdictKey(old) !== verdictKey(next) || old.verdict === undefined) {
       signals[row.key] = next;

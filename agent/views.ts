@@ -24,6 +24,7 @@ import type {
   KeyCheckRecord,
   KeyName,
   KeysPresence,
+  NeedsLook,
   OutcomeEntry,
   ReviewAnswer,
   ReviewQuestion,
@@ -36,6 +37,7 @@ import type {
   WatchState,
 } from '../core/src/api/contract';
 import type { BundleSignals, HistoryPoint } from '../core/src/tracking/signals';
+import type { SanityFinding } from '../core/src/audit/sanity';
 import { bogoTagOf, type BogoGroup } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
@@ -117,7 +119,13 @@ function bogoGroupOf(tracking: Tracking | undefined, key: string): BogoGroup | n
   return groups.find((g) => g.choices.some((c) => c.key === key)) ?? groups.find((g) => g.starterKey === key) ?? null;
 }
 
-function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, number>, tracking?: Tracking): DealRow {
+/** A sanity finding as the app shows it (contract NeedsLook). */
+export function needsLookOf(f: SanityFinding): NeedsLook {
+  return { kind: f.kind, severity: f.severity, sentence: f.sentence, part: f.part ?? null, asin: f.asin ?? null, links: f.links, clearKey: f.clearKey };
+}
+
+function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, number>, tracking?: Tracking, sanity?: readonly SanityFinding[]): DealRow {
+  const hold = sanity?.find((f) => f.bundleId === b.key && f.severity === 'hold');
   const group = tracking ? bogoGroupOf(tracking, b.key) : null;
   const pair = tracking?.bogoPairs?.[b.key];
   const searches = lookups?.[b.key];
@@ -156,6 +164,7 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     updatedAt: new Date(b.seenAt).toISOString(),
     lookup: searches === undefined ? null : { searches },
     ...(b.incomplete ? { incomplete: incompleteOf(b) } : {}),
+    ...(hold ? { needsLook: needsLookOf(hold), buyNow: false } : {}),
   };
 }
 
@@ -204,7 +213,7 @@ export function parseSection(v: string | null): ReportSection | undefined {
 /** Every bundle as a row: the panel's rows, then audit-only bundles the panel does not have. */
 function allRows(data: WithTracking<'deals' | 'review'>): DealRow[] {
   const need = bundlesNeedingAnswer(data.deals.bundles, data.review.questions);
-  const rows = data.deals.bundles.map((b) => rowOf(b, need.has(b.key), data.deals.lookups, data.tracking));
+  const rows = data.deals.bundles.map((b) => rowOf(b, need.has(b.key), data.deals.lookups, data.tracking, data.deals.sanity));
   const have = new Set(rows.map((r) => r.id));
   for (const a of data.deals.auditBundles) {
     if (!have.has(a.key)) rows.push(rowOfAudit(a, need.has(a.key), data.deals.auditAt));
@@ -428,7 +437,7 @@ export function watchlistResponse(data: WithTracking<'deals' | 'review' | 'setti
   const need = bundlesNeedingAnswer(data.deals.bundles, data.review.questions);
   const rows: WatchRow[] = data.deals.bundles
     .filter((b) => t.watch[b.key]?.watched)
-    .map((b) => ({ row: rowOf(b, need.has(b.key), data.deals.lookups, t), watch: watchStateOf(t, b.key)!, signals: signalsView(t.signals[b.key]) }));
+    .map((b) => ({ row: rowOf(b, need.has(b.key), data.deals.lookups, t, data.deals.sanity), watch: watchStateOf(t, b.key)!, signals: signalsView(t.signals[b.key]) }));
   rows.sort((x, y) => Number(y.row.buyNow) - Number(x.row.buyNow) || (y.row.profit ?? -Infinity) - (x.row.profit ?? -Infinity));
   const ats = Object.values(t.signals).map((s) => s.at);
   return { at: ats.length ? iso(Math.max(...ats)) : null, rows, thresholds };
@@ -452,9 +461,10 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
   for (const c of bogo?.chosen ?? []) if (c.link) sources.push({ label: `Home Depot: free ${c.model}`, url: c.link, source: 'homedepot' });
   for (const c of bogo?.counted ?? []) if (c.asin) sources.push({ label: `Amazon: free ${c.model}`, url: amazonLink(c.asin), source: 'amazon' });
   const group = t ? bogoGroupOf(t, id) : null;
+  const looks = (data.deals.sanity ?? []).filter((f) => f.bundleId === id).map(needsLookOf);
   if (group) sources.push({ label: `Home Depot: the BOGO starter ${group.starterModel}`, url: group.starterLink, source: 'homedepot' });
   return {
-    row: data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t),
+    row: data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity),
     bundle,
     sources,
     estimateBasis: ESTIMATE_BASIS,
@@ -476,6 +486,7 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
         }
       : {}),
     ...(bundle.splitEvidence && bundle.splitEvidence.length > 0 ? { splitEvidence: bundle.splitEvidence } : {}),
+    ...(looks.length > 0 ? { needsLook: looks } : {}),
   };
 }
 

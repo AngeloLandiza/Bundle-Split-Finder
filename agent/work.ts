@@ -48,6 +48,7 @@ import {
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ReviewItem, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
+import { partKey } from '../core/src/scan/types';
 import { parseLedger, searchesLeftNow } from '../core/src/serpapi/balance';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
@@ -59,7 +60,7 @@ import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
-import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
+import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps } from './signalsPass';
 import { averagePullsWanted, pullAverages } from './suggestPrices';
 import { forgetFact, markNotSold, rememberAnswer, type Remembered } from '../core/src/facts/apply';
 import type { FactField } from '../core/src/facts/fact';
@@ -1537,6 +1538,8 @@ export class AgentWork {
     }
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('deals', (d) => ({ ...d, at, bundles: report.bundles, lookups }));
+    // Checking the app's own work: the deals just written, checked (a hold keeps a deal from Buy now; signalsPass.ts).
+    checkOwnWork(this.d.store, report.bundles);
     // Step 16 (round 2): the free reads made for open questions the AI has not answered are kept across reports.
     this.d.store.update('review', (prev) => {
       const open = new Set(report.review.map((q) => q.id));
@@ -1565,7 +1568,7 @@ export class AgentWork {
     const alerts = this.d.store.get('settings').alerts;
     const now = this.d.now();
     const opts = this.signalsDeps();
-    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!() }) }));
+    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) }) }));
   }
 
   /** What the views show beside each deal: its BOGO promotion's estimate and the FBA-fee estimate, from stored data. */
@@ -1908,6 +1911,36 @@ export class AgentWork {
   markNotSold(brand: string, model: string): Promise<void> {
     return this.serialAnswer('A scan or a search is running. Save this when it has finished.', async () => {
       await markNotSold(this.scanStore, brand, model, this.d.now());
+      await this.refresh();
+    });
+  }
+
+  /**
+   * Checking the app's own work: the owner's verdict on one finding (POST /api/deals/:id/needs-look). "This is right"
+   * remembers its clearKey, so that listing (or that deal's estimate) is not flagged again. "Wrong listing" withdraws the
+   * part's match from that listing as the catalog check withdraws a contradicted one: no listing, the ASIN in
+   * rejectedAsins so no later scan chooses it for the part again, the owner's reason as the evidence. Then the deals are
+   * rebuilt and judged again; the finding goes with the match.
+   */
+  settleNeedsLook(bundleKey: string, clearKey: string, verdict: 'right' | 'wrong'): Promise<void> {
+    return this.serialAnswer('A scan or a search is running. Save this when it has finished.', async () => {
+      const finding = (this.d.store.get('deals').sanity ?? []).find((f) => f.bundleId === bundleKey && f.clearKey === clearKey);
+      if (!finding) throw new WorkRefused('This was already settled, or the deal changed. Reload the deal.');
+      if (verdict === 'right') {
+        this.d.store.update('tracking', (t) => ({ ...t, sanityCleared: [...new Set([...(t.sanityCleared ?? []), clearKey])] }));
+      } else {
+        const bundle = this.d.store.get('deals').bundles.find((b) => b.key === bundleKey);
+        if (!finding.part || !finding.asin || !bundle) throw new WorkRefused('This is about the estimate, not one listing. Open each listing to check it.');
+        const m = await this.scanStore.getMatch(partKey(bundle.brand, finding.part));
+        if (!m || m.asin !== finding.asin) throw new WorkRefused('The listing for this part changed since. Reload the deal.');
+        const now = this.d.now();
+        const { verifiedBy: _v, ...rest } = m;
+        await this.scanStore.putMatch({
+          ...rest, status: 'none', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null,
+          rejectedAsins: [...new Set([...(m.rejectedAsins ?? []), finding.asin])],
+          verifyEvidence: `You marked it the wrong listing (Needs a look: ${finding.sentence}): https://www.amazon.com/dp/${encodeURIComponent(finding.asin)}`,
+        });
+      }
       await this.refresh();
     });
   }

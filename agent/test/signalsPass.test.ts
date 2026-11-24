@@ -62,6 +62,9 @@ function open(): Agent {
   a.store.update('keys', (k) => ({ ...k, keepa: 'keepa-secret-key-1', telegram: { botToken: BOT, chatId: '42' } }));
   // The owner's numbers (Nov 23): $20, 20%, 50 sold a month.
   a.store.update('settings', (s) => ({ ...s, alerts: { ...s.alerts, enabled: true, minProfit: 20, minRoiPercent: 20, minMonthlySold: 50 } }));
+  // The deal here is $9 for a $79 tool: a 235% ROI, which the sanity checks hold for a look (core/src/audit/sanity.ts). These
+  // tests are about the signals, so the owner has said "This is right" about its estimate; the hold has its own tests below.
+  a.store.update('tracking', (t) => ({ ...t, sanityCleared: [`bundle|${KEY}|too_good`] }));
   return a;
 }
 
@@ -378,5 +381,83 @@ describe('buy safety: a buy waits for its listings to be confirmed (Nov 23)', ()
     expect(s.buyNow).toBeNull();
     expect(s.buyPending).toBeUndefined();
     expect(telegram).toEqual([]);
+  });
+});
+
+describe('checking the app\'s own work: a held deal is never Buy now until the owner looks', () => {
+  const HELD = bundleKey('322961591');
+  const ASIN = 'B0DGLWKS9S';
+
+  /**
+   * The Nov 24 case (fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json) on one part: the $39.99 adaptor plate
+   * DWST08017, confirmed by Amazon's catalog part number on a $389 DWST60122-1 backpack; its Keepa figures stored, so the
+   * deal would be a buy but for the hold.
+   */
+  async function wrongConfirmation(): Promise<void> {
+    const store = agent.work.scanStore;
+    await store.putBundle({
+      key: HELD, retailer: 'homedepot', itemId: '322961591', title: 'Adaptor Plate for TOUGHSYSTEM 2.0', brand: 'DEWALT', model: 'DWST08017',
+      upc: null, price: 39.99, regularPrice: 39.99, percentOff: null, link: 'https://www.homedepot.com/p/322961591', seenAt: T0,
+      split: { components: ['DWST08017'], status: 'resolved', notes: [] },
+    });
+    await store.putPartPrice({
+      key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017', itemId: '322961591', matchedModel: 'DWST08017', price: 39.99,
+      title: 'Adaptor Plate for TOUGHSYSTEM 2.0', link: 'https://www.homedepot.com/p/322961591', seenAt: T0, checkedAt: T0,
+    });
+    await store.putListing({ asin: ASIN, brand: 'DEWALT', title: 'DWST60122-1 Dewalt Pro Backpack x McLaren F1 Team, Limited Edition', models: [], image: null, price: 389, reviews: null, seenAt: T0, checkedAt: T0 });
+    await store.putPrice({ asin: ASIN, price: 389, reviews: null, seenAt: T0, checkedAt: T0 });
+    await store.putMatch({
+      key: 'DEWALT:DWST08017', brand: 'DEWALT', model: 'DWST08017', status: 'matched', asin: ASIN, grade: 'strong', alternatives: [], decidedBy: 'auto',
+      updatedAt: T0, waitingSince: null, source: 'page', verifiedBy: 'keepa_catalog',
+      verifyEvidence: `Amazon's catalog lists brand DEWALT, part number DWST08017: https://www.amazon.com/dp/${ASIN}`,
+    });
+    await writePartTrend(agent.work.cache, { asin: ASIN, amazonPrice: 389, salesRank: 1000, offerCount: 5, pulledAt: T0, monthlySold: 500, fbaFee: 8.02 });
+    await agent.work.refresh();
+  }
+  const view = () => {
+    const data = { deals: agent.store.get('deals'), review: agent.store.get('review'), runtime: agent.store.get('runtime'), settings: agent.store.get('settings'), tracking: agent.store.get('tracking') };
+    return { row: dealsResponse(data, { sort: 'profit' }, clock).rows.find((r) => r.id === HELD)!, detail: dealDetail(data, HELD)! };
+  };
+
+  it('held by three checks: the row and the inspector say "Needs a look" with the links; no buy, nothing sent', async () => {
+    await wrongConfirmation();
+    const { row: r, detail } = view();
+    expect(r.buyNow).toBe(false);
+    expect(r.needsLook).toMatchObject({
+      kind: 'title_other_model', part: 'DWST08017', asin: ASIN, clearKey: `listing|DEWALT:DWST08017|${ASIN}`,
+      sentence: 'The Amazon listing confirmed for DWST08017 is titled "DWST60122-1 Dewalt Pro Backpack x McLaren F1 Team, Limited Edition", which names DWST60122-1 and not DWST08017.',
+    });
+    expect(r.needsLook!.links.map((l) => l.url)).toEqual(['https://www.homedepot.com/p/322961591', 'https://www.homedepot.com/p/322961591', `https://www.amazon.com/dp/${ASIN}`]);
+    expect(detail.needsLook!.map((f) => f.kind).sort()).toEqual(['price_vs_home_depot', 'title_other_model', 'too_good']);
+    const s = agent.store.get('tracking').signals[HELD]!;
+    expect(s.buyNow).toBeNull();
+    expect(s.verdict).toMatch(/^Not worth buying now: needs a look: The Amazon listing confirmed for DWST08017 is titled/);
+    expect(telegram).toEqual([]);
+    // The stored match and estimate are untouched: the owner decides.
+    expect(await agent.work.scanStore.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'matched', asin: ASIN });
+    expect(r.profit).toBeGreaterThan(250);
+  });
+
+  it('"This is right" on each finding is remembered; with nothing left to look at, the deal is judged as any other', async () => {
+    await wrongConfirmation();
+    await agent.work.settleNeedsLook(HELD, `listing|DEWALT:DWST08017|${ASIN}`, 'right');
+    expect(view().row.needsLook).toMatchObject({ kind: 'too_good' });
+    await agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'right');
+    expect(view().row.needsLook).toBeUndefined();
+    expect(agent.store.get('tracking').sanityCleared).toEqual([`bundle|${KEY}|too_good`, `listing|DEWALT:DWST08017|${ASIN}`, `bundle|${HELD}|too_good`]);
+    expect(agent.store.get('tracking').signals[HELD]!.buyNow).toMatchObject({ kind: 'buyNow' });
+    // Rebuilt again: still cleared.
+    await agent.work.refresh();
+    expect(agent.store.get('deals').sanity!.filter((f) => f.bundleId === HELD)).toEqual([]);
+    await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'right')).rejects.toThrow('already settled');
+  });
+
+  it('"Wrong listing" withdraws the match: no listing, never chosen again for the part, the findings go with it', async () => {
+    await wrongConfirmation();
+    await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'wrong')).rejects.toThrow('about the estimate');
+    await agent.work.settleNeedsLook(HELD, `listing|DEWALT:DWST08017|${ASIN}`, 'wrong');
+    expect(await agent.work.scanStore.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'none', asin: null, rejectedAsins: [ASIN] });
+    expect(view().row.needsLook).toBeUndefined();
+    expect(view().row.profit).toBeNull();
   });
 });

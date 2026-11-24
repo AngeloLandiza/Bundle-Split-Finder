@@ -14,6 +14,7 @@ import {
   type AnswerResponse,
   type BogoResponse,
   type ConfirmPriceResponse,
+  type NeedsLookResponse,
   type FactResponse,
   type PriceFromLinkResponse,
   type KeyName,
@@ -713,6 +714,19 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/deals/:id/verify', 'ui', async (ctx) => {
     const model = text(obj(await ctx.body()).model, 'model', 64);
     return refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paid(ctx.params.id!, 'verify', model)).searchesUsed }));
+  });
+
+  // Checking the app's own work: his verdict on a "Needs a look" finding (core/src/audit/sanity.ts).
+  r.post('/api/deals/:id/needs-look', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    const clearKey = text(b.clearKey, 'clearKey', 300);
+    const verdict = b.verdict;
+    if (verdict !== 'right' && verdict !== 'wrong') throw new HttpError('bad_request', 'verdict must be "right" or "wrong".');
+    if (!store.get('deals').bundles.some((x) => x.key === ctx.params.id)) throw new HttpError('not_found', 'No such deal.');
+    return refusals(async (): Promise<NeedsLookResponse> => {
+      await work.settleNeedsLook(ctx.params.id!, clearKey, verdict);
+      return { ok: true };
+    });
   });
 
   // The owner's confirmed sell price for one part: chosen from a stored eBay listing or typed with a link (core/src/scan/confirmed.ts).

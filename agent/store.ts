@@ -4,6 +4,7 @@
 // one. Keys and pairing are written owner-only (0600). On the first start the JSON files the agent
 // kept before step 13 are read once into the store; after that they are never read again.
 
+import type { SanityFinding } from '../core/src/audit/sanity';
 import { DEFAULT_LISTING_SOURCE } from '../core/src/scan/listingSource';
 import { randomBytes } from 'node:crypto';
 import { closeSync, existsSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, utimesSync, writeSync } from 'node:fs';
@@ -70,6 +71,11 @@ export interface DealsCollection {
   auditBundles: AuditBundle[];
   /** W4: searches a Look up of each bundle's unmatched parts would spend now (paid.ts lookupsNeeded), by bundle key. */
   lookups?: Record<string, number>;
+  /**
+   * Checking the app's own work (core/src/audit/sanity.ts, agent/signalsPass.ts checkOwnWork): the findings on these
+   * bundles, less what the owner marked right, written each time the deals are. Absent in a store written before it.
+   */
+  sanity?: SanityFinding[];
 }
 
 export interface ReviewCollection {
@@ -247,6 +253,8 @@ export interface AgentRuntime {
 export interface TrackingCollection extends TrackingState {
   /** `groups`: the automatic BOGO groups by id (bogoPairs.ts bogoGroups); absent in a store written before them. */
   derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate>; groups?: Record<string, BogoGroup> };
+  /** The sanity findings the owner marked "This is right", by clearKey (SanityFinding.clearKey); never shown again. */
+  sanityCleared?: string[];
 }
 
 /**

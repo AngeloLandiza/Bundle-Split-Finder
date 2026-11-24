@@ -30,7 +30,7 @@ describe('the real wrong confirmation (B0DGLWKS9S, Nov 24) is held by more than 
     expect(title.links.map((l) => l.url)).toEqual([
       set.link, 'https://www.homedepot.com/p/322961591', 'https://www.amazon.com/dp/B0DGLWKS9S',
     ]);
-    expect(heldDeals(holds).get(WRONG_SET)!.kind).toBe(holds[0]!.kind);
+    expect(heldDeals(holds).get(WRONG_SET)!.kind).toBe('title_other_model');
   });
 
   it('"This is right" on the listing clears its two listing findings; the estimate stays held until cleared too', async () => {
@@ -54,9 +54,9 @@ describe('measured on the owner\'s stored deals (fixtures/e2e-2026-11-23)', () =
     // B0FD253MKS "PCL700B & PCL702B" is a two-tool listing (docs/decisions.md, the open several-parts-in-a-listing case):
     // wrong for PCL702B alone. It read +$191.41, ROI 107%.
     expect(found.map((f) => [f.kind, f.bundleId, f.part ?? null, f.severity])).toEqual([
-      ['too_good', 'homedepot:344284497', null, 'hold'],
-      ['price_vs_home_depot', 'homedepot:344284497', 'PCL702B', 'hold'],
       ['title_extra_model', 'homedepot:344284497', 'PCL702B', 'hold'],
+      ['price_vs_home_depot', 'homedepot:344284497', 'PCL702B', 'hold'],
+      ['too_good', 'homedepot:344284497', null, 'hold'],
     ]);
     expect(found.find((f) => f.kind === 'too_good')!.numbers).toEqual({ roi: 1.0693, profit: 191.41, amazonOverRegular: 1.79 });
   });
