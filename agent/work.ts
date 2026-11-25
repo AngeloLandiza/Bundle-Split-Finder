@@ -32,7 +32,7 @@ import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
 import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, NOTICE as EBAY_NOTICE } from '../core/src/scan/ebayPass';
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
 import {
-  addSamples, DESKTOP_STEP_WORDS, endStep, finishUnit, moveUnits, newTailSteps, type PipelineStep, pipelineOf, pipelineViewOf, samplesOf, skipStep, startStep, type PipelineView, type StepState,
+  addSamples, DESKTOP_STEP_WORDS, endStep, finishUnit, moveUnits, newTailSteps, type PipelineStep, pipelineOf, pipelineViewOf, samplesOf, skippedPagesSentence, skipStep, startStep, type PipelineView, type StepState,
 } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
 import { applyPriceGuard } from '../core/src/scan/priceGuard';
@@ -1706,6 +1706,9 @@ export class AgentWork {
     }
     const verified = job ? catalogSentence(job.matchesVerified ?? 0, job.matchesRemoved ?? 0) : null;
     if (verified) parts.push(verified);
+    // Nov 25: a page step that read nothing says why (Home Depot's pause or this scan's limit), not "page limit reached" for both.
+    const skipped = skippedPagesSentence(job?.pipeline);
+    if (skipped) parts.push(skipped);
     if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
     if (run.questionsAsked) parts.push(`AI asked about ${run.questionsAsked}.`);
     if (run.autopilotApplied) parts.push(`Autopilot applied ${run.autopilotApplied}.`);
@@ -1782,7 +1785,7 @@ export class AgentWork {
       ...(discovery?.chromeListing ? { chromeListing: discovery.chromeListing } : {}),
       shouldStop: () => this.stopCtl.signal.aborted,
       ...(connected
-        ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices, readItemPages: readers.readPromoPages, hdPagesLeft: () => this.pace.left('scan') }
+        ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices, readItemPages: readers.readPromoPages, hdPagesLeft: () => this.pace.left('scan'), hdBlock: () => this.pace.blocked('scan') }
         : { noReaderReason: lookups ? 'not in this run' : pausedUntil !== null ? 'Home Depot paused' : 'Chrome closed' }),
       ...(ebay ? { ebay } : {}),
       ...keepa,

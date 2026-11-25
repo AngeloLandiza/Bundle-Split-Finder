@@ -181,6 +181,17 @@ export function blockSentence(b: HdBlock, clock: ClockText = defaultClock): stri
   return `Today's ${b.cap} Home Depot pages between scans are read; the rest continue tomorrow or in the next scan.`;
 }
 
+/**
+ * Nov 25: why a scan's page step read nothing, truly. `left()` is 0 both while Home Depot's pause is in force and when the
+ * scan's own pages are used up; the step used to say "page limit reached" for both. `block` is `pace.blocked('scan')`;
+ * `limit` the scan's page limit when no block names one (Settings' pageReadsPerScan). `short` is four words or fewer.
+ */
+export function noPagesWhy(block: HdBlock | null, limit: number, clock: ClockText = defaultClock): { short: string; sentence: string } {
+  if (block?.reason === 'paused') return { short: 'Home Depot paused', sentence: `Home Depot paused reading until ${clock(block.until)}` };
+  const cap = block?.reason === 'cap' ? block.cap : limit;
+  return { short: 'scan page limit reached', sentence: `this scan's page limit of ${cap} was reached` };
+}
+
 /** "Home Depot paused reading until 6:40 PM; the rest continue then." */
 export const pausedSentence = (until: number, clock: ClockText = defaultClock): string =>
   `Home Depot paused reading until ${clock(until)}; the rest continue then.`;
