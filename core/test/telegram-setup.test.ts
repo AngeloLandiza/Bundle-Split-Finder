@@ -66,6 +66,12 @@ describe('telegram:setup', () => {
     expect(none.lines[0]).toContain('/tmp/x.txt');
   });
 
+  it('says what the app\'s own check found when it does not accept the key', async () => {
+    const { d, lines } = deps({ routes: { '/api/keys/telegram': { status: 200, body: { saved: true, check: { ok: false, problem: 'Telegram does not know this chat.', kind: 'rejected' } } } } });
+    expect(await runTelegramSetup([], d)).toBe(0);
+    expect(lines.join('\n')).toContain('Its check says: Telegram does not know this chat.');
+  });
+
   it('an error that carries the token is printed without it, and --keep leaves the file', async () => {
     const boom = deps({ fetch: async () => { throw new Error(`connect failed for https://api.telegram.org/bot${TOKEN}/getUpdates`); } });
     expect(await runTelegramSetup([], boom.d)).toBe(4);

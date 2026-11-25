@@ -82,8 +82,9 @@ export async function runTelegramSetup(args: string[], deps: SetupDeps): Promise
       say(`Split Finder did not take the key (it answered ${saved.status}). Is the app open?`);
       return 4;
     }
-    const check = ((await saved.json()) as { check?: { ok?: boolean; sentence?: string; detail?: string } }).check;
-    say(`Saved in Split Finder. ${check?.ok === false ? `Its check says: ${check.sentence ?? check.detail ?? 'not accepted'}` : 'Telegram accepts the key.'}`);
+    // PutKeyResponse.check (core/src/api/contract.ts): `{ ok: true }` or `{ ok: false, problem }`.
+    const check = ((await saved.json()) as { check?: { ok?: boolean; problem?: string } }).check;
+    say(`Saved in Split Finder. ${check?.ok === false ? `Its check says: ${check.problem ?? 'not accepted'}` : 'Telegram accepts the key.'}`);
     const test = await deps.fetch(`${AGENT}/api/notify/test-telegram`, { method: 'POST', headers, body: '{}' });
     say(test.status === 200 ? 'A test message was sent: look for "Split Finder can reach you here." in Telegram.' : `The test message was not sent (the app answered ${test.status}). Use the Test button in Settings, Notifications.`);
   } catch (e) {
