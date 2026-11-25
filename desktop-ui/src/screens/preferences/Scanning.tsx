@@ -1,8 +1,10 @@
 import { useApp } from '../../api/hooks';
 import type { FeeSource, Schedule } from '../../api/types';
+import { Button } from '../../components/Button';
 import { Checkbox, Select, TextField } from '../../components/Fields';
 import { RecommendedScheduleLink } from '../../components/RecommendedScheduleLink';
 import { Meter } from '../../components/States';
+import { inboundAnswered, salesTaxAnswered } from '@core/estimateNote';
 import { count } from '../../lib/format';
 import { forecast } from '../../lib/forecast';
 import { FBA_AT_ZERO, RULES, isClock } from '../../lib/prefs';
@@ -33,7 +35,11 @@ export function ScanningPane() {
   const free = source.listingSource !== 'serpapi' && Boolean(state?.keys.keepa) && cfg.amazonRefreshViaKeepa;
   const f = forecast(cfg.schedule, cfg.searchesPerScan, budget?.serpMonthly ?? 250, cfg.reserve, { free });
   const setCfg = (part: Partial<typeof cfg>, delay = 0) => update({ settings: part }, { delay });
-  const setFee = (key: keyof typeof fees, value: number) => update({ settings: { fees: { ...fees, [key]: value } } }, { delay: 600 });
+  // Entering a value, or confirming 0, answers the cost for good: a stored 0 alone cannot tell "none" from "never asked".
+  const setFee = (key: keyof typeof fees, value: number) =>
+    update({ settings: { fees: { ...fees, [key]: value, ...(key === 'salesTaxRate' ? { salesTaxAnswered: true } : key === 'inboundCost' ? { inboundAnswered: true } : {}) } } }, { delay: 600 });
+  const taxAnswered = salesTaxAnswered(fees);
+  const inAnswered = inboundAnswered(fees);
   const [timeError, setTimeError] = useState<string | null>(null);
 
   return (
@@ -179,11 +185,25 @@ export function ScanningPane() {
       <Row label={fromKeepa ? 'Flat amount, when Keepa has none' : 'Fulfillment, per unit'} help={!fromKeepa && fees.fulfillmentFee === 0 ? FBA_AT_ZERO : undefined}>
         <NumberField label="Fulfillment per unit" value={fees.fulfillmentFee} rule={RULES.fulfillmentFee} prefix="$" step="0.01" onCommit={(v) => setFee('fulfillmentFee', v)} />
       </Row>
-      <Row label="Sales tax you pay">
-        <NumberField label="Sales tax" value={round(fees.salesTaxRate * 100)} rule={RULES.salesTaxPercent} suffix="%" step="0.25" onCommit={(v) => setFee('salesTaxRate', round(v / 100))} />
+      <Row label="Sales tax you pay" help={taxAnswered ? undefined : 'Not set yet, so estimates leave it out. Enter it, or confirm that it is 0.'}>
+        <Inline>
+          <NumberField label="Sales tax" value={round(fees.salesTaxRate * 100)} rule={RULES.salesTaxPercent} suffix="%" step="0.25" onCommit={(v) => setFee('salesTaxRate', round(v / 100))} />
+          {taxAnswered ? null : (
+            <Button size="sm" onClick={() => setFee('salesTaxRate', 0)}>
+              It is 0%
+            </Button>
+          )}
+        </Inline>
       </Row>
-      <Row label="Inbound, per bundle">
-        <NumberField label="Inbound cost per bundle" value={fees.inboundCost} rule={RULES.inboundCost} prefix="$" step="0.01" onCommit={(v) => setFee('inboundCost', v)} />
+      <Row label="Inbound, per bundle" help={inAnswered ? undefined : 'Not set yet, so estimates leave it out. Enter it, or confirm that it is $0.'}>
+        <Inline>
+          <NumberField label="Inbound cost per bundle" value={fees.inboundCost} rule={RULES.inboundCost} prefix="$" step="0.01" onCommit={(v) => setFee('inboundCost', v)} />
+          {inAnswered ? null : (
+            <Button size="sm" onClick={() => setFee('inboundCost', 0)}>
+              It is $0
+            </Button>
+          )}
+        </Inline>
       </Row>
       <Note>Estimates only: the real fees on your Amazon account may differ.</Note>
       <Rule />

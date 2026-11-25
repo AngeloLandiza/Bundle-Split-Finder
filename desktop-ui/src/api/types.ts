@@ -201,6 +201,10 @@ export interface AppState {
   update?: UpdateNotice;
   /** The app turned "Open at login" on itself because a schedule was set; a quiet notice with Turn off, until he closes it. */
   loginNotice?: { sentence: string };
+  /** What the profit estimates leave out while his sales tax or inbound shipping is unanswered ("before sales tax and inbound shipping"); absent when both are answered. */
+  profitNote?: string;
+  /** The one question about those costs, until he answers or closes it. */
+  costsPrompt?: { sentence: string };
   /** Nov 25: his seller account's calls today and the app's cap a day per kind of call; absent without an account. */
   seller?: SellerUsage;
 }

@@ -2405,3 +2405,22 @@ are medians, the old code against the new, runs alternated on one machine (Apple
   `agent/test/store.test.ts`). Windows' `import()` reads `D:\...` as a URL with the scheme `d:` and fails, so the child
   exited 1 before it ran anything. They import by file URL now. The flush-count test from the performance pass accepts
   one or two flushes on Windows, where the folder's flush may be refused.
+
+## Nov 25: sales tax and inbound shipping must be answered before an estimate stops saying it leaves them out
+
+- **Problem.** Both costs default to 0, so every estimate silently assumed no Home Depot sales tax and no inbound shipping. A stored 0
+  cannot tell "the owner said zero" from "never asked". Profit is not changed by this; only what is said beside it.
+- **A mark per cost.** `FeeSettings.salesTaxAnswered` and `inboundAnswered` (optional booleans). The Settings fields set a mark when
+  a value is saved, and an "It is 0%" / "It is $0" button sets it for an explicit zero. Absent reads as answered only when the value
+  is not 0 (`core/src/estimateNote.ts`). `COST_ANSWERED_MIGRATION` (agent/store.ts) writes the marks once from what is stored: a
+  value other than 0 is answered, a 0 is not. Nothing is logged: the owner did not lose anything.
+- **One set of words** (`core/src/estimateNote.ts`): "before sales tax and inbound shipping", naming only the unanswered ones. The
+  agent sends it as `profitNote` in the state; the deal rows, Today, the deal inspector and the popover read it from there; the
+  Telegram digest, the Buy now follow-up, the "bought" confirmation and /status take it from the same function. A figure the core
+  words itself (the signal verdicts, the keep-current sentences) is left as it is: the screens and messages carry the note.
+- **Asked once.** A quiet notice (`kind: 'fees'`, `costsPrompt` in the state) with a link to Settings, Scanning and "Not now".
+  "Not now" is remembered in `runtime.costsPromptDismissed` (POST /api/costs-prompt/dismiss); once both costs are answered it never
+  returns. Closing it does not remove the qualifier on the figures: that goes only when the costs are answered.
+- **Rounding beside a threshold.** A percentage or dollar figure below its own number never displays as that number: 19.9% against
+  20% shows "19.9%", not "20%" (`pctVs`, `usdVs` in core/src/money.ts, used by the signal verdict and the usual-price sentence).
+  Profit, ROI, thresholds and "Worth buying now" are untouched.

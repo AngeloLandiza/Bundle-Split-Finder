@@ -269,6 +269,8 @@ export function mapState(s: C.AgentState): AppState {
     firstRun: s.firstRun ?? false,
     ...(problems ? { keyProblems: problems } : {}),
     ...(checks ? { keyChecks: checks } : {}),
+    ...(typeof s.profitNote === 'string' && s.profitNote ? { profitNote: s.profitNote } : {}),
+    ...(s.costsPrompt && typeof s.costsPrompt.sentence === 'string' ? { costsPrompt: { sentence: s.costsPrompt.sentence } } : {}),
     ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),
     ...(s.loginNotice && typeof s.loginNotice.sentence === 'string' ? { loginNotice: { sentence: s.loginNotice.sentence } } : {}),
     ...(sellerUsageOf((s as { seller?: unknown }).seller) ? { seller: sellerUsageOf((s as { seller?: unknown }).seller)! } : {}),

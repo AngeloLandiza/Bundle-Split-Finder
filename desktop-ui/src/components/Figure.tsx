@@ -1,3 +1,4 @@
+import { useProfitNote } from '../api/hooks';
 import type { RoiRange } from '../api/types';
 import { money, profit, roi, roiRange } from '../lib/format';
 import { beforeFulfillmentTip } from '../lib/order';
@@ -20,14 +21,34 @@ export function Profit({ value, size = 'md' }: { value: number; size?: 'md' | 'l
  * colour (never green, never the loss red) with a neutral "before fulfillment" tag beside it: said in words, not by colour.
  */
 export function RowProfit({ value, before }: { value: number; before?: { parts: number; of: number } | null }) {
-  if (!before || before.parts <= 0) return <Profit value={value} />;
+  // While his sales tax or inbound shipping is unanswered the estimate says what it leaves out (core/src/estimateNote.ts).
+  const note = useProfitNote();
+  const noteTag = note ? <Tag title={`Estimated profit ${note}: set them in Settings, Scanning.`}>{note}</Tag> : null;
+  if (!before || before.parts <= 0) {
+    return noteTag ? (
+      <span className="figure-before">
+        <Profit value={value} />
+        {noteTag}
+      </span>
+    ) : (
+      <Profit value={value} />
+    );
+  }
   const tip = beforeFulfillmentTip(before);
   return (
     <span className="figure-before" title={tip}>
       <span className="fig figure-profit figure-md figure-quiet">{profit(value)}</span>
       <Tag title={tip}>before fulfillment</Tag>
+      {noteTag}
     </span>
   );
+}
+
+/** A line under a headline profit while sales tax or inbound shipping is unanswered; nothing once both are. */
+export function ProfitQualifier({ note }: { note?: string | null }) {
+  const own = useProfitNote();
+  const text = note === undefined ? own : note;
+  return text ? <p className="figure-estimate">Estimated profit {text}.</p> : null;
 }
 
 /** ROI as a whole percent. */

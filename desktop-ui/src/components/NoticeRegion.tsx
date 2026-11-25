@@ -58,6 +58,7 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   });
   const update = useUpdateNotice(state?.update);
   const login = useAction(api.answerLoginNotice);
+  const costsPrompt = useAction(api.dismissCostsPrompt);
   const supervision = useSupervision(online);
   const relaunch = useAction(() => invokeShell('relaunch_app'));
 
@@ -303,6 +304,26 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
         });
       }
     }
+  }
+  // Nov 25: sales tax and inbound shipping were never entered, so estimates leave them out. Asked once; Not now closes it for good.
+  if (online && state?.costsPrompt) {
+    items.push({
+      kind: 'fees',
+      key: 'fees',
+      tone: 'quiet',
+      title: 'Profit estimates leave out some costs.',
+      body: state.costsPrompt.sentence,
+      action: (
+        <>
+          <Button size="sm" onClick={() => navigate({ screen: 'settings', id: 'fees' })}>
+            Open {words.preferences} › Scanning
+          </Button>
+          <Button size="sm" variant="quiet" disabled={costsPrompt.busy} onClick={() => void costsPrompt.run().then(() => refreshState())}>
+            Not now
+          </Button>
+        </>
+      ),
+    });
   }
   // Nov 25: the app turned Open at login on for his schedule. A quiet note, closed by OK or by turning the setting off.
   if (online && state?.loginNotice) {

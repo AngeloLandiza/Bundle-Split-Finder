@@ -533,6 +533,11 @@ export function createMockClient(): ApiClient {
       state.update = undefined;
       sync();
     },
+    async dismissCostsPrompt() {
+      await online();
+      state.costsPrompt = undefined;
+      sync();
+    },
     async answerLoginNotice(turnOff) {
       await online();
       state.loginNotice = undefined;

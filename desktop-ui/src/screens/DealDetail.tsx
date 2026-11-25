@@ -5,7 +5,7 @@ import type { DealBuying } from '@core/api/contract';
 import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine, SellerPartLine } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
-import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
+import { Money, Profit, ProfitQualifier, Roi, RoiRangeLine } from '../components/Figure';
 import { SourceLink } from '../components/Source';
 import { Fold } from '../components/Fold';
 import { LoadError, LoadingState, Notice } from '../components/States';
@@ -193,6 +193,7 @@ function Detail({ d }: { d: DealDetail }) {
                 </span>
               </div>
               <p className="detail-estimate">{d.beforeFulfillment && d.beforeFulfillment.parts > 0 ? `Estimated profit, before fulfillment for ${d.beforeFulfillment.parts} of ${d.beforeFulfillment.of} parts` : 'Estimated profit'}</p>
+              <ProfitQualifier />
               <dl className="detail-figures">
                 <div>
                   <dt>Bundle costs</dt>

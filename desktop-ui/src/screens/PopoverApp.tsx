@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, useAction } from '../api/hooks';
 import { ApiError, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
 import { Button } from '../components/Button';
-import { Profit, Roi } from '../components/Figure';
+import { Profit, ProfitQualifier, Roi } from '../components/Figure';
 import { ProgressBar, Spinner } from '../components/States';
 import { count, percentOff } from '../lib/format';
 import { modLabel } from '../lib/keys';
@@ -233,6 +233,7 @@ export function PopoverApp() {
                     </span>
                   </button>
                   <p className="pop-note">Profit and ROI are estimates from your fee settings.</p>
+                  <ProfitQualifier note={state?.profitNote ?? null} />
                 </>
               ) : (
                 <p className="pop-quiet">{deals && deals.length ? 'No deal above zero yet.' : deals ? 'No bundles found yet.' : 'Loading…'}</p>

@@ -97,6 +97,8 @@ export interface ApiClient {
   dismissUpdate(version: string): Promise<void>;
   /** Closes the notice that Open at login was turned on for the schedule; `turnOff` also turns it off (POST /api/self-run/login-notice). */
   answerLoginNotice(turnOff: boolean): Promise<void>;
+  /** Closes the question about sales tax and inbound shipping; it is not asked again (POST /api/costs-prompt/dismiss). */
+  dismissCostsPrompt(): Promise<void>;
   stop(): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;

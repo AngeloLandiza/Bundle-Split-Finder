@@ -31,6 +31,11 @@ export interface PairingValue {
 
 export const AppContext = createContext<AppContextValue | null>(null);
 
+/** What the profit figures leave out while sales tax or inbound shipping is unanswered ("before sales tax and inbound shipping"), or null. */
+export function useProfitNote(): string | null {
+  return useContext(AppContext)?.state?.profitNote ?? null;
+}
+
 export function useApp(): AppContextValue {
   const v = useContext(AppContext);
   if (!v) throw new Error('useApp outside AppContext');

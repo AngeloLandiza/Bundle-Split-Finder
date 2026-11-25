@@ -179,6 +179,7 @@ export function createHttpClient(): ApiClient {
     runLookups: (body) => call<LookupsRun>('POST', '/api/lookups/run', body ?? {}),
     reloadHelper: async () => void (await call('POST', '/api/helper/reload', {})),
     dismissUpdate: async (version) => void (await call('POST', '/api/update/dismiss', { version })),
+    dismissCostsPrompt: async () => void (await call('POST', '/api/costs-prompt/dismiss')),
     answerLoginNotice: async (turnOff) => void (await call('POST', '/api/self-run/login-notice', { turnOff })),
     stop: async () => void (await call('POST', '/api/scan/stop', {})),
     pause: async () => void (await call<C.PauseResponse>('POST', '/api/agent/pause', {})),
