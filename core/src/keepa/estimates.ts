@@ -14,6 +14,18 @@ export const KEEPA_PRICE_PULL_TOKENS = 1;
 export const KEEPA_LOOKUP_TOKEN_ESTIMATE = KEEPA_SEARCH_TOKEN_ESTIMATE + KEEPA_PRICE_PULL_TOKENS;
 
 /**
+ * Nov 25: Keepa's product request by `code` (UPC, EAN, ISBN-13) takes "a comma separated list of codes (up to 100)"
+ * (Keepa's own Java client, Request.getProductByCodeRequest).
+ */
+export const KEEPA_CODE_BATCH_MAX = 100;
+/**
+ * Nov 25: what a code request costs is not documented anywhere read, so it is never assumed. Until a response has said
+ * (`tokensConsumed`, learned by KeepaClient), each code is held to a term search's tokens: the search a code that finds
+ * nothing is followed by, so the guard is what the lookup would need anyway. Not a claim about the code's cost.
+ */
+export const KEEPA_CODE_GUARD_TOKENS = KEEPA_SEARCH_TOKEN_ESTIMATE;
+
+/**
  * Offer pages `offers=20` can return per product: Keepa bills "6 for every found offer page (contains up to 10 offers)
  * per product, with a minimum of 5 tokens if the retrieval succeeds but no offer page is found"
  * (keepa.com/api-docs/product.html, read Nov 23, 2026).

@@ -34,6 +34,13 @@ export interface KeepaProduct {
   features?: string[];
   /** Keepa's `gtinList`: the listing's barcodes (recorded: "00033287199938"). Absent when none. Read by keepa/listingFields.ts only. */
   gtinList?: string[];
+  /**
+   * Keepa's `upcList` and `eanList`: the listing's barcodes as Amazon's catalog lists them (1,838 of 2,216 products in the
+   * owner's cache carry one; fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json has `eanList`). Absent when none.
+   * Read by keepa/barcode.ts only, to record whether a product found by code holds the part's barcode: never a proof.
+   */
+  upcList?: string[];
+  eanList?: string[];
   /** Amazon price in the marketplace's smallest currency unit (cents). */
   amazonPrice?: number | null;
   /** Where amazonPrice came from: stats.current[0] (Amazon selling) or stats.current[1] (the lowest New offer). */

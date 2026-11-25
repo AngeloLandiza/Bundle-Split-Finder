@@ -3,6 +3,9 @@
 
 import { type Cache, type CacheEntry, MemoryCache } from '../serpapi/client';
 import { type TokenBlockReason, TokenBudget, TOKEN_BLOCK_MESSAGE } from './budget';
+import { toUpc12 } from '../identifiers';
+import { codeSampleOf, type KeepaCodeCost, type KeepaCodeSample, learnCodeCost } from './barcode';
+import { KEEPA_CODE_BATCH_MAX, KEEPA_CODE_GUARD_TOKENS } from './estimates';
 import { parseMeta, parseProductResponse, parseSearchResponse } from './parse';
 import type { KeepaMeta, KeepaProductResponse, KeepaSearchResponse, KeepaTrackingDepth } from './types';
 import { KEEPA_DOMAIN_US } from './types';
@@ -37,7 +40,8 @@ export class KeepaRateLimitedError extends KeepaError {
 
 export interface KeepaLedgerEntry {
   at: string;
-  kind: 'product' | 'search';
+  /** Nov 25: 'code' is a product request by barcode (productsByCode). */
+  kind: 'product' | 'search' | 'code';
   key: string;
   label: string;
   tokens: number;
@@ -45,6 +49,9 @@ export interface KeepaLedgerEntry {
   refillIn: number;
   /** Tokens the account refills a minute, as this answer said (recorded: 1). */
   refillRate?: number;
+  /** Nov 25, a code request only: the codes asked and the products that came back, so its cost can be read per code. */
+  codes?: number;
+  products?: number;
 }
 
 export interface KeepaClientOptions {
@@ -55,6 +62,13 @@ export interface KeepaClientOptions {
   onSpend?: (entry: KeepaLedgerEntry) => void | Promise<void>;
   now?: () => number;
   baseUrl?: string;
+  /** Nov 25: what code requests have cost so far (the agent keeps it between runs); null or absent: not known yet. */
+  codeCost?: KeepaCodeCost | null;
+  /**
+   * Nov 25: each code answer from the network, as a bounded sample (keepa/barcode.ts codeSampleOf: identity fields only,
+   * never the key) with what it cost, so the first real responses can be kept and read through the audit export.
+   */
+  onCodeAnswer?: (sample: KeepaCodeSample, learned: KeepaCodeCost) => void | Promise<void>;
 }
 
 export interface KeepaRequestOptions {
@@ -86,6 +100,7 @@ export class KeepaClient {
   private readonly cache: Cache;
   private readonly now: () => number;
   private readonly baseUrl: string;
+  private learned: KeepaCodeCost | null;
 
   constructor(private readonly opts: KeepaClientOptions) {
     if (!opts.apiKey) throw new KeepaError('No Keepa key set.');
@@ -93,6 +108,69 @@ export class KeepaClient {
     this.cache = opts.cache ?? new MemoryCache();
     this.now = opts.now ?? Date.now;
     this.baseUrl = opts.baseUrl ?? 'https://api.keepa.com';
+    this.learned = opts.codeCost ?? null;
+  }
+
+  /** Nov 25: what code requests have cost, as their responses said; null before the first. */
+  get codeCost(): KeepaCodeCost | null {
+    return this.learned;
+  }
+
+  /**
+   * Nov 25: the tokens a code request for `codes` codes is held to before it is sent: the most a code has cost so far times
+   * the codes (at least 1), or, before any response has said, KEEPA_CODE_GUARD_TOKENS each. Never a figure from the docs.
+   */
+  codeEstimate(codes: number): number {
+    const n = Math.max(1, codes);
+    if (this.learned === null) return n * KEEPA_CODE_GUARD_TOKENS;
+    return Math.max(1, Math.ceil(this.learned.maxPerCode * n));
+  }
+
+  /**
+   * Nov 25: Keepa's product request by `code` in place of `asin` (UPC, EAN, ISBN-13; "Multiple ASINs can have the same
+   * product code, so requesting a product code can return multiple products"). Each code is normalised to a 12-digit UPC-A
+   * (an invalid one is not sent), duplicates once, KEEPA_CODE_BATCH_MAX a request. Same query as getProducts (history=0,
+   * stats=180), same cache, ledger (kind 'code'), budget and errors. The cost is the response's own `tokensConsumed`,
+   * learned for the next estimate (codeEstimate). An answer with no `products`, or an empty list, is no product. Throws
+   * what `call` throws; a batch refused by the budget throws before it is sent, with the earlier batches' tokens recorded.
+   */
+  async productsByCode(
+    codes: readonly string[],
+    domain = KEEPA_DOMAIN_US,
+    options: Omit<KeepaRequestOptions, 'estimate' | 'trackingDepth'> = {},
+  ): Promise<KeepaResult<KeepaProductResponse>> {
+    const valid = [...new Set(codes.map((c) => toUpc12(c)).filter((c): c is string => c !== null))];
+    if (valid.length === 0) throw new KeepaError('No valid barcode to request.');
+    const products: KeepaProductResponse['products'] = [];
+    let consumed = 0;
+    let left = 0;
+    let at = 0;
+    let meta: KeepaMeta | null = null;
+    let network = false;
+    for (let i = 0; i < valid.length; i += KEEPA_CODE_BATCH_MAX) {
+      const batch = valid.slice(i, i + KEEPA_CODE_BATCH_MAX);
+      const query: Record<string, string> = { domain: String(domain), code: batch.join(','), history: '0', stats: '180' };
+      const r = await this.call('product', query, (body) => parseProductResponse(body), 'code', this.codeEstimate(batch.length), options, {
+        codes: batch.length,
+        onAnswer: async (body, parsed) => {
+          const learned = learnCodeCost(this.learned, batch.length, parsed.meta.tokensConsumed);
+          this.learned = learned;
+          await this.opts.onCodeAnswer?.(codeSampleOf(body, batch, this.now()), learned);
+        },
+      });
+      for (const p of r.data.products) if (!products.some((x) => x.asin === p.asin)) products.push(p);
+      consumed += r.meta.tokensConsumed;
+      left = r.meta.tokensLeft;
+      meta = r.data.meta;
+      at = Math.max(at, r.at);
+      if (r.source === 'network') network = true;
+    }
+    return {
+      data: { meta: { ...meta!, tokensLeft: left, tokensConsumed: consumed }, products },
+      source: network ? 'network' : 'cache',
+      at,
+      meta: { tokensLeft: left, tokensConsumed: consumed },
+    };
   }
 
   async getProducts(
@@ -151,6 +229,7 @@ export class KeepaClient {
     kind: KeepaLedgerEntry['kind'],
     estimate: number,
     options: KeepaRequestOptions,
+    code?: { codes: number; onAnswer: (body: Record<string, unknown>, parsed: T) => Promise<void> },
   ): Promise<KeepaResult<T>> {
     const key = cacheKey(path, query);
     const cached = await this.cache.get(key);
@@ -197,7 +276,9 @@ export class KeepaClient {
       tokensLeft: parsed.meta.tokensLeft,
       refillIn: parsed.meta.refillIn,
       refillRate: parsed.meta.refillRate,
+      ...(code ? { codes: code.codes, products: Array.isArray(body.products) ? body.products.length : 0 } : {}),
     });
+    await code?.onAnswer(body, parsed);
     const at = this.now();
     const entry: CacheEntry = { at, data: body };
     await this.cache.set(key, entry);

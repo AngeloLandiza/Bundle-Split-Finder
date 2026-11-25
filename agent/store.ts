@@ -37,6 +37,7 @@ import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, Sc
 import type { BogoView } from '../core/src/tracking/bogo';
 import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
+import type { KeepaCodeCost, KeepaCodeSample } from '../core/src/keepa/barcode';
 import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
@@ -216,6 +217,13 @@ export interface AgentRuntime {
   serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string } | null;
   /** Keepa's balance as its last answer said; step 15: its refill (tokens a minute) too, from any answer or the free status. */
   keepa: { tokensLeft: number; refillIn: number; refillRate?: number; at: string } | null;
+  /**
+   * Nov 25: what Keepa's product request by barcode has cost, as its responses said (core/src/keepa/barcode.ts
+   * learnCodeCost); absent until the first. The next code request is held to it (KeepaClient.codeEstimate).
+   */
+  keepaCodeCost?: KeepaCodeCost;
+  /** Nov 25: the first code answers, bounded and without the key (codeSampleOf), for the next fix to be written from. */
+  keepaCodeSamples?: KeepaCodeSample[];
   /** Step 15: the last rejection of each key by its service, in plain words; cleared when replaced or next accepted. */
   keyProblems?: Partial<Record<KeyName, string>>;
   /** Nov 23: the last verdict of each saved key's own service (agent/keyChecks.ts); dropped when the key is replaced or removed. */

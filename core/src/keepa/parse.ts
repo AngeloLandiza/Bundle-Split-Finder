@@ -103,6 +103,9 @@ function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
     // Rung 1 of the listing ladder (keepa/listingFields.ts): the feature bullets and barcodes, when Keepa gives them.
     ...(strings(raw.features).length > 0 ? { features: strings(raw.features) } : {}),
     ...(strings(raw.gtinList).length > 0 ? { gtinList: strings(raw.gtinList) } : {}),
+    // Nov 25: the catalog's barcodes, read by keepa/barcode.ts (a product found by code is a candidate, not a proof).
+    ...(strings(raw.upcList).length > 0 ? { upcList: strings(raw.upcList) } : {}),
+    ...(strings(raw.eanList).length > 0 ? { eanList: strings(raw.eanList) } : {}),
     productType: typeof raw.productType === 'number' ? raw.productType : undefined,
     amazonPrice: price?.cents ?? null,
   };

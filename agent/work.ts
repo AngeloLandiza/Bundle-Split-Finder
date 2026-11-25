@@ -23,6 +23,7 @@ import { partPriceDropMessage } from '../core/src/keepa/alerts';
 import { TokenBudget } from '../core/src/keepa/budget';
 import { KeepaClient, KeepaError } from '../core/src/keepa/client';
 import { keepaLookupSearchResult, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
+import { keepCodeSample } from '../core/src/keepa/barcode';
 import { readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
 import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/scan/answers';
@@ -1422,6 +1423,11 @@ export class AgentWork {
     const ledger = this.ledger('keepa-ledger.jsonl');
     return new KeepaClient({
       apiKey: key, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now,
+      // Nov 25: a code request's cost as its responses said, kept between runs; its first answers kept as samples.
+      codeCost: this.d.store.get('runtime').keepaCodeCost ?? null,
+      onCodeAnswer: (sample, learned) => {
+        this.d.store.update('runtime', (r) => ({ ...r, keepaCodeCost: learned, keepaCodeSamples: keepCodeSample(r.keepaCodeSamples, sample) }));
+      },
       onSpend: (entry) => {
         ledger(entry);
         this.d.store.update('runtime', (r) => ({
