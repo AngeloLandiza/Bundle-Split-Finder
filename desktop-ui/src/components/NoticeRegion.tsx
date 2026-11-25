@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { api, useAction, useApp } from '../api/hooks';
+import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type KeyName } from '../api/types';
 import { plural } from '../lib/format';
+import { costNotice } from '../lib/costs';
 import { chooseNotices, moreWords, rejectedKeyNotice, type NoticeKind } from '../lib/notices';
 import { words } from '../lib/platform';
 import { helperProblem, scanProblem } from '../lib/scanProblem';
@@ -38,8 +39,10 @@ async function readPages(): Promise<void> {
  * `scan` adds the scan problem and the outdated helper (Today and Deals), `keys` the saved keys this screen works with,
  * and `extra` what only the screen knows (Deals: the parts waiting for a lookup).
  */
-export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [] }: { inset?: boolean; scan?: boolean; keys?: readonly KeyName[]; extra?: readonly NoticeItem[] }) {
+export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [], cost = true }: { inset?: boolean; scan?: boolean; keys?: readonly KeyName[]; extra?: readonly NoticeItem[]; cost?: boolean }) {
   const { state, online, offlineSentence, refreshState, pairing, navigate } = useApp();
+  // What the services cost against his limits: asked again when a run finishes. An agent that does not answer says nothing here.
+  const [costs] = useResource(() => (cost ? api.costs() : Promise.resolve(null)), [cost], ['activity']);
   const ui = useUi();
   const read = useAction(readPages);
   const reload = useAction(api.reloadHelper);
@@ -146,6 +149,21 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
         action: (
           <Button size="sm" onClick={() => navigate({ screen: 'settings', id: 'keys' })}>
             Fix in {words.preferences} › Keys
+          </Button>
+        ),
+      });
+    }
+    const spend = cost ? costNotice(costs.data) : null;
+    if (spend) {
+      items.push({
+        kind: 'cost',
+        key: `cost-${spend.state}-${spend.service ?? 'total'}`,
+        tone: spend.tone,
+        title: spend.title,
+        body: spend.body,
+        action: (
+          <Button size="sm" onClick={() => navigate({ screen: 'costs', id: null })}>
+            Open Costs
           </Button>
         ),
       });

@@ -306,6 +306,9 @@ function AgentBlock({ state }: { state: AppState }) {
                 )}
               </span>
               {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
+              <span className="fact-sub">
+                <LinkButton onClick={() => navigate({ screen: 'costs', id: null })}>Limits and forecast in Costs</LinkButton>
+              </span>
             </>
           )}
         </Fact>
@@ -337,6 +340,9 @@ function AgentBlock({ state }: { state: AppState }) {
             ) : null}
           </span>
           {budget.aiCapUsd ? <Meter value={budget.aiSpentUsd} max={budget.aiCapUsd} label="AI spend against the monthly cap" /> : null}
+          <span className="fact-sub">
+            <LinkButton onClick={() => navigate({ screen: 'costs', id: null })}>What it costs</LinkButton>
+          </span>
         </Fact>
         {rejectedKeys(state).length > 0 ? (
           <Fact label="Keys">

@@ -18,6 +18,7 @@ export function Page({
   inspector = false,
   grouped = false,
   scanNotices = false,
+  costNotice = true,
   keys,
   notices,
   children,
@@ -32,6 +33,8 @@ export function Page({
   grouped?: boolean;
   /** Today and Deals show the scan-problem and outdated-helper banners. */
   scanNotices?: boolean;
+  /** The cost warning (lib/costs.ts costNotice) shows on every screen but Costs itself, which says it in full. */
+  costNotice?: boolean;
   /** The saved keys this screen works with: a rejected one among them is the banner (lib/notices.ts SCREEN_KEYS). */
   keys?: readonly KeyName[];
   /** What only the screen knows (Deals: parts waiting for a lookup); they take their place in the one notice region. */
@@ -42,7 +45,7 @@ export function Page({
   return (
     <div className="page">
       <Toolbar title={title} sub={sub} actions={actions} search={search} viewOptions={viewOptions} inspector={inspector} />
-      <NoticeRegion scan={scanNotices} keys={keys} extra={notices} />
+      <NoticeRegion scan={scanNotices} keys={keys} extra={notices} cost={costNotice} />
       <div className={`page-body${grouped ? ' page-body-grouped' : ' page-body-fill'}${bodyClass ? ` ${bodyClass}` : ''}`}>{children}</div>
     </div>
   );
