@@ -14,6 +14,7 @@ export type GlyphName =
   | 'star-fill'
   | 'checklist'
   | 'activity'
+  | 'gauge'
   | 'gear'
   | 'search'
   | 'clear'
@@ -199,6 +200,13 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
     <>
       <circle cx="8" cy="8" r="6" {...S} />
       <path d="M2 8h12M8 2c1.8 1.7 2.7 3.7 2.7 6S9.8 12.3 8 14M8 2C6.2 3.7 5.3 5.7 5.3 8s.9 4.3 2.7 6" {...S} />
+    </>
+  ),
+  gauge: (
+    <>
+      <path d="M2.5 11.5a5.5 5.5 0 1 1 11 0" {...S} />
+      <path d="M8 11.5l2.4-3.6" {...S} />
+      <circle cx="8" cy="11.5" r="0.9" fill="currentColor" />
     </>
   ),
   drive: (

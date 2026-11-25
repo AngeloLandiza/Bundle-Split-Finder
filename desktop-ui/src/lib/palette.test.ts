@@ -51,7 +51,13 @@ describe('the palette list', () => {
   it('shows the screens, the Deals views and the actions when nothing is typed, and not the deals or the panes', () => {
     const groups = rank(all, '');
     expect(groups.map((g) => g.section)).toEqual(['Go to', 'Actions']);
-    expect(titles(groups[0]!.items)).toEqual(['Today', 'Deals', 'Deals · Worth buying now', 'Deals · Confirmed', 'Deals · Needs an answer', 'Deals · Waiting for data', 'Deals · Missing a price', 'Deals · Losing money', 'Deals · Watchlist', 'Deals · Bought', 'Review', 'Activity', 'Preferences']);
+    expect(titles(groups[0]!.items)).toEqual(['Today', 'Deals', 'Deals · Worth buying now', 'Deals · Confirmed', 'Deals · Needs an answer', 'Deals · Waiting for data', 'Deals · Missing a price', 'Deals · Losing money', 'Deals · Watchlist', 'Deals · Bought', 'Review', 'Activity', 'Preferences', 'Costs']);
+  });
+
+  it('opens Costs by the words for it, with its own shortcut', () => {
+    const costs = goToItems(true).find((i) => i.id === 'go:costs')!;
+    expect(costs).toMatchObject({ title: 'Costs', hint: '⌘6', action: { type: 'go', route: { screen: 'costs', id: null } } });
+    for (const q of ['budget', 'spending', 'forecast', 'what it costs']) expect(titles(flatten(rank(all, q)))).toContain('Costs');
   });
 
   it('shows the Preferences panes once a word names them', () => {

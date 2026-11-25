@@ -18,6 +18,7 @@ import { DEFAULT_ROUTE, hashOf, parseRoute, type Route } from './lib/route';
 import { isMac, isWindows } from './lib/platform';
 import { openPreferences } from './lib/shell';
 import { ActivityScreen } from './screens/Activity';
+import { CostsScreen } from './screens/Costs';
 import { BoughtScreen } from './screens/Bought';
 import { DealsScreen } from './screens/Deals';
 import { ReviewScreen } from './screens/Review';
@@ -385,6 +386,7 @@ export function App() {
               {route.screen === 'deals' && route.view !== 'bought' ? <DealsScreen openId={route.id} view={route.view ?? 'all'} /> : null}
               {route.screen === 'review' ? <ReviewScreen openId={route.id} /> : null}
               {route.screen === 'activity' ? <ActivityScreen /> : null}
+              {route.screen === 'costs' ? <CostsScreen /> : null}
             </main>
           </div>
           {setupOpen ? <WelcomeSheet onClose={closeSetup} /> : null}

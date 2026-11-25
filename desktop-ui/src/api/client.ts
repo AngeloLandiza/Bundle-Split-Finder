@@ -3,6 +3,7 @@
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
 import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse } from '@core/api/contract';
+import type { CostSettingsPatch } from '../lib/costs';
 import { createHttpClient } from './http';
 import { createMockClient } from './mock';
 import type {
@@ -28,6 +29,7 @@ import type {
   PendingPairRequest,
   ReviewAnswer,
   ReviewView,
+  CostsView,
   SettingsPatch,
   StreamStatus,
 } from './types';
@@ -139,6 +141,15 @@ export interface ApiClient {
   revokeExtension(extensionId: string): Promise<void>;
   /** Unpacks the bundled Chrome helper to its folder (POST /api/setup/install-extension). Rejects with the agent's sentence. */
   installExtension(): Promise<InstallExtensionResponse>;
+
+  /** What the services cost: this month, the forecast, each service against its limit, the owner's limits (GET /api/costs). */
+  costs(): Promise<CostsView>;
+  /**
+   * Saves a change to the cost limits, prices or budget (PATCH /api/settings with `{ costs: patch }`): only what changed;
+   * null clears a limit, a price or the total. Resolves to the view as the agent now computes it, since a limit moves the
+   * states and the forecast's "reached on".
+   */
+  patchCosts(patch: CostSettingsPatch): Promise<CostsView>;
 
   /** Server-sent events; reconnects with a growing wait by itself. Returns the unsubscribe. */
   subscribe(onEvent: (e: AgentEvent) => void, onStatus: (s: StreamStatus) => void): () => void;

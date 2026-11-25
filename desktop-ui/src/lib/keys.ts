@@ -3,12 +3,13 @@
 //
 // Rules: a letter or digit never acts while the owner types in a field; Enter never steals a press
 // from a focused button or link (the browser already presses it); Cmd (macOS) or Ctrl (Windows)
-// with 1-5 moves between screens from anywhere.
+// with 1-6 moves between screens from anywhere.
 
 import { formatShortcut } from './platform';
 
-export type Screen = 'today' | 'deals' | 'review' | 'activity' | 'settings';
-export const SCREENS: readonly Screen[] = ['today', 'deals', 'review', 'activity', 'settings'];
+// Costs is last, so Settings keeps its Cmd+5: the number is the screen's place in this list.
+export type Screen = 'today' | 'deals' | 'review' | 'activity' | 'settings' | 'costs';
+export const SCREENS: readonly Screen[] = ['today', 'deals', 'review', 'activity', 'settings', 'costs'];
 
 /** What has focus when the key is pressed. */
 export type Target = 'text' | 'control' | 'choice' | 'none';
@@ -33,7 +34,7 @@ export type ReviewAction = ListAction | { type: 'choose'; index: number } | { ty
 const plain = (p: KeyPress): boolean => !p.meta && !p.ctrl && !p.alt;
 
 export function globalKey(p: KeyPress): GlobalAction | null {
-  if ((p.meta || p.ctrl) && !p.alt && !p.shift && /^[1-5]$/.test(p.key)) {
+  if ((p.meta || p.ctrl) && !p.alt && !p.shift && /^[1-6]$/.test(p.key)) {
     return { type: 'go', screen: SCREENS[Number(p.key) - 1] as Screen };
   }
   // The shell's menu also sends Cmd/Ctrl+F as the split-finder:find event; focusing twice is harmless.

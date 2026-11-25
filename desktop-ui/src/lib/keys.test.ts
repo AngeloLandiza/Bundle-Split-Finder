@@ -4,11 +4,12 @@ import { globalKey, isMenuKey, listKey, reviewKey, type KeyPress, windowsKey } f
 const k = (key: string, extra: Partial<KeyPress> = {}): KeyPress => ({ key, target: 'none', ...extra });
 
 describe('global keys', () => {
-  it('moves between screens with Cmd or Ctrl and 1-5', () => {
+  it('moves between screens with Cmd or Ctrl and 1-6', () => {
     expect(globalKey(k('1', { meta: true }))).toEqual({ type: 'go', screen: 'today' });
     expect(globalKey(k('3', { ctrl: true, target: 'text' }))).toEqual({ type: 'go', screen: 'review' });
     expect(globalKey(k('5', { meta: true }))).toEqual({ type: 'go', screen: 'settings' });
-    expect(globalKey(k('6', { meta: true }))).toBeNull();
+    expect(globalKey(k('6', { meta: true }))).toEqual({ type: 'go', screen: 'costs' });
+    expect(globalKey(k('7', { meta: true }))).toBeNull();
     expect(globalKey(k('1'))).toBeNull();
   });
   it('focuses the screen filter with Cmd or Ctrl and F', () => {

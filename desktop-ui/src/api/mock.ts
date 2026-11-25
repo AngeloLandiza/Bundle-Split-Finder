@@ -20,11 +20,13 @@ import real from './mockReal.json';
 import { applyFees } from './mockFees';
 import { mockBogoView } from './mockTracking';
 import { createMockOutcomes } from './mockOutcomes';
+import { buildCostsView, COSTS_SCENARIOS, costSettingsFor, type CostsScenario } from './mockCosts';
 import type { BundleRow } from '@core/scan/types';
 import { parseListingLink } from '@core/scan/listingLink';
+import type { CostSettings } from '@core/costs/types';
 import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type KeyCheck, type KeyName, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early' | `costs-${CostsScenario}`;
 
 const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
 const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
@@ -45,6 +47,10 @@ const WORKS: Partial<Record<KeyName, string>> = { serpapi: '118 of 250 searches 
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
+  if (s?.startsWith('costs-')) {
+    const c = COSTS_SCENARIOS.find((x) => `costs-${x}` === s);
+    if (c) return `costs-${c}`;
+  }
   const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-ai', 'real-scanning', 'real-problems', 'real-early'];
   return all.find((x) => x === s) ?? 'normal';
 }
@@ -147,6 +153,9 @@ export function createMockClient(): ApiClient {
   /** The questions he answered, by answer id, for Undo. */
   const kept = new Map<string, ReviewQuestion>();
   let settings: AppSettings = clone(SETTINGS);
+  // Costs: `?mock=costs-<scenario>` picks the month; every other mock shows a calm one. The limits are his settings and move with the sliders.
+  const costsScenario: CostsScenario = mode.startsWith('costs-') ? (mode.slice(6) as CostsScenario) : 'calm';
+  let costs: CostSettings = costSettingsFor(costsScenario, new Date());
   let pairRequests: PendingPairRequest[] = [];
   let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
 
@@ -663,6 +672,16 @@ export function createMockClient(): ApiClient {
     async settings() {
       await online();
       return clone(settings);
+    },
+    async costs() {
+      await online(180);
+      return buildCostsView(costsScenario, costs, new Date());
+    },
+    async patchCosts(patch) {
+      await online(150);
+      costs = mergePatch(costs, patch as CostSettings);
+      emit({ type: 'activity' });
+      return buildCostsView(costsScenario, costs, new Date());
     },
     async testNotification() {
       await online(300);

@@ -100,6 +100,7 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
             end={review > 0 ? <Count n={review} attention label={`${review} open${working ? `, ${working} more being checked` : ''}`} /> : null}
           />
           <Item glyph="activity" label="Activity" current={on('activity')} onClick={() => go('activity')} shortcut={modLabel('4', mac)} />
+          <Item glyph="gauge" label="Costs" current={on('costs')} onClick={() => go('costs')} shortcut={modLabel('6', mac)} />
           {isWindows ? null : <Item glyph="gear" label="Settings" current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />}
         </Group>
       </div>

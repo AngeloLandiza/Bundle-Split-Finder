@@ -38,7 +38,7 @@ export interface PaletteItem {
   confirm?: string;
 }
 
-const SCREEN_LABEL: Record<Screen, string> = { today: 'Today', deals: 'Deals', review: 'Review', activity: 'Activity', settings: 'Preferences' };
+const SCREEN_LABEL: Record<Screen, string> = { today: 'Today', deals: 'Deals', review: 'Review', activity: 'Activity', settings: 'Preferences', costs: 'Costs' };
 
 /** Where the palette goes: the screens, each Deals view, and each pane of the Preferences window (which opens at that pane). */
 export function goToItems(mac: boolean, windows = !mac): PaletteItem[] {
@@ -50,6 +50,7 @@ export function goToItems(mac: boolean, windows = !mac): PaletteItem[] {
       section: 'Go to',
       title: screen === 'settings' ? prefs : SCREEN_LABEL[screen],
       hint: modLabel(String(i + 1), mac),
+      ...(screen === 'costs' ? { keywords: 'what it costs budget spend spending limit forecast searches tokens ai dollars' } : {}),
       action: screen === 'settings' ? { type: 'preferences', tab: 'general' } : { type: 'go', route: { screen, id: null } },
     });
     if (screen === 'deals') {

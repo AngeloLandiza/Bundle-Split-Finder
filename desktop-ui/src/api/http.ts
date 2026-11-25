@@ -8,7 +8,7 @@ import type * as C from '@core/api/contract';
 import type { ApiClient } from './client';
 import { mapActivity, mapDeals, mapDetail, mapEvent, mapReview, mapState, csvSort } from './map';
 import { openEventStream } from './sse';
-import { ApiError, type KeyName, type LookupsRun } from './types';
+import { ApiError, type CostsView, type KeyName, type LookupsRun } from './types';
 import { words } from '../lib/platform';
 
 declare global {
@@ -198,6 +198,13 @@ export function createHttpClient(): ApiClient {
     putKey: async <N extends KeyName>(name: N, value: KeyValues[N]) => (await call<C.PutKeyResponse>('PUT', `/api/keys/${name}`, value)).check,
     checkKey: async (name) => (await call<C.CheckKeyResponse>('POST', `/api/keys/${name}/check`, {})).check,
     deleteKey: async (name) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}`)),
+
+    costs: () => call<CostsView>('GET', '/api/costs'),
+    // The agent saves what changed and answers with the settings; the view is asked for again, since the states and the forecast moved.
+    patchCosts: async (patch) => {
+      await call('PATCH', '/api/settings', { costs: patch });
+      return call<CostsView>('GET', '/api/costs');
+    },
 
     testNotification: async () => void (await call('POST', '/api/notify/test', {})),
     testTelegram: () => call<C.TelegramTestResponse>('POST', '/api/notify/test-telegram', {}),

@@ -51,6 +51,7 @@ export type {
   ReviewAnswer,
   SettingsPatch,
 } from '@core/api/contract';
+export type { CostsView, CostSettings, ServiceCost, CostState, BudgetedService, CostService } from '@core/costs/types';
 export type { ConfirmState } from '@core/scan/confirmed';
 export type { Schedule } from '@core/schedule';
 export type { FeeSource } from '@core/money';
