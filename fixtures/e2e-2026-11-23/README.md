@@ -35,3 +35,13 @@ the owner's reserve of 100: 97 left before, 80 after; the app still shows 97). A
   holds a listing whose brand is RYOBI when its manufacturer field is "TTI" or "RYOBI Tools" (PBP004, PCG002, PCL031B).
 - 14 open questions (13 "what is inside", 1 listing), most from bundles this scan found for the first time.
 - The scan showed "Finishing up, less than a minute left" for about ten minutes (eBay, listing check, review cards).
+
+## after-scan6/ (Nov 24, a day of slow reading after scan 5; no new scan)
+The same data after the app read Home Depot pages between scans for a day (84 sets still waiting) and after the two
+wrong listings were caught (the backpack B0DGLWKS9S, withdrawn; the two-vacuum listing B0FD253MKS, held by the sanity
+audit). 24 open questions, which is what it is for: 6 are sets whose item page names another brand (Husky, Everbilt,
+Graco, STP …); 5 are RYOBI hyphen bundles whose accessory half (A986501, A10FB1G, A965201, A25RS51) Home Depot does not
+sell alone; 5 are bundles whose page names the tools inside the kit half (DCK225D2 → DCD708B, DCF809B; PSBCK102K2 →
+PSBDD02), read as a contradiction; DCF860BWCB2460C, whose page names exactly DCF860B and DCB2460C; two TOUGHSYSTEM kits
+with a two-digit suffix; four on the special buys PCL406416SB / PCL406424SB; PBP2003 (a two-pack by its own name);
+and DWST08017 after the price guard.
