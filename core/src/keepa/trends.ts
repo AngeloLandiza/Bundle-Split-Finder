@@ -1,8 +1,8 @@
 // Prototype trend baselines in the cache pattern (plan §6).
 
 import type { Cache, SearchResult } from '../serpapi/client';
-import { centsToDollars } from './parse';
-import type { KeepaProduct } from './types';
+import { centsToDollars, parseProductResponse } from './parse';
+import type { KeepaMarket, KeepaProduct } from './types';
 
 export const partTrendCacheKey = (asin: string): string => `keepa:trend:${asin}`;
 
@@ -26,6 +26,58 @@ export interface PartTrend {
    */
   newAvg90?: number | null;
   newAvg30?: number | null;
+  /**
+   * The market around the listing (Nov 25, core/src/tracking/market.ts), in dollars, from the same pull. Absent on a trend
+   * stored before it or from a pull without stats: not read yet (the agent fills it once from its cached pulls at start).
+   */
+  market?: TrendMarket;
+}
+
+/** KeepaMarket in dollars, with the averages it is judged against and when the pull read them. */
+export interface TrendMarket {
+  /** When Keepa's figures were read: the pull's time (a cached answer's own time). */
+  at: number;
+  newAvg30: number | null;
+  newAvg90: number | null;
+  newAvg180: number | null;
+  /** Amazon's own current offer; null when Amazon is not selling it now. */
+  amazonPrice: number | null;
+  /** True when Keepa says Amazon holds the Buy Box; null when it does not say (it never says false in the recordings). */
+  buyBoxIsAmazon: boolean | null;
+  newOffers: number | null;
+  newOffersAvg90: number | null;
+  outOfStock90: number | null;
+  hazmat: KeepaMarket['hazmat'];
+}
+
+/** The trend's market from a parsed product, or undefined when the pull carried no stats. */
+export function trendMarketOf(p: KeepaProduct, at: number): TrendMarket | undefined {
+  const m = p.market;
+  if (!m) return undefined;
+  return {
+    at,
+    newAvg30: centsToDollars(p.newAvg30 ?? null),
+    newAvg90: centsToDollars(p.newAvg90 ?? null),
+    newAvg180: centsToDollars(m.newAvg180),
+    amazonPrice: centsToDollars(m.amazonCurrent),
+    buyBoxIsAmazon: m.buyBoxIsAmazon,
+    newOffers: m.newOffers,
+    newOffersAvg90: m.newOffersAvg90,
+    outOfStock90: m.outOfStock90,
+    hazmat: m.hazmat,
+  };
+}
+
+/**
+ * The market of every product in a cached Keepa answer (the raw body the client stores, read at `at`): how a trend stored
+ * before the market figures gets them once from a pull already made, with no new call (agent/marketBackfill.ts).
+ */
+export function marketsOfBody(body: unknown, at: number): { asin: string; market: TrendMarket }[] {
+  if (!body || typeof body !== 'object' || !Array.isArray((body as { products?: unknown }).products)) return [];
+  return parseProductResponse(body as Record<string, unknown>).products.flatMap((p) => {
+    const market = trendMarketOf(p, at);
+    return market ? [{ asin: p.asin, market }] : [];
+  });
 }
 
 export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTrend {
@@ -49,6 +101,7 @@ export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTre
     referralPercent: p.referralFeePercentage ?? null,
     ...(p.newAvg90 !== undefined ? { newAvg90: centsToDollars(p.newAvg90) } : {}),
     ...(p.newAvg30 !== undefined ? { newAvg30: centsToDollars(p.newAvg30) } : {}),
+    ...(p.market ? { market: trendMarketOf(p, pulledAt)! } : {}),
   };
 }
 
