@@ -45,3 +45,14 @@ sell alone; 5 are bundles whose page names the tools inside the kit half (DCK225
 PSBDD02), read as a contradiction; DCF860BWCB2460C, whose page names exactly DCF860B and DCB2460C; two TOUGHSYSTEM kits
 with a two-digit suffix; four on the special buys PCL406416SB / PCL406424SB; PBP2003 (a two-pack by its own name);
 and DWST08017 after the price guard.
+
+## after-keepcurrent/ (Nov 25, the first run of "keep Buy now deals current")
+The app re-checked 43 Amazon prices of watched deals by itself (Keepa, no searches) and re-judged them. All three Buy
+now deals lost the verdict, and only one of them should have:
+- PSK1212SB-PCL515B: PCL515B fell from $79.99 to $53.00 on Amazon; est. profit $16.73, was $43.19. Below the owner's
+  $20: rightly no longer a buy.
+- PSK1212SB-PCL633B: est. $35.67 (36% ROI), was $38.79; PSK1212SB-PCL031B: est. $23.35 (24% ROI), was $26.47. Both
+  still clear $20 and 20%, sell fast enough and sit on confirmed listings, yet read "Not worth buying now: still above
+  your $20.00 and 20% thresholds, but no better than the last check ($38.79) …: a buy needs a change", and Activity
+  says each "is no longer worth buying". The rule "a buy needs a change" was written to stop a deal being announced
+  again every day; applied to the verdict itself, a re-check two hours later takes a good deal off the list.
