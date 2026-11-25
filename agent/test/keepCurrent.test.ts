@@ -226,7 +226,8 @@ describe("Home Depot's price of a Buy now or watched deal, re-read between scans
     expect(taken).toEqual(['344305163', '341965772', '341966856']);
     expect((await agent.work.scanStore.getBundle(SAW))!.price).toBe(129);
     expect(buyNow()).toEqual(['homedepot:341965772', 'homedepot:344305163']);
-    const sentence = `PSK1212SB-PCL515B is no longer worth buying: Home Depot's price went from $99.00 to $129.00 (${SAW_LINK}). Est. profit $13.19, was $43.19 (an estimate from your fee settings, not your real fees).`;
+    // Nov 25: leaving the state names the condition that now fails first, then the price that moved.
+    const sentence = `PSK1212SB-PCL515B is no longer worth buying: est. $13.19 is below your $20 and 10% ROI below your 20%. Home Depot's price went from $99.00 to $129.00 (${SAW_LINK}). Est. profit $13.19, was $43.19 (an estimate from your fee settings, not your real fees).`;
     expect(agent.store.get('activity').runs.filter((r) => r.id.includes('-keep-')).map((r) => r.summary)).toEqual([sentence]);
     expect(telegram).toEqual([sentence]);
     // The row is no longer Buy now; its verdict and its price's age both show.
@@ -325,7 +326,7 @@ describe("Amazon's price of each part of those deals, refreshed through Keepa", 
     expect(agent.store.get('runtime').keepCurrent).toMatchObject({ tokens: 9 });
     expect((await agent.work.scanStore.getPrice('B0B88R7HWB'))).toMatchObject({ price: 39.99, checkedAt: clock });
     expect(buyNow()).toEqual(['homedepot:341965772', 'homedepot:344305163']);
-    const sentence = "PSK1212SB-PCL515B is no longer worth buying: Amazon's price of PCL515B went from $79.99 to $39.99 (https://www.amazon.com/dp/B0B88R7HWB).";
+    const sentence = "PSK1212SB-PCL515B is no longer worth buying: est. $9.19 is below your $20 and 9% ROI below your 20%. Amazon's price of PCL515B went from $79.99 to $39.99 (https://www.amazon.com/dp/B0B88R7HWB).";
     const keep = agent.store.get('activity').runs.filter((r) => r.id.includes('-keep-')).map((r) => r.summary);
     expect(keep).toHaveLength(1);
     expect(keep[0]).toMatch(new RegExp(`^${sentence.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} Est\\. profit \\$\\d+\\.\\d\\d, was \\$43\\.19 \\(an estimate from your fee settings, not your real fees\\)\\.$`));

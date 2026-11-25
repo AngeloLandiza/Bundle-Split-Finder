@@ -43,7 +43,7 @@ import {
 } from '../core/src/tracking/bogoPairs';
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
-import { freshSignals, trackReport } from '../core/src/tracking/state';
+import { announcedAfter, dayOf, freshSignals, trackReport } from '../core/src/tracking/state';
 import {
   barcodeLookupsWanted, keepaBarcodeOne, keepaLookupOne, kitPagesWanted, type LookupStep, pageRead, partPagesWanted, partPricesWanted, plannedWork, rejudgePackQuestions, readKitPagesFor, readPartPricesFor, readSetItemsFor, runScan, settleWaitingSplits, splitOne, withdrawUnreadSplitQuestions,
 } from '../core/src/scan/runner';
@@ -64,7 +64,7 @@ import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatch
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
 import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, withoutStale } from './signalsPass';
 import { dealSnapshots, keepaKeeps, keptNow, pullDue, readOneDue, staleBuyKeys, tokenShareOf, used } from './keepCurrent';
-import { amazonDue, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
+import { amazonDue, failingOf, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
 import type { TrackingState } from '../core/src/tracking/state';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
 import { averagePullsWanted, pullAverages } from './suggestPrices';
@@ -333,20 +333,29 @@ export class AgentWork {
   }
 
   /**
-   * Keeping deals current: each watched deal whose Buy now verdict flipped since `before` (a refreshed price, judged by the
-   * signals just stored) gets one sentence in Activity with the before and after and its source link; the sentences go in
-   * the same message as the digest when the owner has alerts on.
+   * Each watched deal whose Buy now state changed since `before` (judged by the signals just stored) gets one sentence in
+   * Activity with the before and after and its source links; entering and leaving go in the same message as the digest when
+   * the owner has alerts on. Nov 25: a deal that stays worth buying while its estimate moved gets at most one quiet line a
+   * day in Activity ("… is still worth buying: est. profit $35.67, was $38.79"), never sent.
    */
   private verdictFlips(before: ReadonlyMap<string, DealSnapshot>, report: ScanReport, t: TrackingState): { text: string; count: number } | null {
-    const after = report.bundles.filter((b) => before.has(b.key)).map((b) => snapshotOf(b, t.watch[b.key]?.watched === true && (t.signals[b.key]?.buyNow ?? null) !== null));
-    const flips = verdictChanges(before, after);
-    if (flips.length === 0) return null;
+    const after = report.bundles.filter((b) => before.has(b.key)).map((b) => {
+      const buy = t.watch[b.key]?.watched === true && (t.signals[b.key]?.buyNow ?? null) !== null;
+      return snapshotOf(b, buy, buy ? null : failingOf(t.signals[b.key]));
+    });
     const now = this.d.now();
-    flips.forEach((f, i) => this.record({
-      id: `run-${now}-keep-${i}`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: new Date(now).toISOString(), status: 'finished',
-      searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: f.sentence, trigger: 'scheduled',
-    }));
-    return this.d.store.get('settings').alerts.enabled ? { text: flips.map((f) => f.sentence).join('\n'), count: flips.length } : null;
+    const tried = this.keepUsage().tried;
+    const flips = verdictChanges(before, after).filter((f) => !f.quiet || tried[`still:${f.key}`] === undefined || dayOf(tried[`still:${f.key}`]!) !== dayOf(now));
+    if (flips.length === 0) return null;
+    flips.forEach((f, i) => {
+      if (f.quiet) this.noteKeep({ tried: `still:${f.key}` });
+      this.record({
+        id: `run-${now}-keep-${i}`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: new Date(now).toISOString(), status: 'finished',
+        searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: f.sentence, trigger: 'scheduled',
+      });
+    });
+    const sent = flips.filter((f) => !f.quiet);
+    return this.d.store.get('settings').alerts.enabled && sent.length > 0 ? { text: sent.map((f) => f.sentence).join('\n'), count: sent.length } : null;
   }
 
   /** Keeping deals current: today's usage, from the runtime. */
@@ -2150,7 +2159,9 @@ export class AgentWork {
    * trends (each part's FBA fee). Signals round 2: then the signals judged again, with `extra` in the same message.
    */
   async refresh(extra?: { text: string; count: number }, before?: ReadonlyMap<string, DealSnapshot>): Promise<void> {
-    await this.afterChange(await this.rebuild(), extra, before);
+    // Nov 25: every refresh says a watched deal's change of Buy now state (left it, once), not only keep-current's.
+    const was = before ?? dealSnapshots({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') });
+    await this.afterChange(await this.rebuild(), extra, was);
   }
 
   /** The report rebuilt and published, without judging signals. */
@@ -2587,7 +2598,7 @@ export class AgentWork {
       bogoLines: bogo.lines,
     });
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals, notifiedQuestions: digest.notifiedQuestions }));
-    store.update('tracking', (t) => ({ ...t, notified: [...fresh.notified, ...bogo.keys].slice(-2000) }));
+    store.update('tracking', (t) => ({ ...t, notified: [...fresh.notified, ...bogo.keys].slice(-2000), announced: announcedAfter(t.announced, fresh.lines, now) }));
     // Through the notification policy (its kinds, quiet hours and the morning digest): a deal line goes as kind 'deal'.
     const text = digest.event && digest.text ? this.policy.digest(digest.event, digest.text) : null;
     return this.sendTelegram(text);

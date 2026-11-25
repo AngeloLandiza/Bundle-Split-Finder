@@ -8,6 +8,7 @@
 
 import { HD_DRIP_PAGES_PER_DAY } from '../scan/hdPace';
 import type { BundleRow, PartRow } from '../scan/types';
+import type { BundleSignals } from './signals';
 import { dayOf } from './state';
 
 const HOUR = 60 * 60_000;
@@ -266,15 +267,32 @@ export interface DealSnapshot {
   profit: number | null;
   roi: number | null;
   parts: { model: string; asin: string; price: number | null }[];
+  /** Why it is not worth buying now (failingOf), when it is not and the signals say; absent otherwise. */
+  failing?: string;
 }
 
-export function snapshotOf(b: BundleRow, buyNow: boolean): DealSnapshot {
+export function snapshotOf(b: BundleRow, buyNow: boolean, failing?: string | null): DealSnapshot {
   const parts = new Map<string, { model: string; asin: string; price: number | null }>();
   for (const p of partsOf(b)) if (p.asin && !parts.has(p.asin)) parts.set(p.asin, { model: p.model, asin: p.asin, price: p.availability === 'active' ? p.price : null });
   return {
     key: b.key, model: b.model || `Set ${b.itemId}`, link: b.link, buyNow, price: b.price,
     profit: b.estimate?.profit ?? null, roi: b.estimate?.roi ?? null, parts: [...parts.values()],
+    ...(failing ? { failing } : {}),
   };
+}
+
+/**
+ * The condition that fails now, as the signals word it for the way to sell the verdict is about (the one held back for
+ * its listings, else the primary one), in mid-sentence form: "est. $16.73 is below your $20 and 17% ROI below your 20%".
+ * Null when nothing fails or nothing was judged.
+ */
+export function failingOf(s: Pick<BundleSignals, 'options' | 'buyPending'> | undefined): string | null {
+  if (!s) return null;
+  const o = s.options.find((x) => x.optionId === s.buyPending?.optionId) ?? s.options[0];
+  const t = o?.notBuyNow?.replace(/\.$/, '');
+  if (!t) return null;
+  // "Est." and "No sales data" read on after a colon in lower case; a model ("DCS382B sells …") keeps its capitals.
+  return /^[A-Z][a-z]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
 }
 
 const usd = (n: number): string => (n < 0 ? `-$${(-n).toFixed(2)}` : `$${n.toFixed(2)}`);
@@ -304,21 +322,36 @@ function profitWords(a: DealSnapshot, b: DealSnapshot): string {
 }
 
 /**
- * One plain sentence for each deal whose Buy now verdict flipped between `before` and `after` with a price that moved, with
- * the before and after and its source link: "PSK1212SB-PCL515B is no longer worth buying: Home Depot's price went from
- * $99.00 to $129.00 (https://…). Est. profit $13.19, was $43.19 (an estimate from your fee settings, not your real fees)."
- * A flip no price explains (a listing confirmed, a sales figure or a fee that came) is the signals' own to say.
+ * What a refresh did to each watched deal's Buy now state, with the before and after and the source links. Nov 25: Buy now
+ * is a state, so a flip here is a real change of state.
+ * - Left the state (once, as it happens): "PSK1212SB-PCL515B is no longer worth buying: est. $16.73 is below your $20 and
+ *   17% ROI below your 20%. Amazon's price of PCL515B went from $79.99 to $53.00 (https://…). Est. profit $16.73, was
+ *   $43.19 (an estimate from your fee settings, not your real fees)."
+ * - Entered it with a price that moved: "… is worth buying now: Home Depot's price went from …". An entry no price
+ *   explains (a listing confirmed, a sales figure or a fee that came) is the signals' own to say.
+ * - Stayed in it while its estimate moved (`quiet`, for Activity at most once a day, never sent): "PSK1212SB-PCL633B is
+ *   still worth buying: est. profit $35.67, was $38.79 (an estimate from your fee settings)."
  */
-export function verdictChanges(before: ReadonlyMap<string, DealSnapshot>, after: readonly DealSnapshot[]): { key: string; sentence: string; better: boolean }[] {
-  const out: { key: string; sentence: string; better: boolean }[] = [];
+export function verdictChanges(before: ReadonlyMap<string, DealSnapshot>, after: readonly DealSnapshot[]): { key: string; sentence: string; better: boolean; quiet?: true }[] {
+  const out: { key: string; sentence: string; better: boolean; quiet?: true }[] = [];
   for (const b of after) {
     const a = before.get(b.key);
-    if (!a || a.buyNow === b.buyNow) continue;
+    if (!a) continue;
+    if (a.buyNow && b.buyNow) {
+      if (a.profit !== null && b.profit !== null && Math.abs(a.profit - b.profit) >= 0.005) {
+        out.push({ key: b.key, sentence: `${b.model} is still worth buying: est. profit ${usd(b.profit)}, was ${usd(a.profit)} (an estimate from your fee settings).`, better: b.profit > a.profit, quiet: true });
+      }
+      continue;
+    }
+    if (a.buyNow === b.buyNow) continue;
     const moves = priceMoves(a, b);
-    if (moves.length === 0) continue;
-    const cause = moves.join('; ');
-    const head = b.buyNow ? `${b.model} is worth buying now` : `${b.model} is no longer worth buying`;
-    out.push({ key: b.key, sentence: `${head}: ${cause}. ${profitWords(a, b)}`, better: b.buyNow });
+    if (b.buyNow) {
+      if (moves.length > 0) out.push({ key: b.key, sentence: `${b.model} is worth buying now: ${moves.join('; ')}. ${profitWords(a, b)}`, better: true });
+      continue;
+    }
+    if (!b.failing && moves.length === 0) continue;
+    const cause = b.failing ? `${b.failing}.${moves.length > 0 ? ` ${moves.join('; ')}.` : ''}` : `${moves.join('; ')}.`;
+    out.push({ key: b.key, sentence: `${b.model} is no longer worth buying: ${cause} ${profitWords(a, b)}`, better: false });
   }
   return out;
 }
