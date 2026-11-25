@@ -3,8 +3,9 @@
 // own steps (splitOne, savedMatch), and its row is the report's (reportRow), so a page visit and a
 // scan never differ. Never a search: the only client here refuses, and no scan job is read or written.
 
-import type { ProductPage } from '../hdPage';
+import { cleanBuying, type ProductPage } from '../hdPage';
 import { choicesOf } from './answers';
+import { withBuying } from './buying';
 import { looksLikeBundle } from './classify';
 import { OverlayStore } from './overlayStore';
 import { lookupsNeeded, noCounts, savedAnswers } from './paid';
@@ -99,12 +100,14 @@ const percentOff = (price: number | null, was: number | null): number | null =>
 function visited(known: BundleRecord | undefined, page: ProductPage, brand: string, model: string, now: number): BundleRecord {
   const reading = { bullets: [...page.bullets], description: page.description, readAt: now };
   const content = known?.page && known.page.readAt > now ? known.page : reading;
-  if (known) return { ...known, brand, model, page: content };
-  return {
+  // Nov 25: what the page states about buying it (a message is untrusted: cleaned as the helper's page outcomes are).
+  const buying = cleanBuying(page.buying);
+  if (known) return withBuying({ ...known, brand, model, page: content }, buying, now);
+  return withBuying({
     key: bundleKey(page.itemId), retailer: 'homedepot', itemId: page.itemId, title: page.title.trim(), brand, model, upc: null,
     price: page.price, regularPrice: page.price === null ? null : page.wasPrice, percentOff: percentOff(page.price, page.wasPrice),
     link: `https://www.homedepot.com/p/${page.itemId}`, seenAt: page.price === null ? 0 : now, split: null, page: content,
-  };
+  }, buying, now);
 }
 
 /**

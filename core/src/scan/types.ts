@@ -8,7 +8,7 @@
 import type { Decomposition, PageConflict, SetContent, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
 import type { PartFact } from '../facts/fact';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
-import type { PageContent } from '../hdPage';
+import type { BuyingFacts, PageContent } from '../hdPage';
 import type { Grade } from '../match';
 import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
 import type { BlockReason } from '../serpapi/budget';
@@ -149,6 +149,12 @@ export interface BundleRecord {
   /** What the bundle's own page said. Undefined or null: not read yet. */
   page?: PageReading | null;
   /**
+   * Nov 25: what a Home Depot page of this bundle last stated about buying it (can be bought, discontinued, the per-order
+   * limit, the return window, the promotion's dates) and when it was read. Absent: no page has been read since this was
+   * kept ("not checked yet"), which is never taken as "cannot be bought".
+   */
+  buying?: BundleBuying;
+  /**
    * Step 15: Home Depot lists this bundle as a BOGO pair (tracking/bogoPairs.ts findBogoPairs: the starter's model, its
    * joiner and the free item, at the starter's price to the cent, the starter carrying the promotion). The pair rule's
    * own fields; the split reads it (scan/settle.ts rule 1). Absent on any other bundle.
@@ -160,6 +166,11 @@ export interface BundleRecord {
    * page has been read for its brand and model. Absent on any other bundle.
    */
   set?: BundleSet;
+}
+
+/** What a Home Depot page stated about buying a bundle (hdPage.ts BuyingFacts), and when it was read. */
+export interface BundleBuying extends BuyingFacts {
+  readAt: number;
 }
 
 /** A set's items as Home Depot lists them, each with what its own page said once read. */
@@ -1280,6 +1291,8 @@ export interface BundleRow {
   percentOff: number | null;
   /** When Home Depot's price for the bundle was seen: the bundle record's seenAt, the time of the listing response. */
   seenAt: number;
+  /** Nov 25: what Home Depot's page last stated about buying it (BundleRecord.buying); absent until a page was read. */
+  buying?: BundleBuying;
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];

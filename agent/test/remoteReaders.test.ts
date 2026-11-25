@@ -45,6 +45,32 @@ describe('remote Home Depot readers (worker jobs)', () => {
     ]);
   });
 
+  it('Nov 25: what a page states about buying it travels in its checked shape: a wrong kind or a fake date is null, a page that states nothing keeps none', async () => {
+    const { readers, worker } = setup();
+    const stated = { buyable: true, discontinued: false, availability: 'Online', quantityLimit: 3, returnable: '90-Day', promotionStart: '2026-10-26', promotionEnd: '2027-01-31' };
+    const reading = readers.readPages(['111111111', '222222222', '333333333']);
+    await worker(() => [
+      { itemId: '111111111', kind: 'read', content: { bullets: [], description: null, buying: stated } },
+      { itemId: '222222222', kind: 'read', content: { bullets: [], description: null, buying: { ...stated, buyable: 'yes', quantityLimit: -1, promotionEnd: '2027-02-31' } } },
+      { itemId: '333333333', kind: 'read', content: { bullets: [], description: null, buying: { evil: true } } },
+    ]);
+    const out = await reading;
+    expect(out[0]).toMatchObject({ content: { buying: stated } });
+    expect(out[1]).toMatchObject({ content: { buying: { ...stated, buyable: null, quantityLimit: null, promotionEnd: null } } });
+    expect(out[2]).toEqual({ itemId: '333333333', kind: 'read', content: { bullets: [], description: null } });
+  });
+
+  it('Nov 25: an item page (promoPage) carries it too', async () => {
+    const { readers, worker } = setup();
+    const stated = { buyable: false, discontinued: true, availability: 'Online', quantityLimit: null, returnable: null, promotionStart: null, promotionEnd: null };
+    const reading = readers.readPromoPages(['344305163']);
+    await worker(() => [
+      { itemId: '344305163', kind: 'read', page: { itemId: '344305163', brand: 'RYOBI', model: 'PSK1212SB-PCL633B', title: 't', price: 99, wasPrice: 183, bullets: [], description: null, promotions: [], buying: stated } },
+    ]);
+    const [o] = await reading;
+    expect(o).toMatchObject({ kind: 'read', page: { buying: stated } });
+  });
+
   it('Nov 23: keeps what came back instead of a page (its title) as a note, plain text of at most 80 characters', async () => {
     const { readers, worker } = setup();
     const reading = readers.readPages(['111111111', '222222222', '333333333']);

@@ -542,6 +542,7 @@ async function bundleRow(
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
+    ...(b.buying ? { buying: b.buying } : {}),
     answer: ownerAnswer(question, b.split ?? null),
     // Fix round 3: a Home Depot set ("Set · 5 items"): it has no model number.
     ...(b.set ? { setItems: b.set.items.reduce((n, i) => n + i.quantity, 0) } : {}),

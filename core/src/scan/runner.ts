@@ -25,6 +25,7 @@ import { KeepaBudgetExceededError } from '../keepa/client';
 import type { KeepaProduct } from '../keepa/types';
 import { identityFromKeepa } from '../keepa/verify';
 import { applyCatalogCheck, catalogChecksWanted } from './catalogCheck';
+import { withBuying, withoutBuying } from './buying';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
@@ -1003,16 +1004,18 @@ async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['pa
     if (!known || known.seenAt <= at) {
       const keepPrice = fromChrome && row.price === null && known !== undefined;
       const page = known && known.page !== undefined && known.page !== null ? known.page : row.page ?? known?.page;
-      await store.putBundle({
+      await store.putBundle(withBuying({
         key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: row.page?.upc ?? known?.upc ?? null,
         price: keepPrice ? known.price : row.price, regularPrice: keepPrice ? known.regularPrice : row.regularPrice,
         percentOff: keepPrice ? known.percentOff : row.percentOff, link: row.link, seenAt: at,
         split: known?.split ?? null,
         // A page is read once (P1): a row seen again keeps it.
-        ...(page !== undefined ? { page } : {}),
+        ...(page !== undefined ? { page: page === null ? null : withoutBuying(page) } : {}),
         // A pair's BOGO facts (the BOGO pass's) stay.
         ...(known?.bogo ? { bogo: known.bogo } : {}),
-      });
+        // What a page of it stated about buying it stays; a page this row carries and read later replaces it (withBuying).
+        ...(known?.buying ? { buying: known.buying } : {}),
+      }, row.page?.buying, row.page?.readAt ?? at));
     }
     job.counts.bundlesSeen += 1;
     return 'bundle';
@@ -1057,6 +1060,7 @@ async function saveSet(run: Run, row: HdListing & { set: NonNullable<ListingRow[
     split: known?.split ?? null,
     ...(known?.page !== undefined ? { page: known.page } : {}),
     ...(known?.bogo ? { bogo: known.bogo } : {}),
+    ...(known?.buying ? { buying: known.buying } : {}),
     set: { items, dollarOff: row.set.dollarOff, percentageOff: row.set.percentageOff },
   });
 }
@@ -1489,7 +1493,7 @@ async function readBundlePages(run: Run, chosen: readonly BundleRecord[]): Promi
   if (run.shouldStop()) return { goOn: true, notRead: 0 };
   if (unread.length === 0 && (await store.listBundles()).some((b) => !b.set && (b.page === undefined || b.page === null))) return nothingToRead(run, 'bundlePages', 'page limit reached');
   if (unread.length === 0) return nothingToRead(run, 'bundlePages');
-  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page, ...withBarcode(page) }) })));
+  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle(withBuying({ ...b, page: withoutBuying(page), ...withBarcode(page) }, page.buying, page.readAt)) })));
 }
 
 /**

@@ -22,7 +22,7 @@
 import type { Cache } from '../serpapi/client';
 import { HOME_DEPOT, itemCacheKey, itemOf, type BogoItem, type ListedItem, type ListedSet, type PromoPageOutcome } from '../tracking/bogoPairs';
 import type { HdListing } from '../serpapi/parsers';
-import type { ListingProduct, ListingSample } from '../hdPage';
+import type { BuyingFacts, ListingProduct, ListingSample } from '../hdPage';
 import { HD_LIST_REREAD_MS, HdReadBlocked } from './hdPace';
 
 /** Home Depot's "Bundle" filter token (recorded in scripts/fixture-requests.ts; checked live Nov 23). */
@@ -256,7 +256,7 @@ export interface ListingListResult {
 /** One listed product, in the shape a SerpApi listing row has (HdListing), with its page reading when it was read. */
 export interface ListingRow extends HdListing {
   /** The product page's Includes bullets and description, as the scan's page reader saves them (P2); null when not read. */
-  page: { bullets: string[]; description: string | null; readAt: number; upc?: string } | null;
+  page: { bullets: string[]; description: string | null; readAt: number; upc?: string; buying?: BuyingFacts } | null;
   /** The listing entry or the item page carried a BOGO promotion (the BOGO pass still decides pairs). */
   bogo: boolean;
   /** Fix round 3: a Home Depot set: no model number, and Home Depot's own list of its items. */
@@ -307,7 +307,7 @@ function rowOf(listed: ListedItem, item: BogoItem | null): ListingRow {
   return {
     itemId: listed.itemId, title: listed.title || item?.title || listed.model, brand: listed.brand || item?.brand || null, model: listed.model || item?.model || null,
     price, regularPrice: was, percentOff: percentOff(price, was), badge: null, link,
-    page: item ? { bullets: [...item.bullets], description: item.description, readAt: item.readAt, ...(item.upc ? { upc: item.upc } : {}) } : null,
+    page: item ? { bullets: [...item.bullets], description: item.description, readAt: item.readAt, ...(item.upc ? { upc: item.upc } : {}), ...(item.buying ? { buying: item.buying } : {}) } : null,
     bogo: (listed.promotions?.length ?? 0) > 0 || (item?.promotions.length ?? 0) > 0,
     ...(listed.set ? { set: listed.set } : {}),
   };

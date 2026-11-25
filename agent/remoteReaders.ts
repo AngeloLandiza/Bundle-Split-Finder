@@ -9,7 +9,7 @@ import type { WorkerJob, WorkerJobInputs, WorkerJobKind } from '../core/src/api/
 import { sameModel } from '../core/src/match';
 import type { CatalogEntry, CatalogLookup, HomeDepotPage, HomeDepotSearch, ResearchTools, ToolError } from '../core/src/research/types';
 import type { PageOutcome, PartPriceReading, ReadPages, ReadPartPrices, ScanStore } from '../core/src/scan/types';
-import { type ListingSample, type PageContent, type PagePromotion, type PromoPage, SAMPLE_CHARS, SAMPLE_KINDS } from '../core/src/hdPage';
+import { type BuyingFacts, cleanBuying, type ListingSample, type PageContent, type PagePromotion, type PromoPage, SAMPLE_CHARS, SAMPLE_KINDS } from '../core/src/hdPage';
 import { toUpc12 } from '../core/src/identifiers';
 import { isBundleListingPath } from '../core/src/scan/listingSource';
 import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
@@ -101,12 +101,18 @@ const barcode = (v: unknown): { upc?: string } => {
   return upc ? { upc } : {};
 };
 
+/** Nov 25: what a page states about buying it, as the helper sent it, kept only in its checked shape (hdPage.ts cleanBuying). */
+const buyingField = (v: unknown): { buying?: BuyingFacts } => {
+  const buying = cleanBuying(v);
+  return buying ? { buying } : {};
+};
+
 function pageOutcome(v: unknown): PageOutcome | null {
   if (!isRecord(v) || !isText(v.itemId)) return null;
   if (v.kind === 'read') {
     if (!isRecord(v.content)) return null;
-    const { upc, ...content } = v.content;
-    return { ...(v as unknown as PageOutcome & { kind: 'read' }), content: { ...(content as unknown as PageContent), ...barcode(upc) } };
+    const { upc, buying, ...content } = v.content;
+    return { ...(v as unknown as PageOutcome & { kind: 'read' }), content: { ...(content as unknown as PageContent), ...barcode(upc), ...buyingField(buying) } };
   }
   return notReadOutcome(v as Record<string, unknown> & { itemId: string });
 }
@@ -167,7 +173,7 @@ function promoOutcome(v: unknown): PromoPageOutcome | null {
   const page: PromoPage = {
     itemId: v.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price as number | null, wasPrice: p.wasPrice as number | null,
     bullets: p.bullets as string[], description: p.description as string | null, promotions: promotions as PagePromotion[],
-    ...barcode(p.upc),
+    ...barcode(p.upc), ...buyingField(p.buying),
   };
   return { itemId: v.itemId, kind: 'read', page };
 }

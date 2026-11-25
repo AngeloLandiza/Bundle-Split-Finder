@@ -16,7 +16,8 @@
 // A pair is a bundle like any other: its page, its split, its Amazon matches and its estimate (rule 5) are the
 // pipeline's. Pairs are grouped by starter and ranked by that estimate.
 
-import type { PagePromotion, PromoPage } from '../hdPage';
+import type { BuyingFacts, PagePromotion, PromoPage } from '../hdPage';
+import { withBuying } from '../scan/buying';
 import { dayOf } from './state';
 import { estimateRoiPercent, type AlertSettings } from '../settings';
 import type { Cache } from '../serpapi/client';
@@ -89,6 +90,8 @@ export interface BogoItem {
   readAt: number;
   /** Nov 25: the barcode the item's page states (hdPage.ts barcodeOf); absent when none. */
   upc?: string;
+  /** Nov 25: what the item's page states about buying it (hdPage.ts buyingOf); absent when none. */
+  buying?: BuyingFacts;
 }
 
 /** What a pair carries on its deal (the contract's `bogo` tag). */
@@ -204,6 +207,7 @@ export function itemOf(page: PromoPage, listed: ListedItem | undefined, at: numb
     link: listed?.url && listed.url.startsWith(`${HOME_DEPOT}/p/`) ? listed.url : `${HOME_DEPOT}/p/${page.itemId}`,
     promotions: page.promotions, bullets: page.bullets, description: page.description, readAt: at,
     ...(page.upc ? { upc: page.upc } : {}),
+    ...(page.buying ? { buying: page.buying } : {}),
   };
 }
 
@@ -325,13 +329,14 @@ export const pairFacts = (p: Pick<BogoPair, 'promotionId' | 'starterItemId' | 's
 export function pairBundleRecord(pair: BogoPair, item: BogoItem | undefined, known: BundleRecord | undefined, at: number): BundleRecord {
   const percentOff = pair.wasPrice !== null && pair.wasPrice > pair.price ? Math.round((1 - pair.price / pair.wasPrice) * 100) : known?.percentOff ?? null;
   const page = known?.page ?? (item ? { bullets: item.bullets, description: item.description, readAt: item.readAt } : undefined);
-  return {
+  return withBuying({
     key: pair.key, retailer: 'homedepot', itemId: pair.itemId, title: pair.title || known?.title || pair.model, brand: pair.brand, model: pair.model,
     upc: known?.upc ?? null, price: pair.price, regularPrice: pair.wasPrice ?? known?.regularPrice ?? null, percentOff, link: pair.link, seenAt: at,
     split: known?.split ?? null,
     ...(page !== undefined ? { page } : {}),
     bogo: pairFacts(pair),
-  };
+    ...(known?.buying ? { buying: known.buying } : {}),
+  }, item?.buying, item?.readAt ?? at);
 }
 
 // ---------------------------------------------------------------- grouping, ranking, the digest
