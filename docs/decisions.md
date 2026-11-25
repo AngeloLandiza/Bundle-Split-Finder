@@ -1740,3 +1740,49 @@ not explain (`desktop-ui/src/lib/costs.ts`, `components/CostChart.tsx`, `screens
 - **The mock is shaped like the agent's answer and moves with the settings** (`api/mockCosts.ts`): its use is made up
   deterministically, and its limits, prices and budget are the owner's settings, so moving a slider moves the states. It is a
   look-alike; the real arithmetic is core/src/costs.
+## Keeping deals current between scans (Nov 25)
+
+The owner's app after scan 6 (`fixtures/e2e-2026-11-23/after-scan6`) showed three Buy now deals (the PSK1212SB BOGO pairs
+with PCL515B, PCL633B and PCL031B) whose prices were "as of the last read": Home Depot's from a list read once a day
+(`HD_LIST_REREAD_MS`), Amazon's from Keepa pulls the day before. Nothing between scans re-read either: the Home Depot drip
+read only the pages bundles wait for, and the Keepa drip pulled a listing again only for its fee or sales figure, once in
+three days (`freshnessMs`). He asked that a Buy now deal (and every watched deal) is kept current by the app itself.
+
+- **Home Depot's price** (`core/src/tracking/keepCurrent.ts`, `AgentWork.keepHdOne`): a watched deal's own page (the promo
+  page reader, which gives `price` and `wasPrice`) is read again when `HD_RECHECK_BUY_NOW_MS` 4 h (Buy now) or
+  `HD_RECHECK_WATCHED_MS` 12 h (watched) has passed since its price was last seen (`BundleRecord.seenAt`, which a list read
+  also moves). It is the drip's first read when due, ahead of the pages bundles wait for, through the same pace gate in
+  drip mode (90 s gap, 240 a day, a refusal's cool-down); a scan stops the drip, so nothing a scan needs waits for it. It
+  takes at most `HD_KEEP_CURRENT_PAGES_PER_DAY` 120 pages a day, half the drip's 240, so the backlog keeps the other half.
+  Why 4 h and 12 h: Home Depot changes a price a few times a day at most (a promotion starting or ending); 4 h keeps the
+  price he acts on from the same morning or afternoon for 6 pages a day a deal; 12 h for the others is 2. A refusal is not
+  a try: every read pauses for the cool-down and the refused deal is read first after it. A page with no price for that item
+  is a try (not asked again before its cadence). A changed price or was-price updates the record (percent off recomputed
+  from the page's was-price, else the stored one) and the deals are rebuilt and judged; an unchanged one moves only `seenAt`.
+- **Amazon's prices** (`dripRound`'s `keepPulls`, `agent/keepCurrent.ts pullDue`): each matched listing of a watched deal
+  is pulled from Keepa again after `AMAZON_RECHECK_BUY_NOW_MS` 2 h or `AMAZON_RECHECK_WATCHED_MS` 12 h since its price
+  record's `checkedAt` (new `PartRow.priceCheckedAt`). One product pull each (`productTokenEstimate` of the tracking depth,
+  the tokens read from the answer), above `keepaReserve` (the drip's `TokenBudget`) and within a quarter of the day's refill
+  (`KEEPA_KEEP_CURRENT_SHARE`; 360 at the recorded 1 a minute), so lookups keep three quarters. Buy now listings are pulled
+  before the drip's lookups; the others after them, once no lookup waits. A cached answer under 15 min is reused (no
+  token). Never a SerpApi search, never the reserve. A pull whose answer is not that listing saves nothing (a try).
+- **The verdict follows at once**: the refresh goes through the existing `refresh` → `evaluateSignals`. A deal whose Buy now
+  flipped with a price that moved gets one Activity line (`verdictChanges`): "PSK1212SB-PCL515B is no longer worth buying:
+  Home Depot's price went from $99.00 to $129.00 (link). Est. profit $13.19, was $43.19 (an estimate from your fee settings,
+  not your real fees)." and the same for "is worth buying now". The line goes in the same message as the digest through the
+  notification policy when alerts are on. A flip no price explains (a listing confirmed, a sales figure) is left to the
+  signals' own words, so nothing is said twice. Activity renders the addresses in a summary as source links.
+- **Age is always shown** (`DealRow.pricesChecked`): on every watched row and in the inspector, "Home Depot price checked
+  5:10 PM · Amazon prices 3:02 PM" beside the verdict, never in its place. A Buy now deal whose oldest price is older than
+  `PRICES_STALE_MS` 8 h (twice the Home Depot cadence, so one missed read is not enough) says "Prices not checked since
+  yesterday 5:10 PM" (the hover says why and to check before buying), stays Buy now (not silently withdrawn), and its buy
+  line is not sent nor marked sent (`withoutStale`, in the scan's digest and between scans) until its prices are checked.
+- **Honest budget words** (`AgentState.agent.keepCurrent`, Today's "Watched deals"): `keepSentence` from the constants and
+  the deals. Over a share, "the oldest-checked go first" (the due order is Buy now, then oldest checked) and how many wait.
+- **Replayed on after-scan6** (`core/test/keep-current.test.ts`, `agent/test/keepCurrent.test.ts`): 34 watched deals, 3 Buy
+  now; 6 distinct Buy now listings, 38 others. Home Depot: 3 × 6 + 31 × 2 = **80 pages a day** of the 120 set aside.
+  Keepa: 6 × 12 + 38 × 2 = **148 tokens a day** of 360. All three Buy now deals are stale on the stored data (Amazon
+  prices from Nov 23 morning).
+- *Not done:* the unpaired extension does not keep deals current. A set's own page price is taken as its price as for any
+  bundle (no recording of a set's page yet). *For v2:* make the cadences settings only if the owner asks; a cadence he
+  raises is the one that gets him refused.
