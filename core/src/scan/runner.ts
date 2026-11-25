@@ -39,6 +39,7 @@ import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
 import { LIST_EMPTY, type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
 import { type PageWant, pagesWanted } from './hdOrder';
 import type { PromoPage } from '../hdPage';
+import { toUpc12 } from '../identifiers';
 import type { PromoPageOutcome } from '../tracking/bogoPairs';
 
 const HOME_DEPOT_ORIGIN = 'https://www.homedepot.com';
@@ -990,7 +991,7 @@ async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['pa
       const keepPrice = fromChrome && row.price === null && known !== undefined;
       const page = known && known.page !== undefined && known.page !== null ? known.page : row.page ?? known?.page;
       await store.putBundle({
-        key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
+        key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: row.page?.upc ?? known?.upc ?? null,
         price: keepPrice ? known.price : row.price, regularPrice: keepPrice ? known.regularPrice : row.regularPrice,
         percentOff: keepPrice ? known.percentOff : row.percentOff, link: row.link, seenAt: at,
         split: known?.split ?? null,
@@ -1010,7 +1011,8 @@ async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['pa
     const page = known && known.page !== undefined && known.page !== null ? known.page : row.page ?? known?.page;
     await store.putCatalogEntry({
       key, brand: entry.brand, model: entry.model, title: row.title,
-      kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: at,
+      // Nov 25: the barcode its item page stated (a Chrome row), else the one stored.
+      kinds: entry.kinds, isKit: entry.isKit ?? false, upc: row.page?.upc ?? known?.upc ?? null, seenAt: at,
       // Step 6: the row's own item id, by which a kit's page is read (readKitPages).
       itemId: row.itemId,
       // A kit's page is read once, as a bundle's (P1): a row seen again keeps it.
@@ -1113,6 +1115,7 @@ export async function readSetItemsFor(r: {
   // Each item's price sold alone, as Home Depot's part price reading of its model (the part pipeline's own record).
   const readings = [...pages.values()].filter((p) => p.model.trim() !== '').map((p) => ({
     brand: p.brand, model: p.model, status: 'found' as const, itemId: p.itemId, matchedModel: p.model, price: p.price, title: p.title, link: `${HOME_DEPOT_ORIGIN}/p/${p.itemId}`,
+    ...(p.upc ? { upc: p.upc } : {}),
   }));
   if (readings.length > 0) await savePartPrices(store, readings.map((x) => ({ brand: x.brand, model: x.model })), readings, at);
   return { read: pages.size, refused, sets };
@@ -1434,6 +1437,9 @@ const unique = (xs: string[]): string[] => [...new Set(xs)];
 const pagesLeft = (run: Run): number =>
   Math.max(0, Math.min(Math.floor(run.settings.pageReadsPerScan) - run.job.counts.pagesRead, run.hdPagesLeft?.() ?? Number.POSITIVE_INFINITY));
 
+/** Nov 25: a page reading's barcode as the record's `upc` (catalog entry, bundle); nothing when the page gave none, so one stored is kept. */
+const withBarcode = (page: PageReading): { upc?: string } => (page.upc ? { upc: page.upc } : {});
+
 /** A page to read, and where its reading is saved. */
 interface PageTarget {
   itemId: string;
@@ -1470,7 +1476,7 @@ async function readBundlePages(run: Run, chosen: readonly BundleRecord[]): Promi
   if (run.shouldStop()) return { goOn: true, notRead: 0 };
   if (unread.length === 0 && (await store.listBundles()).some((b) => !b.set && (b.page === undefined || b.page === null))) return nothingToRead(run, 'bundlePages', 'page limit reached');
   if (unread.length === 0) return nothingToRead(run, 'bundlePages');
-  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page }) })));
+  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page, ...withBarcode(page) }) })));
 }
 
 /**
@@ -1498,7 +1504,7 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   const partPages = run.waitForPages ? await partPagesWanted(store) : [];
   if (wanted.length === 0 && partPages.length === 0) return nothingToRead(run, 'kitPages');
   const targets: PageTarget[] = [
-    ...wanted.map((k) => ({ itemId: k.itemId!, save: (page: PageReading) => store.putCatalogEntry({ ...k, page }) })),
+    ...wanted.map((k) => ({ itemId: k.itemId!, save: (page: PageReading) => store.putCatalogEntry({ ...k, page, ...withBarcode(page) }) })),
     ...partPages.map((r) => partPageTargetOf(store, r)),
   ];
   const out = await readInto(run, 'kitPages', targets.slice(0, room));
@@ -1512,7 +1518,7 @@ function partPageTargetOf(store: ScanStore, r: PartPriceRecord): PageTarget {
     itemId: r.itemId!,
     save: async (page) => {
       const now = (await store.getPartPrice(r.key)) ?? r;
-      await store.putPartPrice({ ...now, page });
+      await store.putPartPrice({ ...now, page, ...withBarcode(page) });
     },
     refused: async () => {
       const now = (await store.getPartPrice(r.key)) ?? r;
@@ -1594,7 +1600,7 @@ export async function readKitPagesFor(r: {
   }
   // Nov 24 (settle rule C): then the parts' own pages a waiting split needs.
   const targets: PageTarget[] = [
-    ...wanted.map((kit) => ({ itemId: kit.itemId!, save: (page: PageReading) => r.store.putCatalogEntry({ ...kit, page }) })),
+    ...wanted.map((kit) => ({ itemId: kit.itemId!, save: (page: PageReading) => r.store.putCatalogEntry({ ...kit, page, ...withBarcode(page) }) })),
     ...(await partPagesWanted(r.store)).map((p) => partPageTargetOf(r.store, p)),
   ];
   const ask = targets.slice(0, r.max ?? DRIP_KIT_PAGES);
@@ -1657,15 +1663,22 @@ export async function partPricesWanted(store: ScanStore, settings: ScanSettings,
     planned.add(key);
     parts.push({ key, brand: e.brand.trim().toUpperCase(), model: e.model.trim().toUpperCase(), saving: 0 });
   }
-  const checkedAt = new Map((await store.listPartPrices()).map((r) => [r.key, r.checkedAt] as const));
+  const records = await store.listPartPrices();
+  const checkedAt = new Map(records.map((r) => [r.key, r.checkedAt] as const));
   const fresh = (p: Part): boolean => [p.key, ...twinKeys(p.brand, p.model)].some((k) => {
     const at = checkedAt.get(k);
     return at !== undefined && now - at <= settings.freshnessMs;
   });
+  // Nov 25: at an otherwise equal place, a part with no Amazon listing and no barcode yet is read first: its page states the
+  // barcode the lookup asks Keepa by (keepa/barcode.ts).
+  const coded = new Set([...records.filter((r) => r.upc), ...(await store.listCatalog()).filter((c) => c.upc)].map((r) => r.key));
+  const listed = new Set((await store.listMatches()).filter((m) => m.status === 'matched' && m.asin !== null).map((m) => m.key));
+  const wantsCode = (p: Part): boolean => [p.key, ...twinKeys(p.brand, p.model)].every((k) => !coded.has(k) && !listed.has(k));
   const seen = new Set<string>();
   return parts
     .filter((p) => !fresh(p))
-    .sort((a, b) => Number(completes.has(b.key)) - Number(completes.has(a.key)) || Number(unblocks.has(b.key)) - Number(unblocks.has(a.key)) || b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+    .sort((a, b) => Number(completes.has(b.key)) - Number(completes.has(a.key)) || Number(unblocks.has(b.key)) - Number(unblocks.has(a.key)) || b.saving - a.saving
+      || Number(wantsCode(b)) - Number(wantsCode(a)) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
     .filter((p) => once(seen, kitKey(p.brand, p.model)))
     .map(({ key, brand, model }) => ({ key, brand, model, ...(completes.has(key) ? { completes: true as const } : {}) }));
 }
@@ -1718,12 +1731,18 @@ export async function savePartPrices(store: ScanStore, asked: Pick<Part, 'brand'
       const kept = before && itemId !== null && before.itemId === itemId
         ? { ...(before.page ? { page: before.page } : {}), ...(before.pageRefusals ? { pageRefusals: before.pageRefusals } : {}) }
         : {};
-      record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt, ...kept };
+      // Nov 25: the page's barcode; one read before from the same product is kept while this reading gives none.
+      const upc = toUpc12(typeof r.upc === 'string' ? r.upc : null) ?? (before && itemId !== null && before.itemId === itemId ? before.upc : null) ?? null;
+      record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt, ...kept, ...(upc ? { upc } : {}) };
     } else {
       const before = await store.getPartPrice(key);
+      // Nov 25: a page that is the part's (its model the part's) but has no price still states the part's barcode.
+      const pageModel = textOrNull(r.matchedModel)?.toUpperCase() ?? null;
+      const read = pageModel !== null && sameModel(brand, pageModel, model) ? toUpc12(typeof r.upc === 'string' ? r.upc : null) : null;
+      const upc = read ?? before?.upc ?? null;
       record = before && before.price !== null
-        ? { ...before, checkedAt: Math.max(before.checkedAt, readAt) }
-        : { key, brand, model, itemId: null, matchedModel: null, price: null, title: null, link: null, seenAt: null, checkedAt: readAt };
+        ? { ...before, checkedAt: Math.max(before.checkedAt, readAt), ...(upc ? { upc } : {}) }
+        : { key, brand, model, itemId: null, matchedModel: null, price: null, title: null, link: null, seenAt: null, checkedAt: readAt, ...(upc ? { upc } : {}) };
     }
     want.delete(key);
     await store.putPartPrice(record);

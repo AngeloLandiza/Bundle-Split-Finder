@@ -101,6 +101,18 @@ describe('remote Home Depot readers (worker jobs)', () => {
     expect(out[1]).toMatchObject({ status: 'not_read' });
   });
 
+  it('Nov 25: the barcode the page states travels as a 12-digit UPC-A; one that is not a valid barcode is dropped', async () => {
+    const { readers, worker } = setup();
+    const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }, { brand: 'RYOBI', model: 'PCL235B' }]);
+    await worker(() => search([{ model: 'PCL206B', itemId: '315155390' }, { model: 'PCL235B', itemId: '222222222' }]));
+    await worker(() => reading({ upc: '0885911758215' }));
+    await worker(() => search([{ model: 'PCL235B', itemId: '222222222' }]));
+    await worker(() => reading({ model: 'PCL235B', matchedModel: 'PCL235B', itemId: '222222222', link: 'https://www.homedepot.com/p/222222222', upc: '12345' }));
+    const out = await prices;
+    expect(out[0]).toEqual({ ...reading(), upc: '885911758215' });
+    expect(out[1]).not.toHaveProperty('upc');
+  });
+
   it('a reading that is not a part price is a failed read, never data', async () => {
     const { readers, worker } = setup();
     const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);

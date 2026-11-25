@@ -668,6 +668,8 @@ export function createPartPriceReader(
               price: page.price,
               title: page.title === '' ? null : page.title,
               link: `${env.origin}${c.path}`,
+              // Nov 25: the barcode the part's own page states, kept on its part price record.
+              ...(page.upc ? { upc: page.upc } : {}),
             });
           }
         }
@@ -727,6 +729,7 @@ export function createItemPriceReader(
         price: page.price,
         title: page.title === '' ? null : page.title,
         link: `${env.origin}/p/${itemId}`,
+        ...(page.upc ? { upc: page.upc } : {}),
       };
     } finally {
       lastEnded = now();

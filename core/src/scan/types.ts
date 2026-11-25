@@ -243,6 +243,11 @@ export interface PartPriceReading {
   price: number | null;
   title: string | null;
   link: string | null;
+  /**
+   * Nov 25: the barcode the product's own page states (hdPage.ts barcodeOf), a 12-digit UPC-A. Absent when the page was not
+   * read, gave none, or is not the part's. Kept on the part price record (PartPriceRecord.upc).
+   */
+  upc?: string | null;
 }
 
 /** Step 9: reads Home Depot's own price for parts sold alone, in the owner's browser. Never a search. */
@@ -278,6 +283,12 @@ export interface PartPriceRecord {
   page?: PageReading | null;
   /** Nov 24: how many times Home Depot refused or could not give that page; at PART_PAGE_REFUSALS_MAX the split asks. */
   pageRefusals?: number;
+  /**
+   * Nov 25: the barcode Home Depot's page of the part sold alone states (12-digit UPC-A), from the reading that found it.
+   * Kept while later readings give none. The Amazon lookup asks Keepa by it first (keepa/barcode.ts): a way to find
+   * candidates, never proof of a listing.
+   */
+  upc?: string | null;
 }
 
 /**

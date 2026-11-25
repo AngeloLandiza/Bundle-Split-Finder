@@ -9,7 +9,8 @@ import type { WorkerJob, WorkerJobInputs, WorkerJobKind } from '../core/src/api/
 import { sameModel } from '../core/src/match';
 import type { CatalogEntry, CatalogLookup, HomeDepotPage, HomeDepotSearch, ResearchTools, ToolError } from '../core/src/research/types';
 import type { PageOutcome, PartPriceReading, ReadPages, ReadPartPrices, ScanStore } from '../core/src/scan/types';
-import { type ListingSample, type PagePromotion, type PromoPage, SAMPLE_CHARS, SAMPLE_KINDS } from '../core/src/hdPage';
+import { type ListingSample, type PageContent, type PagePromotion, type PromoPage, SAMPLE_CHARS, SAMPLE_KINDS } from '../core/src/hdPage';
+import { toUpc12 } from '../core/src/identifiers';
 import { isBundleListingPath } from '../core/src/scan/listingSource';
 import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
 import type { ListingPage } from '../core/src/scan/listingSource';
@@ -94,9 +95,19 @@ function notReadOutcome(v: Record<string, unknown> & { itemId: string }): Exclud
   return null;
 }
 
+/** Nov 25: a barcode as the helper sent it, kept only as a valid 12-digit UPC-A (toUpc12); anything else is none. */
+const barcode = (v: unknown): { upc?: string } => {
+  const upc = isText(v) ? toUpc12(v) : null;
+  return upc ? { upc } : {};
+};
+
 function pageOutcome(v: unknown): PageOutcome | null {
   if (!isRecord(v) || !isText(v.itemId)) return null;
-  if (v.kind === 'read') return isRecord(v.content) ? (v as unknown as PageOutcome) : null;
+  if (v.kind === 'read') {
+    if (!isRecord(v.content)) return null;
+    const { upc, ...content } = v.content;
+    return { ...(v as unknown as PageOutcome & { kind: 'read' }), content: { ...(content as unknown as PageContent), ...barcode(upc) } };
+  }
   return notReadOutcome(v as Record<string, unknown> & { itemId: string });
 }
 
@@ -105,7 +116,8 @@ function partPriceReading(v: unknown): PartPriceReading | null {
   if (v.status !== 'found' && v.status !== 'not_found' && v.status !== 'not_read') return null;
   if (!textOrNull(v.itemId) || !textOrNull(v.matchedModel) || !numOrNull(v.price) || !textOrNull(v.title) || !textOrNull(v.link)) return null;
   if (v.link !== null && !onHomeDepot(v.link)) return null;
-  return v as unknown as PartPriceReading;
+  const { upc, ...rest } = v;
+  return { ...(rest as unknown as PartPriceReading), ...barcode(upc) };
 }
 
 function toolError(v: unknown): ToolError | null {
@@ -155,6 +167,7 @@ function promoOutcome(v: unknown): PromoPageOutcome | null {
   const page: PromoPage = {
     itemId: v.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price as number | null, wasPrice: p.wasPrice as number | null,
     bullets: p.bullets as string[], description: p.description as string | null, promotions: promotions as PagePromotion[],
+    ...barcode(p.upc),
   };
   return { itemId: v.itemId, kind: 'read', page };
 }

@@ -73,6 +73,23 @@ export interface PageContent {
   bullets: string[];
   /** details.description; null when absent. Stored for review; not used to split. */
   description: string | null;
+  /**
+   * Nov 25: the product's barcode as the page's own state gives it (barcodeOf), a 12-digit UPC-A. Absent when the page
+   * gives none, or none that is a valid barcode. A way to find the product's Amazon listing, never proof of one.
+   */
+  upc?: string;
+}
+
+/**
+ * Nov 25 (fixtures/homedepot-pages/identifiers-upc-316627328-2026-11-25.json): a product object's `identifiers.upc`
+ * ("885911758215") and `identifiers.upcGtin13` ("0885911758215"), each normalised by toUpc12. Null when neither is a valid
+ * barcode, or when the two disagree (no guess between them).
+ */
+export function barcodeOf(product: Json): string | null {
+  const ids = asObj(product.identifiers);
+  const codes = [toUpc12(asStr(ids.upc)), toUpc12(asStr(ids.upcGtin13))].filter((c): c is string => c !== null);
+  const first = codes[0];
+  return first !== undefined && codes.every((c) => c === first) ? first : null;
 }
 
 const STATE_MARK = 'window.__APOLLO_STATE__=';
@@ -130,7 +147,8 @@ function contentOf(product: Json): PageContent {
     const v = asObj(a).value;
     if (typeof v === 'string') bullets.push(v);
   }
-  return { bullets, description: typeof details.description === 'string' ? details.description : null };
+  const upc = barcodeOf(product);
+  return { bullets, description: typeof details.description === 'string' ? details.description : null, ...(upc !== null ? { upc } : {}) };
 }
 
 /** A Home Depot product page the owner has open, read from its embedded data (step 7). Never a search. */
@@ -149,6 +167,8 @@ export interface ProductPage {
   /** As parseBundlePage reads them. */
   bullets: string[];
   description: string | null;
+  /** As parseBundlePage reads it (barcodeOf); absent when the page gives no valid barcode. */
+  upc?: string;
 }
 
 /** A price as a pricing entry holds it: a positive number. Anything else is no price. */

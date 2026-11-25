@@ -87,6 +87,8 @@ export interface BogoItem {
   bullets: string[];
   description: string | null;
   readAt: number;
+  /** Nov 25: the barcode the item's page states (hdPage.ts barcodeOf); absent when none. */
+  upc?: string;
 }
 
 /** What a pair carries on its deal (the contract's `bogo` tag). */
@@ -201,6 +203,7 @@ export function itemOf(page: PromoPage, listed: ListedItem | undefined, at: numb
     itemId: page.itemId, brand: page.brand, model: page.model, title: page.title || listed?.title || '', price: page.price, wasPrice: page.wasPrice,
     link: listed?.url && listed.url.startsWith(`${HOME_DEPOT}/p/`) ? listed.url : `${HOME_DEPOT}/p/${page.itemId}`,
     promotions: page.promotions, bullets: page.bullets, description: page.description, readAt: at,
+    ...(page.upc ? { upc: page.upc } : {}),
   };
 }
 
