@@ -124,7 +124,8 @@ export const UPDATED_LINE = 'The Chrome helper was updated to match the app.';
  * show, null when the helper is the shipped build (or no zip is shipped to compare with).
  */
 export class HelperUpdate {
-  private outcome: { state: 'updating'; until: number } | { state: 'install'; why: string } | null = null;
+  /** `ifNot`: what to say when the reload's time passes with the old build still reported (default: the update did not take). */
+  private outcome: { state: 'updating'; until: number; ifNot?: string } | { state: 'install'; why: string } | null = null;
 
   constructor(private readonly d: HelperUpdateDeps) {}
 
@@ -149,10 +150,14 @@ export class HelperUpdate {
     this.d.tried.add(shipped, this.d.now());
     const zip = this.d.zip();
     const dir = extensionId === null ? null : folderForExtension(extensionId, this.d.candidates(), this.d.platform);
-    if (zip === null) {
-      this.outcome = { state: 'install', why: 'This app has no copy of the helper to install.' };
-    } else if (dir === null) {
-      this.outcome = { state: 'install', why: 'The app cannot tell which folder Chrome loaded the helper from.' };
+    if (zip === null || dir === null) {
+      // Nothing can be unpacked, but a reload costs nothing and is enough when the folder Chrome loads from already holds
+      // the new files: a helper loaded from the project's own build folder (the owner's Mac, Nov 25: the app said "cannot
+      // tell which folder" and waited for a click, and one reload brought the new build). So reload once, and only say
+      // what is wrong if the old build is still reported after the reload's time.
+      const ifNot = zip === null ? 'This app has no copy of the helper to install.' : 'The app cannot tell which folder Chrome loaded the helper from.';
+      this.outcome = { state: 'updating', until: this.d.now() + RELOAD_GRACE_MS, ifNot };
+      this.d.queueReload();
     } else {
       const done = updateHelperFolder(zip, dir, shipped, this.d.unpack);
       if (!done.ok) this.outcome = { state: 'install', why: done.why };
@@ -169,7 +174,7 @@ export class HelperUpdate {
     const o = this.outcome;
     if (o === null) return null;
     if (o.state === 'updating' && this.d.now() >= o.until) {
-      this.outcome = { state: 'install', why: 'The helper still reports the old build after it was updated and reloaded.' };
+      this.outcome = { state: 'install', why: o.ifNot ?? 'The helper still reports the old build after it was updated and reloaded.' };
       return this.outcome;
     }
     return o.state === 'updating' ? { state: 'updating' } : o;

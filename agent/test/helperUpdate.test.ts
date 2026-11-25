@@ -160,24 +160,39 @@ describe('the rule: once per shipped build, and never a loop', () => {
     expect(r.said).toHaveLength(1);
   });
 
-  it('a folder the app does not know, one that is not the helper, and a missing zip each say so and write nothing', () => {
+  it('a folder that is not the helper says so and writes nothing; a folder the app does not know, or no zip, gets one reload and says so only if that did not help', () => {
     const known = helperFolder();
     const foreign = helperFolder({ name: 'Notes' });
-    const unknown = rig({ candidates: [known] });
-    unknown.update.contact('a'.repeat(32), OLD);
-    expect(unknown.update.state()).toMatchObject({ state: 'install', why: expect.stringContaining('which folder') });
     const notHelper = rig({ candidates: [foreign] });
     notHelper.update.contact(extensionIdForPath(foreign), OLD);
     expect(notHelper.update.state()).toMatchObject({ state: 'install', why: expect.stringContaining('not Split Finder') });
     expect(readFileSync(join(foreign, 'background.js'), 'utf8')).toBe('// old');
+    expect(notHelper.reloads.n).toBe(0);
+    expect(notHelper.said).toEqual([]);
+    // The owner's Mac, Nov 25: the helper is loaded from the project's build folder, which the app does not know, and
+    // that folder already held the new files. One reload brought the new build; the first version of this asked for a click.
+    const unknown = rig({ candidates: [known] });
+    unknown.update.contact('a'.repeat(32), OLD);
     const noZip = rig({ candidates: [known], zip: null });
     noZip.update.contact(extensionIdForPath(known), OLD);
-    expect(noZip.update.state()).toMatchObject({ state: 'install' });
-    expect(readFileSync(join(known, 'background.js'), 'utf8')).toBe('// old');
-    for (const r of [unknown, notHelper, noZip]) {
-      expect(r.reloads.n).toBe(0);
+    for (const r of [unknown, noZip]) {
+      expect(r.reloads.n).toBe(1);
       expect(r.said).toEqual([]);
+      expect(r.update.state()).toEqual({ state: 'updating' });
     }
+    expect(readFileSync(join(known, 'background.js'), 'utf8')).toBe('// old');
+    // The reload brought the shipped build: nothing more to say.
+    unknown.update.contact('a'.repeat(32), SHIPPED);
+    expect(unknown.update.state()).toBeNull();
+    // It did not: after the reload's time the reason is said, and no second reload is queued.
+    noZip.clock.at += RELOAD_GRACE_MS + 1;
+    expect(noZip.update.state()).toMatchObject({ state: 'install', why: expect.stringContaining('no copy of the helper') });
+    const stillUnknown = rig({ candidates: [known] });
+    stillUnknown.update.contact('a'.repeat(32), OLD);
+    stillUnknown.clock.at += RELOAD_GRACE_MS + 1;
+    expect(stillUnknown.update.state()).toMatchObject({ state: 'install', why: expect.stringContaining('which folder') });
+    stillUnknown.update.contact('a'.repeat(32), OLD);
+    expect(stillUnknown.reloads.n).toBe(1);
   });
 
   it('a new shipped build is tried afresh (the record is per build), and the record is a file that survives a restart', () => {
@@ -254,11 +269,12 @@ describe('through the agent', () => {
     expect(h).not.toHaveProperty('update');
   });
 
-  it('an old helper from another folder than the install folder is not written to: the state says to install it again', async () => {
+  it('an old helper from another folder than the install folder is not written to: it is reloaded once', async () => {
     process.env.SPLIT_FINDER_EXTENSION_DIR = helperFolder();
     await beat(OLD);
     expect(readFileSync(join(dir, 'background.js'), 'utf8')).toBe('// old');
-    expect(reloads()).toHaveLength(0);
-    expect(await helperState()).toMatchObject({ outdated: true, update: { state: 'install' } });
+    // Not written to, but reloaded once: that is enough when its folder already holds the new files.
+    expect(reloads()).toHaveLength(1);
+    expect(await helperState()).toMatchObject({ outdated: true, update: { state: 'updating' } });
   });
 });
