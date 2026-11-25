@@ -1763,9 +1763,8 @@ three days (`freshnessMs`). He asked that a Buy now deal (and every watched deal
   is pulled from Keepa again after `AMAZON_RECHECK_BUY_NOW_MS` 2 h or `AMAZON_RECHECK_WATCHED_MS` 12 h since its price
   record's `checkedAt` (new `PartRow.priceCheckedAt`). One product pull each (`productTokenEstimate` of the tracking depth,
   the tokens read from the answer), above `keepaReserve` (the drip's `TokenBudget`) and within a quarter of the day's refill
-  (`KEEPA_KEEP_CURRENT_SHARE`; 360 at the recorded 1 a minute), so lookups keep three quarters. Buy now listings are pulled
-  before the drip's lookups; the others after them, once no lookup waits. A cached answer under 15 min is reused (no
-  token). Never a SerpApi search, never the reserve. A pull whose answer is not that listing saves nothing (a try).
+  (`KEEPA_KEEP_CURRENT_SHARE`; 360 at the recorded 1 a minute), so lookups keep three quarters. A cached answer under
+  15 min is reused (no token). Never a SerpApi search, never the reserve. A pull whose answer is not that listing saves nothing (a try).
 - **The verdict follows at once**: the refresh goes through the existing `refresh` → `evaluateSignals`. A deal whose Buy now
   flipped with a price that moved gets one Activity line (`verdictChanges`): "PSK1212SB-PCL515B is no longer worth buying:
   Home Depot's price went from $99.00 to $129.00 (link). Est. profit $13.19, was $43.19 (an estimate from your fee settings,
@@ -1786,3 +1785,37 @@ three days (`freshnessMs`). He asked that a Buy now deal (and every watched deal
 - *Not done:* the unpaired extension does not keep deals current. A set's own page price is taken as its price as for any
   bundle (no recording of a set's page yet). *For v2:* make the cadences settings only if the owner asks; a cadence he
   raises is the one that gets him refused.
+
+**The drip's order** (Nov 25, after the barcode lookup, the re-check of withdrawn listings and keep-current met in
+`dripRound`): buy-safety catalog checks of the listings a buy waits on; keeping deals current (Buy now listings, then the
+other watched deals', within the quarter share); re-checks of withdrawn listings; lookups, by barcode first, then by
+search; the catalog check and the listing ladder's re-picks; fees, sales and averages. The share caps what keep-current can
+take ahead of the lookups (360 tokens a day, the after-scan6 watchlist needs 148).
+
+### Home Depot's ceiling between scans adapts to refusals (Nov 25)
+
+The owner's live data this morning: the app read 80 pages between 5:00 and 9:00 AM (20 an hour on average, at a 40-an-hour
+ceiling), was refused four times in a row and backed off to a four-hour pause (`hdPace: { refusals: 4, dripPages: 80 }`;
+Activity "Read 27 Home Depot pages between scans … paused reading until 5:23 AM", "Read 21 … paused until 10:04 AM"). 40
+an hour sustained is too fast, and keep-current adds about 80 pages a day.
+
+- **The rule** (`core/src/scan/hdPace.ts dripCeiling`, `HdPaceState.perHour`, `perHourAt`): each refusal halves the hourly
+  ceiling in force, never below `HD_DRIP_PER_HOUR_FLOOR` 10 (40, 20, 10). It stays there for the rest of that day. From the
+  next midnight each full `HD_DRIP_RAISE_AFTER_MS` 6 hours with no refusal raises it by `HD_DRIP_RAISE_STEP` 5, up to 40
+  (from 10: 36 hours with no refusal). It is not reset at midnight: a day starts from what the day before ended at. The gap
+  between reads is an hour over the ceiling (90 s at 40, 3 min at 20, 6 min at 10); the cool-down (30 min doubling to 8 h)
+  is unchanged and still pauses every read. A refusal in a scan halves it too. The daily cap (240) stays.
+- **Who goes first**: keep-current's Buy now reads come first at any ceiling. Below the full ceiling, with pages waiting
+  for bundles, a watched deal's refresh gives way to them and is read only when no other page waits.
+- **The words** (`ceilingWords`, in `backlogSentence`, the hour's Activity run and `AgentState.agent.homeDepot`, whose
+  `perHour` is now the ceiling in force): "between scans at most 20 are read an hour today, after Home Depot refused pages
+  this morning (240 a day)"; at the full ceiling the sentence is as before. The Agent panel's keep-current sentence adds
+  "Home Depot's ceiling is 10 pages an hour today: Buy now deals are read first, the other watched deals after the pages
+  bundles wait for."
+- **Replay at the floor** (`core/test/hd-pace-adaptive.test.ts`, after-scan6): at 10 an hour (240 slots a day) the three
+  Buy now deals take 18 slots and each is read every 4 hours (6 reads a day each); the other 222 go to the backlog, then
+  the 31 watched deals (62 a day). The 4-hour check survives the floor.
+- *Why these numbers:* halving backs off fast after a refusal (the cool-down alone let 40 an hour resume each time); 10 an
+  hour is the least that still serves the Buy now checks with room for the backlog; raising 5 per 6 clean hours from the
+  next day climbs back slowly enough that one good morning does not undo a refused one. *Live check:* whether 10 to 20 an
+  hour is refused; the Activity runs say the ceiling each hour.
