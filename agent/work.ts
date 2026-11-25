@@ -94,6 +94,11 @@ import type { CostDecision, CostService } from '../core/src/costs/types';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { askQueueOf } from '../core/src/assist/askAll';
 import type { WorkerJobs } from './workerJobs';
+import { catchUpSentence, slotOf } from '../core/src/selfRun/catchUp';
+import { nextScanNeeds } from '../core/src/selfRun/words';
+import type { WeeklySummary } from '../core/src/selfRun/weekly';
+import type { ChromeControl } from './openChrome';
+import { SelfRun } from './selfRun';
 
 /** How often the scheduler looks whether a scan is due. */
 export const TICK_MS = 30_000;
@@ -143,6 +148,8 @@ export interface WorkDeps {
   runScan?: typeof runScan;
   /** Holds the computer awake while a scan or Look up all runs (agent/keepAwake.ts). Absent: nothing is held (tests). */
   keepAwake?: { hold(): () => void };
+  /** Starts (and may quit) the owner's Chrome for a scheduled scan (agent/openChrome.ts). Absent: never (tests give a fake). */
+  chrome?: ChromeControl;
   /**
    * Home Depot's pace (core/src/scan/hdPace.ts): how it waits for the gap (default a real timer that a Stop ends) and its
    * jitter draw (default Math.random). Tests pass a sleep that moves their clock.
@@ -268,6 +275,14 @@ export class AgentWork {
   private costRun = 'start';
   /** Nov 25: makes each Telegram message as it goes out, with its buttons when the owner acts from Telegram (agent/telegramBot.ts). */
   telegramCompose: ((m: PendingMessage) => OutgoingTelegram[]) | null = null;
+  /** Nov 25, running without the owner: Chrome started for a scan, open at login, the weekly summary (agent/selfRun.ts). */
+  readonly selfRun: SelfRun;
+  /** When this agent started, and when the scheduler last looked: a scan that starts late says whether the app was running or the computer asleep. */
+  private readonly startedAt: number;
+  private lastTickAt: number | null = null;
+  private catchUp: string | null = null;
+  /** The key of the scheduled scan that is starting (SelfRun.scanKey, taken before the schedule counts from its start). */
+  private scheduledKey: string | null = null;
 
   constructor(deps: WorkDeps) {
     this.d = deps;
@@ -277,6 +292,12 @@ export class AgentWork {
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
     this.cache = new DirCache(join(deps.dataDir, 'cache'));
     this.dealsAtStart = deps.store.get('deals').bundles.length > 0;
+    this.startedAt = deps.now();
+    this.selfRun = new SelfRun({
+      store: deps.store, now: deps.now, ...(deps.chrome ? { chrome: deps.chrome } : {}), helperConnected: deps.helperConnected,
+      nextScanAt: () => this.nextScanAt(), busy: () => this.writing(), jobsWaiting: () => deps.jobs.waitingCount(), hdPausedUntil: () => this.pace.pausedUntil(),
+      record: (sentence) => this.noteSentence(sentence), changed: () => deps.changed(), costs: this.costs, announceWeekly: (w) => this.announceWeekly(w),
+    });
     this.pace = new HdPace({
       now: deps.now, sleep: deps.hdSleep ?? sleepFor, ...(deps.hdRandom ? { random: deps.hdRandom } : {}),
       load: () => paceStateOf(deps.store.get('runtime').hdPace),
@@ -414,6 +435,40 @@ export class AgentWork {
   }
 
   /**
+   * Nov 25: what the next scheduled scan depends on, in a sentence, for the Agent panel ("Next scan"). Null when nothing is missing
+   * (the helper is connected, or no scheduled scan is coming).
+   */
+  nextScanNote(): string | null {
+    const app = this.d.store.get('settings');
+    return nextScanNeeds({
+      coming: this.nextScanAt() !== null,
+      paired: this.d.store.get('pairing').extensions.length > 0,
+      connected: this.d.helperConnected(),
+      openChrome: app.scan?.openChrome !== false,
+      waitsForChrome: scheduledScanWaits(app, false),
+    });
+  }
+
+  /** The sentence for a scheduled scan that starts well after its slot ("The 7:00 AM scan ran at 9:12 AM because the computer was asleep."). */
+  private catchUpOf(previousTickAt: number | null): string | null {
+    const { store } = this.d;
+    const runtime = store.get('runtime');
+    const anchors = [runtime.lastScheduledRunAt, runtime.scheduleFrom ?? null].filter((t): t is number => t !== null);
+    const startedAt = this.d.now();
+    const slot = slotOf(store.get('settings').settings.schedule, startedAt, anchors.length ? Math.max(...anchors) : null);
+    return slot === null ? null : catchUpSentence({ slot, startedAt, agentStartedAt: this.startedAt, previousTickAt, tickMs: TICK_MS });
+  }
+
+  /** One sentence in Activity that is not a scan: what the app did on its own (opened Chrome, turned on open at login). */
+  private noteSentence(sentence: string): void {
+    const at = this.d.now();
+    this.record({
+      id: `run-${at}-self-${Math.floor(Math.random() * 1e6)}`, kind: 'lookup', startedAt: new Date(at).toISOString(), finishedAt: new Date(at).toISOString(), status: 'finished',
+      searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: sentence, trigger: 'scheduled',
+    });
+  }
+
+  /**
    * Settings were saved. Switching from manual to a schedule does not start a paid scan at the next tick: the first
    * scheduled scan is one interval from now (or the next daily slot), and nextScanAt in the state says when.
    */
@@ -451,6 +506,10 @@ export class AgentWork {
 
   /** The scheduler: a due scan starts unless the agent is paused or busy. Returns whether one started. */
   tick(): boolean {
+    const before = this.lastTickAt;
+    this.lastTickAt = this.d.now();
+    // Nov 25: Chrome for the next scan, open at login, the weekly summary. Its own steps decide whether anything is due.
+    void this.selfRun.tick();
     if (this.live.busy || this.answering > 0 || this.d.store.get('agent').paused) return false;
     const next = this.nextScanAt();
     if (next === null || Date.parse(next) > this.d.now()) {
@@ -459,10 +518,13 @@ export class AgentWork {
       return false;
     }
     // Free scan: with Chrome closed a scheduled scan waits for it (unless the owner let SerpApi find the bundles then).
-    if (scheduledScanWaits(this.d.store.get('settings'), this.d.helperConnected())) {
+    // Nov 25: unless the app opened Chrome for this scan and the wait is over: then the scan does what it can without it.
+    if (scheduledScanWaits(this.d.store.get('settings'), this.d.helperConnected()) && !this.selfRun.mayScanWithoutChrome()) {
       void this.drip().catch(() => {});
       return false;
     }
+    this.catchUp = this.catchUpOf(before);
+    this.scheduledKey = this.selfRun.scanKey();
     this.begin('scan', () => this.scan('scheduled'));
     return true;
   }
@@ -1501,7 +1563,10 @@ export class AgentWork {
     const backlog = await this.noteBacklog().catch(() => null);
     const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil(), ceiling: this.pace.ceilingWords() }) : null;
     const said = waits ? notes.filter((n) => !waits.includes(n)) : notes;
-    run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, said, again !== undefined, job, waits)}`;
+    // Nov 25: a catch-up scan says when it was due and why it ran late.
+    const late = trigger === 'scheduled' ? this.catchUp : null;
+    this.catchUp = null;
+    run.summary = `${late ? `${late} ` : ''}${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, said, again !== undefined, job, waits)}`;
     this.record(run);
     const open = report ? report.review.length + (asksAboutEbay(store.get('settings')) ? report.ebayQuestions?.length ?? 0 : 0) : 0;
     store.update('activity', (a) => ({
@@ -1601,7 +1666,7 @@ export class AgentWork {
     if (lookups) {
       // Look up all reads nothing in Chrome.
     } else if (pausedUntil !== null) notes.push(pausedSentence(pausedUntil));
-    else if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
+    else if (!connected) notes.push((trigger === 'scheduled' && this.scheduledKey ? this.selfRun.closedSentence(this.scheduledKey) : null) ?? 'Chrome is closed, so Home Depot pages wait for the next scan.');
     // BOGO found by itself, free, before the scan: the pairs it finds are bundles the scan then reads, splits and matches.
     else await this.bogoPass(ext, readers, notes);
     const ebay = lookups ? null : this.ebayStep(app, keys, notes);
@@ -1615,7 +1680,9 @@ export class AgentWork {
       app, trigger, chromeConnected: connected, ...(pausedUntil !== null ? { hdPaused: true } : {}), serpCanPay: budget.blockReason(1) === null,
       keepaCanLookUp: Boolean(keepa.keepaLookup) && keepa.keepaScale?.tokensLeft != null, settings: scanSettings, readers,
     });
-    if (discovery?.note) notes.push(discovery.note);
+    // Nov 25: after the app tried to open Chrome, its one sentence says it; the scan's own "No new bundles ... Chrome is closed" would repeat it.
+    const said = trigger === 'scheduled' && !connected && this.scheduledKey !== null && this.selfRun.closedSentence(this.scheduledKey) !== null;
+    if (discovery?.note && !(said && /Chrome is closed/.test(discovery.note))) notes.push(discovery.note);
     const job = await scan({
       bogoPairs, partPricesExtra, catalogFirst: [...buyWaitsOn(store.get('tracking'))],
       // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
@@ -2630,6 +2697,12 @@ export class AgentWork {
     if (!this.d.store.get('settings').notifications.kinds.version) return;
     this.policy.send({ kind: 'version', title: 'Split Finder', body: text, route: '/today' });
     await this.sendTelegram(text);
+  }
+
+  /** Nov 25: the weekly summary, one message on each channel the owner has on: the notification's short form (its kind switch and quiet hours apply) and Telegram's full text. */
+  async announceWeekly(w: WeeklySummary): Promise<void> {
+    this.policy.send({ kind: 'weekly', title: 'Split Finder', body: w.short, route: '/today' });
+    await this.sendTelegram(w.text);
   }
 
   /** Quiet hours ended or the morning came: the held notifications go out, and the morning digest to Telegram. */

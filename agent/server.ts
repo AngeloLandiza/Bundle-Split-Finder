@@ -6,6 +6,7 @@ import { createServer } from 'node:http';
 import { AGENT_PORT } from '../core/src/api/contract';
 import { createAgent } from './app';
 import { KeepAwake } from './keepAwake';
+import { systemChrome } from './openChrome';
 import { agentDataDir } from './paths';
 
 const port = Number(process.env.AGENT_PORT ?? AGENT_PORT);
@@ -14,8 +15,9 @@ const extraUiOrigins = (process.env.SPLIT_FINDER_UI_ORIGINS ?? '')
   .map((o) => o.trim())
   .filter(Boolean);
 
-// The real agent keeps the computer awake while a scan runs (shell.keepAwakeDuringScan); tests build theirs without it.
-const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins, onQuit: () => stop(), work: { keepAwake: new KeepAwake() } });
+// The real agent keeps the computer awake while a scan runs (shell.keepAwakeDuringScan) and may open the owner's Chrome for a
+// scheduled scan (settings.scan.openChrome); tests build theirs without either.
+const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins, onQuit: () => stop(), work: { keepAwake: new KeepAwake(), chrome: systemChrome() } });
 const server = createServer(agent.handle);
 // Long polls and event streams stay open; only idle keep-alive sockets are timed out.
 server.requestTimeout = 0;

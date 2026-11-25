@@ -43,6 +43,8 @@ import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import type { KeepaCodeCost, KeepaCodeSample } from '../core/src/keepa/barcode';
 import type { KeepUsage } from '../core/src/tracking/keepCurrent';
+import type { ChromeAttempt } from '../core/src/selfRun/chrome';
+import type { WeeklySent } from '../core/src/selfRun/weekly';
 import { emptyTracking, seedAnnounced, type TrackingState } from '../core/src/tracking/state';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
@@ -313,8 +315,24 @@ export interface AgentRuntime {
   rates: UnitRates;
   /** The last scan's job, as the Deals limit notice reads it (core/src/deals/limitCopy.ts). */
   lastJob: HelperLastJob | null;
+  /** Nov 25, running without the owner (agent/selfRun.ts): Chrome started for a scan, the one-time login default, the weekly message. */
+  selfRun?: SelfRunRuntime;
   /** Step 18 (agent/costs.ts): the cost warnings sent (by month), what the blocker held this month, and counted eBay calls and Telegram messages by local day. */
   costs?: CostRuntime;
+}
+
+/** What the app keeps between runs about running without the owner. Never a key. */
+export interface SelfRunRuntime {
+  /** The last try to start Chrome (core/src/selfRun/chrome.ts). */
+  chrome?: ChromeAttempt;
+  /** Since when Home Depot pages have waited with Chrome closed (epoch ms), while they do. */
+  pagesWaitingSince?: number | null;
+  /** When "Open at login" was looked at for a schedule, once (epoch ms), and whether the app turned it on. Never looked at again. */
+  login?: { at: number; turnedOn: boolean };
+  /** The notice about it is open until the owner closes it. */
+  loginNotice?: boolean;
+  /** The weekly message last sent (or the first look's seed). */
+  weekly?: WeeklySent;
 }
 
 /** Step 18: what the costs keep between runs. Never a key. */
@@ -434,13 +452,14 @@ export function defaultSettings(): StoreData['settings'] {
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
-      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true },
+      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true, weekly: true },
       sound: false,
       quietHours: { enabled: false, from: '22:00', to: '07:00' },
       digest: 'each-run',
       morningAt: '08:00',
       // Nov 25: acting from Telegram is the owner's choice; off until he turns it on (an existing install reads it off too).
       telegramActions: false,
+      weekly: { day: 1, at: '08:00' },
     },
     shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
     // Nov 25: the app reads the project's public release note once a day and says when a new version is ready.
@@ -524,6 +543,7 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
         ...(s.notifications ?? {}),
         kinds: { ...d.notifications.kinds, ...(s.notifications?.kinds ?? {}) },
         quietHours: { ...d.notifications.quietHours, ...(s.notifications?.quietHours ?? {}) },
+        weekly: { ...d.notifications.weekly!, ...(s.notifications?.weekly ?? {}) },
       },
       shell: { ...d.shell, ...(s.shell ?? {}) },
       updates: { ...d.updates!, ...(s.updates ?? {}) },

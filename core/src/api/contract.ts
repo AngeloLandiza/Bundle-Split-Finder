@@ -275,6 +275,8 @@ export interface AgentState {
     homeDepot?: HomeDepotPaceState;
     /** Keeping watched deals current between scans: what it costs a day and what waits; absent when nothing is watched. */
     keepCurrent?: KeepCurrentState;
+    /** Nov 25: what the next scheduled scan needs and does not have (Chrome closed, the helper not connected), in one sentence; absent when nothing is missing. */
+    nextScanNote?: string;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
   helper: {
@@ -331,6 +333,11 @@ export interface AgentState {
    * owner turned "Tell me when a new version is ready" off, or when he dismissed this version (POST /api/update/dismiss).
    */
   update?: UpdateNotice;
+  /**
+   * Nov 25: the app turned "Open at login" on itself, once, because a schedule was set (scans run only while it is running). The
+   * quiet notice offers Turn off; POST /api/self-run/login-notice closes it (`turnOff` also turns the setting off). Absent when closed.
+   */
+  loginNotice?: { sentence: string };
 }
 
 // ---------------------------------------------------------------- deals
@@ -1315,7 +1322,7 @@ export interface AppearanceSettings {
   density: 'regular' | 'compact';
 }
 
-export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version', 'costs'] as const;
+export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version', 'costs', 'weekly'] as const;
 
 /** D2: which messages reach the owner and when. Times are local "HH:MM". */
 export interface NotificationSettings {
@@ -1333,6 +1340,8 @@ export interface NotificationSettings {
    * its messages. Off (absent) by default, and on an existing install; only with a Telegram key saved does it do anything.
    */
   telegramActions?: boolean;
+  /** Nov 25: the weekly summary's day (0 is Sunday) and local time; absent: Monday 08:00. The `weekly` kind switches it off. */
+  weekly?: { day: number; at: string };
 }
 
 /** D2: the desktop shell's own switches (src-tauri applies them). */
@@ -1385,7 +1394,17 @@ export interface AppSettings {
    * budget allows; 'chrome': never a search for them; 'serpapi': SerpApi's listing pages as before. `serpWhenChromeClosed`
    * (default off): a scheduled scan with Chrome closed searches SerpApi instead of waiting for Chrome. Absent: the defaults.
    */
-  scan?: { listingSource: ListingSourceSetting; serpWhenChromeClosed: boolean };
+  scan?: {
+    listingSource: ListingSourceSetting;
+    serpWhenChromeClosed: boolean;
+    /**
+     * Nov 25: with a schedule set, the app starts the owner's own Chrome in the background a few minutes before a scheduled scan
+     * (and when Home Depot pages have waited an hour) so the helper can read them. Absent: on. `closeChromeAfter` (absent: off):
+     * after a scan, quit a Chrome the app started itself; a Chrome it did not start is never closed.
+     */
+    openChrome?: boolean;
+    closeChromeAfter?: boolean;
+  };
   /**
    * Suggested prices (Nov 23): `autoAcceptSuggestions` exists and is always false. It is not offered in the UI and no PATCH
    * changes it: the PO ruled that a price counts when he confirms it (docs/decisions.md).
@@ -1441,8 +1460,9 @@ export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings
   ebaySettings?: Partial<EbaySettings>;
   alerts?: Partial<AlertSettings>;
   appearance?: Partial<AppearanceSettings>;
-  notifications?: Partial<Omit<NotificationSettings, 'kinds' | 'quietHours'>> & {
+  notifications?: Partial<Omit<NotificationSettings, 'kinds' | 'quietHours' | 'weekly'>> & {
     kinds?: Partial<NotificationSettings['kinds']>;
+    weekly?: Partial<NonNullable<NotificationSettings['weekly']>>;
     quietHours?: Partial<NotificationSettings['quietHours']>;
   };
   shell?: Partial<ShellSettings>;

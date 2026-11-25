@@ -68,6 +68,7 @@ import { WorkerJobs } from './workerJobs';
 import { priceFromLink } from './priceFromLink';
 import { OutcomeBook, outcomesCsvOf, outcomesResponse } from './outcomes';
 import { parseSemver } from '../core/src/release/note';
+import { weeklyOf } from '../core/src/selfRun/weekly';
 import { checkForNewVersion, dismissUpdate, releaseState, updateNoticeOf, type VersionCheck } from './versionCheck';
 
 /** A paired extension counts as connected this long after it was last heard from. */
@@ -83,7 +84,7 @@ export interface AgentOptions {
   /** Every paid call's fetch (SerpApi, Keepa, eBay, models, Telegram). Tests pass a fake; default the global fetch. */
   fetchFn?: typeof fetch;
   /** Tests: the scan itself, reader timeouts, SerpApi's address. */
-  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom'>;
+  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom' | 'chrome'>;
   /**
    * POST /api/agent/quit: the desktop shell asks the agent to stop as SIGTERM does. Windows has no SIGTERM for a
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
@@ -257,8 +258,12 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
     const sc = obj(patch.scan, 'scan');
     const cur = next.scan ?? { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false };
     next.scan = {
+      ...cur,
       listingSource: 'listingSource' in sc ? oneOf(sc.listingSource, LISTING_SOURCES, 'scan.listingSource') : cur.listingSource,
       serpWhenChromeClosed: 'serpWhenChromeClosed' in sc ? flag(sc.serpWhenChromeClosed, 'scan.serpWhenChromeClosed') : cur.serpWhenChromeClosed,
+      // Nov 25: whether the app opens the owner's Chrome for a scheduled scan, and whether it closes one it opened afterwards.
+      ...('openChrome' in sc ? { openChrome: flag(sc.openChrome, 'scan.openChrome') } : {}),
+      ...('closeChromeAfter' in sc ? { closeChromeAfter: flag(sc.closeChromeAfter, 'scan.closeChromeAfter') } : {}),
     };
   }
   if ('lookups' in patch) {
@@ -350,6 +355,13 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
     }
     if ('digest' in n) out.digest = oneOf(n.digest, ['each-run', 'morning', 'off'], 'notifications.digest');
     if ('morningAt' in n) out.morningAt = clock(n.morningAt, 'notifications.morningAt');
+    // Nov 25: the weekly summary's day and time.
+    if ('weekly' in n) {
+      const w = obj(n.weekly, 'notifications.weekly');
+      const cur = weeklyOf(out);
+      if ('day' in w && !(typeof w.day === 'number' && Number.isInteger(w.day) && w.day >= 0 && w.day <= 6)) throw new HttpError('bad_request', 'notifications.weekly.day must be a whole number from 0 (Sunday) to 6.');
+      out.weekly = { day: 'day' in w ? (w.day as number) : cur.day, at: 'at' in w ? clock(w.at, 'notifications.weekly.at') : cur.at };
+    }
   }
   if ('updates' in patch) {
     const u = obj(patch.updates, 'updates');
@@ -521,7 +533,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const update = updateNoticeOf(store, appVersion);
     return {
       ...agentState(data, {
-        ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
+        ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(), nextScanNote: work.nextScanNote(),
         ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), costs: work.costs.short(),
       }),
       ...(update ? { update } : {}),
@@ -633,6 +645,13 @@ export function createAgent(opts: AgentOptions): Agent {
     const b = obj(await ctx.body());
     if (typeof b.version !== 'string' || parseSemver(b.version) === null) throw new HttpError('bad_request', 'version must be like 0.1.1.');
     dismissUpdate(store, b.version);
+    return { ok: true };
+  });
+
+  // Nov 25: the notice that Open at login was turned on for the schedule is closed, with or without turning it off again.
+  r.post('/api/self-run/login-notice', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    work.selfRun.answerLoginNotice('turnOff' in b ? flag(b.turnOff, 'turnOff') : false);
     return { ok: true };
   });
 

@@ -58,6 +58,7 @@ import { choicesOf, reviewSignature } from '../core/src/scan/answers';
 import { matchState, WAITING_PAGE, WAITING_PARTS, waitingForText } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
 import { estimateBasis, fulfillmentGap } from '../core/src/scan/report';
+import { LOGIN_NOTICE } from '../core/src/selfRun/words';
 import type { AuditBundle, StoreData, StoredKeys } from './store';
 
 const monthStartMs = (now: number): number => {
@@ -730,6 +731,8 @@ export interface LiveView {
   helperOutdated?: boolean;
   /** Step 15: the drip of Keepa lookups between scans (work.ts dripState). */
   drip?: DripState;
+  /** Nov 25: what the next scheduled scan needs and does not have (work.ts nextScanNote). */
+  nextScanNote?: string | null;
   /**
    * Searches left now: the last account check less the ledger rows written after it (core/src/serpapi/balance.ts). Absent:
    * the last check's own figure (a state built without the agent's ledger).
@@ -766,6 +769,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       ...(view ? { step: view.current.count ? `${view.current.label} · ${view.current.count}` : view.current.label, progress: { done: view.stepsDone, total: view.stepsTotal }, pipeline: view } : {}),
       busy: live.busy === 'paid' ? 'scan' : live.busy,
       nextScanAt: live.nextScanAt,
+      ...(live.nextScanNote ? { nextScanNote: live.nextScanNote } : {}),
       lastScan: lastScanOf(data, live),
       ...(data.agent.problem ? { problem: data.agent.problem } : {}),
       ...(live.drip ? { drip: live.drip } : {}),
@@ -800,5 +804,6 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
     ...(keyChecks ? { keyChecks } : {}),
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
     settingsAt: data.settings.updatedAt,
+    ...(data.runtime.selfRun?.loginNotice ? { loginNotice: { sentence: LOGIN_NOTICE } } : {}),
   };
 }
