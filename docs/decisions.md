@@ -2314,7 +2314,6 @@ account. Everything here is built to `docs/sp-api-notes-2026-11-25.md`; nothing 
   referral line, and do the top-level lines add up to `TotalFeesEstimate`?); the batch answer's shape (a bare array or a
   `payload`); whether Listings Restrictions answers a wrong seller id with 400 or 403; the path-forward link's form (an
   absolute sellercentral.amazon.com address, or not shown); and the Sales money field casing.
-=======
 ### Self-healing notices, Nov 25 2026: the app does what it can do itself, and says what is true
 A read-only audit found three places where the app told the owner to do something it could do itself, or told him something untrue.
 - **A new app version updates the helper's own folder** (`agent/helperUpdate.ts`). A reload loads the same files, and only Install
@@ -2348,4 +2347,3 @@ A read-only audit found three places where the app told the owner to do somethin
   words ("Home Depot paused", "scan page limit reached"); the step's line and the run's summary read the whole one ("Home Depot
   paused reading until 10:54 AM", "this scan's page limit of 40 was reached"). A kit step with pages left but all held for the part
   prices says that.
->>>>>>> 13cf7e8 (docs: the helper updates itself, the waiting pages are a live line, a step says why it read nothing)
