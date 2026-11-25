@@ -1,11 +1,12 @@
 // The scan's records in the agent (step 13, W4): core's ScanStore over JSON files, one per record kind, under
 // <dataDir>/scan/. Each kind is held in memory and written whole (temp file, then rename) on every put, so a crash
 // leaves the old or the new file, and a scan that was "running" is continued by the next run (runner.ts startJob).
+// A put that would write the very bytes already on disk is not written again (see `unchanged`).
 // The agent process is the only writer (the store lock in store.ts). Also the agent's response cache, one file per
 // key under <dataDir>/cache/, the same layout as scripts/node-store.ts FileCache but in the app's data folder.
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import type { Cache, CacheEntry } from '../core/src/serpapi/client';
@@ -50,6 +51,12 @@ const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
 
 export class FileScanStore implements ScanStore {
   private readonly maps = new Map<Kind, Map<string, unknown>>();
+  /**
+   * Per kind, the file as this store last wrote it (inode, size, change times), set only after the write returned, so
+   * the file then held exactly the kind's map, flushed to disk. Absent when it may not: before this store's first write
+   * of the kind, and from the start of a write until it returns.
+   */
+  private readonly written = new Map<Kind, string>();
 
   constructor(readonly dir: string) {
     mkdirSync(dir, { recursive: true, mode: 0o700 });
@@ -78,8 +85,48 @@ export class FileScanStore implements ScanStore {
   }
 
   private put<K extends Kind>(kind: K, key: string, record: Kinds[K]): void {
-    this.map(kind).set(key, structuredClone(record));
+    const map = this.map(kind);
+    const had = map.has(key);
+    const prev = map.get(key);
+    const next = structuredClone(record);
+    map.set(key, next);
+    if (had && this.unchanged(kind, prev, next)) return;
     this.flush(kind);
+  }
+
+  /**
+   * True when writing the kind now would write the bytes its file already holds: the file is still the one this store
+   * last wrote (the map's text then), and the one record that changed since serializes as it did. Setting a key that
+   * exists keeps its place in the map, so the whole file's text is the same. The map still takes the new copy, so reads
+   * are exactly what was put (a field set to undefined, which JSON leaves out, included). A file deleted, replaced or
+   * changed behind the store fails the check, and so does a record JSON cannot write (the write then fails as it did).
+   */
+  private unchanged(kind: Kind, prev: unknown, next: unknown): boolean {
+    if (!this.onDisk(kind)) return false;
+    try {
+      return JSON.stringify(prev) === JSON.stringify(next);
+    } catch {
+      return false;
+    }
+  }
+
+  private file(kind: Kind): string {
+    return join(this.dir, `${kind}.json`);
+  }
+
+  private stamp(kind: Kind): string | undefined {
+    try {
+      const s = statSync(this.file(kind), { bigint: true });
+      return `${s.ino}:${s.size}:${s.mtimeNs}:${s.ctimeNs}`;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /** The kind's file is the one this store last wrote, so it holds the map's text (as of that write). */
+  private onDisk(kind: Kind): boolean {
+    const was = this.written.get(kind);
+    return was !== undefined && was === this.stamp(kind);
   }
 
   private list<K extends Kind>(kind: K, order: (a: Kinds[K], b: Kinds[K]) => number): Kinds[K][] {
@@ -87,7 +134,18 @@ export class FileScanStore implements ScanStore {
   }
 
   private flush(kind: Kind): void {
-    writeFileAtomic(join(this.dir, `${kind}.json`), JSON.stringify([...this.maps.get(kind)!.entries()]));
+    this.written.delete(kind);
+    writeFileAtomic(this.file(kind), JSON.stringify([...this.maps.get(kind)!.entries()]));
+    const stamp = this.stamp(kind);
+    if (stamp !== undefined) this.written.set(kind, stamp);
+  }
+
+  private delete(kind: Kind, key: string): void {
+    const map = this.map(kind);
+    // Nothing to take out of a file that holds the map: the same bytes again.
+    if (!map.has(key) && this.onDisk(kind)) return;
+    map.delete(key);
+    this.flush(kind);
   }
 
   async getBundle(key: string) { return this.get('bundles', key); }
@@ -122,10 +180,7 @@ export class FileScanStore implements ScanStore {
 
   async getConfirmedPrice(key: string) { return this.get('confirmedPrices', key); }
   async putConfirmedPrice(r: ConfirmedPrice) { this.put('confirmedPrices', r.key, r); }
-  async deleteConfirmedPrice(key: string) {
-    this.map('confirmedPrices').delete(key);
-    this.flush('confirmedPrices');
-  }
+  async deleteConfirmedPrice(key: string) { this.delete('confirmedPrices', key); }
   async listConfirmedPrices() { return this.list('confirmedPrices', byKey((r) => r.key)); }
 
   async getEbayValue(key: string) { return this.get('ebayValues', key); }
@@ -141,11 +196,17 @@ export class FileScanStore implements ScanStore {
   async getScan(id: string) { return this.get('scans', id); }
   async putScan(job: ScanJob) {
     const scans = this.map('scans');
-    scans.set(job.id, structuredClone(job));
+    const had = scans.has(job.id);
+    const prev = scans.get(job.id);
+    const next = structuredClone(job);
+    scans.set(job.id, next);
+    let dropped = false;
     if (scans.size > KEEP_SCANS) {
       const old = [...scans.values()].sort((a, b) => b.startedAt - a.startedAt).slice(KEEP_SCANS);
       for (const j of old) scans.delete(j.id);
+      dropped = old.length > 0;
     }
+    if (had && !dropped && this.unchanged('scans', prev, next)) return;
     this.flush('scans');
   }
   async listScans() { return this.list('scans', (a, b) => b.startedAt - a.startedAt); }
@@ -153,10 +214,7 @@ export class FileScanStore implements ScanStore {
   // Answer once (Nov 23): what the owner settled about a model, by partKey (core/src/facts/fact.ts).
   async getPartFact(key: string) { return this.get('partFacts', key); }
   async putPartFact(r: PartFact) { this.put('partFacts', r.key, r); }
-  async deletePartFact(key: string) {
-    this.map('partFacts').delete(key);
-    this.flush('partFacts');
-  }
+  async deletePartFact(key: string) { this.delete('partFacts', key); }
   async listPartFacts() { return this.list('partFacts', byKey((r) => r.key)); }
 
   // The re-check of a part whose listing was withdrawn (core/src/scan/recheck.ts), by partKey.
@@ -166,7 +224,10 @@ export class FileScanStore implements ScanStore {
 
   async clearAll() {
     for (const kind of KINDS) {
-      this.maps.get(kind)!.clear();
+      const map = this.maps.get(kind)!;
+      // Already empty on disk ("[]"): the same bytes again.
+      if (map.size === 0 && this.onDisk(kind)) continue;
+      map.clear();
       this.flush(kind);
     }
   }
