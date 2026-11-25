@@ -18,6 +18,7 @@ import { PART_STATE_WORDS, partsSummary } from '../lib/matchWords';
 import { plainReason } from '../lib/questionWords';
 import { partMenu, type PartMenuId } from '../lib/menus';
 import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
+import { MarketSection } from './DealMarket';
 import './DealDetail.css';
 
 /**
@@ -286,6 +287,8 @@ function Detail({ d }: { d: DealDetail }) {
             </ul>
           </Fold>
         ) : null}
+
+        {d.market ? <MarketSection market={d.market} /> : null}
 
         {d.bogo ? <BogoSection d={d} bogo={d.bogo} /> : null}
         {d.bogoGroup ? <BogoChoicesSection d={d} group={d.bogoGroup} /> : null}

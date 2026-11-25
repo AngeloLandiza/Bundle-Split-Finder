@@ -484,6 +484,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     bogoGroup: d.bogoGroup ?? null,
     fbaEstimate: d.fbaEstimate ?? null,
     needsLook: d.needsLook ?? [],
+    market: d.market ?? null,
     ...(splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence) ? { splitEvidence: splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence)! } : {}),
     ...(setContentsOf((d as { setContents?: unknown }).setContents) ? { setContents: setContentsOf((d as { setContents?: unknown }).setContents)! } : {}),
   };

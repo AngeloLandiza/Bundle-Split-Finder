@@ -112,5 +112,8 @@ export function verdictOf(s: DealSignals): Verdict {
   } else {
     sentence = 'No way to sell has an estimate yet, so there is nothing to judge.';
   }
-  return { buyNow: buy, headline: buy ? 'Worth buying now' : 'Not worth buying now', sentence, way, reasons };
+  // The market (Nov 25): a deal that clears the numbers today but not at its usual prices says so, not "not worth buying".
+  const usual = o?.market?.usual ?? null;
+  const todayOnly = !buy && o?.meetsThresholds === true && usual !== null && !usual.meets;
+  return { buyNow: buy, headline: buy ? 'Worth buying now' : todayOnly ? "Worth buying at today's prices only" : 'Not worth buying now', sentence, way, reasons };
 }

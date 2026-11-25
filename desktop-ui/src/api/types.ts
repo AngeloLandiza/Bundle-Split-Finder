@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
+  NeedsLook, ActivityError, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -38,8 +38,11 @@ export type {
   FbaEstimate,
   FreeItem,
   FreeItemBody,
+  OptionMarket,
   OptionSignals,
+  PartMarket,
   Signal,
+  UsualEstimate,
   Velocity,
   WatchState,
   KeyCheck,
@@ -427,6 +430,8 @@ export interface DealDetail {
   fbaEstimate: FbaEstimate | null;
   /** Checking the app's own work: every finding on this deal, holds first, each with its links; empty when none. */
   needsLook?: NeedsLook[];
+  /** The market around each counted part's listing, and the estimate at the usual prices (core/src/tracking/market.ts); null when none is stored. */
+  market?: OptionMarket | null;
 }
 
 // ------------------------------------------------------------------ GET /api/review

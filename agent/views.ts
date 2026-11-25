@@ -488,6 +488,8 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
   const group = t ? bogoGroupOf(t, id) : null;
   const looks = (data.deals.sanity ?? []).filter((f) => f.bundleId === id).map(needsLookOf);
   if (group) sources.push({ label: `Home Depot: the BOGO starter ${group.starterModel}`, url: group.starterLink, source: 'homedepot' });
+  // The market (Nov 25): the primary way to sell's, as last judged (stored signals, whether watched or not).
+  const market = t?.signals[id]?.options.find((o) => o.optionId === bundle.options[0]?.id)?.market;
   return {
     row: keptNote(
       data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity),
@@ -516,6 +518,7 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
     ...(bundle.splitEvidence && bundle.splitEvidence.length > 0 ? { splitEvidence: bundle.splitEvidence } : {}),
     ...(bundle.otherBrands && bundle.otherBrands.length > 0 ? { setContents: bundle.otherBrands } : {}),
     ...(looks.length > 0 ? { needsLook: looks } : {}),
+    ...(market ? { market } : {}),
   };
 }
 

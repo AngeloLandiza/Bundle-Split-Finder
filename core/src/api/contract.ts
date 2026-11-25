@@ -26,6 +26,7 @@ import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartFactView, Pa
 import type { BogoView, FreeItem } from '../tracking/bogo';
 import type { BogoChoice, BogoGroup, BogoTag, ListedItem, PromoPageOutcome } from '../tracking/bogoPairs';
 import type { FbaEstimate } from '../tracking/fba';
+import type { OptionMarket, PartMarket, UsualEstimate } from '../tracking/market';
 import type { OptionSignals, Signal, SignalKind, SignalNumbers, Velocity } from '../tracking/signals';
 
 export const AGENT_PORT = 8790;
@@ -616,6 +617,13 @@ export interface DealDetail {
   setContents?: SetContent[];
   /** Checking the app's own work: every finding on this deal, holds first (DealRow.needsLook is the first hold). */
   needsLook?: NeedsLook[];
+  /**
+   * The market around each counted part's listing for the primary way to sell (core/src/tracking/market.ts, from the stored
+   * Keepa trends at the last judgement): the averages and when Keepa read them, Amazon's own offer, sellers, stock, hazards,
+   * and the estimate at the usual prices when a part is unusually priced (an estimate from the fee settings). Absent when
+   * no counted part has market figures stored.
+   */
+  market?: OptionMarket;
 }
 
 export type { SetContent, SplitEvidence };
@@ -714,7 +722,7 @@ export interface BogoResponse {
   bogo: BogoView | null;
 }
 
-export type { BogoChoice, BogoGroup, BogoTag, BogoView, FbaEstimate, FreeItem, OptionSignals, Signal, SignalKind, SignalNumbers, Velocity };
+export type { BogoChoice, BogoGroup, BogoTag, BogoView, FbaEstimate, FreeItem, OptionMarket, OptionSignals, PartMarket, Signal, SignalKind, SignalNumbers, UsualEstimate, Velocity };
 
 /** W4: GET /api/deals/:id/lookup (the quote shown before the click) and the answer to POST /api/deals/:id/lookup and /verify. */
 export interface PaidResponse {

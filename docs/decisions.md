@@ -1972,3 +1972,66 @@ The owner wants to act from his phone without opening the app (approved Nov 25).
   finds the bot could write first. The choice must be a chat that wrote to this token (a hash of the token tags the list);
   then the key is checked and the test message sent.
 
+## Nov 25: the market around a listing (usual prices, Amazon selling, crowding, stock, hazards)
+
+On Nov 23 PSK1212SB-PCL515B was Buy now at +$43.19 with PCL515B counted at $79.99; two days later Amazon's price was $53.00
+and the deal $16.73. Keepa's own record of the listing (`fixtures/keepa/stats-sample-2026-11-25.json`, the stats=180
+records of all 83 listings the owner's app counts) already said its 90-day average New price was $61.12. Every rule below
+was measured on those 83 records before it was adopted; the counted prices are the owner's stored ones (after-keepcurrent
+for Nov 25, after-scan6 for Nov 23). On the Nov 23 deals the Nov 25 averages stand for what Keepa said two days earlier.
+
+- **What a pull keeps** (`keepa/parse.ts marketOf`, `trends.ts TrendMarket`): from the stats every pull already asks for (no
+  extra call, no token) the 30/90/180-day average New price (the lowest New offer's, else Amazon's own, as suggested prices
+  read them), Amazon's own current offer (`stats.current[0]`), `buyBoxIsAmazon`, the New offer count now and over 90 days
+  (CsvType 11), the share of the last 90 days with no New offer (`outOfStockPercentage90[1]`) and `hazardousMaterials` when
+  it names a UN number. **Empty in the recordings and not used:** `offerCountFBA` / `offerCountFBM` / `buyBoxPrice` /
+  `buyBoxShipping` / `retrievedOfferCount` / `tradeInPrice` (all -2: offers were not requested), every `buyBoxIs*` but
+  `buyBoxIsAmazon`, `buyBoxCondition`, `lastBuyBoxUpdate`, `sellerIdsLowestFBA/FBM` (null in 83 of 83). `buyBoxIsAmazon`
+  is never false: true in 20, null in 63, so null is "not stated". Stored trends from before get the figures once at start
+  from the Keepa answers already in the cache (`agent/marketBackfill.ts`, `keepa-market-backfill` in runtime.migrations),
+  and the start's refresh judges the stored deals again: no scan, nothing spent.
+- **Rule 1, a price unusual for the listing** (`tracking/market.ts UNUSUAL_ABOVE_AVG90` 20%). Counted price against its
+  90-day average, the 76 listings with both: minimum -51%, 10th percentile -17%, quartiles -10% / -4% (median) / +3%,
+  90th +9%, 95th +26%, maximum +100%. Above +13% (DCS380B) the next is +22% (DCG407B) on Nov 25; on the Nov 23 prices the
+  gap is +13% to +25%. The six at or above 20% on Nov 25: DCG407B 22%, DWHT16862 25%, DCS334B 26%, DCS382B 40%, DCF630B
+  56%, PCG002 100% (PCL515B was 31% on Nov 23). All six count Amazon's own offer while the lowest New offer averages far
+  below it (PCG002: Amazon $34.97, New $16.99 now, $17.47 over 90 days). The 30- and 180-day averages agree
+  on all but DWHT16862 (180 days: 14%), so the 90-day one decides and the other two are shown. When a part is unusual the
+  way to sell is estimated a second time with that part at its 90-day average and the same fees (`optionMarket`: today's
+  estimate plus each unit's change in net, `amazonNet` with the part's own referral and FBA fee; the setting's minimum
+  referral at its $0.30 default, which binds only below $2), and it is Buy now only when it clears the owner's numbers at
+  both. A part with no 90-day average says "No price history yet" and today's rule holds (none of the 76 priced listings
+  lacks one; the 7 without are all unpriced).
+- **Rule 2, Amazon sells it** (`stats.current[0]` set, or `buyBoxIsAmazon` true): 32 of 83. A note only ("Amazon sells this
+  itself at $34.97: hard to win sales against"): the records hold no sales outcome to say it costs him the sale, so it
+  informs, as the brief's default.
+- **Rule 3, crowding and stock** (notes): New offers now against their 90-day average, 76 with both: median 1.00x, 75th
+  1.26x, 90th 1.66x, maximum 3.2x. Said when at least 2x and at least 10 more sellers (`CROWD_RATIO`, `CROWD_MIN_ADDED`):
+  of the 12 at 2x, five are 1 to 2 (twice), 1 to 3, 4 to 11 and 6 to 14; the seven left grew by 24 to 50 (PCL515B 33 to 74,
+  PCL633B 14 to 43). Out of stock (no New offer) over 90 days: 70 of the 76 priced listings at 0%, three at 1-2%, then
+  DCS380B 17% and A98401 / RHMTS12601 54%; said at 10% or more (`OUT_OF_STOCK_NOTABLE`).
+- **Rule 4, dangerous goods** (notes, never a hold): 17 records carry `hazardousMaterials`; 16 name a UN number: UN3480
+  (lithium-ion batteries: DCB205, DCB606, PBP002-PBP006, PBP2003, FVB03), UN3481 / UN3481b (packed with equipment: DCK240C2,
+  DW089LG, DCK225D2, PCL1201K2, DCK540D1), UN9998 (dry batteries: DW0100, ESF5002). FVB02's only entry is a class "0", no
+  UN number: no note. A lithium entry gets "Lithium battery (UN3480): Amazon treats it as dangerous goods; check it is
+  approved in your FBA account before buying." (packed with equipment says so); another gets the record's own words. No
+  claim about fees or his approval.
+- **Where it shows**: `OptionSignals.market` (per part: the counted price, the three averages, when Keepa read them, the
+  notes; the usual-price estimate), `DealDetail.market` (the primary way to sell's), the inspector's **Market** fold under
+  the parts, and the verdict: "Worth buying now at today's prices only: at the 90-day average of $17.47 for PCG002 it is
+  +$8.48 (9% ROI), below your $20 and 20%. Not marked Buy now." (the row's line; the inspector's headline "Worth buying at
+  today's prices only"). A Buy now deal with an unusual part adds "At the 90-day average of $17.47 for PCG002 it is still
+  +$20.80 (21% ROI)". Leaving the state names the condition ("is no longer worth buying: at the 90-day average …"). The
+  stored signal is judged again when the market's flags change (`state.ts verdictKey`, `marketKey`).
+- **Replay** (`core/test/market.test.ts`): after scan 6, Buy now 3 → 1 (PCL031B and PCL515B leave: PCL515B at +$12.28,
+  12% ROI, with PCG002 at $17.47 and PCL515B at $61.12; PCL031B at the usual price of PCG002; PCL633B stays at +$23.92,
+  24%). After the keep-current re-check, 2 → 1 (PCL031B at +$8.48; PCL633B stays at +$20.80, 21%). So the rule would have
+  kept PSK1212SB-PCL515B off Buy now on Nov 23, mostly through PCG002 (the charger counted at Amazon's own $34.97, double its
+  New average); PCL515B alone at $61.12 would have left +$27.15, still above $20.
+- **The sanity audit's "too good" check is unchanged**: the usual-price estimate is never above today's, so it could only
+  clear a hold; the one recorded `too_good` hold (PCL702B on a two-vacuum listing, ROI 107%) is a wrong listing that must
+  stay held. Not adopted.
+- *Not done:* the counted price itself stays Amazon's own offer when Amazon sells (`parse.ts amazonCentsFromStats`); the
+  market makes the gap to the New average visible and judges both, it does not change which price counts. *For v2:* with
+  sales outcomes recorded (Outcomes), measure whether "Amazon sells it" or crowding predicts a slow sale before letting
+  either hold a buy.
