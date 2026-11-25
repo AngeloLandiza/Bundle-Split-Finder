@@ -22,7 +22,7 @@ import type { Cache, SearchResult } from '../core/src/serpapi/client';
 import { parseAmazonProduct } from '../core/src/serpapi/parsers';
 import { pairsBehindBest } from '../core/src/tracking/bogoPairs';
 import type { TrendLookup } from '../core/src/tracking/signals';
-import { freshSignals, retrackReport, type TrackingState } from '../core/src/tracking/state';
+import { freshSignals, notifiedKey, retrackReport, type SignalLine, type TrackingState } from '../core/src/tracking/state';
 import { buildDigest } from './alerts';
 import type { NotifyPolicy } from './notifyPolicy';
 import type { Store } from './store';
@@ -74,6 +74,11 @@ export interface SignalsDeps {
   keepa: () => boolean;
   /** Signals round 3: the owner's flat fulfillment fee, for the words of an estimate before fulfillment. */
   flatFee?: () => number;
+  /**
+   * Keeping deals current: the Buy now deals whose prices are older than the stated limit (agent/keepCurrent.ts
+   * staleBuyKeys), asked after the signals are stored. Their buy line is not sent (nor marked sent): a stale price is not news.
+   */
+  stale?: () => ReadonlySet<string>;
 }
 
 export interface SignalsOutcome {
@@ -88,7 +93,11 @@ export interface SignalsOutcome {
  * asked for them) sent once per bundle, signal and day through the policy. `extra`: a line the caller wants in the same
  * message (the drip's "Keepa lookups between scans gave 2 new estimates"), sent even with no signal.
  */
-export async function evaluateSignals(d: SignalsDeps, report: Pick<ScanReport, 'bundles' | 'review'>, extra?: { text: string; count: number }): Promise<SignalsOutcome> {
+export async function evaluateSignals(
+  d: SignalsDeps, report: Pick<ScanReport, 'bundles' | 'review'>, extra?: { text: string; count: number },
+  /** Keeping deals current: lines the caller makes from the signals just stored (a verdict a refreshed price flipped), in the same message. */
+  changes?: (tracking: TrackingState) => { text: string; count: number } | null,
+): Promise<SignalsOutcome> {
   const { store } = d;
   const app = store.get('settings');
   const now = d.now();
@@ -101,7 +110,9 @@ export async function evaluateSignals(d: SignalsDeps, report: Pick<ScanReport, '
   });
   const tracking = store.get('tracking');
   const kinds = app.alerts.marginDownDigest ? (['buyNow', 'marginDown'] as const) : (['buyNow'] as const);
-  const fresh = app.alerts.enabled && evaluated.length > 0 ? freshSignals(tracking, kinds, now, new Set(evaluated)) : { lines: [], notified: tracking.notified };
+  const found = app.alerts.enabled && evaluated.length > 0 ? freshSignals(tracking, kinds, now, new Set(evaluated)) : { lines: [], notified: tracking.notified };
+  const fresh = withoutStale(found, tracking.notified, d.stale?.() ?? new Set(), now);
+  const changed = changes?.(tracking as TrackingState) ?? null;
   const behind = pairsBehindBest(Object.values(tracking.derived.groups ?? {}));
   const digest = buildDigest({
     report: { bundles: [], review: [] }, alerts: app.alerts, notifiedDeals: store.get('runtime').notifiedDeals, notifiedQuestions: [], autopilotApplied: 0,
@@ -112,14 +123,25 @@ export async function evaluateSignals(d: SignalsDeps, report: Pick<ScanReport, '
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals }));
     store.update('tracking', (t) => ({ ...t, notified: fresh.notified }));
   }
-  const lines = [extra?.text ?? null, digest.text].filter((x): x is string => x !== null && x !== '');
+  const lines = [extra?.text ?? null, changed?.text ?? null, digest.text].filter((x): x is string => x !== null && x !== '');
   if (lines.length === 0) return { evaluated, text: null };
   const text = lines.join('\n');
+  const more = (extra?.count ?? 0) + (changed?.count ?? 0);
   const event: Omit<NotifyEvent, 'id'> = digest.event
-    ? { ...digest.event, body: text, count: (digest.event.count ?? 0) + (extra?.count ?? 0) }
-    : { kind: 'deal', title: 'Split Finder', body: text, count: extra?.count ?? 0, route: '/' };
+    ? { ...digest.event, body: text, count: (digest.event.count ?? 0) + more }
+    : { kind: 'deal', title: 'Split Finder', body: text, count: more, route: '/' };
   await d.telegram(d.policy.digest(event, text));
   return { evaluated, text };
+}
+
+/**
+ * Keeping deals current: the fresh signal lines less the buy lines of deals whose prices are stale, and the notified list
+ * with only the lines kept (a stale deal's buy is not marked sent, so it goes once its prices are checked again).
+ */
+export function withoutStale(fresh: { lines: SignalLine[]; notified: string[] }, before: readonly string[], stale: ReadonlySet<string>, now: number): { lines: SignalLine[]; notified: string[] } {
+  if (stale.size === 0) return fresh;
+  const lines = fresh.lines.filter((l) => !(l.signal.kind === 'buyNow' && stale.has(l.bundleKey)));
+  return { lines, notified: [...before, ...lines.map((l) => notifiedKey(l.bundleKey, l.signal.kind, now))].slice(-2000) };
 }
 
 /**

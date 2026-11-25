@@ -3,6 +3,8 @@
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
 import { backlogSentence, dripPagesPerHour, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { dayOf } from '../core/src/tracking/state';
+import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
+import { keepCurrentView } from './keepCurrent';
 import type { HomeDepotPaceState } from '../core/src/api/contract';
 import type {
   ActivityResponse,
@@ -289,6 +291,20 @@ export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): Ho
   };
 }
 
+/**
+ * Keeping deals current: a watched row says when its Home Depot price and its Amazon prices were last checked, and a Buy
+ * now row whose prices are older than the stated limit since when (core/src/tracking/keepCurrent.ts). Never replaced by
+ * the verdict: a separate field the row and the inspector show beside it.
+ */
+export function keptNote(r: DealRow, data: Pick<StoreData, 'deals'> & Partial<Pick<StoreData, 'tracking'>>, now: number): DealRow {
+  const b = data.tracking ? data.deals.bundles.find((x) => x.key === r.id) : undefined;
+  const d = b && data.tracking ? keptDealOf(b, data.tracking) : null;
+  if (!d) return r;
+  const c = pricesChecked(d);
+  const stale = staleSince(d, now);
+  return { ...r, pricesChecked: { homeDepotAt: iso(c.homeDepotAt), amazonAt: c.amazonAt === null ? null : iso(c.amazonAt), ...(stale !== null ? { staleSince: iso(stale) } : {}) } };
+}
+
 /** Home Depot's pace: a row waiting for its Home Depot page says how many pages wait in all and when they are read. */
 export function pageWaitNote(r: DealRow, hd: HomeDepotPaceState | null): DealRow {
   return r.matchKind === WAITING_PAGE && hd?.sentence ? { ...r, pageWait: hd.sentence } : r;
@@ -300,7 +316,7 @@ export function dealsResponse(
   now: number,
 ): DealsResponse {
   const hd = homeDepotView(data, now);
-  const rows = allRows(data).filter((r) => !query.section || r.section === query.section).map((r) => pageWaitNote(confirmingNote(r, data, now), hd));
+  const rows = allRows(data).filter((r) => !query.section || r.section === query.section).map((r) => keptNote(pageWaitNote(confirmingNote(r, data, now), hd), data, now));
   const ordered = DEAL_SECTION_ORDER.flatMap((s) =>
     sortDealRows(
       rows.filter((r) => r.section === s).map((r) => ({
@@ -471,7 +487,10 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
   const looks = (data.deals.sanity ?? []).filter((f) => f.bundleId === id).map(needsLookOf);
   if (group) sources.push({ label: `Home Depot: the BOGO starter ${group.starterModel}`, url: group.starterLink, source: 'homedepot' });
   return {
-    row: data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity),
+    row: keptNote(
+      data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity),
+      data, now ?? Date.now(),
+    ),
     bundle,
     sources,
     estimateBasis: ESTIMATE_BASIS,
@@ -740,6 +759,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       ...(data.agent.problem ? { problem: data.agent.problem } : {}),
       ...(live.drip ? { drip: live.drip } : {}),
       ...(homeDepotView(data, live.now) ? { homeDepot: homeDepotView(data, live.now)! } : {}),
+      ...(keepCurrentView(data, live.now) ? { keepCurrent: keepCurrentView(data, live.now)! } : {}),
     },
     helper: {
       paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting,

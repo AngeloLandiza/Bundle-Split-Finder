@@ -192,6 +192,30 @@ export interface HomeDepotPaceState {
   sentence: string | null;
 }
 
+/**
+ * Keeping deals current (core/src/tracking/keepCurrent.ts): a Buy now deal's and every watched deal's Home Depot price
+ * re-read (free, through Home Depot's pace) and its Amazon prices pulled from Keepa (1 token each) on a fixed cadence.
+ */
+export interface KeepCurrentState {
+  buyNow: number;
+  watched: number;
+  /** What it costs a day at these cadences, and what is set aside for it (tokenShare null until Keepa's refill is known). */
+  pagesPerDay: number;
+  tokensPerDay: number;
+  pageShare: number;
+  tokenShare: number | null;
+  /** Spent today. */
+  pagesToday: number;
+  tokensToday: number;
+  /** Prices due now that today's share cannot cover: the oldest-checked go first. */
+  pagesWaiting: number;
+  pullsWaiting: number;
+  /** Whether Amazon prices are refreshed (a Keepa key, Keepa on, the drip on). */
+  keepa: boolean;
+  /** The words, from these figures. */
+  sentence: string;
+}
+
 /** Step 15: the drip, which looks up waiting parts with Keepa between scans as its tokens refill. */
 export interface DripState {
   /** A lookup is being made now. */
@@ -243,6 +267,8 @@ export interface AgentState {
     drip?: DripState;
     /** Home Depot's pace: what waits for a Home Depot read and when reading goes on; absent before the agent has counted. */
     homeDepot?: HomeDepotPaceState;
+    /** Keeping watched deals current between scans: what it costs a day and what waits; absent when nothing is watched. */
+    keepCurrent?: KeepCurrentState;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
   helper: {
@@ -391,6 +417,12 @@ export interface DealRow {
    * the row and the inspector say "Needs a look: <sentence>". Absent when nothing holds it.
    */
   needsLook?: NeedsLook;
+  /**
+   * Keeping deals current (Nov 25), on a watched row: when Home Depot's price and the oldest of its Amazon prices were last
+   * checked (ISO; amazonAt null when none was), and on a Buy now row whose prices are older than the stated limit
+   * (PRICES_STALE_MS), since when: the row says "Prices not checked since …" and it is not announced. Never hidden by a verdict.
+   */
+  pricesChecked?: { homeDepotAt: string; amazonAt: string | null; staleSince?: string };
 }
 
 /** One sanity finding as the app shows it, with where to check it by eye (Home Depot first, then Amazon). */

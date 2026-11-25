@@ -130,7 +130,8 @@ describe('the verdict follows a refreshed price', () => {
     });
   });
 
-  it('a verdict that did not flip says nothing', () => {
+  it('a verdict that did not flip says nothing, nor one no price explains (the signals say why)', () => {
     expect(verdictChanges(before, [snapshotOf({ ...row, price: 98 }, true)])).toEqual([]);
+    expect(verdictChanges(before, [snapshotOf(row, false)])).toEqual([]);
   });
 });

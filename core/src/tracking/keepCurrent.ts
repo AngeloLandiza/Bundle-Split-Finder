@@ -300,18 +300,19 @@ function profitWords(a: DealSnapshot, b: DealSnapshot): string {
 }
 
 /**
- * One plain sentence for each deal whose Buy now verdict flipped between `before` and `after`, with what moved before and
- * after and its source link: "PSK1212SB-PCL515B is no longer worth buying: Home Depot's price went from $99.00 to $129.00
- * (https://…). Est. profit $13.19, was $43.19 (an estimate from your fee settings, not your real fees)." `why`: the new
- * verdict, said when no price moved (a fee or a sales figure turned it).
+ * One plain sentence for each deal whose Buy now verdict flipped between `before` and `after` with a price that moved, with
+ * the before and after and its source link: "PSK1212SB-PCL515B is no longer worth buying: Home Depot's price went from
+ * $99.00 to $129.00 (https://…). Est. profit $13.19, was $43.19 (an estimate from your fee settings, not your real fees)."
+ * A flip no price explains (a listing confirmed, a sales figure or a fee that came) is the signals' own to say.
  */
-export function verdictChanges(before: ReadonlyMap<string, DealSnapshot>, after: readonly DealSnapshot[], why: (key: string) => string | undefined = () => undefined): { key: string; sentence: string; better: boolean }[] {
+export function verdictChanges(before: ReadonlyMap<string, DealSnapshot>, after: readonly DealSnapshot[]): { key: string; sentence: string; better: boolean }[] {
   const out: { key: string; sentence: string; better: boolean }[] = [];
   for (const b of after) {
     const a = before.get(b.key);
     if (!a || a.buyNow === b.buyNow) continue;
     const moves = priceMoves(a, b);
-    const cause = moves.length > 0 ? moves.join('; ') : (why(b.key)?.replace(/\.$/, '') ?? 'its estimate changed');
+    if (moves.length === 0) continue;
+    const cause = moves.join('; ');
     const head = b.buyNow ? `${b.model} is worth buying now` : `${b.model} is no longer worth buying`;
     out.push({ key: b.key, sentence: `${head}: ${cause}. ${profitWords(a, b)}`, better: b.buyNow });
   }

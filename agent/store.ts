@@ -40,6 +40,7 @@ import type { BogoView } from '../core/src/tracking/bogo';
 import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import type { KeepaCodeCost, KeepaCodeSample } from '../core/src/keepa/barcode';
+import type { KeepUsage } from '../core/src/tracking/keepCurrent';
 import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
@@ -255,6 +256,8 @@ export interface AgentRuntime {
   bogoReadAt?: number;
   /** Home Depot's pace: the pages the stored bundles wait for (core/src/scan/hdOrder.ts backlogOf), as last counted (epoch ms). */
   hdBacklog?: { pages: number; sets: number; bundles: number; at: number };
+  /** Keeping deals current (core/src/tracking/keepCurrent.ts): today's pages and tokens, and each price's last try. */
+  keepCurrent?: KeepUsage;
   /** The listing ladder, rung 2 (agent/autoConfirm.ts): today's searches and every listing it read. */
   autoConfirm?: { day: string; spent: number; tried: string[]; exhaustedDay?: string; queue?: string[]; nextAt?: number | null; unconfirmable?: Record<string, { key: string; model: string; reason: string }>; searchedAt?: Record<string, number> };
   /** Deal keys already named in a message: a deal alerts once. */

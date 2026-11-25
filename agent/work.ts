@@ -62,7 +62,11 @@ import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
-import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps } from './signalsPass';
+import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, withoutStale } from './signalsPass';
+import { dealSnapshots, keepaKeeps, keptNow, pullDue, readOneDue, staleBuyKeys, tokenShareOf, used } from './keepCurrent';
+import { amazonDue, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
+import type { TrackingState } from '../core/src/tracking/state';
+import { productTokenEstimate } from '../core/src/keepa/estimates';
 import { averagePullsWanted, pullAverages } from './suggestPrices';
 import { dripPull, selfCorrect } from './recheck';
 import { forgetFact, markNotSold, rememberAnswer, type Remembered } from '../core/src/facts/apply';
@@ -215,6 +219,8 @@ const reserveTrigger = (explicit: boolean): ScanTrigger => (explicit ? 'manual' 
 /** What one drip round did, for its Activity run (dripRecord). */
 interface DripDone {
   looked: number; matched: number; none: number; review: number; tokens: number; verified: number; removed: number; sales: number;
+  /** Keeping deals current: Amazon prices of watched deals pulled again. */
+  kept?: number;
   /** Nov 25: its Keepa lookups by what found their candidates (barcode or search), and the tokens of each. */
   ways?: LookupWays;
 }
@@ -293,6 +299,7 @@ export class AgentWork {
         return Boolean(this.d.store.get('keys').keepa) && app.settings.amazonRefreshViaKeepa && app.lookups?.drip !== false;
       },
       flatFee: () => this.d.store.get('settings').settings.fees.fulfillmentFee,
+      stale: () => staleBuyKeys({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') }, this.d.now()),
     };
   }
 
@@ -305,13 +312,40 @@ export class AgentWork {
    * Signals round 2: a bundle's estimate or completeness may have changed (the report was just rebuilt between scans), so
    * its signals are judged again (agent/signalsPass.ts). A scan judges its own at its end (trackScan).
    */
-  private async afterChange(report: ScanReport, extra?: { text: string; count: number }): Promise<void> {
+  private async afterChange(report: ScanReport, extra?: { text: string; count: number }, before?: ReadonlyMap<string, DealSnapshot>): Promise<void> {
     if (this.live.busy === 'scan') return;
     try {
-      await evaluateSignals(this.signalsDeps(), report, extra);
+      await evaluateSignals(this.signalsDeps(), report, extra, before ? (t) => this.verdictFlips(before, report, t) : undefined);
     } catch (err) {
       this.addError(`Buy signals could not be judged: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
     }
+  }
+
+  /**
+   * Keeping deals current: each watched deal whose Buy now verdict flipped since `before` (a refreshed price, judged by the
+   * signals just stored) gets one sentence in Activity with the before and after and its source link; the sentences go in
+   * the same message as the digest when the owner has alerts on.
+   */
+  private verdictFlips(before: ReadonlyMap<string, DealSnapshot>, report: ScanReport, t: TrackingState): { text: string; count: number } | null {
+    const after = report.bundles.filter((b) => before.has(b.key)).map((b) => snapshotOf(b, t.watch[b.key]?.watched === true && (t.signals[b.key]?.buyNow ?? null) !== null));
+    const flips = verdictChanges(before, after);
+    if (flips.length === 0) return null;
+    const now = this.d.now();
+    flips.forEach((f, i) => this.record({
+      id: `run-${now}-keep-${i}`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: new Date(now).toISOString(), status: 'finished',
+      searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: f.sentence, trigger: 'scheduled',
+    }));
+    return this.d.store.get('settings').alerts.enabled ? { text: flips.map((f) => f.sentence).join('\n'), count: flips.length } : null;
+  }
+
+  /** Keeping deals current: today's usage, from the runtime. */
+  private keepUsage() {
+    return keepUsageOf(this.d.store.get('runtime').keepCurrent, this.d.now());
+  }
+
+  private noteKeep(add: { pages?: number; tokens?: number; tried?: string }): void {
+    const now = this.d.now();
+    this.d.store.update('runtime', (r) => ({ ...r, keepCurrent: used(keepUsageOf(r.keepCurrent, now), add, now) }));
   }
 
   /**
@@ -535,7 +569,7 @@ export class AgentWork {
   /** Signals round 3: listings waiting for their Keepa fee pull, as the last round counted them. */
   private dripFeesWaiting = 0;
   private dripNextAt: number | null = null;
-  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number; sales: number; ways?: LookupWays } | null = null;
+  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number; sales: number; ways?: LookupWays; kept: number } | null = null;
 
   /** Whether the drip may run now: its setting on, a Keepa key, Keepa on, not paused, and nothing else running. */
   private dripAllowed(): boolean {
@@ -616,7 +650,11 @@ export class AgentWork {
     const codes = keys.keepa ? await barcodeLookupsWanted(this.scanStore) : [];
     // The app replaces a wrong listing itself: withdrawn listings' candidates still to read (agent/recheck.ts).
     const rechecks = keys.keepa ? await rechecksWaiting(this.scanStore) : 0;
-    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0 && codes.length === 0 && rechecks === 0) || !keys.keepa) {
+    // Keeping deals current: the Amazon prices of Buy now and watched deals due for a pull (1 token each, never a search).
+    const keepOf = () => ({ deals: store.get('deals'), tracking: store.get('tracking') });
+    const keepBefore = dealSnapshots(keepOf());
+    const keepDue = keepaKeeps({ keys: store.get('keys'), settings: store.get('settings') }) ? amazonDue(keptNow(keepOf()), now, this.keepUsage().tried).length : 0;
+    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0 && codes.length === 0 && rechecks === 0 && keepDue === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
     }
@@ -630,10 +668,29 @@ export class AgentWork {
     }
     const before = this.estimatedKeys();
     const catalog = (await knownModels(this.scanStore)).catalog;
-    const done: DripDone = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0 };
+    const done: DripDone = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0, kept: 0 };
     let rechecked = false;
     // Signals round 2: every product pull keeps its Keepa trend (sales, FBA fee), as a scan's refresh does.
     const product = pullKeepingTrends(this.cache, (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }));
+    // Keeping deals current: the due Amazon prices, Buy now first (before the lookups), the rest after them; within the
+    // day's share of the refill (keepCurrent.ts KEEPA_KEEP_CURRENT_SHARE) and above the reserve (the budget).
+    const pullCost = productTokenEstimate(ext.trackingDepth, 1);
+    const keepPulls = async (tier: 'buyNow' | 'all'): Promise<void> => {
+      if (keepDue === 0 || !this.dripAllowed() || this.dripCtl.signal.aborted) return;
+      const kept = keptNow(keepOf());
+      try {
+        const r = await pullDue({
+          store: this.scanStore, keepaBudget: budget, pull: product, cost: pullCost,
+          tokensLeft: tokenShareOf(kept, status.refillRate, pullCost) - this.keepUsage().tokens,
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+          onPull: (asin, tokens) => this.noteKeep({ tokens, tried: `amazon:${asin}` }),
+        }, amazonDue(kept, this.d.now(), this.keepUsage().tried), tier);
+        done.kept = (done.kept ?? 0) + r.pulled;
+        done.tokens += r.tokens;
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    };
     // Buy safety (Nov 23): the listings a buy waits on are checked first, before the lookups.
     if (first.size > 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
       try {
@@ -648,6 +705,47 @@ export class AgentWork {
       } catch (err) {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }
+    }
+    // The drip's order (Nov 25): buy-safety checks (above), keeping deals current (Buy now first, then the watched deals,
+    // within the day's share), re-checks of withdrawn listings, lookups (by barcode first, then by search), catalog checks,
+    // then fees and sales.
+    await keepPulls('buyNow');
+    await keepPulls('all');
+    // The app replaces a wrong listing itself: each withdrawn listing's part, its other stored candidates in order, one Keepa
+    // pull each (1 token, above the reserve; the cache first), through the ladder, the price guard and the audit.
+    if (rechecks > 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
+      try {
+        const r = await runRechecks({
+          store: this.scanStore, catalog, now: this.d.now, pull: dripPull(this.scanStore, budget, product, (t) => { done.tokens += t; }),
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        });
+        done.verified += r.replaced.length;
+        rechecked = r.changed;
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    }
+    // Nov 25: the parts marked "no Amazon listing" whose barcode is now known, by code only (never a search, never
+    // SerpApi), before the search lookups (keep current, Nov 25: the drip's order). Same matcher and ladder.
+    for (const part of codes) {
+      if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
+      this.dripActive = true;
+      this.d.changed();
+      let out: Awaited<ReturnType<typeof keepaBarcodeOne>>;
+      try {
+        out = await keepaBarcodeOne({
+          store: this.scanStore, settings, now: this.d.now, keepaBudget: budget, catalog, prefix: 'agent:drip',
+          keepaLookup: (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask),
+          keepaProduct: product,
+        }, part);
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+        break;
+      }
+      if (out.status === 'refused') break;
+      tallyLookup(done, out);
+      const at = this.d.now();
+      store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
     }
     for (const key of work.lookups) {
       if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
@@ -670,28 +768,6 @@ export class AgentWork {
       if (out.status === 'refused') break;
       tallyLookup(done, out);
       this.dripWaiting = Math.max(0, this.dripWaiting - 1);
-      const at = this.d.now();
-      store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
-    }
-    // Nov 25: then the parts marked "no Amazon listing" whose barcode is now known, by code only (never a search, never
-    // SerpApi), once every waiting part is looked up. Its products go through the same matcher and ladder.
-    for (const part of this.dripWaiting === 0 ? codes : []) {
-      if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
-      this.dripActive = true;
-      this.d.changed();
-      let out: Awaited<ReturnType<typeof keepaBarcodeOne>>;
-      try {
-        out = await keepaBarcodeOne({
-          store: this.scanStore, settings, now: this.d.now, keepaBudget: budget, catalog, prefix: 'agent:drip',
-          keepaLookup: (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask),
-          keepaProduct: product,
-        }, part);
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
-        break;
-      }
-      if (out.status === 'refused') break;
-      tallyLookup(done, out);
       const at = this.d.now();
       store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
     }
@@ -730,20 +806,6 @@ export class AgentWork {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }
     }
-    // The app replaces a wrong listing itself: each withdrawn listing's part, its other stored candidates in order, one Keepa
-    // pull each (1 token, above the reserve; the cache first), through the ladder, the price guard and the audit.
-    if (rechecks > 0 && this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
-      try {
-        const r = await runRechecks({
-          store: this.scanStore, catalog, now: this.d.now, pull: dripPull(this.scanStore, budget, product, (t) => { done.tokens += t; }),
-          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
-        });
-        done.verified += r.replaced.length;
-        rechecked = r.changed;
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
-      }
-    }
     // Signals rounds 2 and 3: then the fee and sales pulls (1 token each), after the lookups and the catalog check, the
     // bundles with the highest estimate first; a listing pulled within the freshness window is not pulled again.
     if (this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
@@ -774,8 +836,8 @@ export class AgentWork {
     const short = (this.dripWaiting > 0 ? KEEPA_LOOKUP_TOKEN_ESTIMATE : 1) - left;
     const perMin = status.refillRate > 0 ? status.refillRate : 1;
     this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
-    if (done.looked === 0 && done.verified === 0 && done.removed === 0 && done.sales === 0) {
-      if (prices > 0 || done.tokens > 0 || rechecked) await this.refresh();
+    if (done.looked === 0 && done.verified === 0 && done.removed === 0 && done.sales === 0 && (done.kept ?? 0) === 0) {
+      if (prices > 0 || done.tokens > 0 || rechecked) await this.refresh(undefined, keepBefore);
       return;
     }
     const report = await this.rebuild();
@@ -784,13 +846,13 @@ export class AgentWork {
     const fresh = [...this.estimatedKeys()].filter((k) => !before.has(k)).length;
     const text = `Keepa lookups between scans gave ${fresh} new ${fresh === 1 ? 'estimate' : 'estimates'} (from your fee settings, not your real fees).`;
     // Signals round 2: the new estimates' buy signals go in the same message.
-    await this.afterChange(report, fresh > 0 ? { text, count: fresh } : undefined);
+    await this.afterChange(report, fresh > 0 ? { text, count: fresh } : undefined, keepBefore);
   }
 
   // ------------------------------------------------------------------ Home Depot's pace: the slow free read between scans
 
   /** Home Depot pages the drip read in the current hour's Activity run, and what they finished. */
-  private hdRun: { record: RunRecord; startedAt: number; pages: number; sets: number; prices: number } | null = null;
+  private hdRun: { record: RunRecord; startedAt: number; pages: number; sets: number; prices: number; kept: number } | null = null;
 
   /**
    * Whether the drip's next Home Depot page is due: the helper connected, the agent not paused, nothing else running, Home
@@ -820,6 +882,10 @@ export class AgentWork {
     let pages = 0;
     let settled = 0;
     let prices = 0;
+    // Keeping deals current: a Buy now or watched deal whose Home Depot price is due comes first (Buy now, then the oldest
+    // checked), within the day's share; the pages bundles wait for come after. Only between scans: a scan stops the drip.
+    const kept = await this.keepHdOne(readers);
+    if (kept !== null) return kept;
     try {
       const extra = await wantedReads(store, this.d.store.get('suggestions'));
       const parts = await partPricesWanted(store, settings, now(), true, extra);
@@ -866,6 +932,38 @@ export class AgentWork {
     return pages;
   }
 
+  /**
+   * Keeping deals current, Home Depot's side: the next due deal's own page, one read in drip mode (the gap, the daily cap,
+   * a refusal's cool-down). A changed price goes through the report and the signals, with the verdict's flip said; an
+   * unchanged one only moves the deal's "checked" time. Null when no deal is due (the drip's other reads go on).
+   */
+  private async keepHdOne(readers: RemoteReaders): Promise<number | null> {
+    const before = dealSnapshots({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') });
+    const kept = keptNow({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') });
+    let out;
+    try {
+      out = await readOneDue({ store: this.scanStore, readPromoPages: readers.readPromoPages, now: this.d.now }, kept, this.keepUsage());
+    } catch {
+      // Chrome did not answer (not Home Depot): the page was asked for (the pace counted it); asked again at the next look.
+      if (hdDue(kept, this.d.now(), this.keepUsage().tried).length > 0) this.noteKeep({ pages: 1 });
+      return 1;
+    }
+    if (out === null) return null;
+    if (out.pages === 0) return 0;
+    // A refusal is no try: the pace's cool-down pauses every read, and this deal is read first once reading goes on.
+    this.noteKeep({ pages: out.pages, ...(out.refused ? {} : { tried: `hd:${out.deal.key}` }) });
+    await this.noteBacklog().catch(() => null);
+    this.hdRecord(out.pages, 0, 0, out.checked ? 1 : 0);
+    if (out.changed) await this.refresh(undefined, before);
+    else if (out.checked) {
+      // The same price, checked now: the deal's row says so (no rebuild needed).
+      const at = this.d.now();
+      this.d.store.update('deals', (d) => ({ ...d, bundles: d.bundles.map((b) => (b.key === out.deal.key ? { ...b, seenAt: at } : b)) }));
+      this.d.changed();
+    } else this.d.changed();
+    return out.pages;
+  }
+
   /** The bundles a page read changed, split again with the scan's own rules (splitOne). Returns how many are settled now. */
   private async splitAgain(keys: readonly string[]): Promise<number> {
     const known = await knownModels(this.scanStore);
@@ -880,24 +978,25 @@ export class AgentWork {
   }
 
   /** One Activity run an hour of the free Home Depot reads between scans: "Read 38 Home Depot pages between scans; 12 bundles settled." */
-  private hdRecord(pages: number, settled: number, prices: number): void {
+  private hdRecord(pages: number, settled: number, prices: number, kept = 0): void {
     const now = this.d.now();
     if (!this.hdRun || now - this.hdRun.startedAt >= DRIP_RUN_MS) {
       const record: RunRecord = {
         id: `run-${now}-hd`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: null, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0,
         aiCostUsd: 0, summary: '', trigger: 'scheduled',
       };
-      this.hdRun = { record, startedAt: now, pages: 0, sets: 0, prices: 0 };
+      this.hdRun = { record, startedAt: now, pages: 0, sets: 0, prices: 0, kept: 0 };
     }
     const r = this.hdRun;
     r.pages += pages;
     r.sets += settled;
     r.prices += prices;
+    r.kept += kept;
     r.record.finishedAt = new Date(now).toISOString();
     const backlog = this.d.store.get('runtime').hdBacklog;
     const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil() }) : null;
     r.record.summary = [
-      `Read ${r.pages} Home Depot ${r.pages === 1 ? 'page' : 'pages'} between scans (free)${r.sets > 0 ? `; ${r.sets} ${r.sets === 1 ? 'bundle' : 'bundles'} settled` : ''}${r.prices > 0 ? `; ${r.prices} part ${r.prices === 1 ? 'price' : 'prices'} read` : ''}.`,
+      `Read ${r.pages} Home Depot ${r.pages === 1 ? 'page' : 'pages'} between scans (free)${r.sets > 0 ? `; ${r.sets} ${r.sets === 1 ? 'bundle' : 'bundles'} settled` : ''}${r.prices > 0 ? `; ${r.prices} part ${r.prices === 1 ? 'price' : 'prices'} read` : ''}${r.kept > 0 ? `; ${r.kept} watched ${r.kept === 1 ? "deal's price" : "deals' prices"} checked` : ''}.`,
       ...(waits ? [waits] : []),
     ].join(' ');
     this.record({ ...r.record });
@@ -919,7 +1018,7 @@ export class AgentWork {
         id: `run-${now}-drip`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: null, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0,
         aiCostUsd: 0, summary: '', trigger: 'scheduled',
       };
-      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0, verified: 0, removed: 0, sales: 0 };
+      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0, verified: 0, removed: 0, sales: 0, kept: 0 };
     }
     const r = this.dripRun;
     r.looked += done.looked;
@@ -930,6 +1029,7 @@ export class AgentWork {
     r.removed += done.removed;
     r.sales += done.sales;
     if (done.ways) r.ways = sumWays(r.ways, done.ways);
+    r.kept += done.kept ?? 0;
     r.record.keepaTokensUsed += done.tokens;
     r.record.finishedAt = new Date(now).toISOString();
     const parts = [`${r.matched} matched`, ...(r.none > 0 ? [`${r.none} no Amazon listing`] : []), ...(r.review > 0 ? [`${r.review} to review`] : [])];
@@ -937,7 +1037,8 @@ export class AgentWork {
     const sales = r.sales > 0 ? `Read sales figures for ${r.sales} ${r.sales === 1 ? 'listing' : 'listings'} from Keepa.` : null;
     // Nov 25: how many the barcode found and how many the search, and what Keepa counted for each.
     const ways = lookupWaysSentence(r.ways);
-    r.record.summary = [looked, ways || null, catalogSentence(r.verified, r.removed), sales].filter(Boolean).join(' ');
+    const kept = r.kept > 0 ? `Checked ${r.kept} Amazon ${r.kept === 1 ? 'price' : 'prices'} of watched deals with Keepa.` : null;
+    r.record.summary = [looked, ways || null, catalogSentence(r.verified, r.removed), sales, kept].filter(Boolean).join(' ');
     this.record({ ...r.record });
   }
 
@@ -1930,8 +2031,8 @@ export class AgentWork {
    * The report rebuilt from the scan's store, for the app (after an answer, an undo, a Look up), with the stored Keepa
    * trends (each part's FBA fee). Signals round 2: then the signals judged again, with `extra` in the same message.
    */
-  async refresh(extra?: { text: string; count: number }): Promise<void> {
-    await this.afterChange(await this.rebuild(), extra);
+  async refresh(extra?: { text: string; count: number }, before?: ReadonlyMap<string, DealSnapshot>): Promise<void> {
+    await this.afterChange(await this.rebuild(), extra, before);
   }
 
   /** The report rebuilt and published, without judging signals. */
@@ -2343,7 +2444,9 @@ export class AgentWork {
     const tracking = store.get('tracking');
     const now = this.d.now();
     const kinds = app.alerts.marginDownDigest ? (['buyNow', 'marginDown'] as const) : (['buyNow'] as const);
-    const fresh = app.alerts.enabled ? freshSignals(tracking, kinds, now) : { lines: [], notified: tracking.notified };
+    const found = app.alerts.enabled ? freshSignals(tracking, kinds, now) : { lines: [], notified: tracking.notified };
+    // Keeping deals current: a Buy now whose prices are older than the stated limit is not announced (its row says so).
+    const fresh = withoutStale(found, tracking.notified, staleBuyKeys({ deals: store.get('deals'), tracking }, now), now);
     // BOGO: the best choice of each promotion once a day; a pair behind its group's best is not named on its own.
     const groups = Object.values(tracking.derived.groups ?? {});
     const behind = pairsBehindBest(groups);
