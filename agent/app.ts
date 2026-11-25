@@ -26,6 +26,7 @@ import {
   type PairClaimResponse,
   type PartOutcomeBody,
   type PauseResponse,
+  type TelegramChatResponse,
   type AskResponse,
   type QueuedResponse,
   type ReviewAnswer,
@@ -45,6 +46,7 @@ import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
 import { costSettingsOf, patchCostSettings, syncAiLimit } from '../core/src/costs/settings';
 import { testTelegram } from './alerts';
+import { TelegramBot } from './telegramBot';
 import { Auth, type PairError } from './auth';
 import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './dataPane';
 import { measuredByDefault, modelIdentity } from './autopilot';
@@ -110,6 +112,8 @@ export interface Agent {
   notify(n: Omit<NotifyEvent, 'id'>): NotifyEvent;
   /** Nov 25: look at the release note now (tests; the timers do it at start and daily). */
   checkVersion(o?: { force?: boolean }): Promise<VersionCheck>;
+  /** Nov 25: the Telegram reader and its buttons (agent/telegramBot.ts). */
+  telegram: TelegramBot;
   close(): void;
 }
 
@@ -145,7 +149,8 @@ function parseKey(name: KeyName, body: Record<string, unknown>): Partial<StoredK
     case 'ebay':
       return { ebay: { appId: text(body.appId, 'appId'), certId: text(body.certId, 'certId') } };
     case 'telegram':
-      return { telegram: { botToken: text(body.botToken, 'botToken'), chatId: text(body.chatId, 'chatId') } };
+      // Nov 25: the chat id may wait: the agent offers the private chat that writes to the bot (agent/telegramBot.ts).
+      return { telegram: { botToken: text(body.botToken, 'botToken'), chatId: body.chatId === undefined || body.chatId === null || body.chatId === '' ? '' : text(body.chatId, 'chatId', 64) } };
     default:
       // `value` is the desktop UI's name for it (W2); `key` the contract's.
       return { [name]: text(body.key ?? body.value, 'key') };
@@ -336,6 +341,7 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
       for (const kind of NOTIFY_KINDS) if (kind in k) out.kinds[kind] = flag(k[kind], `notifications.kinds.${kind}`);
     }
     if ('sound' in n) out.sound = flag(n.sound, 'notifications.sound');
+    if ('telegramActions' in n) out.telegramActions = flag(n.telegramActions, 'notifications.telegramActions');
     if ('quietHours' in n) {
       const q = obj(n.quietHours, 'notifications.quietHours');
       if ('enabled' in q) out.quietHours.enabled = flag(q.enabled, 'notifications.quietHours.enabled');
@@ -597,13 +603,16 @@ export function createAgent(opts: AgentOptions): Agent {
     return { proof };
   });
   r.get('/api/state', 'any', () => state());
+  // Pause and resume, the app's and Telegram's (agent/telegramBot.ts).
+  const pauseAgent = () => store.update('agent', (a) => ({ ...a, paused: true, pausedAt: iso() }));
+  // Resuming is the owner's acknowledgement of a problem the agent paused itself for.
+  const resumeAgent = () => store.update('agent', () => ({ paused: false, pausedAt: null, problem: null }));
   r.post('/api/agent/pause', 'ui', (): PauseResponse => {
-    store.update('agent', (a) => ({ ...a, paused: true, pausedAt: iso() }));
+    pauseAgent();
     return { paused: true };
   });
   r.post('/api/agent/resume', 'ui', (): PauseResponse => {
-    // Resuming is the owner's acknowledgement of a problem the agent paused itself for.
-    store.update('agent', () => ({ paused: false, pausedAt: null, problem: null }));
+    resumeAgent();
     return { paused: false };
   });
   r.post('/api/agent/quit', 'ui', () => {
@@ -618,7 +627,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return HANDLED;
   });
   r.post('/api/notify/test', 'ui', () => notify({ kind: 'scan', title: 'Split Finder', body: 'Notifications from the agent work.' }));
-  r.post('/api/notify/test-telegram', 'ui', () => testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram));
+  r.post('/api/notify/test-telegram', 'ui', () => testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram, store.get('settings').notifications.telegramActions === true));
   // Nov 25: the owner closed the new-version notice; it stays closed for that version.
   r.post('/api/update/dismiss', 'ui', async (ctx) => {
     const b = obj(await ctx.body());
@@ -896,6 +905,34 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   r.post('/api/outcomes/entries/:id/undo', 'ui', (ctx) => outcomes.undo(ctx.params.id!));
 
+  // ------------------------------------------------------------ Telegram: acting from the phone (agent/telegramBot.ts)
+  // The reader runs while a bot is saved and the owner turned "Let me act from Telegram" on, or while a token waits for its
+  // chat; it follows every change to the keys and the settings. The buttons go on the messages as work.ts sends them.
+  const telegram = new TelegramBot({ store, now, fetchFn: opts.fetchFn ?? fetch, work, outcomes, pause: pauseAgent, resume: resumeAgent });
+  work.telegramCompose = (m) => telegram.compose(m);
+  store.onChange((name) => {
+    if (name === 'keys' || name === 'settings') telegram.sync();
+  });
+  if (timers) telegram.start();
+  r.post('/api/telegram/actions/:id/undo', 'ui', (ctx) => ({ undone: true, sentence: telegram.undoAction(ctx.params.id!) }));
+  // A token saved without a chat id: the private chats that wrote to the bot, for the owner to choose one (never chosen for him).
+  r.get('/api/telegram/chat', 'ui', (): TelegramChatResponse => {
+    const tg = store.get('keys').telegram;
+    if (!tg?.botToken) return { state: 'no_bot', chats: [] };
+    if (tg.chatId?.trim()) return { state: 'chosen', chats: [] };
+    const chats = telegram.candidates().map((c) => ({ id: c.id, name: c.name, at: new Date(c.at).toISOString() }));
+    return { state: chats.length === 0 ? 'waiting' : 'found', chats };
+  });
+  r.post('/api/telegram/chat', 'ui', async (ctx) => {
+    const chatId = text(obj(await ctx.body()).chatId, 'chatId', 64);
+    telegram.adoptChat(chatId);
+    clearKeyProblem('telegram');
+    forgetKeyCheck(store, 'telegram');
+    const check = await checkStoredKey(keyHost, 'telegram');
+    const test = await testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram, store.get('settings').notifications.telegramActions === true);
+    return { saved: true, ...(check ? { check: checkForOwner(check, 'save') } : {}), test };
+  });
+
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>
     activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions'), outcomes: store.get('outcomes'), versions: releaseState(store).history }, monthStart(now()), now()),
@@ -1149,7 +1186,9 @@ export function createAgent(opts: AgentOptions): Agent {
     work,
     notify,
     checkVersion,
+    telegram,
     close() {
+      telegram.stop();
       if (releaseStart) clearTimeout(releaseStart);
       if (releaseTimer) clearInterval(releaseTimer);
       if (flushTimer) clearTimeout(flushTimer);

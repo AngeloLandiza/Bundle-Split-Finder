@@ -277,6 +277,8 @@ async function checkTelegram(t: { botToken: string; chatId: string }, ctx: Ctx):
   if (me.status < 200 || me.status >= 300 || ok?.ok !== true) return refused(me);
   const name = typeof ok.result?.username === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(ok.result.username) ? ok.result.username : null;
 
+  // Nov 25: a token saved without its chat: the app finds the chat that writes to the bot (agent/telegramBot.ts).
+  if (!t.chatId?.trim()) return { ok: true, detail: name ? `bot @${name}; send it a message to choose your chat` : 'bot found; send it a message to choose your chat' };
   // The chat id is the other half of the pair, and a wrong one fails only when the first message is sent. getChat is free
   // and sends nothing.
   const chat = await call('getChat');

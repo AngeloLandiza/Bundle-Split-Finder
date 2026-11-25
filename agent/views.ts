@@ -89,6 +89,7 @@ export function keysPresence(keys: StoredKeys): KeysPresence {
     openai: Boolean(keys.openai),
     ebay: Boolean(keys.ebay?.appId && keys.ebay.certId),
     telegram: Boolean(keys.telegram?.botToken && keys.telegram.chatId),
+    ...(keys.telegram?.botToken && !keys.telegram.chatId?.trim() ? { telegramWaitingForChat: true } : {}),
   };
 }
 
@@ -700,6 +701,10 @@ export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' 
     ...(data.outcomes ? { outcomes: entriesView(data.outcomes) } : {}),
     // Nov 25: the new versions the app told him about, newest first.
     ...(data.versions && data.versions.length > 0 ? { versions: [...data.versions].reverse() } : {}),
+    // Nov 25: what he did from Telegram with no list of its own (agent/telegramBot.ts), newest first.
+    ...(data.activity.fromTelegram?.length
+      ? { fromTelegram: [...data.activity.fromTelegram].reverse().map((r) => ({ id: r.id, at: r.at, sentence: r.sentence, undoable: r.undo !== null && r.undoneAt === null, undoneAt: r.undoneAt })) }
+      : {}),
     errors: (data.activity.errors ?? [])
       .filter((e) => e.resolvedAt === null)
       .map((e) => ({ id: e.id, at: e.at, sentence: e.sentence, retry: e.retry ? { label: e.retry.label, searches: e.retry.searches, usd: e.retry.usd } : null }))
