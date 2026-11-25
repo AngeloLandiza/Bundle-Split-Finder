@@ -19,6 +19,7 @@ import type { DealSortKey } from '../deals/sort';
 import type { SanityKind, SanitySeverity } from '../audit/sanity';
 import type { FeeSettings } from '../money';
 import type { Schedule } from '../schedule';
+import type { CostService, CostSettings, CostState } from '../costs/types';
 import type { PipelineView } from '../scan/pipeline';
 import type { AlertSettings, DiscoveryMode, EbaySettings, TrackingDepth } from '../settings';
 import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartFactView, PartPriceReading, PriceSuggestion, ReportSection, ReviewItem, UnpricedState } from '../scan/types';
@@ -296,6 +297,11 @@ export interface AgentState {
     keepaRefillPerMin?: number | null;
     aiSpentUsd: number;
     aiCapUsd: number | null;
+    /**
+     * Step 18: the costs' short form (GET /api/costs has the whole): the month's dollars against the budget as one state
+     * and sentence, and each service that is not 'ok', for the notice region. Absent before the agent has counted.
+     */
+    costs?: { state: CostState; sentence: string; attention: { service: CostService; state: CostState; sentence: string }[] };
   };
   /**
    * Step 16: `review` is what needs the owner ("Needs you"): open questions minus those the app is working on (a follow-up queued
@@ -709,6 +715,12 @@ export type { BogoChoice, BogoGroup, BogoTag, BogoView, FbaEstimate, FreeItem, O
 /** W4: GET /api/deals/:id/lookup (the quote shown before the click) and the answer to POST /api/deals/:id/lookup and /verify. */
 export interface PaidResponse {
   searches: number;
+  /**
+   * Step 18: the cost blocker held the owner's click (Verify, Look up): `reason` is its sentence, and the same request with
+   * `{ force: true }` spends anyway (`canForce`). Absent when it ran.
+   */
+  reason?: string;
+  canForce?: boolean;
 }
 
 /**
@@ -1259,7 +1271,7 @@ export interface AppearanceSettings {
   density: 'regular' | 'compact';
 }
 
-export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version'] as const;
+export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version', 'costs'] as const;
 
 /** D2: which messages reach the owner and when. Times are local "HH:MM". */
 export interface NotificationSettings {
@@ -1339,6 +1351,12 @@ export interface AppSettings {
    * nothing about the owner. Off: no request at all.
    */
   updates?: UpdateSettings;
+  /**
+   * Step 18: what the services cost him and what he allows (core/src/costs/types.ts). Its AI limit and `ai.monthlyCapUsd`
+   * are one value, kept equal on every write (core/src/costs/settings.ts syncAiLimit). Absent only in a store read before
+   * its one-time move; GET /api/costs always answers with them.
+   */
+  costs?: CostSettings;
 }
 
 export interface UpdateSettings {
@@ -1591,7 +1609,7 @@ export interface TelegramTestResponse {
 /** The shell turns this into a native notification (src-tauri/src/events.rs reads title, body, kind, count). */
 export interface NotifyEvent {
   id: string;
-  kind: 'review' | 'deal' | 'autopilot' | 'scan' | 'error' | 'version';
+  kind: (typeof NOTIFY_KINDS)[number];
   title: string;
   body: string;
   /** How many things the message is about, when it counts them. */

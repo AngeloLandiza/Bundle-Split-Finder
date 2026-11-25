@@ -35,6 +35,8 @@ import type { HdPaceState } from '../core/src/scan/hdPace';
 import { measuredByDefault } from './autopilot';
 import type { Footprint } from './ownerAnswers';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
+import { costSettingsOf, syncAiLimit } from '../core/src/costs/settings';
+import { DEFAULT_COST_SETTINGS, type CostBlocked, type CostService } from '../core/src/costs/types';
 import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, ScanJob } from '../core/src/scan/types';
 import type { BogoView } from '../core/src/tracking/bogo';
 import type { BogoGroup } from '../core/src/tracking/bogoPairs';
@@ -230,7 +232,7 @@ export interface AgentRuntime {
   /** When the schedule was switched on from manual (epoch ms): the first scheduled scan counts from here, not now. */
   scheduleFrom?: number | null;
   /** The last SerpApi account check (free). */
-  serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string } | null;
+  serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string; /** Step 18: the plan's name (a free plan costs $0). */ planName?: string } | null;
   /** Keepa's balance as its last answer said; step 15: its refill (tokens a minute) too, from any answer or the free status. */
   keepa: { tokensLeft: number; refillIn: number; refillRate?: number; at: string } | null;
   /**
@@ -271,6 +273,18 @@ export interface AgentRuntime {
   rates: UnitRates;
   /** The last scan's job, as the Deals limit notice reads it (core/src/deals/limitCopy.ts). */
   lastJob: HelperLastJob | null;
+  /** Step 18 (agent/costs.ts): the cost warnings sent (by month), what the blocker held this month, and counted eBay calls and Telegram messages by local day. */
+  costs?: CostRuntime;
+}
+
+/** Step 18: what the costs keep between runs. Never a key. */
+export interface CostRuntime {
+  /** Warning and held-step message keys already sent ("2026-11:serpapi:approaching"); this month's and last month's are kept. */
+  sent: string[];
+  /** What the blocker held, this month only, newest last, at most 50 a service. */
+  blocked: Partial<Record<CostService, CostBlocked[]>>;
+  /** eBay calls and Telegram messages by local day ("2026-11-25"), the last 400 days. */
+  counts: Record<string, { ebay?: number; telegram?: number }>;
 }
 
 /**
@@ -380,7 +394,7 @@ export function defaultSettings(): StoreData['settings'] {
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
-      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true },
+      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true },
       sound: false,
       quietHours: { enabled: false, from: '22:00', to: '07:00' },
       digest: 'each-run',
@@ -389,6 +403,8 @@ export function defaultSettings(): StoreData['settings'] {
     shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
     // Nov 25: the app reads the project's public release note once a day and says when a new version is ready.
     updates: { tellMeAboutNewVersion: true },
+    // Step 18: no prices entered, no budget; the AI limit is the AI cap's $25 (one value: syncAiLimit).
+    costs: structuredClone(DEFAULT_COST_SETTINGS),
   };
 }
 
@@ -480,7 +496,11 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
         assist: { ...d.ai.assist, ...(ai.assist ?? {}) },
         research: { ...d.ai.research, ...(ai.research ?? {}) },
         brief: { ...d.ai.brief!, ...(ai.brief ?? {}), trusted: false },
+        // Step 18: the AI limit lives in the costs; a stored file that has them says the cap (one value).
+        ...(s.costs && typeof s.costs.services?.ai?.monthlyLimit === 'number' ? { monthlyCapUsd: s.costs.services.ai.monthlyLimit } : {}),
       },
+      // A store from before step 18 has no costs: COSTS_AI_LIMIT_MIGRATION moves its cap in (applyMigrations).
+      costs: s.costs ? normalizeCosts(s.costs) : undefined,
     } as StoreData[K];
   }
   if (name === 'runtime') {
@@ -489,6 +509,21 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
     return { ...d, ...r, telegram: { ...d.telegram, ...(r.telegram ?? {}) } } as StoreData[K];
   }
   return { ...(base as object), ...(raw as object) } as StoreData[K];
+}
+
+/** Stored cost settings with any field a newer agent added filled in. */
+function normalizeCosts(raw: Partial<NonNullable<AppSettings['costs']>>): NonNullable<AppSettings['costs']> {
+  const d = DEFAULT_COST_SETTINGS;
+  const svc = raw.services ?? ({} as Partial<NonNullable<AppSettings['costs']>['services']>);
+  return {
+    totalMonthlyUsd: raw.totalMonthlyUsd ?? d.totalMonthlyUsd,
+    blockWhenOver: raw.blockWhenOver ?? d.blockWhenOver,
+    services: {
+      serpapi: { ...d.services.serpapi, ...(svc.serpapi ?? {}) },
+      keepa: { ...d.services.keepa, ...(svc.keepa ?? {}) },
+      ai: { ...d.services.ai, ...(svc.ai ?? {}) },
+    },
+  };
 }
 
 // ---------------------------------------------------------------- one-time changes to stored data
@@ -515,6 +550,12 @@ export const BRIEF_OPUS_MIGRATION = 'brief-model-opus';
  * never changed here (referralSource stays 'flat': his own rate). Logged in runtime.migrations and in `migrationLog`.
  */
 export const FULFILLMENT_KEEPA_MIGRATION = 'fulfillment-fee-from-keepa';
+
+/**
+ * Step 18: the AI's monthly cap becomes the AI limit in the costs (one value: core/src/costs/settings.ts). A store whose
+ * settings have no costs gets them, with its own cap as the AI limit and nothing else set; once, logged in `migrationLog`.
+ */
+export const COSTS_AI_LIMIT_MIGRATION = 'costs-ai-limit';
 
 /** Applies each one-time change not made yet; returns the collections it changed. */
 export function applyMigrations(data: StoreData): CollectionName[] {
@@ -548,6 +589,15 @@ export function applyMigrations(data: StoreData): CollectionName[] {
       }
     }
     done.add(FULFILLMENT_KEEPA_MIGRATION);
+  }
+  if (!done.has(COSTS_AI_LIMIT_MIGRATION)) {
+    if (!data.settings.costs) {
+      const cap = data.settings.ai.monthlyCapUsd;
+      data.settings = { ...data.settings, costs: costSettingsOf(data.settings) };
+      changed.add('settings');
+      log.push({ name: COSTS_AI_LIMIT_MIGRATION, at: new Date().toISOString(), sentence: `Costs: your monthly AI cap of $${cap.toFixed(2)} is now the AI limit in Costs, one setting. No price or budget is entered.` });
+    }
+    done.add(COSTS_AI_LIMIT_MIGRATION);
   }
   if (done.size === before.length) return [];
   data.runtime = { ...data.runtime, migrations: [...done], ...(log.length > 0 ? { migrationLog: [...(data.runtime.migrationLog ?? []), ...log] } : {}) };
@@ -974,7 +1024,9 @@ export class Store {
   update<K extends CollectionName>(name: K, fn: (current: StoreData[K]) => StoreData[K]): StoreData[K] {
     if (this.closed) throw new Error('The store is closed.');
     // A copy of what fn returns, so a caller that keeps (and later changes) its object changes nothing stored.
-    const next = structuredClone(fn(structuredClone(this.data[name])));
+    let next = structuredClone(fn(structuredClone(this.data[name])));
+    // Step 18: the AI limit has two names, kept one value whichever was written.
+    if (name === 'settings') next = syncAiLimit(this.data.settings, next as StoreData['settings']) as StoreData[K];
     this.data[name] = next;
     this.write(name);
     for (const listener of this.listeners) listener(name);
