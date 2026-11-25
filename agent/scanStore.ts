@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
 import type { Cache, CacheEntry } from '../core/src/serpapi/client';
 import type {
   BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord,
-  PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  PartPriceRecord, PriceRecord, RecheckRecord, ReviewItem, ScanJob, ScanStore,
 } from '../core/src/scan/types';
 import type { PartFact } from '../core/src/facts/fact';
 import { writeFileAtomic } from './store';
@@ -34,11 +34,12 @@ interface Kinds {
   ebayAnswers: EbayOwnerAnswer;
   scans: ScanJob;
   partFacts: PartFact;
+  rechecks: RecheckRecord;
 }
 type Kind = keyof Kinds;
 const KINDS: readonly Kind[] = [
   'bundles', 'catalog', 'matches', 'prices', 'listings', 'cursors', 'reviews', 'partPrices', 'confirmedPrices', 'ebayValues', 'judgements', 'ebayAnswers', 'scans',
-  'partFacts',
+  'partFacts', 'rechecks',
 ];
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -157,6 +158,11 @@ export class FileScanStore implements ScanStore {
     this.flush('partFacts');
   }
   async listPartFacts() { return this.list('partFacts', byKey((r) => r.key)); }
+
+  // The re-check of a part whose listing was withdrawn (core/src/scan/recheck.ts), by partKey.
+  async getRecheck(key: string) { return this.get('rechecks', key); }
+  async putRecheck(r: RecheckRecord) { this.put('rechecks', r.key, r); }
+  async listRechecks() { return this.list('rechecks', byKey((r) => r.key)); }
 
   async clearAll() {
     for (const kind of KINDS) {

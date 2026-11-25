@@ -34,6 +34,7 @@ export async function loadScanFolder(dir: string): Promise<MemoryScanStore> {
   await each('ebayAnswers', (r) => store.putEbayAnswer(r));
   await each('scans', (r) => store.putScan(r));
   await each('partFacts', (r) => store.putPartFact(r));
+  await each('rechecks', (r) => store.putRecheck(r));
   return store;
 }
 

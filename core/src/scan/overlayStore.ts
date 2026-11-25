@@ -3,7 +3,7 @@
 // page's view is computed over one while a scan or a panel action runs (pageView.ts, write: false).
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, RecheckRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 import type { PartFact } from '../facts/fact';
 
@@ -66,6 +66,7 @@ export class OverlayStore implements ScanStore {
   private readonly partPrices = new Layer<PartPriceRecord>((r) => r.key, byKey((r) => r.key));
   private readonly confirmedPrices = new Layer<ConfirmedPrice>((r) => r.key, byKey((r) => r.key));
   private readonly partFacts = new Layer<PartFact>((r) => r.key, byKey((r) => r.key));
+  private readonly rechecks = new Layer<RecheckRecord>((r) => r.key, byKey((r) => r.key));
   private readonly ebayValues = new Layer<EbayValueRecord>((r) => r.key, byKey((r) => r.key));
   private readonly judgements = new Layer<JudgementRecord>((r) => r.key, byKey((r) => r.key));
   private readonly ebayAnswers = new Layer<EbayOwnerAnswer>((r) => r.key, byKey((r) => r.key));
@@ -208,7 +209,18 @@ export class OverlayStore implements ScanStore {
     return this.partFacts.list(async () => (this.base.listPartFacts ? this.base.listPartFacts() : []));
   }
 
+  getRecheck(key: string) {
+    return this.rechecks.get(key, async (k) => (this.base.getRecheck ? this.base.getRecheck(k) : undefined));
+  }
+  async putRecheck(record: RecheckRecord) {
+    this.rechecks.put(record);
+  }
+  listRechecks() {
+    return this.rechecks.list(async () => (this.base.listRechecks ? this.base.listRechecks() : []));
+  }
+
   async clearAll() {
+    this.rechecks.clear();
     this.partFacts.clear();
     await this.base.clearAll();
     this.bundles.clear();

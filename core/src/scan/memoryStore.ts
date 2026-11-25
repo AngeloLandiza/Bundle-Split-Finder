@@ -2,7 +2,7 @@
 // out, so neither the caller's object nor a returned one aliases what is stored.
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, RecheckRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 import type { PartFact } from '../facts/fact';
 
@@ -27,6 +27,7 @@ export class MemoryScanStore implements ScanStore {
   private readonly ebayAnswers = new Map<string, EbayOwnerAnswer>();
   private readonly scans = new Map<string, ScanJob>();
   private readonly partFacts = new Map<string, PartFact>();
+  private readonly rechecks = new Map<string, RecheckRecord>();
 
   private get<T>(map: Map<string, T>, key: string): T | undefined {
     const found = map.get(key);
@@ -171,7 +172,18 @@ export class MemoryScanStore implements ScanStore {
     return this.list(this.partFacts, byKey((r) => r.key));
   }
 
+  async getRecheck(key: string) {
+    return this.get(this.rechecks, key);
+  }
+  async putRecheck(record: RecheckRecord) {
+    this.rechecks.set(record.key, structuredClone(record));
+  }
+  async listRechecks() {
+    return this.list(this.rechecks, byKey((r) => r.key));
+  }
+
   async clearAll() {
+    this.rechecks.clear();
     this.partFacts.clear();
     this.bundles.clear();
     this.catalog.clear();

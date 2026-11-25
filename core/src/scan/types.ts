@@ -538,6 +538,64 @@ export interface CatalogCheckRecord {
   ladder?: number;
 }
 
+/**
+ * Who withdrew a listing from a part (scan/recheck.ts): the price guard, the ladder's title rule (a stored confirmation
+ * read again whose title names another model of the family), the audit's certain findings (a title that names another
+ * model and not the part's; one listing counted for two different models), or the owner's "Wrong listing".
+ */
+export type WithdrawnBy = 'price_guard' | 'title_rule' | 'audit_title' | 'audit_two_models' | 'owner';
+
+/** One listing withdrawn from a part: the app never chooses it for the part again (the owner may). */
+export interface WithdrawnListing {
+  asin: string;
+  /** The plain reason ("Amazon's price is 9.7× Home Depot's price for this part: check the listing"). */
+  reason: string;
+  by: WithdrawnBy;
+  at: number;
+}
+
+/** One stored candidate the re-check tried for the part, and why it was or was not taken. */
+export interface RecheckTry {
+  asin: string;
+  /** passed: the ladder confirmed it and the price guard and the audit passed it; else why not, in one plain phrase. */
+  passed: boolean;
+  reason: string;
+  at: number;
+  /** For a candidate that passed: which rung confirmed it (MatchRecord.verifiedBy when it is chosen). */
+  by?: VerifiedBy;
+}
+
+/**
+ * The re-check of a part whose listing was withdrawn (scan/recheck.ts, docs/decisions.md "The app replaces a wrong
+ * listing itself"): its other stored candidates tried in order through the ladder, then the lookup queue, then the owner.
+ * Kept beside the match (ScanStore.putRecheck), not on it, so a lookup that rewrites the match does not lose it.
+ *
+ *   trying   candidates are left to try, or a try waits for Keepa tokens: the part is "being re-checked", not a question
+ *   lookup   no stored candidate passed: the part waits in the lookup queue (match status 'waiting') for a fresh search
+ *   asked    the owner's "Which listing" question is open, saying what was tried
+ *   done     the part has a listing again: exactly one candidate passed and the part is matched to it, or the fresh
+ *            lookup chose one (which the ladder then reads as any other)
+ */
+export interface RecheckRecord {
+  /** partKey(brand, model) */
+  key: string;
+  brand: string;
+  model: string;
+  stage: 'trying' | 'lookup' | 'asked' | 'done';
+  /** Every listing withdrawn from the part, oldest first; never chosen for it again by the app. */
+  withdrawn: WithdrawnListing[];
+  /** The candidates of this round still to try, in order. */
+  pending: string[];
+  /** The candidates of this round tried so far, in order. */
+  tried: RecheckTry[];
+  /** The listings a question offers if it comes to asking, with their titles: the withdrawn one first. */
+  offered: ReviewCandidate[];
+  startedAt: number;
+  updatedAt: number;
+  /** While trying: what the next try waits for ("Keepa tokens"), absent when nothing waits. */
+  waitingFor?: string;
+}
+
 export interface PriceRecord {
   asin: string;
   price: number | null;
@@ -658,6 +716,11 @@ export interface ReviewItem {
    */
   settledParts?: SettledPart[];
   unsettledParts?: UnsettledPart[];
+  /**
+   * A match question the re-check opened (scan/recheck.ts) after no candidate passed: each listing it tried and why it was
+   * not taken, so the owner starts where the app stopped. Absent on every other question.
+   */
+  tried?: RecheckTry[];
 }
 
 // ---------------------------------------------------------------- the job
@@ -909,6 +972,14 @@ export interface ScanStore {
   deletePartFact?(key: string): Promise<void>;
   listPartFacts?(): Promise<PartFact[]>;
 
+  /**
+   * A part's re-check after its listing was withdrawn (scan/recheck.ts), by partKey. Optional: a store without them (the
+   * extension's) withdraws nothing by itself and asks at once, as before.
+   */
+  getRecheck?(key: string): Promise<RecheckRecord | undefined>;
+  putRecheck?(record: RecheckRecord): Promise<void>;
+  listRechecks?(): Promise<RecheckRecord[]>;
+
   /** Drops every record. The next write starts from empty. */
   clearAll(): Promise<void>;
 }
@@ -954,6 +1025,12 @@ export interface PartRow {
   /** The listing ladder, round 2: why no automatic rung could confirm this part's counted listing (agent/autoConfirm.ts). */
   confirmNote?: string;
   verifyEvidence?: string;
+  /**
+   * The part's listing was withdrawn and the app is replacing it by itself (scan/recheck.ts): "being re-checked" while it
+   * tries the part's other stored candidates or waits for a fresh lookup; the sentence says what was tried. Absent otherwise
+   * (also once the owner's question is open: the question says it).
+   */
+  recheck?: { stage: 'trying' | 'lookup'; sentence: string };
   /**
    * Suggested prices (Nov 23): at most one price the agent prepares for a part with no counted price, with its evidence,
    * for the owner to confirm in one click (scan/suggest.ts). Never counted until he confirms it (the PO, Nov 20: his
