@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "agent-ui",
-  "description": "The dashboard served by the local agent may read agent status, toggle launch at login, and move or zoom its window from the title bar drag regions. Nothing else.",
+  "description": "The dashboard served by the local agent may read agent status, relaunch the app when the agent keeps stopping, toggle launch at login, and move or zoom its window from the title bar drag regions. Nothing else.",
   "windows": [
     "main"
   ],
@@ -12,6 +12,7 @@
   },
   "permissions": [
     "allow-agent-status",
+    "allow-relaunch-app",
     "allow-get-launch-at-login",
     "allow-set-launch-at-login",
     "core:window:allow-start-dragging",

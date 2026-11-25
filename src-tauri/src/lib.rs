@@ -10,9 +10,10 @@ use tauri::{AppHandle, RunEvent, WindowEvent};
 use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_window_state::StateFlags;
 
+/// Whether the agent answers, and what the supervisor is doing about it when it does not (agent.rs).
 #[tauri::command]
-fn agent_status() -> bool {
-  agent::port_open()
+fn agent_status() -> agent::AgentStatus {
+  agent::status()
 }
 
 #[tauri::command]
@@ -83,6 +84,7 @@ pub fn run() {
     })
     .invoke_handler(tauri::generate_handler![
       agent_status,
+      agent::relaunch_app,
       get_launch_at_login,
       set_launch_at_login,
       popover::popover_do,
