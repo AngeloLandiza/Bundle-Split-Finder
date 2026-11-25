@@ -54,7 +54,7 @@ When you first open the app, a welcome window shows three steps. You can use the
 
 **Deals** lists every bundle. The left list has these views:
 
-- **Worth buying now.** The last scan judged these to clear your minimum profit and ROI, sell fast enough, and look better than before.
+- **Worth buying now.** Deals that clear your minimum profit and ROI, sell fast enough, leave nothing unsold, have every fee counted and sit on confirmed Amazon listings, with nothing holding them for a look. A deal stays here for as long as all of that holds; the row says how its estimate moved since the last check ("Down from $38.79 at the last check"), but a small drop does not take it off. You are told when a deal first gets here, when it improves by $5 or more over what you were last told, and once when it leaves, with the reason. All profit figures are estimates from your fee settings.
 - **Missing a price.** A part has no price yet, so there is no estimate. The row says what it still needs.
 - **Losing money.** The estimate is below zero.
 - **Watchlist.** Bundles you starred. The app tracks them from scan to scan.

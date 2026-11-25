@@ -598,6 +598,8 @@ fulfillment fee (flat fee $0, the default).
   figures stored now, so a sales figure that arrived can turn the verdict and nothing else does; a verdict that comes out the
   same keeps its stored signals and is not sent again. A buy signal still needs a change, so a deal that stays good is not
   re-announced every day; the scan after a between-scan point sees no change (the owner was told when it happened).
+  *Superseded Nov 25* ("Buy now is a state; the announcement is an event"): the change is needed by the announcement, not
+  by the verdict.
 - **A change is judged once sales data exists** (`judgedBy`): when the point has every part's monthlySold and the points
   before it did not, those points are left out of the baseline. Measured on the test case: PCL235B first seen at +$29.16
   (no sales figure: not a buy), the sales pull brought monthlySold 500 and Keepa's $8.02 FBA fee (+$21.14); without this
@@ -1871,3 +1873,57 @@ waits, else a 1-token pull) and the budget's per-run cap is lowered to what the 
 *Known gaps:* the listing
 check's high end is its daily allowance, not a history of its own; a month boundary between the AI passes' UTC month
 (`aiSpentThisMonth`) and the costs' local month can differ by a few hours of spend.
+
+## Nov 25: Buy now is a state; the announcement is an event
+
+The first keep-current run (`fixtures/e2e-2026-11-23/after-keepcurrent`) re-checked Amazon two hours after the last check
+and took all three PSK1212SB deals off "Worth buying now". PCL515B rightly (est. $16.73, below his $20); PCL633B ($35.67,
+36% ROI, 100 a month) and PCL031B ($23.35, 24% ROI, 200 a month) still cleared every number on confirmed listings, yet read
+"no better than the last check …: a buy needs a change", and Activity said each "is no longer worth buying". The rule was
+written so a deal that stays good is not announced every day; it had been applied to the verdict itself, so with prices
+re-checked every two hours every good deal lost its verdict at the first re-check that did not improve it.
+
+- **The state** (`core/src/tracking/signals.ts bundleSignals`): a way to sell is worth buying now for as long as it clears
+  the minimum profit and ROI, sells fast enough, leaves nothing unsold, has its fulfillment fees, every counted listing is
+  confirmed and nothing holds it (the sanity audit, the price guard, a listing being re-checked). No change is needed. The
+  verdict is in the present tense, with the movement as information: "Worth buying now: +$35.67 (36% ROI), sells about 100
+  a month. Down from $38.79 at the last check." `DealRow.buyNow`, the "Worth buying now" view, Today's best deals, the
+  scorecard's "flagged Buy now" and keep-current's Buy now tier all read `BundleSignals.buyNow`, so they follow the state.
+  A Buy now whose prices are older than `PRICES_STALE_MS` keeps the state, says so, and is not sent (unchanged).
+- **The event** (`BundleSignals.announce`, `TrackingState.announced`): a buy is sent (notification, Telegram, digest line)
+  when the deal enters the state, or when it is already in it and its estimate is at least `ANNOUNCE_MARGIN_DOLLARS` $5
+  above the figure last sent *and* the baseline sees a rise (through the numbers, $1 since the last check, or $1 above the
+  7-day average, with the `judgedBy` sales rule): "Estimated profit is up $5.21 since you were last told ($38.79), to
+  $44.00 (44% ROI)". Once a day per deal as before (`notified`). `announced` records the way to sell and profit of each
+  buy line sent (`announcedAfter`, at a scan's digest and between scans) and is dropped when the deal leaves the state, so
+  its next entry is news again. A buy not sent (alerts off, stale prices, already sent today) stays news until it is sent.
+  *Why $5:* at the first re-check 22 watched estimates moved; 16 by less than $5 (one listing's ordinary move, PBP004
+  $53.99 to $50.00, is $3.12 on two deals; the largest $4.79); the six above moved $5.88 to $38.26. Against the last
+  *announced* figure rather than the last check, so an estimate that dips and comes back ($38.79, $35.67, $38.79) is not
+  news.
+- **Leaving the state is said once** (`core/src/tracking/keepCurrent.ts verdictChanges`, `failingOf`): every refresh now
+  snapshots the watched deals before it (not only keep-current's), and a deal that left the state gets one sentence in
+  Activity, sent with the digest when alerts are on, naming the condition that now fails first, then the prices that
+  moved and the estimate before and after: "PSK1212SB-PCL515B is no longer worth buying: est. $16.73 is below your $20 and
+  17% ROI below your 20%. Amazon's price of PBP004 went from $53.99 to $50.00 (…); Amazon's price of PCL515B went from
+  $79.99 to $53.00 (…). Est. profit $16.73, was $43.19 (…)". It is written only on that transition. Entering with a price
+  that moved keeps its sentence; an entry no price explains is the digest's buy line.
+- **Activity for a deal that stays a buy while its estimate moved**: at most one quiet line a day per deal, never sent:
+  "PSK1212SB-PCL633B is still worth buying: est. profit $35.67, was $38.79 (an estimate from your fee settings)." Chosen
+  over nothing because Activity already carries the re-check's own line ("Checked 43 Amazon prices of watched deals with
+  Keepa.") and nothing about what it did to a Buy now deal; once a day keeps a 2-hour cadence from filling it. The day is
+  remembered in the keep-current usage (`tried['still:<key>']`).
+- **Stored verdicts are judged again once** (`agent/store.ts BUY_STATE_MIGRATION`, `seedAnnounced`): a store with no
+  `announced` counts each deal whose buy was sent (`<key>|buyNow|<day>` in `notified`) as announced at the best estimate
+  its history held that day (the oldest point when the history's local days do not reach back to it), logged once. A
+  stored signal with no `announce` is judged again at the next refresh (the start's), with no scan and nothing spent, so
+  PCL633B and PCL031B return to Buy now by themselves, not sent again (announced Nov 23), and PCL515B's seed is dropped.
+- **Unchanged**: buy safety on confirmed listings, an estimate before fulfillment never a buy, the audit's holds, the price
+  guard. A buy held back only for its listings is still "Looks worth buying" and its confirmation is still news (it was
+  never in the state).
+- **Replay** (`core/test/buy-state.test.ts`, the stored Keepa figures from the stored velocity rows): deals in the state
+  after scan 6, old rule 3 (the PSK1212SB deals), new rule 3; after the keep-current re-check, old rule 0, new rule 2
+  (PCL633B, PCL031B). Tests changed: `tracking-signals.test.ts` "still good but no better" asserted the old conflation
+  (not a buy) and now asserts a buy that is not news once announced; `agent/test/keepCurrent.test.ts`'s two withdrawal
+  sentences now name the failing condition; `signalsPass.test.ts`'s restart case clears `announced` with `notified` (it
+  stands for a buy never sent).
