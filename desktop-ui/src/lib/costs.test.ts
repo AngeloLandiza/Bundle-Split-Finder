@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { CostsView } from '@core/costs/types';
+import { money } from './format';
 import { buildCostsView, costSettingsFor, type CostsScenario } from '../api/mockCosts';
 import {
-  amount, chartSummary, costChart, costNotice, costWords, dayReadout, daysInMonth, describeChange, forecastNote, forecastWords, limitInput, limitNote, limitRange,
+  amount, chartSummary, moneySentence, totalForecast, troubleLead, troubles, costChart, costNotice, costWords, dayReadout, daysInMonth, describeChange, forecastNote, forecastWords, limitInput, limitNote, limitRange,
   mergeCostPatch, meterOf, nearestPoint, numbersTable, patchOf, readField, snap, stripBars, syncLimit, unpricedSentence, withField,
 } from './costs';
 
@@ -100,7 +101,8 @@ describe('the words around the chart', () => {
   it('says how the forecast was made and that it is an estimate; with no history it says it rests on settings', () => {
     expect(forecastNote(v)).toMatch(/Resampled from your own days and runs/);
     expect(forecastNote(v)).toMatch(/estimate, not a bill\.$/);
-    expect(forecastNote(view('no-history'))).toMatch(/^There is too little history yet, so this rests on your settings/);
+    expect(forecastNote(view('no-history'))).toMatch(/^There is too little history yet, so this is the most your settings allow/);
+    expect(forecastNote(view('no-history'))).toMatch(/It is a bound, not a bill\.$/);
     const nothing = { ...v, services: v.services.map((s) => ({ ...s, forecast: { ...s.forecast, basis: 'none' as const } })) };
     expect(forecastNote(nothing)).toMatch(/^No forecast yet/);
   });
@@ -123,7 +125,8 @@ describe('each service in its own unit', () => {
   });
   it('says when the forecast rests on settings or there is nothing to forecast', () => {
     const serp = view('no-history').services[0]!;
-    expect(forecastWords(serp)).toBe('about 96 of 150 searches (from your settings: too little history)');
+    // A bound, not a prediction, and no range: there is none.
+    expect(forecastWords(serp)).toBe('at most about 96 of 150 searches at your current schedule and limits');
     expect(forecastWords({ ...serp, forecast: { ...serp.forecast, basis: 'none' } })).toMatch(/^Nothing to forecast/);
   });
   it('says what each costs: free plan, price not entered, metered so far', () => {
@@ -277,8 +280,9 @@ describe('which state becomes a notice', () => {
   });
   it('speaks for the total budget when that is what is worst', () => {
     const v = view('calm');
-    const n = costNotice({ ...v, total: { ...v.total, state: 'expected_over', sentence: 'Expected about $75 (between $70 and $80), over your $60 budget.' } })!;
-    expect(n).toMatchObject({ service: null, tone: 'attention', title: 'The month is expected to pass your budget.', body: 'Expected about $75 (between $70 and $80), over your $60 budget.' });
+    const n = costNotice({ ...v, total: { ...v.total, state: 'expected_over', forecastUsd: 75, forecastLowUsd: 70, forecastHighUsd: 80 } })!;
+    expect(n).toMatchObject({ service: null, tone: 'attention', title: 'The month is expected to pass your budget.' });
+    expect(n.body).toBe(`${money(v.total.spentUsd)} so far this month; expected about $75 by Nov 30 (between $70 and $80), over your $60 total.`);
   });
 });
 
@@ -301,5 +305,105 @@ describe('the mock agent’s views are the real shape', () => {
     const v = view('calm');
     expect(v.total.spentUsd).toBeCloseTo(v.total.fixedUsd + v.total.meteredUsd, 2);
     expect(v.days.at(-1)!.cumulativeUsd).toBeCloseTo(v.total.spentUsd, 2);
+  });
+});
+
+describe('a range is only a range when its ends differ, and a bound is worded as one', () => {
+  const calm = view('calm');
+  it('says "about $30" with no range when low and high round to the same figure', () => {
+    const same: CostsView = { ...calm, total: { ...calm.total, forecastUsd: 30.1, forecastLowUsd: 29.8, forecastHighUsd: 30.4 } };
+    expect(totalForecast(same)).toEqual({ mid: 30.1, bound: false, range: null });
+    expect(moneySentence(same)).toBe(`${money(same.total.spentUsd)} so far this month; expected about $30 by Nov 30, inside your $60 total.`);
+    expect(chartSummary(same)).toContain('Expected about $30 by the end of the month.');
+    const g = costChart(same, BOX)!;
+    expect(g.band).toBeNull();
+    expect(g.labels.find((l) => l.key === 'range')).toBeUndefined();
+    expect(g.labels.find((l) => l.key === 'forecast')!.text).toBe('about $30');
+  });
+  it('keeps the range when the ends differ', () => {
+    expect(totalForecast(calm)!.range).not.toBeNull();
+    expect(moneySentence(calm)).toMatch(/expected about \$\d+ by Nov 30 \(between \$\d+ and \$\d+\), inside your \$60 total\.$/);
+  });
+  it('a service range with one figure at both ends has no "between"', () => {
+    const serp = calm.services[0]!;
+    expect(forecastWords({ ...serp, forecast: { ...serp.forecast, expected: 120, low: 120, high: 120.4 } })).toBe(`about 120 of ${serp.limit} searches`);
+  });
+  it('words a forecast that rests on settings as a bound, in the headline, the chart and the summary', () => {
+    const none = view('no-history');
+    expect(totalForecast(none)!.bound).toBe(true);
+    expect(totalForecast(none)!.range).toBeNull();
+    expect(moneySentence(none)).toMatch(/^\$19\.00 so far this month; at most about \$\d+ by Nov 30 at your current schedule and limits, inside your \$60 total\.$/);
+    expect(moneySentence(none)).not.toContain('between');
+    expect(chartSummary(none)).toMatch(/At most about \$\d+ by the end of the month at your current schedule and limits\./);
+    expect(costChart(none, BOX)!.labels.find((l) => l.key === 'forecast')!.text).toMatch(/^at most \$\d+/);
+  });
+  it('says over your total when the forecast passes it, and says so when no budget is set', () => {
+    expect(moneySentence({ ...calm, total: { ...calm.total, budgetUsd: 20 } })).toMatch(/, over your \$20 total\.$/);
+    expect(moneySentence({ ...calm, total: { ...calm.total, budgetUsd: null } })).toMatch(/, and no total budget is set\.$/);
+  });
+});
+
+describe('the headline leads with the worst service', () => {
+  it('says nothing about trouble in a calm month, and lists nothing', () => {
+    expect(troubleLead(view('calm'))).toBeNull();
+    expect(troubles(view('calm'))).toEqual([]);
+  });
+  it('blocked: names the service and its share of the limit, and what was held back', () => {
+    const v = view('blocked');
+    expect(troubleLead(v)).toMatch(/^AI is at \d+% of its limit\. Held back: Review cards\.$/);
+    const list = troubles(v);
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ service: 'ai', state: 'blocked', heldBack: 'Held back: Review cards.' });
+    expect(list[0]!.sentence).toMatch(/^Held back to stay inside your limit/);
+  });
+  it('expected over: names the day the limit is reached', () => {
+    const v = view('expected-over');
+    expect(troubleLead(v)).toMatch(/^SerpApi is expected to (reach its limit on Nov \d+|pass its limit this month)\.$/);
+    expect(troubles(v).map((t) => t.service)).toEqual(['serpapi']);
+  });
+  it('approaching and over', () => {
+    expect(troubleLead(view('approaching'))).toMatch(/^SerpApi is nearing its limit \(\d+%\)\.$/);
+    const s = costSettingsFor('calm', NOW);
+    const over = buildCostsView('calm', withField(s, { kind: 'limit', service: 'serpapi' }, 10), NOW);
+    expect(troubleLead(over)).toBe('SerpApi is at its limit.');
+  });
+  it('lists every service that is not fine, worst first, and counts the others in the lead', () => {
+    const v = view('approaching');
+    const two: CostsView = { ...v, services: v.services.map((s) => (s.service === 'ai' ? { ...s, state: 'over' as const } : s)) };
+    expect(troubles(two).map((t) => t.service)).toEqual(['ai', 'serpapi']);
+    expect(troubleLead(two)).toBe('AI is at its limit. 1 other service needs a look.');
+  });
+});
+
+describe('every state of the view becomes the right notice, or none', () => {
+  const states = ['ok', 'approaching', 'expected_over', 'over', 'blocked'] as const;
+  const withService = (v: CostsView, state: (typeof states)[number]): CostsView => ({
+    ...v,
+    services: v.services.map((s) => (s.service === 'serpapi' ? { ...s, state, blocked: state === 'blocked' ? [{ what: 'Lookups', why: 'Over the limit.', at: '' }] : [] } : s)),
+  });
+  it('one service in each state', () => {
+    const v = view('calm');
+    expect(costNotice(withService(v, 'ok'))).toBeNull();
+    expect(costNotice(withService(v, 'approaching'))).toMatchObject({ state: 'approaching', tone: 'quiet', service: 'serpapi' });
+    expect(costNotice(withService(v, 'expected_over'))).toMatchObject({ state: 'expected_over', tone: 'attention', service: 'serpapi' });
+    expect(costNotice(withService(v, 'over'))).toMatchObject({ state: 'over', tone: 'attention', service: 'serpapi', title: 'SerpApi is at its limit.' });
+    expect(costNotice(withService(v, 'blocked'))).toMatchObject({ state: 'blocked', tone: 'attention', service: 'serpapi', body: 'Lookups. Over the limit.' });
+  });
+  it('the total in each state, when every service is fine', () => {
+    const v = view('calm');
+    const by = (state: (typeof states)[number]) => costNotice({ ...v, total: { ...v.total, state } });
+    expect(by('ok')).toBeNull();
+    expect(by('approaching')).toMatchObject({ state: 'approaching', tone: 'quiet', service: null, title: 'The month is nearing your budget.' });
+    expect(by('expected_over')).toMatchObject({ state: 'expected_over', tone: 'attention', service: null });
+    expect(by('over')).toMatchObject({ state: 'over', tone: 'attention', service: null, title: 'The month is over your budget.' });
+    expect(by('blocked')).toMatchObject({ state: 'blocked', service: null });
+  });
+  it('each mock month gives the notice its screen shows', () => {
+    expect(costNotice(view('calm'))).toBeNull();
+    expect(costNotice(view('unpriced'))).toBeNull();
+    expect(costNotice(view('no-history'))).toBeNull();
+    expect(costNotice(view('approaching'))!.state).toBe('approaching');
+    expect(costNotice(view('expected-over'))!.state).toBe('expected_over');
+    expect(costNotice(view('blocked'))!.state).toBe('blocked');
   });
 });

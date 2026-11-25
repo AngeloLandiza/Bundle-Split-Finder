@@ -43,15 +43,104 @@ export function usdRound(n: number): string {
 
 const unitFigure = (n: number, unit: CostUnit): string => (unit === 'usd' ? usdRound(n) : count(Math.round(n)));
 
-/** "about 96 of 150 searches; between 80 and 120" in the service's own unit; says when it rests on settings, not history. */
+/**
+ * "about 96 of 150 searches; between 80 and 120" in the service's own unit. A range only when its two ends read differently.
+ * When the forecast rests on settings (too little history) it is a bound, not a prediction: "at most about 96 ... at your current schedule and limits".
+ */
 export function forecastWords(s: ServiceCost): string {
   const f = s.forecast;
   if (f.basis === 'none') return 'Nothing to forecast: no use yet and nothing scheduled.';
   const limit = s.limit ?? s.planLimit;
   const noun = unitNoun(s.unit);
-  const head = `about ${unitFigure(f.expected, s.unit)}${limit !== null ? ` of ${unitFigure(limit, s.unit)}` : ''}${noun ? ` ${noun}` : ''}`;
-  const range = Math.round(f.low) === Math.round(f.high) ? '' : `; between ${unitFigure(f.low, s.unit)} and ${unitFigure(f.high, s.unit)}`;
-  return `${head}${range}${f.basis === 'settings' ? ' (from your settings: too little history)' : ''}`;
+  const of = `${limit !== null ? ` of ${unitFigure(limit, s.unit)}` : ''}${noun ? ` ${noun}` : ''}`;
+  if (f.basis === 'settings') return `at most about ${unitFigure(f.expected, s.unit)}${of} at your current schedule and limits`;
+  const range = unitFigure(f.low, s.unit) === unitFigure(f.high, s.unit) ? '' : `; between ${unitFigure(f.low, s.unit)} and ${unitFigure(f.high, s.unit)}`;
+  return `about ${unitFigure(f.expected, s.unit)}${of}${range}`;
+}
+
+/** The month's forecast in dollars as the headline, the chart's end label and the summary read it. Null when there is none. */
+export function totalForecast(view: CostsView): { mid: number; bound: boolean; range: { low: number; high: number } | null } | null {
+  const t = view.total;
+  if (t.forecastUsd === null) return null;
+  const live = view.services.filter((s) => s.forecast.basis !== 'none');
+  const bound = live.length > 0 && live.every((s) => s.forecast.basis === 'settings');
+  const lo = t.forecastLowUsd;
+  const hi = t.forecastHighUsd;
+  // "between $30 and $30" is not a range: with the same figure at both ends there is none.
+  const range = !bound && lo !== null && hi !== null && usdRound(lo) !== usdRound(hi) ? { low: lo, high: hi } : null;
+  return { mid: t.forecastUsd, bound, range };
+}
+
+/** What the headline says about the dollars: so far, the forecast (a bound when it rests on settings), and the total budget. */
+export function moneySentence(view: CostsView): string {
+  const t = view.total;
+  const f = totalForecast(view);
+  const N = daysInMonth(view.month);
+  let s = `${money(t.spentUsd)} so far this month`;
+  if (f) {
+    s += `; ${f.bound ? 'at most about' : 'expected about'} ${usdRound(f.mid)} by ${dayLabel(view.month, N)}${f.bound ? ' at your current schedule and limits' : ''}${f.range ? ` (between ${usdRound(f.range.low)} and ${usdRound(f.range.high)})` : ''}`;
+  }
+  if (t.budgetUsd === null) return `${s}, and no total budget is set.`;
+  const end = f ? f.mid : t.spentUsd;
+  return `${s}, ${end <= t.budgetUsd ? 'inside' : 'over'} your ${usdRound(t.budgetUsd)} total.`;
+}
+
+/** The service name as a sentence starts with it: "AI (Anthropic)" reads "AI". */
+export const shortLabel = (s: Pick<ServiceCost, 'label'>): string => s.label.replace(/\s*\(.*\)\s*$/, '');
+
+export interface Trouble {
+  service: CostService;
+  label: string;
+  state: Exclude<CostState, 'ok'>;
+  /** The agent's own sentence for the state. */
+  sentence: string;
+  /** What was held back, in plain words, when something was. */
+  heldBack: string | null;
+}
+
+/** The services that are not fine, worst first (the order of the view breaks a tie): the list under the headline. */
+export function troubles(view: CostsView): Trouble[] {
+  return view.services
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => s.state !== 'ok')
+    .sort((a, b) => SEVERITY[b.s.state] - SEVERITY[a.s.state] || a.i - b.i)
+    .map(({ s }) => ({
+      service: s.service,
+      label: s.label,
+      state: s.state as Exclude<CostState, 'ok'>,
+      sentence: s.sentence,
+      heldBack: s.blocked.length ? `Held back: ${s.blocked.map((b) => b.what).join('; ')}.` : null,
+    }));
+}
+
+/**
+ * The headline's first sentence when a service is not fine: the worst one, in words ("AI is at 97% of its limit. Held back:
+ * Review cards."), so the first thing on the screen is the trouble, not "inside your budget". Null when every service is fine.
+ */
+export function troubleLead(view: CostsView): string | null {
+  const first = troubles(view)[0];
+  if (!first) return null;
+  const s = view.services.find((x) => x.service === first.service)!;
+  const name = shortLabel(s);
+  const cap = s.limit ?? s.planLimit;
+  const pct = cap && cap > 0 ? Math.round((s.used / cap) * 100) : null;
+  const reach = s.forecast.limitReachedOn;
+  let lead: string;
+  switch (first.state) {
+    case 'over':
+      lead = `${name} is at its limit.`;
+      break;
+    case 'expected_over':
+      lead = reach ? `${name} is expected to reach its limit on ${dayLabel(reach.slice(0, 7), dayOf(reach))}.` : `${name} is expected to pass its limit this month.`;
+      break;
+    case 'approaching':
+      lead = `${name} is nearing its limit${pct !== null ? ` (${pct}%)` : ''}.`;
+      break;
+    default:
+      lead = pct !== null ? `${name} is at ${pct}% of its limit.` : `${name} had something held back.`;
+  }
+  const more = troubles(view).length - 1;
+  return `${lead}${first.heldBack ? ` ${first.heldBack}` : ''}${more > 0 ? ` ${more === 1 ? '1 other service needs a look' : `${more} other services need a look`}.` : ''}`;
 }
 
 /** What the service costs: "$0.00 a month: free plan", "Price not entered", "$4.12 so far". `missing` marks the price nobody entered. */
@@ -392,11 +481,12 @@ export function costChart(view: CostsView, box: ChartBox): ChartGeometry | null 
     const ex = x(N);
     const mid = total.forecastUsd!;
     dashed = `M${fixed(today.x)} ${fixed(today.y)}L${fixed(ex)} ${fixed(y(mid))}`;
-    if (total.forecastLowUsd !== null && total.forecastHighUsd !== null) {
-      band = `M${fixed(today.x)} ${fixed(today.y)}L${fixed(ex)} ${fixed(y(total.forecastHighUsd))}L${fixed(ex)} ${fixed(y(total.forecastLowUsd))}Z`;
-      labels.push({ key: 'range', text: `${axisUsd(total.forecastLowUsd)} to ${axisUsd(total.forecastHighUsd)}`, x: ex + 6, y: y(mid) + 12, anchor: 'start' });
+    const tf = totalForecast(view);
+    if (tf?.range) {
+      band = `M${fixed(today.x)} ${fixed(today.y)}L${fixed(ex)} ${fixed(y(tf.range.high))}L${fixed(ex)} ${fixed(y(tf.range.low))}Z`;
+      labels.push({ key: 'range', text: `${axisUsd(tf.range.low)} to ${axisUsd(tf.range.high)}`, x: ex + 6, y: y(mid) + 12, anchor: 'start' });
     }
-    labels.push({ key: 'forecast', text: `about ${axisUsd(mid)}`, x: ex + 6, y: y(mid) + 1, anchor: 'start' });
+    labels.push({ key: 'forecast', text: `${tf?.bound ? 'at most ' : 'about '}${axisUsd(mid)}`, x: ex + 6, y: y(mid) + 1, anchor: 'start' });
   }
   const nearLeft = today.x - box.margin.left < 56;
   labels.push({ key: 'so-far', text: money(last.cumulativeUsd), x: today.x + (nearLeft ? 4 : -4), y: today.y + 16, anchor: nearLeft ? 'start' : 'end' });
@@ -450,8 +540,9 @@ export function chartSummary(view: CostsView): string {
   const last = [...view.days].sort((a, b) => a.date.localeCompare(b.date)).at(-1);
   const t = view.total;
   const parts = [`Dollars this month: ${money(t.spentUsd)} so far${last ? ` on ${dayLabel(view.month, dayOf(last.date))}` : ''}.`];
-  if (t.forecastUsd !== null) {
-    parts.push(`Expected about ${usdRound(t.forecastUsd)} by the end of the month${t.forecastLowUsd !== null && t.forecastHighUsd !== null ? `, between ${usdRound(t.forecastLowUsd)} and ${usdRound(t.forecastHighUsd)}` : ''}.`);
+  const f = totalForecast(view);
+  if (f) {
+    parts.push(`${f.bound ? 'At most about' : 'Expected about'} ${usdRound(f.mid)} by the end of the month${f.bound ? ' at your current schedule and limits' : ''}${f.range ? `, between ${usdRound(f.range.low)} and ${usdRound(f.range.high)}` : ''}.`);
   } else parts.push('There is no forecast yet.');
   parts.push(t.budgetUsd !== null ? `Your total budget is ${money(t.budgetUsd)}.` : 'No total budget is set.');
   return parts.join(' ');
@@ -463,8 +554,8 @@ export function forecastNote(view: CostsView): string {
   if (live.length === 0) return 'No forecast yet: nothing has been used this month and nothing is scheduled. Any forecast is an estimate, not a bill.';
   const methods = [...new Set(live.map((s) => s.forecast.method.trim()).filter(Boolean))];
   const onSettings = live.every((s) => s.forecast.basis === 'settings');
-  const lead = onSettings ? 'There is too little history yet, so this rests on your settings (schedule and per-run caps), not on what you used. ' : '';
-  return `${lead}${methods.join(' ')} The forecast is an estimate, not a bill.`.replace(/\s+/g, ' ').trim();
+  const lead = onSettings ? 'There is too little history yet, so this is the most your settings allow (schedule and per-run caps), not a prediction from what you used. ' : '';
+  return `${lead}${methods.join(' ')} ${onSettings ? 'It is a bound, not a bill.' : 'The forecast is an estimate, not a bill.'}`.replace(/\s+/g, ' ').trim();
 }
 
 export interface NumbersTable {
@@ -539,7 +630,7 @@ export function costNotice(view: CostsView | null): CostNotice | null {
   const s = best.s;
   if (!s) {
     const title = state === 'over' ? 'The month is over your budget.' : state === 'expected_over' ? 'The month is expected to pass your budget.' : state === 'blocked' ? 'Something was held back to stay inside your budget.' : 'The month is nearing your budget.';
-    return { state, tone, title, body: view.total.sentence, service: null };
+    return { state, tone, title, body: moneySentence(view), service: null };
   }
   const name = s.label;
   switch (state) {

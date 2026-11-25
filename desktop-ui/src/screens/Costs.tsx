@@ -10,7 +10,7 @@ import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
 import { LoadError, LoadingState } from '../components/States';
 import {
-  amount, costWords, dayLabel, dayOf, daysInMonth, describeChange, fieldText, forecastNote, forecastWords, isBudgeted, limitNote, limitRange, limitToStartAt, meterOf, mergeCostPatch, numbersTable,
+  amount, costWords, dayLabel, moneySentence, troubleLead, troubles, dayOf, daysInMonth, describeChange, fieldText, forecastNote, forecastWords, isBudgeted, limitNote, limitRange, limitToStartAt, meterOf, mergeCostPatch, numbersTable,
   patchOf, readField, sliderAt, stateLabel, stateMark, stripBars, syncLimit, unitNoun, unpricedSentence, withField, fieldKey,
   type CostField, type CostSettingsPatch, type CostValue, type SliderRange,
 } from '../lib/costs';
@@ -205,8 +205,16 @@ type Edit = (field: CostField, value: CostValue, delay?: number) => void;
 /** One sentence: so far, the forecast, the budget. A price that is missing is said right here, with the field to enter it. */
 function Answer({ view, settings, edit }: { view: CostsView; settings: CostSettings; edit: Edit }) {
   const t = view.total;
-  const note = TOTAL_STATE[t.state];
+  const lead = troubleLead(view);
+  const list = troubles(view);
+  // A service that is not fine leads; the month's own state is said only when every service is fine.
+  const note = lead ? null : TOTAL_STATE[t.state];
   const missing = unpricedSentence(view);
+  const show = (service: string) => {
+    const row = document.getElementById(`cost-row-${service}`);
+    row?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    row?.focus({ preventScroll: true });
+  };
   return (
     <section className="costs-answer" aria-label="The answer">
       {note ? (
@@ -215,7 +223,23 @@ function Answer({ view, settings, edit }: { view: CostsView; settings: CostSetti
           {note}
         </p>
       ) : null}
-      <p className="costs-sentence">{t.sentence}</p>
+      <p className="costs-sentence">
+        {lead ? <>{lead} </> : null}
+        {moneySentence(view)}
+      </p>
+      {list.length > 0 ? (
+        <ul className="costs-troubles" aria-label="Services that need a look">
+          {list.map((x) => (
+            <li key={x.service}>
+              <Glyph name="warning" size={13} className="costs-state-glyph" />
+              <span className="costs-trouble-text">
+                <strong>{x.label}.</strong> {x.sentence}
+              </span>
+              <LinkButton onClick={() => show(x.service)}>Show</LinkButton>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {missing ? (
         <div className="costs-missing">
           <p>{missing}</p>
@@ -332,7 +356,7 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
   const note = limitNote(s, cfg.monthlyLimit, settings.blockWhenOver);
   const id = useId();
   return (
-    <li className="crow" aria-labelledby={`${id}-name`}>
+    <li className="crow" id={`cost-row-${service}`} tabIndex={-1} aria-labelledby={`${id}-name`}>
       <div className="crow-head">
         <h3 className="crow-name" id={`${id}-name`}>
           {s.label}

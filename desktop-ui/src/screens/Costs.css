@@ -44,6 +44,39 @@
   text-wrap: balance;
 }
 
+/* The services that are not fine, right under the headline: each with its own sentence and a way to its row. No paint on the chart. */
+.costs-troubles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.costs-troubles li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.costs-troubles .glyph {
+  flex: none;
+  align-self: center;
+}
+
+.costs-trouble-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.crow:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
 .costs-missing {
   display: flex;
   flex-direction: column;
