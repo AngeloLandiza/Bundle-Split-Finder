@@ -1704,3 +1704,39 @@ window and the Activity entry stay (they are not interruptions).
 separately, and the shell shows one and gives the agent another. `core/test/version-agreement.test.ts` fails when they
 differ, and also when `docs/release.json` is ahead of the app. The release steps are in `docs/install.md`.
 
+## Step 18: the Costs screen and its chart (Nov 25)
+
+What the screen is for: "am I spending within my budget", answered in one sentence before anything else. The choices the code does
+not explain (`desktop-ui/src/lib/costs.ts`, `components/CostChart.tsx`, `screens/Costs.tsx`):
+
+- **One chart, dollars, cumulative.** A cumulative line reads as "where am I against the budget"; a daily-bar chart would not. The
+  days so far are solid; from today the forecast is dashed, so a measured figure and a prediction never share a stroke. The
+  range is a wedge from today's point to the low and high at month end, in one flat tint: it widens as the future does, and
+  nothing is invented for the days between. The budget is a thin rule with its label on it. No gridlines: one baseline, three
+  or four dollar labels on the left, three date labels below. Hand-written SVG from the design tokens (the accent for the
+  money lines, the label colours for the rest), no library, no gradient, no animation.
+- **Nothing needs hover.** The ends carry their dollars ("$28.27", "about $31", "$30 to $32", "Budget $60", "Today"). Hover or
+  the arrow keys add one day's dollars by service. The SVG's text alternative states the three figures (so far, expected
+  with range, budget), and "Show the numbers" is the same data as a table. The forecast's `method` sentence sits under the
+  chart with "an estimate, not a bill"; with only settings behind it, it says so first.
+- **State is words and a shape, then colour.** Each service says its state in words with a mark (a check, or the warning mark),
+  the meter has a tick where the warning starts, and a state that is not fine is also tinted with the existing attention
+  tokens. No new colour token was needed (`--attention`, `--attention-bg`, `--accent-soft` exist).
+- **A price nobody entered is a question, not $0.** It is said in the first answer with its field, on its service row ("Price
+  not entered", in weight), and the dollar totals omit it (the agent's `total.unpriced`).
+- **Slider and number are one value; "No limit" is a checkbox.** A slider's far end must never mean "no limit". Ranges: searches
+  to the plan's limit (250 when unknown), Keepa tokens to the plan's monthly ceiling, AI dollars 0 to 100, the total budget in
+  fives. A figure typed beyond the end pegs the slider and keeps the figure; a saved figure beyond it stretches the range.
+  Counts are whole, dollars to the cent. A limit below what is used says "Already at 62 searches; nothing more will be spent
+  this month" at once, from the draft, before the agent has answered.
+- **Saving is the existing pattern** (apply on screen at once, send what changed after 600ms so a drag or typing is one save,
+  show the agent's answer), against `PATCH /api/settings { costs: patch }`, only what changed, `null` clearing. The view is
+  asked for again after a save, since a limit moves the states and the forecast. The last change is one sentence with Undo,
+  which writes the first value of that burst back; it stays until the next change (no fading toast for something he reads).
+- **One notice, the worst state.** `costNotice` picks held back, then over, then expected over, then approaching, across the
+  services and the total; approaching is quiet, the rest attention. It sits after rejected keys and before waiting lookups,
+  and is not shown on Costs itself.
+- **Costs is Cmd+6**, after Settings in the key list, so Settings keeps Cmd+5 (the number is the screen's place in `SCREENS`).
+- **The mock is shaped like the agent's answer and moves with the settings** (`api/mockCosts.ts`): its use is made up
+  deterministically, and its limits, prices and budget are the owner's settings, so moving a slider moves the states. It is a
+  look-alike; the real arithmetic is core/src/costs.

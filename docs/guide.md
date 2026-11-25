@@ -108,6 +108,18 @@ What costs money:
 - **Keepa.** A subscription with Keepa.
 - **AI.** You pay the AI service for each question. The app keeps a monthly cap (default $25; 0 turns AI off). Activity and Today show what you have spent.
 
+### What it costs
+
+Open **Costs** (sidebar, under Activity; **⌘6** or **Ctrl+6**) to see what the services cost, this month and by its end, and to set what you allow.
+
+- **The answer is the first line:** what you have spent so far, what is expected by the end of the month with its range, and whether that stays inside your total budget. A forecast is an estimate from your own use, not a bill.
+- **A price you have not entered is never counted as $0.** The app does not know what you pay SerpApi or Keepa. Until you type it in, that service says "price not entered" and is left out of the dollar totals; the first line says so and has the field.
+- **The chart** shows dollars each day so far (solid line), the forecast to the month's end (dashed, its range shaded) and your total budget (a rule). Hover it, or click it and use the arrow keys, to see one day by service. **Show the numbers** gives the same figures as a table.
+- **Each service** has a row: its state in words, how much of its limit it has used (a mark shows where your warning starts), the forecast in its own unit, what it costs, and anything held back, with what, why and when.
+- **Limits.** Each service has a slider with a number beside it; either one sets the limit. **No limit** is its own checkbox. Set a limit below what is already used and the row says so. Changes save as you make them; the line above Services says what changed and has **Undo**.
+- **Hold back anything expected to pass a limit** (on by default): a step that would take a service past its limit does not run, and a notice says so. Turn it off and you are only warned.
+- A warning (nearing a limit, expected to pass it, reached, or something held back) also appears as a banner on the other screens, with **Open Costs**.
+
 Your keys are saved only on your computer, in the app's own folder. On Windows they are readable by your Windows account and by this PC's administrators, the same as SSH keys; on a Mac, by your account alone. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To clear the deals, Review and scan history but keep your keys and settings, open **Settings, Data** and press **Reset scan data…**. The app copies what it deletes into a backup folder first and tells you where. To remove everything, including keys, uninstall the app and delete its data folder (**Settings, Data** shows it; on Windows it is `%APPDATA%\com.bundlesplitfinder.desktop`).
 
 ### New versions
@@ -144,6 +156,7 @@ Press **Ctrl+/** in the app to see this list.
 | Show or hide the inspector | Ctrl+Alt+I | ⌥⌘I |
 | Go to Today, Deals, Review, Activity | Ctrl+1, 2, 3, 4 | ⌘1, 2, 3, 4 |
 | Open Settings | Ctrl+5 | ⌘5 |
+| Go to Costs | Ctrl+6 | ⌘6 |
 | Scan now | Ctrl+R | ⌘R |
 | Next or previous row | J or K (or the arrow keys) | J or K |
 | Open the row | Enter | ↩ |

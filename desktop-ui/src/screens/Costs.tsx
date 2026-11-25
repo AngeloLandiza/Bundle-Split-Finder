@@ -385,7 +385,8 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
         {note ? <p className="crow-ctl-note">{note}</p> : null}
         <span className="crow-ctl-label">Warn me at</span>
         <div className="crow-ctl-one">
-          <NumberField label={`${s.label} warning, percent of the limit`} value={cfg.warnAtPercent} rule={{ min: 1, max: 100, whole: true, what: 'Warn at', unit: '%' }} suffix="% of the limit" width="sm" onCommit={(v) => edit({ kind: 'warn', service }, v)} />
+          <NumberField label={`${s.label} warning, percent of the limit`} value={cfg.warnAtPercent} rule={{ min: 1, max: 100, whole: true, what: 'Warn at', unit: '%' }} suffix="%" width="xs" onCommit={(v) => edit({ kind: 'warn', service }, v)} />
+          <span className="crow-ctl-unit">of the limit</span>
         </div>
         {service !== 'ai' ? (
           <>
@@ -398,11 +399,11 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
                 prefix="$"
                 step="0.01"
                 placeholder="not entered"
-                suffix="a month"
                 width="sm"
                 onCommit={(v) => edit({ kind: 'price', service }, v)}
                 onClear={() => edit({ kind: 'price', service }, null)}
               />
+              <span className="crow-ctl-unit">a month</span>
             </div>
           </>
         ) : null}
@@ -479,7 +480,7 @@ function LimitControl({ name, value, range, unit, noun, startAt, onChange, prefi
           min={0}
           step={dollars ? '0.01' : '1'}
           prefix={prefix ?? (dollars ? '$' : undefined)}
-          suffix={noun || undefined}
+          suffix={none ? undefined : noun || undefined}
           placeholder={none ? 'No limit' : undefined}
           disabled={none}
           value={none ? '' : text}

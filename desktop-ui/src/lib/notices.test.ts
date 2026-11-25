@@ -25,6 +25,13 @@ describe('one notice at a time', () => {
     expect(chooseNotices([item('update')], idle).first?.kind).toBe('update');
   });
 
+  it('puts a cost warning after the keys and before waiting lookups and stale prices', () => {
+    const { first, more } = chooseNotices([item('stale'), item('lookups'), item('cost'), item('key-rejected')], idle);
+    expect(first?.kind).toBe('key-rejected');
+    expect(more.map((m) => m.kind)).toEqual(['cost', 'lookups', 'stale']);
+    expect(chooseNotices([item('cost'), item('lookups')], idle).first?.kind).toBe('cost');
+  });
+
   it('shows exactly one banner whatever the count and lists the rest behind it', () => {
     const { first, more } = chooseNotices([item('scan'), item('lookups')], idle);
     expect(first?.kind).toBe('scan');

@@ -400,7 +400,8 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   for a lookup, Losing money, **Watchlist** (`lib/views.ts`; a view is a question about the row's own
   fields, and a bundle with no estimate is never "losing"), then **Bought** (his own records, not a view of the rows: its count is
   his purchases); **Agent**: Review with its badge (the
-  accent when above zero), Activity, Settings. Section heads are 11px semibold tertiary with a
+  accent when above zero), Activity, **Costs** (Cmd+6: the answer in one sentence, a chart of dollars this month with its
+  forecast and budget, each service with its limit slider; see docs/decisions.md, Step 18), Settings. Section heads are 11px semibold tertiary with a
   disclosure on hover; a collapsed section is remembered. Rows are 28px, 6px radius; the selected one
   is a grey rounded rectangle with its glyph in the accent. At the foot: "Finish setup · N of 3" while
   setup is open, then the agent's status in four lines at most (`lib/sidebarStatus.ts`): the state ("Idle", or
