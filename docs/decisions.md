@@ -2200,3 +2200,56 @@ rule G needs the bundle's page and the code model's part-price reading (DCS382B 
 a Keepa token or an AI call. Tests changed for the new counts: fewer-questions (now replays the Nov 24 rules alone),
 settle (W34 waits), settle-special-buy (rule F off for the old question, on for the new path), part-facts, recheck
 (12 → 7 and 13 → 8 open), scan-chrome-listing unchanged.
+
+## Nov 25: what Home Depot's own page says about buying a bundle
+
+Recorded on the owner's Chrome (`fixtures/homedepot-pages/availability-344305163-2026-11-25.json`, PSK1212SB-PCL633B). The page
+state the helper already reads holds, on the product object `base-catalog-<itemId>`: `availabilityType { type: "Online",
+discontinued: false, status: false, buyable: true }`, `info.quantityLimit` 3 ("Limit 3 per order" on the page),
+`info.returnable` "90-Day", and `pricing(...).promotion.dates { start: "10/26/2026", end: "01/31/2027" }`.
+
+- **Kept** (`hdPage.ts buyingOf`, `BuyingFacts`): `buyable`, `discontinued`, `availability` (the `type`), `quantityLimit` (a whole
+  number 1 to 9999, else null), `returnable`, `promotionStart`, `promotionEnd` (MM/DD/YYYY read as a real calendar date and kept as
+  YYYY-MM-DD; a value that is not one, `02/30/2027`, `2027-01-31`, a number, is null and the rest is kept; pricing entries that
+  disagree on the dates give none, as they do for the price). Each is null when the page does not state it; the object is absent
+  when the page states none of it, so a page read before this existed, and a recorded page without them, parse exactly as before.
+  On the record as `BundleRecord.buying` with `readAt` (`BundleBuying`), copied to `BundleRow.buying`; the newest reading wins
+  (`scan/buying.ts withBuying`) and every path that rebuilds a bundle record from a list read keeps it. A message from the helper
+  is cleaned again (`cleanBuying`) before it is stored.
+- **From which reads**: the scan's bundle pages (P1) and the drip's, the item pages a list pass reads (`BogoItem.buying`), the
+  owner's own page through the side panel (`notePage`), and the keep-current re-read of a watched deal's page (a page of the item
+  keeps it with or without a price). *Not from*: a Home Depot list entry, whose `availabilityType` and `info` keys exist but whose
+  values have not been recorded, and a set's own page, which no reader reads (a set's items' pages are, `readBundlePages` skips
+  sets) and which `parsePromoPage` would refuse (no model number). A set deal therefore says "not checked yet" for as long as that
+  holds. *To do*: record a set's own page, then read it in keep-current.
+- **Buy now gets one condition** (`signals.ts`, `tracking/buying.ts cannotBuyWords`): the page, as last read, says it is
+  discontinued or not buyable. The deal leaves the state with the true sentence ("Not worth buying now: Home Depot's page says it
+  cannot be bought right now (read 10:55 AM)", or "... is discontinued ..."), first among the conditions that fail, is never "Looks
+  worth buying" either, and is said once in Activity and the digest as any other exit ("... is no longer worth buying: Home
+  Depot's page says ..."); the next read that says buyable brings it back by itself, not announced again if it was told. A page
+  that states neither is not a reason; a bundle with no reading is not unbuyable: its line says "not checked yet" (`DealBuying`),
+  the verdict string is untouched, and the keep-current re-read (every 4 hours for Buy now) fills it in. Replayed on
+  `after-keepcurrent`: no deal has a reading, every watched deal says "not checked yet", the verdicts and the two deals in the
+  state are exactly as before. Buy now is still a state: nothing here brings back "needs a change".
+- **What it cannot know**: the page's first state holds no per-store stock and no delivery estimate (no `fulfillment` key; the
+  page loads it later), so the app never says "in stock at your store". The most it says is that the page says it can be bought,
+  "online" only when `availabilityType.type` is "Online". Whether a store has it, and what Home Depot would do with an order of
+  more than the limit, are not on the page either.
+- **The limit** is on the Deals row ("Limit 3 per order") and in the inspector, with what it allows at the deal's own estimate
+  ("Up to 3 per order: about +$107 at this estimate", limit times the estimated profit of one bundle, only for a limit above 1
+  and a profit above 0; an estimate that assumes Amazon holds its price for three units, labelled as one). "I bought this" starts
+  at 1 (never above a limit, which is at least 1), says the limit under the quantity and warns above it; it does not refuse, he may
+  buy in more than one order.
+- **The promotion's end** shows ("Home Depot's price ends Jan 31"). One message when a Buy now deal's price ends within
+  `PRICE_ENDS_WITHIN_DAYS` 3 days (chosen: a Friday notice still holds the weekend, the 4-hour re-read has confirmed the price by
+  then, a longer notice would repeat the row for a week), once per deal and end date (`<key>|priceEnds|<end>` in `tracking.notified`;
+  an extended promotion is news again), through the notification policy and Telegram when alerts are on, never for a deal with stale
+  prices. Checked on the agent's own tick (`announcePriceEnds`), needing no read. After the last day (end of that day on his
+  clock) a watched deal whose price was last read before the end is read first, ahead of every cadence and tier, again every 30
+  minutes while a read gives no price (`ENDED_RETRY_MS`, `endedUnread`), shown "ended Jan 31; it has not been read since" and, if
+  Buy now, held back from the digest like a stale one (`staleBuyKeys`) until a read confirms the price. A price a list read moves
+  confirms it too (`seenAt`). It stays a Buy now state; only the announcement waits.
+- **The return window** is shown as the page states it ("90-Day returns, per Home Depot's page") and changes nothing else.
+- Tests: `core/test/buying.test.ts` (the recorded page and variations: not buyable, discontinued, no limit, no promotion, bad
+  dates, disagreeing entries; the words on a fake clock; the replay on `after-keepcurrent`), `agent/test/buyingPage.test.ts` (the
+  re-read, the exit and the return, the message, the ended price, through the agent with a fake Chrome).
