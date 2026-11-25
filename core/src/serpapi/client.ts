@@ -33,9 +33,24 @@ export class MemoryCache implements Cache {
 export interface LedgerEntry {
   at: string;
   engine: string;
+  /** The search's cache key (its parameters), never an API key. */
   key: string;
   label: string;
+  /**
+   * Nov 25, key stacking: the id of the saved key the search was charged to (never the key itself). Absent with a single
+   * key given as `apiKey`, and on every row written before key stacking: those are read as the first key's.
+   */
+  keyId?: string;
 }
+
+/** Nov 25, key stacking: one saved key and its stable id. The id goes to the ledger; the key only to serpapi.com. */
+export interface PoolKey {
+  id: string;
+  key: string;
+}
+
+/** Why SerpApi refused a key: 401, it does not accept it; 429, its account is at its hourly limit or out of searches. */
+export type KeyRefusal = 'rejected' | 'limited';
 
 export class BudgetExceededError extends Error {
   constructor(public readonly reason: BlockReason) {
@@ -67,7 +82,15 @@ export class RateLimitedError extends SerpApiError {
 }
 
 export interface ClientOptions {
-  apiKey: string;
+  /** One key (the extension, development). Give this or `keys`. */
+  apiKey?: string;
+  /**
+   * Nov 25, key stacking (the desktop agent): several saved keys, each its own account, with a budget made from their
+   * accounts (`new SearchBudget(KeyAccount[], policy)`, the same ids). Each search is charged to the key the budget picks.
+   */
+  keys?: readonly PoolKey[];
+  /** A key SerpApi refused during a search (401 or 429): the agent records it beside the key in Settings. Never the key. */
+  onKeyRefused?: (keyId: string, why: KeyRefusal, message: string) => void | Promise<void>;
   budget: SearchBudget;
   cache?: Cache;
   fetchFn?: typeof fetch;
@@ -120,7 +143,8 @@ export class SerpApiClient {
   private readonly baseUrl: string;
 
   constructor(private readonly opts: ClientOptions) {
-    if (!opts.apiKey) throw new SerpApiError('No SerpApi key set. Add your key in Settings.');
+    const pool = opts.keys?.filter((k) => k.key);
+    if (!opts.apiKey && !(pool && pool.length > 0)) throw new SerpApiError('No SerpApi key set. Add your key in Settings.');
     this.fetchFn = opts.fetchFn ?? fetch;
     this.cache = opts.cache ?? new MemoryCache();
     this.now = opts.now ?? Date.now;
@@ -151,42 +175,73 @@ export class SerpApiClient {
       return { data: cached.data, source: 'cache', at: cached.at };
     }
 
-    const reason = this.opts.budget.blockReason(1);
+    const budget = this.opts.budget;
+    const reason = budget.blockReason(1);
     if (reason) throw new BudgetExceededError(reason);
 
     const query = new URLSearchParams();
     for (const k of Object.keys(params).sort()) {
       if (params[k] !== undefined) query.set(k, String(params[k]));
     }
-    query.set('api_key', this.opts.apiKey);
 
-    let res: Response;
-    try {
-      res = await this.fetchFn(`${this.baseUrl}/search.json?${query.toString()}`);
-    } catch (err) {
-      throw new SerpApiError(`${NETWORK_ERROR_PREFIX}: ${(err as Error).message}`);
+    // Key stacking: the key is chosen before the call. If SerpApi refuses it in a way it does not charge for and that
+    // says the key is the problem (401: not accepted; 429: its account is at its hourly limit or out of searches; both
+    // free, docs/search-budget.md), that key is marked and the same search may go once more, with the next key. Never a
+    // second try on the same key, never a third send, and every other failure is thrown exactly as with one key.
+    const tried = new Set<string>();
+    for (let attempt = 0; ; attempt++) {
+      const pick = this.pickKey(tried);
+      if (!pick) throw new BudgetExceededError('hourly_limit');
+      tried.add(pick.id ?? '');
+      query.set('api_key', pick.key);
+
+      let res: Response;
+      try {
+        res = await this.fetchFn(`${this.baseUrl}/search.json?${query.toString()}`);
+      } catch (err) {
+        throw new SerpApiError(`${NETWORK_ERROR_PREFIX}: ${(err as Error).message}`);
+      }
+      if (res.status === 429 || res.status === 401) {
+        const refused = res.status === 429
+          ? new RateLimitedError('SerpApi refused the search: hourly limit reached or no searches left.')
+          : new SerpApiError('SerpApi did not accept this key.', 401);
+        if (pick.id === undefined) throw refused;
+        budget.markOut(pick.id);
+        await this.opts.onKeyRefused?.(pick.id, res.status === 429 ? 'limited' : 'rejected', refused.message);
+        // One fall-over at most, and only while the keys left can still pay within the reserve, the run and the hour.
+        if (attempt >= 1 || budget.blockReason(1) !== null || this.pickKey(tried) === null) throw refused;
+        continue;
+      }
+      if (!res.ok) throw new SerpApiError(`SerpApi returned HTTP ${res.status}.`, res.status);
+
+      const data = (await res.json()) as Record<string, unknown>;
+      const status = (data.search_metadata as Record<string, unknown> | undefined)?.status;
+      if (status === 'Error') {
+        // Errored searches are not counted by SerpApi, so the budget is not charged.
+        throw new SerpApiError(typeof data.error === 'string' ? data.error : 'SerpApi search failed.');
+      }
+
+      // A successful search counts as 1, even when it returns no results.
+      budget.record(1, pick.id);
+      await this.opts.onSpend?.({
+        at: new Date(this.now()).toISOString(),
+        engine: String(params.engine ?? ''),
+        key,
+        label: options.label ?? 'unlabelled',
+        ...(pick.id !== undefined ? { keyId: pick.id } : {}),
+      });
+      const at = this.now();
+      await this.cache.set(key, { at, data });
+      return { data, source: 'network', at };
     }
-    if (res.status === 429) throw new RateLimitedError('SerpApi refused the search: hourly limit reached or no searches left.');
-    if (res.status === 401) throw new SerpApiError('SerpApi did not accept this key.', 401);
-    if (!res.ok) throw new SerpApiError(`SerpApi returned HTTP ${res.status}.`, res.status);
+  }
 
-    const data = (await res.json()) as Record<string, unknown>;
-    const status = (data.search_metadata as Record<string, unknown> | undefined)?.status;
-    if (status === 'Error') {
-      // Errored searches are not counted by SerpApi, so the budget is not charged.
-      throw new SerpApiError(typeof data.error === 'string' ? data.error : 'SerpApi search failed.');
-    }
-
-    // A successful search counts as 1, even when it returns no results.
-    this.opts.budget.record(1);
-    await this.opts.onSpend?.({
-      at: new Date(this.now()).toISOString(),
-      engine: String(params.engine ?? ''),
-      key,
-      label: options.label ?? 'unlabelled',
-    });
-    const at = this.now();
-    await this.cache.set(key, { at, data });
-    return { data, source: 'network', at };
+  /** The key for the next send: the one key, or (key stacking) the budget's choice among the saved keys not tried yet. */
+  private pickKey(tried: ReadonlySet<string>): { id?: string; key: string } | null {
+    const pool = this.opts.keys?.filter((k) => k.key);
+    if (!pool || pool.length === 0) return tried.size > 0 ? null : { key: this.opts.apiKey! };
+    const id = this.opts.budget.pickKey(tried);
+    const k = id === null ? undefined : pool.find((p) => p.id === id);
+    return k ? { id: k.id, key: k.key } : null;
   }
 }
