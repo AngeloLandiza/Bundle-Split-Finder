@@ -1992,6 +1992,13 @@ export class AgentWork {
     const alerts = this.d.store.get('settings').alerts;
     const now = this.d.now();
     const opts = this.signalsDeps();
+    // Nov 25: a scan's deals are checked against his seller account before they are judged (its message follows), so a
+    // first announcement rests on a fresh check. Amazon's fees read now count from the next rebuild.
+    if (this.seller.connected() && !this.d.store.get('runtime').keyProblems?.amazonSeller) {
+      const r = await this.seller.refresh(report, trend, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) }).catch(() => null);
+      if (r?.stopped && r.stopped !== this.sellerStopped) this.addError(`Checking your Amazon seller account stopped: ${scrub(r.stopped, this.d.store.get('keys'))}`, null);
+      if (r) this.sellerStopped = r.stopped;
+    }
     const seller = this.seller.lookup();
     this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store), ...(seller ? { seller } : {}) }) }));
   }
