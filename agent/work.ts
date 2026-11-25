@@ -44,7 +44,7 @@ import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
 import {
-  keepaLookupOne, kitPagesWanted, type LookupStep, pageRead, partPagesWanted, partPricesWanted, plannedWork, rejudgePackQuestions, readKitPagesFor, readPartPricesFor, readSetItemsFor, runScan, settleWaitingSplits, splitOne, withdrawUnreadSplitQuestions,
+  barcodeLookupsWanted, keepaBarcodeOne, keepaLookupOne, kitPagesWanted, type LookupStep, pageRead, partPagesWanted, partPricesWanted, plannedWork, rejudgePackQuestions, readKitPagesFor, readPartPricesFor, readSetItemsFor, runScan, settleWaitingSplits, splitOne, withdrawUnreadSplitQuestions,
 } from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
@@ -209,6 +209,25 @@ function lookupsCap(ext: ExtensionSettings, maxSearches: number | undefined): Ex
 
 /** The policy that spends the owner's reserve is the manual one; every other search keeps it, whoever started the run. */
 const reserveTrigger = (explicit: boolean): ScanTrigger => (explicit ? 'manual' : 'scheduled');
+
+/** What one drip round did, for its Activity run (dripRecord). */
+interface DripDone {
+  looked: number; matched: number; none: number; review: number; tokens: number; verified: number; removed: number; sales: number;
+  /** Nov 25: its Keepa lookups by what found their candidates (barcode or search), and the tokens of each. */
+  ways?: LookupWays;
+}
+
+/** One Keepa lookup of the drip counted on its round. */
+function tallyLookup(done: DripDone, out: { status: string; tokens: number; verified?: number; removed?: number; way?: LookupWays }): void {
+  done.looked += 1;
+  done.tokens += out.tokens;
+  done.verified += out.verified ?? 0;
+  done.removed += out.removed ?? 0;
+  if (out.status === 'matched') done.matched += 1;
+  else if (out.status === 'review') done.review += 1;
+  else done.none += 1;
+  if (out.way) done.ways = sumWays(done.ways, out.way);
+}
 
 export class AgentWork {
   readonly scanStore: ScanStore;
@@ -514,7 +533,7 @@ export class AgentWork {
   /** Signals round 3: listings waiting for their Keepa fee pull, as the last round counted them. */
   private dripFeesWaiting = 0;
   private dripNextAt: number | null = null;
-  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number; sales: number } | null = null;
+  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number; sales: number; ways?: LookupWays } | null = null;
 
   /** Whether the drip may run now: its setting on, a Keepa key, Keepa on, not paused, and nothing else running. */
   private dripAllowed(): boolean {
@@ -591,7 +610,9 @@ export class AgentWork {
     this.dripFeesWaiting = sales;
     // The listing ladder, round 2: counted listings no rung could confirm, whose part may still be re-picked (agent/verifyMatches.ts).
     const repicks = repickTargets(store.get('runtime').autoConfirm, this.d.now());
-    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0) || !keys.keepa) {
+    // Nov 25: parts marked "no Amazon listing" whose Home Depot barcode is now known: asked by code once (Keepa only).
+    const codes = keys.keepa ? await barcodeLookupsWanted(this.scanStore) : [];
+    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0 && codes.length === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
     }
@@ -605,7 +626,7 @@ export class AgentWork {
     }
     const before = this.estimatedKeys();
     const catalog = (await knownModels(this.scanStore)).catalog;
-    const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0 };
+    const done: DripDone = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0 };
     // Signals round 2: every product pull keeps its Keepa trend (sales, FBA fee), as a scan's refresh does.
     const product = pullKeepingTrends(this.cache, (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }));
     // Buy safety (Nov 23): the listings a buy waits on are checked first, before the lookups.
@@ -642,14 +663,30 @@ export class AgentWork {
         break;
       }
       if (out.status === 'refused') break;
-      done.looked += 1;
-      done.tokens += out.tokens;
-      done.verified += out.verified ?? 0;
-      done.removed += out.removed ?? 0;
-      if (out.status === 'matched') done.matched += 1;
-      else if (out.status === 'review') done.review += 1;
-      else done.none += 1;
+      tallyLookup(done, out);
       this.dripWaiting = Math.max(0, this.dripWaiting - 1);
+      const at = this.d.now();
+      store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
+    }
+    // Nov 25: then the parts marked "no Amazon listing" whose barcode is now known, by code only (never a search, never
+    // SerpApi), once every waiting part is looked up. Its products go through the same matcher and ladder.
+    for (const part of this.dripWaiting === 0 ? codes : []) {
+      if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
+      this.dripActive = true;
+      this.d.changed();
+      let out: Awaited<ReturnType<typeof keepaBarcodeOne>>;
+      try {
+        out = await keepaBarcodeOne({
+          store: this.scanStore, settings, now: this.d.now, keepaBudget: budget, catalog, prefix: 'agent:drip',
+          keepaLookup: (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask),
+          keepaProduct: product,
+        }, part);
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+        break;
+      }
+      if (out.status === 'refused') break;
+      tallyLookup(done, out);
       const at = this.d.now();
       store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
     }
@@ -856,7 +893,7 @@ export class AgentWork {
    * One Activity run an hour of drip: "Looked up 6 parts with Keepa: 4 matched, 2 no Amazon listing." and, from the catalog
    * check, "Verified 6 listings from Amazon's catalog; 1 did not match and was removed."
    */
-  private dripRecord(done: { looked: number; matched: number; none: number; review: number; tokens: number; verified: number; removed: number; sales: number }): void {
+  private dripRecord(done: DripDone): void {
     const now = this.d.now();
     if (!this.dripRun || now - this.dripRun.startedAt >= DRIP_RUN_MS) {
       const record: RunRecord = {
@@ -873,12 +910,15 @@ export class AgentWork {
     r.verified += done.verified;
     r.removed += done.removed;
     r.sales += done.sales;
+    if (done.ways) r.ways = sumWays(r.ways, done.ways);
     r.record.keepaTokensUsed += done.tokens;
     r.record.finishedAt = new Date(now).toISOString();
     const parts = [`${r.matched} matched`, ...(r.none > 0 ? [`${r.none} no Amazon listing`] : []), ...(r.review > 0 ? [`${r.review} to review`] : [])];
     const looked = r.looked > 0 ? `Looked up ${r.looked} ${r.looked === 1 ? 'part' : 'parts'} with Keepa: ${parts.join(', ')}.` : null;
     const sales = r.sales > 0 ? `Read sales figures for ${r.sales} ${r.sales === 1 ? 'listing' : 'listings'} from Keepa.` : null;
-    r.record.summary = [looked, catalogSentence(r.verified, r.removed), sales].filter(Boolean).join(' ');
+    // Nov 25: how many the barcode found and how many the search, and what Keepa counted for each.
+    const ways = lookupWaysSentence(r.ways);
+    r.record.summary = [looked, ways || null, catalogSentence(r.verified, r.removed), sales].filter(Boolean).join(' ');
     this.record({ ...r.record });
   }
 

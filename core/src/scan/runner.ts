@@ -41,7 +41,8 @@ import { type PageWant, pagesWanted } from './hdOrder';
 import type { PromoPage } from '../hdPage';
 import { addLookupWay, type LookupWays } from '../deals/lookupCopy';
 import type { KeepaLookupAsk } from '../keepa/fetchStep';
-import { applyBarcodeFinding, lookupAsk } from './barcodeLookup';
+import { applyBarcodeFinding, lookupAsk, partBarcode } from './barcodeLookup';
+import { serpApiSearchBodyFromKeepa } from '../keepa/amazon';
 import { toUpc12 } from '../identifiers';
 import type { PromoPageOutcome } from '../tracking/bogoPairs';
 
@@ -2893,6 +2894,71 @@ export async function keepaLookupOne(d: KeepaOneDeps, step: LookupStep): Promise
   }
   if (follow) await notePageDue(ctx, plain, follow);
   return { status: match?.status === 'review' ? 'review' : 'none', tokens, way, ...checked };
+}
+
+/**
+ * Nov 25: the parts marked "no Amazon listing" (an automatic lookup found none) whose Home Depot barcode is now known and
+ * was not asked by code yet (or was asked with another barcode): the drip asks Keepa by code for each, once. Only parts a
+ * stored bundle wants, the biggest Home Depot saving first, then key.
+ */
+export async function barcodeLookupsWanted(store: ScanStore): Promise<{ key: string; brand: string; model: string; code: string }[]> {
+  const parts = await bundleParts(store);
+  const out: { key: string; brand: string; model: string; code: string; saving: number }[] = [];
+  for (const m of await store.listMatches()) {
+    const part = parts.get(m.key);
+    if (!part || m.decidedBy !== 'auto' || m.status !== 'none') continue;
+    const code = await partBarcode(store, m.brand, m.model);
+    if (code === null || m.barcodeLookup?.code === code) continue;
+    out.push({ key: m.key, brand: m.brand, model: m.model, code, saving: part.saving });
+  }
+  out.sort((a, b) => b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  return out.map(({ saving: _s, ...p }) => p);
+}
+
+/**
+ * Nov 25: the drip's look at a part marked "no Amazon listing" once its barcode is known: Keepa by code only (no term
+ * search: one already found nothing; never SerpApi). The code's products are judged as a lookup's rows are, less the
+ * listings the ladder already rejected for the part; when the matcher keeps one, the lookup is applied as any lookup
+ * (applyLookup, then the price pull when the code's product carried none), else the part's record is left as it was. Either
+ * way the code's products go through the ladder (free) and the barcode record is written (applyBarcodeFinding). A request
+ * the budget refuses before it is sent is 'refused'; anything else Keepa throws is thrown.
+ */
+export async function keepaBarcodeOne(d: KeepaOneDeps, part: { brand: string; model: string }): Promise<KeepaOneOutcome> {
+  const prefix = d.prefix ?? 'drip';
+  const counts: ScanJob['counts'] = {
+    pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0, catalogPages: 0,
+    listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
+  };
+  const ctx: PartContext = { client: NO_SEARCH, store: d.store, settings: d.settings, now: d.now, prefix, catalog: d.catalog, job: { counts } };
+  const plain: LookupStep = { kind: 'lookup', brand: part.brand, model: part.model };
+  const ask = await lookupAsk(ctx, plain);
+  if (!ask.barcode) return { status: 'none', tokens: 0 };
+  let result: SearchResult;
+  try {
+    result = await d.keepaLookup(plain.brand, plain.model, `${prefix}:barcode:${plain.model}`, { ...ask, codeOnly: true });
+  } catch (err) {
+    if (err instanceof KeepaBudgetExceededError) return { status: 'refused', tokens: 0 };
+    throw err;
+  }
+  let tokens = result.source === 'network' ? (result.keepaTokens ?? 0) : 0;
+  const way = addLookupWay(undefined, result);
+  const key = partKey(plain.brand, plain.model);
+  const before = await d.store.getMatch(key);
+  const rejected = new Set(before?.rejectedAsins ?? []);
+  const products = (result.keepaProducts ?? []).filter((p) => !rejected.has(p.asin));
+  const picked = pick(ask.want ?? { brand: plain.brand, model: plain.model }, parseAmazonSearch(serpApiSearchBodyFromKeepa(products)));
+  if (picked.chosen || picked.review.length > 0) {
+    await applyLookup(ctx, plain, serpApiSearchBodyFromKeepa(products), result.at);
+    // The ladder's rejections stand: a new record from the code's products keeps them.
+    const now = await d.store.getMatch(key);
+    if (now && rejected.size > 0) await d.store.putMatch({ ...now, rejectedAsins: [...new Set([...(now.rejectedAsins ?? []), ...rejected])] });
+  }
+  const tally: Pick<ScanJob, 'matchesVerified' | 'matchesRemoved'> = {};
+  await applyBarcodeFinding(ctx, plain, result, tally);
+  const match = await d.store.getMatch(key);
+  if (match?.status === 'matched' && match.asin !== null) tokens += await pullMatchedPrice(ctx, plain, d.keepaProduct, d.keepaBudget, tally);
+  const status = match?.status === 'matched' && match.asin !== null ? 'matched' : match?.status === 'review' ? 'review' : 'none';
+  return { status, tokens, way, ...(tally.matchesVerified ? { verified: tally.matchesVerified } : {}), ...(tally.matchesRemoved ? { removed: tally.matchesRemoved } : {}) };
 }
 
 /**
