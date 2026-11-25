@@ -1485,3 +1485,85 @@ Everbilt 802474; STP, FIRM GRIP, HDX, Slime; Husky HD60012-TH, ECOMAX).
   the question is about the special buy alone.
 - *DCKTS681D1P1W82 and W21*: a two-digit suffix no catalog entry fits; W21's page names five models none of which is a kit.
 - *DWST08017*: held by the price guard (9.7×) on purpose.
+
+## Nov 25: Home Depot's barcode finds Amazon candidates; it proves nothing yet
+
+**Why.** On the owner's data 97 parts had no Amazon listing found, leaving 120 of 258 deals without an estimate, many of
+them ordinary models (DCF860B, PCL416B, PCL500B). A listing is found by a Keepa term search (10 tokens, at 1 token a
+minute) and then one result has to be picked.
+
+**Facts, with their sources.**
+- Home Depot's page state states each product's barcode: `base-catalog-<itemId>.identifiers.upc` "885911758215" and
+  `upcGtin13` "0885911758215" for DCF850B (`fixtures/homedepot-pages/identifiers-upc-316627328-2026-11-25.json`; the page's
+  JSON-LD has gtin13 too). The Chrome readers kept none: the owner's 50 catalog entries had `upc` null, his 200 part prices no
+  such field.
+- Keepa's Product request takes `code` in place of `asin` (Keepa's Java client, github.com/keepacom/api_backend,
+  `Request.getProductByCodeRequest`): "a comma separated list of codes (up to 100)", "We currently allow UPC, EAN and
+  ISBN-13 codes", "Multiple ASINs can have the same product code, so requesting a product code can return multiple
+  products". `asin` and `code` are not combined.
+- Keepa product records carry `upcList` / `eanList` (1,838 of 2,216 products in the owner's cache;
+  `fixtures/keepa/catalog-wrong-part-number-B0DGLWKS9S.json` has `eanList`, a European EAN-13 that is no UPC).
+- Not documented in anything read: what a code request costs, and what a no-match answer looks like.
+
+**What was built.**
+1. *The barcode is kept from every Home Depot page the helper reads* (`hdPage.ts barcodeOf`: `identifiers.upc` and
+   `upcGtin13`, each through `toUpc12`; none when neither is valid or the two disagree). It travels on `PageContent.upc`
+   (bundle and kit pages), `ProductPage.upc` / `PromoPage.upc` (part price, set item and promo pages) and
+   `PartPriceReading.upc`, checked again by the agent (`remoteReaders.ts`: a value that is not a valid UPC-A is dropped). It is
+   stored on the part price record (`PartPriceRecord.upc`, kept while later readings of the same product give none), the
+   catalog entry (`CatalogRecord.upc`: kit pages, a Chrome list row's item page) and the bundle (`BundleRecord.upc`). Nothing
+   is read again for it: barcodes arrive as pages are read. At an otherwise equal place, Home Depot's part-price order
+   (`partPricesWanted`) reads first a part with no Amazon listing and no barcode yet.
+2. *Keepa by code, in the one client* (`KeepaClient.productsByCode`): normalised to 12 digits, each once, 100 a request
+   (`KEEPA_CODE_BATCH_MAX`), the same query as a product pull (history 0, stats 180, so a product found carries its price and
+   catalog fields), the same cache, ledger (kind `code`, with `codes` and `products`), budget and errors. **The cost is never
+   assumed**: each response's `tokensConsumed` is what is counted and learned (`learnCodeCost`, kept in
+   `runtime.keepaCodeCost`); before the first answer each code is held to a term search's 10 tokens
+   (`KEEPA_CODE_GUARD_TOKENS`, the search a code that finds nothing is followed by), afterwards to the most one code has cost.
+   No `products`, or an empty list, is no product. The first three answers are kept as bounded samples (`codeSampleOf`:
+   field names, counts, cost, three products' identity fields cut short, never the address with the key and never a field
+   named like a credential) in `runtime.keepaCodeSamples`, which the audit export carries.
+3. *Lookup routing: barcode first, as a finder* (`keepa/fetchStep.ts keepaPartLookup`, asked by every Keepa lookup: a scan's,
+   the drip's, the panel's Look up; `scan/barcodeLookup.ts`). With a stored barcode (`partBarcode`: part price record or
+   catalog entry, the RYOBI twin form too; two that disagree give none), Keepa is asked by code before any term search. Its
+   products are candidates **exactly as search rows are** (the same row shape, `applyLookup`'s matcher, then the ladder:
+   brand and part number, the title rules including "names another model", pack and kit rules, then the price guard and
+   the sanity audit as before). Each code product is read by the catalog check for free (`applyCatalogCheck`), as any Keepa
+   product a scan pulls is. When the matcher keeps none of them (no product, or each rejected), the term search runs as
+   today, within the same budget rules, its rows after the code's. A listing that the ladder confirms and that holds the
+   part's barcode says both: "Amazon's catalog lists brand DEWALT, part number DCF850B; same barcode as Home Depot's page
+   (885911758215): <link>".
+4. *A barcode match the ladder does not confirm stays unconfirmed* (a title match, a question, or no listing, as the ladder
+   left it), and the fact is recorded on the match (`MatchRecord.barcodeLookup`): each product, `sameBarcode`, the matcher's
+   grade, the ladder's verdict on its fields (`checkListingFields`), whether the match ended on it confirmed, and a note
+   ("same barcode as Home Depot's page (…); not confirmed because the matcher rejects its title (…); Amazon's catalog: …").
+   `barcodeTally` counts, over the stored records, same-barcode products the ladder confirmed and did not, and on the parts
+   the owner answered how many were his listing. The audit export carries the matches.
+5. *Parts marked "no listing"* get one look by code once their barcode is known (`barcodeLookupsWanted`,
+   `keepaBarcodeOne`): the drip, Keepa only, code only (never a term search, never SerpApi), after the waiting lookups. A
+   product the matcher keeps is applied as any lookup (the listings the ladder rejected for the part stay rejected); none
+   leaves the record as it was, with the barcode record written, so it is not asked again for the same barcode.
+6. *Honest words* (`deals/lookupCopy.ts lookupWaysSentence`, `ScanJob.lookupsBy`): the scan's summary and the drip's
+   Activity run say "Keepa lookups: 2 found by barcode, 4 by search; Keepa counted 3 tokens for barcodes (1 found nothing)
+   and 40 tokens for searches.", the tokens as Keepa's answers counted them.
+
+**Why a finder and not a proof yet.** A shared barcode is strong evidence in principle, and the matcher's old rule already
+grades a barcode match `exact` (`match.ts grade`, `upcOk`). That rule is left unreachable on purpose: `wantedFor` sets no
+`upc`, and the code's products reach the matcher in the search-row shape, with no barcode. Rung 1's `gtin` sub-rule stays
+unadopted for the same reason as on Nov 23: no recorded row exercises it. The answer keys hold too few Home Depot barcodes
+to measure "same barcode confirms" at zero wrong (CLAUDE.md rule 4), and Keepa itself says several ASINs can share a code
+(a bulk pack, a renewed copy, a bundle, a wrong catalog record such as B0DGLWKS9S's). So the barcode only decides where to
+look, and its record waits for the measurement: when `barcodeTally` over real scans shows the confirmed and the owner's
+answers agreeing with "same barcode" at zero wrong, the rule can be measured and proposed, not before.
+
+**What needs a live check** (the main session's, on the owner's key):
+- the real token cost of a code request, per code and per product found (the ledger's `code` rows and
+  `runtime.keepaCodeCost`); until then each code is held to 10 tokens before it is sent;
+- the shape of a no-match answer (`runtime.keepaCodeSamples`: `fields`, `productCount`), now read as no product;
+- how often several ASINs share one barcode, and whether Keepa's answer marks which code a product matched in a batch;
+- whether the helper's live pages give `identifiers.upc` as the recording did on every product kind (kits, sets' items).
+
+*Known consequences:* a code that finds nothing is followed by the term search; if the budget refuses that search after
+the code was sent, the lookup is refused as before (re-routed to SerpApi when a search can pay, or waiting), the code's
+tokens recorded and its answer cached, so asking again costs it nothing. The route's planning estimate
+(`KEEPA_LOOKUP_TOKEN_ESTIMATE`, 11) is unchanged until the code's real cost is known.
