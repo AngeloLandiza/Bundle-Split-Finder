@@ -552,10 +552,14 @@ export function chartSummary(view: CostsView): string {
 export function forecastNote(view: CostsView): string {
   const live = view.services.filter((s) => s.forecast.basis !== 'none');
   if (live.length === 0) return 'No forecast yet: nothing has been used this month and nothing is scheduled. Any forecast is an estimate, not a bill.';
-  const methods = [...new Set(live.map((s) => s.forecast.method.trim()).filter(Boolean))];
+  // The chart is in dollars, so its note is the method of what drives the dollars (the metered service); each service's
+  // own method belongs to its row. On the owner's real screen (Nov 25) every service's sentence was joined here and the
+  // same "Only 2 days of history…" opening read three times over.
+  const dollars = live.filter((s) => s.unit === 'usd');
+  const methods = [...new Set((dollars.length ? dollars : live).map((s) => s.forecast.method.trim()).filter(Boolean))];
   const onSettings = live.every((s) => s.forecast.basis === 'settings');
-  const lead = onSettings ? 'There is too little history yet, so this is the most your settings allow (schedule and per-run caps), not a prediction from what you used. ' : '';
-  return `${lead}${methods.join(' ')} ${onSettings ? 'It is a bound, not a bill.' : 'The forecast is an estimate, not a bill.'}`.replace(/\s+/g, ' ').trim();
+  // A method on settings already opens with why (too little history), so nothing is put in front of it.
+  return `${methods.join(' ')} ${onSettings ? 'It is a bound, not a bill.' : 'The forecast is an estimate, not a bill.'}`.replace(/\s+/g, ' ').trim();
 }
 
 export interface NumbersTable {

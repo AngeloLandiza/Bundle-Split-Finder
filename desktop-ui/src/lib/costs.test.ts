@@ -101,7 +101,13 @@ describe('the words around the chart', () => {
   it('says how the forecast was made and that it is an estimate; with no history it says it rests on settings', () => {
     expect(forecastNote(v)).toMatch(/Resampled from your own days and runs/);
     expect(forecastNote(v)).toMatch(/estimate, not a bill\.$/);
-    expect(forecastNote(view('no-history'))).toMatch(/^There is too little history yet, so this is the most your settings allow/);
+    expect(forecastNote(view('no-history'))).toMatch(/^Too little history, so this is the most your/);
+    // The owner's real screen (Nov 25): three services on settings, each method opening the same way. The note is the
+    // dollar service's method once, not all three joined.
+    const real = (m: string) => `Only 2 days of history (7 are needed, and 5 scans to forecast from it), so this is the most your settings allow by month's end: ${m}`;
+    const three = { ...view('no-history') };
+    three.services = three.services.map((s) => ({ ...s, forecast: { ...s.forecast, basis: 'settings' as const, method: real(s.unit === 'usd' ? 'your $25.00 AI limit.' : s.unit === 'tokens' ? 'Keepa refills 1 token a minute, 1,440 a day.' : '18 searches for each of the 6 scheduled scans left.') } }));
+    expect(forecastNote(three)).toBe(`${real('your $25.00 AI limit.')} It is a bound, not a bill.`);
     expect(forecastNote(view('no-history'))).toMatch(/It is a bound, not a bill\.$/);
     const nothing = { ...v, services: v.services.map((s) => ({ ...s, forecast: { ...s.forecast, basis: 'none' as const } })) };
     expect(forecastNote(nothing)).toMatch(/^No forecast yet/);
