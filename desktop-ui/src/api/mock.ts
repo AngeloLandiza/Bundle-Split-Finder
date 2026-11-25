@@ -690,6 +690,20 @@ export function createMockClient(): ApiClient {
       await online(400);
       return state.keys.telegram ? { ok: true } : { ok: false, problem: 'Telegram is not set up. Add a bot token and chat id in Keys first.' };
     },
+    async telegramChat() {
+      await online(150);
+      if (state.keys.telegram) return { state: 'chosen', chats: [] };
+      return state.keys.telegramWaitingForChat ? { state: 'found', chats: [{ id: '5150', name: 'Angelo', at: new Date().toISOString() }] } : { state: 'no_bot', chats: [] };
+    },
+    async useTelegramChat() {
+      await online(300);
+      state.keys = { ...state.keys, telegram: true, telegramWaitingForChat: false };
+      return { saved: true, test: { ok: true } };
+    },
+    async undoTelegramAction(id) {
+      await online();
+      activity.fromTelegram = activity.fromTelegram.map((e) => (e.id === id ? { ...e, undoable: false, undoneAt: new Date().toISOString() } : e));
+    },
     async patchSettings(patch) {
       await online(150);
       const before = settings;

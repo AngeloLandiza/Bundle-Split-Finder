@@ -562,5 +562,6 @@ export const ACTIVITY: ActivityView = {
   ],
   outcomes: [],
   versions: [],
+  fromTelegram: [],
   month: { searches: 63, keepaTokens: 820, aiUsd: 4.12 },
 };

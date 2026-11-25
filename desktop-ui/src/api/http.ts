@@ -208,6 +208,9 @@ export function createHttpClient(): ApiClient {
 
     testNotification: async () => void (await call('POST', '/api/notify/test', {})),
     testTelegram: () => call<C.TelegramTestResponse>('POST', '/api/notify/test-telegram', {}),
+    telegramChat: () => call<C.TelegramChatResponse>('GET', '/api/telegram/chat'),
+    useTelegramChat: (chatId) => call<C.TelegramChatSaveResponse>('POST', '/api/telegram/chat', { chatId }),
+    undoTelegramAction: async (aid) => void (await call('POST', `/api/telegram/actions/${id(aid)}/undo`, {})),
 
     pairRequests: () => call<C.PendingPairRequest[]>('GET', '/api/pair/requests'),
     decidePairing: async (requestId, allow) => void (await call('POST', allow ? '/api/pair/approve' : '/api/pair/deny', { requestId } satisfies C.PairDecisionBody)),

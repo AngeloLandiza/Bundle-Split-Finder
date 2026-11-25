@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, OutcomeEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
+  NeedsLook, ActivityError, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -12,6 +12,7 @@ import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
 export type {
   ActivityError,
+  TelegramActionEntry,
   UpdateNotice,
   VersionEntry,
   AppSettings,
@@ -163,7 +164,7 @@ export interface AppState {
   budget: BudgetState;
   /** `review` counts the questions that need him; `reviewWorking` the ones the app is still checking itself (not in `review`). Absent from an older agent. */
   counts: { review: number; autopilotApplied: number; newDeals: number; reviewWorking?: number };
-  keys: Record<KeyName, boolean>;
+  keys: KeysPresence;
   /** True until the first scan has finished; drives the one-time first-run flow. */
   firstRun: boolean;
   /** Why a saved key does not work, in the agent's words, by key; absent when none is rejected. */
@@ -624,6 +625,8 @@ export interface ActivityView {
   outcomes: OutcomeEntry[];
   /** The new versions the app told him about, newest first. */
   versions: VersionEntry[];
+  /** What he did from Telegram (pause, resume, Scan now, Not for me), newest first, with Undo where the app has one. */
+  fromTelegram: TelegramActionEntry[];
   /** This month's spend, from the agent's own count. */
   month: { searches: number; keepaTokens: number; aiUsd: number };
 }

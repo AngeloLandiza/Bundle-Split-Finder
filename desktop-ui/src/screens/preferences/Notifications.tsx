@@ -163,6 +163,18 @@ export function NotificationsPane() {
           ) : null}
         </div>
       </Row>
+      <Row
+        label="Act from Telegram"
+        align="start"
+        help="From your phone: I bought this, Not for me, answer a Review question that has choices, pause or resume scans, Scan now when it spends no searches (or after your yes), and /status. Not from your phone: keys, limits, budgets, the reserve and settings. Everything done there is in Activity, with Undo."
+      >
+        <Switch
+          label="Let me act from Telegram"
+          checked={telegram && n.telegramActions === true}
+          disabled={!telegram}
+          onChange={(telegramActions) => update({ notifications: { telegramActions } })}
+        />
+      </Row>
       <Row label="Test" align="start" help={`Sends one notification to this ${words.computer}, so you can see how they arrive.`}>
         <div className="stack">
           <Button

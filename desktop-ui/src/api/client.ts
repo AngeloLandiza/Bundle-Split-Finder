@@ -2,7 +2,7 @@
 // the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse } from '@core/api/contract';
+import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse, TelegramChatResponse, TelegramChatSaveResponse } from '@core/api/contract';
 import type { CostSettingsPatch } from '../lib/costs';
 import { createHttpClient } from './http';
 import { createMockClient } from './mock';
@@ -133,6 +133,12 @@ export interface ApiClient {
   testNotification(): Promise<void>;
   /** Sends one test message to the saved Telegram bot and chat (POST /api/notify/test-telegram). `problem` is Telegram's refusal in plain words. */
   testTelegram(): Promise<{ ok: boolean; problem?: string }>;
+  /** A bot saved without its chat: the private chats that wrote to it, for the owner to choose (GET /api/telegram/chat). */
+  telegramChat(): Promise<TelegramChatResponse>;
+  /** Saves the chosen chat and sends the test message (POST /api/telegram/chat). */
+  useTelegramChat(chatId: string): Promise<TelegramChatSaveResponse>;
+  /** Takes back something done from Telegram (POST /api/telegram/actions/:id/undo). */
+  undoTelegramAction(id: string): Promise<void>;
 
   /** Chrome's pairing requests waiting for the owner, newest last. */
   pairRequests(): Promise<PendingPairRequest[]>;

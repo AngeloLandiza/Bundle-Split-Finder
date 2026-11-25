@@ -778,6 +778,7 @@ export function mapActivity(r: C.ActivityResponse, titles: ReadonlyMap<string, {
     errors: r.errors ?? [],
     outcomes: r.outcomes ?? [],
     versions: r.versions ?? [],
+    fromTelegram: r.fromTelegram ?? [],
     month: { searches: r.spend.serpSearches, keepaTokens: r.spend.keepaTokens, aiUsd: r.spend.aiUsd },
   };
 }
