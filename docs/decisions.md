@@ -1410,3 +1410,78 @@ first (after-scan5: 46 listings, about $0.01 on claude-haiku-5-5), `--max-cost` 
 
 *For the rewrite*: the thresholds rest on 2 wrong cases in the owner's data and the labelled search rows; re-measure them on
 every new audit export (`npm run audit:sanity`), and add each real wrong case the owner catches as a fixture and a test.
+
+## Nov 24: fewer questions, each settled only by evidence the app holds or reads free
+
+The owner's Review after a day of slow reading held 24 open questions (fixtures/e2e-2026-11-23/after-scan6). He asked that
+the app settle more of them itself. Each group was traced to the line that opened it, and settled only where Home Depot's
+or Amazon's own records make the answer certain (CLAUDE.md rule 4). Five rules, each measured before it was adopted
+(`npx tsx scripts/measure-fewer-questions.ts`, free, no network: (a) the validation set against its answer key with Nov 18's
+readings, each rule alone on top of the adopted ones, plus a probe running the rule on every settled bundle as if open; (b)
+the owner's stores after-scan3/5/6, every bundle the rule changes, a resolved change scored against the owner's own answer
+or checked by hand against its pages; (c) rule C's kit count against each kit's own title; (d) rule D on every saved listing
+of a RYOBI model with a Home Depot pack size, against the validation labels; (e) rule E on every set). The step 15 figures
+(`scripts/measure-splits.ts`) are unchanged: validation 24 right, 0 wrong, 7 open; 47 probes, 0 different.
+
+| Rule | Validation: changed / right / wrong / open | Probes (resolved, wrong) | Real stores: what changed | Wrong |
+|---|---|---|---|---|
+| A. Page names the two halves | 0 / 0 / 0 / 0 | 6, 0; real 84, 0 | DCF860BWCB2460C (scans 5, 6): question → waits for DCB2460C's reading | 0 |
+| B. A part Home Depot does not sell alone | 0 / 0 / 0 / 0 | 6, 0; real 92, 0 | PCL1600K2-A10FB1G settled (by hand: Amazon B00P8HJF5G, brand RYOBI, part number A10FB1G; the title says "and 11 in. Flexible Shaft Bit Holder"); PSBCK102K2-A10FB1G and PCL406424SB-A21701-A25RS51 narrower (the page's Includes line names A10FB1G, A25RS51) | 0 |
+| C. A part's own page, before the question | 0 / 0 / 0 / 0 | 6, 0; real 84, 0 | PSBCK102K2-A98401: question → waits for PSBCK102K2's and A98401's pages; with PSBCK102K2's page as read on Nov 23 (326415387: "(1) PSBDD02 …, (1) PSBID02 …"), it and PSBCK102K2-A10FB1G settle, each right by its pages | 0 |
+| C, its count (kitPageTools) | — | — | 17 kit pages: page and title agree 3, differ 0; items whose words do not say 10 (no count); title states none 4 | 0 |
+| D. Home Depot's pack size for a RYOBI model | 1 listing changed, right (labels: B0BG5SPWVL is PBP2003) | — | PBP2003's listing B0BG5SPWVL: review → title match (scans 5, 6; the labelled listing). Validation replay: title matches 79 of 79 right (78 of 78 before) | 0 |
+| E. A set holding other brands' items | — | — | 6 sets of after-scan6: question → not estimated | none possible: no estimate is made |
+
+- **Rule A** (`settle.ts pageHalves`, `pageHalvesSplit`): a DEWALT model in no known bundle form that is one whole model, W,
+  and a second whole model without its leading D (DCF860B W CB2460C), whose page's leading models are exactly those two and
+  whose bullets name no other DEWALT model anywhere. The W form is Home Depot's own for a kit and its bonus item. The reading
+  then goes through rule 2's checks unchanged (each part sold under exactly its model, or waiting for its reading).
+- **Rule B** (`accessoryOf`): a part rule 2 found "not sold by itself", in a reading the model number spells out, is a part
+  when the bundle's own page lists it on an Includes line ("Includes: (1) A10FB1G 11 in. flexible shaft bit holder …"), or
+  when Amazon's catalog record of exactly that brand and part number was confirmed by the catalog check on its stored match
+  (`catalogConfirmed`, `SettleData.amazonCatalog`; evidence kind `amazon_catalog`). It has no Home Depot title: its
+  Includes words stand in, and a part whose words give no tool count is left out of the bundle's tool count, as an owner's
+  fact is. The part then has no price yet, the existing "Missing a price" state with its break-even.
+- **Rule C** (`partPageDue`, `partPageItems`, `kitPageTools`; reads `partPagesWanted`, in the scan's kit-page pass and the
+  drip's `readKitPagesFor`): when the bundle's page names a model no part explains, a part Home Depot confirmed whose own page
+  (its reading's item id) is not read yet makes the split wait, not ask; the page is saved on its part-price record
+  (`PartPriceRecord.page`), and an item on its Includes list explains the named model as a kit page's does. A page refused or
+  unreadable `PART_PAGE_REFUSALS_MAX` (3) times is waited for no longer (`pageRefusals`). Rule 3's kit-half count may come
+  from that page when the kit's title states none: each item's tools by its own words, any unknown item making it unknown.
+- **Rule D** (`classify.ts hdPackSize`, `wantedFor`; `knownModels` puts `packQty` on the model's existing catalog entry; no
+  entry is made, since an entry also splits a hyphen bundle): Home Depot's own page of exactly a RYOBI model says "(2-Pack)",
+  so a listing of that pack is graded as the part, and one of another pack size is not. At the agent's start the open "Which
+  listing" questions asked only for that reason are judged again on the saved listings (`rejudgePackQuestions`, the scan's
+  own re-judge; the price guard's question and the owner's answers are never touched). This is the one place a Home Depot
+  part-price reading changes a match: core/test/validation-prices.test.ts says so; the validation results were replayed
+  (`npm run validate -- --replay`), PBP2003's lookup rows left them, so the sanity counts on those rows read 804 and 136
+  (were 841 and 137), no right listing lost.
+- **Rule E** (`split.ts setSplit`, `Decomposition.otherBrands`, section `other_brands`, `BundleRow.otherBrands`,
+  `DealDetail.setContents`): a set whose item pages name a brand the app does not price (not DEWALT or RYOBI) is settled as
+  Home Depot lists it, every item with its own brand, model and page, and not estimated: "Not estimated: holds other brands'
+  items (Husky H52MWC10MOD)", in its own group, never a question, no leftover silently dropped, no pricing for other brands.
+  An item with no brand, or of DEWALT or RYOBI in the other's set, still asks.
+- **Waiting says what it waits for**: `BundleRow.waitingFor`, "Waiting for Home Depot's pages of PSBCK102K2 and A98401" (the
+  row's line, and the desktop row's tag). A part-price read that is refused stays waiting as before (no cap was added there: a
+  read that came back not found is a reading, and the question then opens with its reason).
+
+**Replayed on after-scan6** (core/test/fewer-questions.test.ts, at the start with no scan and nothing spent): 24 open → 13.
+Settled: PCL1600K2-A10FB1G (PCL1600K2 + A10FB1G); PBP2003 matched to B0BG5SPWVL (a title match, then the catalog check).
+Waiting: DCF860BWCB2460C for DCB2460C's reading; PSBCK102K2-A10FB1G for PSBCK102K2's page; PSBCK102K2-A98401 for
+PSBCK102K2's and A98401's pages. Not estimated: the six sets (Husky H52MWC10MOD; Everbilt 802464, 800934; Graco 26D362;
+Everbilt 802474; STP, FIRM GRIP, HDX, Slime; Husky HD60012-TH, ECOMAX).
+
+**Left as they are, and why:**
+- *DCK225D2WCS380B / WCS391B / WCS356B / WCS354B.* Their pages name DCD708B and DCF809B ("Includes 1 DEWALT DCD708B …, two
+  20-Volt MAX lithium-ion 1.3 Ah battery packs"); the kit's own page (catalog, item 322138483) names DCD794 and DCF809 with
+  2 Ah batteries. DCD708B is not in DCK225D2: the pages contradict each other, and the "kit's own page explains it" rule
+  changes none of the four (measured: 0). The siblings WCS369B and WCF850B settled only because their pages write the models
+  without the "MODEL:" lead that `pageCatalog` reads ("DCS369B a compact …", "DCD794 - …"), so their page named no model.
+- *PCL1600K2-A986501 and PCL1600K2-A965201.* No Includes line names the accessory, and no catalog record of it is stored;
+  nothing free would settle them. A Keepa catalog check of a listing naming them would (rule B), but it costs a token and is
+  not planned for a part of an unsettled split.
+- *The special buys* PCL406416SB, PCL406424SB and the two hyphen bundles holding them (4 questions): the special-buy-as-one-
+  kit rule was measured and rejected on PCL500525SB (step 16, round 2). A25RS51 is now settled within its bundle (rule B);
+  the question is about the special buy alone.
+- *DCKTS681D1P1W82 and W21*: a two-digit suffix no catalog entry fits; W21's page names five models none of which is a kit.
+- *DWST08017*: held by the price guard (9.7×) on purpose.
