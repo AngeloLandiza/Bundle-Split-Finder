@@ -86,7 +86,7 @@ export interface AgentOptions {
   /** Every paid call's fetch (SerpApi, Keepa, eBay, models, Telegram). Tests pass a fake; default the global fetch. */
   fetchFn?: typeof fetch;
   /** Tests: the scan itself, reader timeouts, SerpApi's address. */
-  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom' | 'chrome'>;
+  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom' | 'chrome' | 'spUrls' | 'spSleep'>;
   /**
    * POST /api/agent/quit: the desktop shell asks the agent to stop as SIGTERM does. Windows has no SIGTERM for a
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
@@ -161,6 +161,13 @@ function parseKey(name: KeyName, body: Record<string, unknown>): Partial<StoredK
     case 'telegram':
       // Nov 25: the chat id may wait: the agent offers the private chat that writes to the bot (agent/telegramBot.ts).
       return { telegram: { botToken: text(body.botToken, 'botToken'), chatId: body.chatId === undefined || body.chatId === null || body.chatId === '' ? '' : text(body.chatId, 'chatId', 64) } };
+    case 'amazonSeller':
+      return {
+        amazonSeller: {
+          clientId: text(body.clientId, 'clientId'), clientSecret: text(body.clientSecret, 'clientSecret'),
+          refreshToken: text(body.refreshToken, 'refreshToken', 2000), sellerId: text(body.sellerId, 'sellerId', 40),
+        },
+      };
     default:
       // `value` is the desktop UI's name for it (W2); `key` the contract's.
       return { [name]: text(body.key ?? body.value, 'key') };
@@ -568,6 +575,7 @@ export function createAgent(opts: AgentOptions): Agent {
         ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), costs: work.costs.short(),
       }),
       ...(update ? { update } : {}),
+      ...(work.seller.connected() ? { seller: work.seller.usage() } : {}),
     };
   };
 
@@ -620,7 +628,13 @@ export function createAgent(opts: AgentOptions): Agent {
       }, 15_000)
     : null;
   connectionTimer?.unref?.();
-  const keyHost: KeyCheckHost = { store, fetchFn: opts.fetchFn ?? fetch, now, ...(opts.work?.serpBaseUrl ? { serpBaseUrl: opts.work.serpBaseUrl } : {}), ...(opts.keyCheckTimeoutMs ? { timeoutMs: opts.keyCheckTimeoutMs } : {}) };
+  const keyHost: KeyCheckHost = {
+    store, fetchFn: opts.fetchFn ?? fetch, now, ...(opts.work?.serpBaseUrl ? { serpBaseUrl: opts.work.serpBaseUrl } : {}), ...(opts.keyCheckTimeoutMs ? { timeoutMs: opts.keyCheckTimeoutMs } : {}),
+    // Nov 25: the seller account's check reads one listing the deals hold, and is counted in the seller API's ledger.
+    knownAsin: () => store.get('deals').bundles.flatMap((b) => b.parts.flatMap((p) => (p.asin ? [p.asin] : [])))[0],
+    spHooks: work.seller.hooks(),
+    ...(opts.work?.spUrls ? { spUrls: opts.work.spUrls } : {}),
+  };
   // Nov 23: stored keys with no verdict in the last 24 hours are checked quietly (free requests only), at start and every hour after.
   const quietKeyChecks = () => void recheckStaleKeys(keyHost).catch(() => []);
   const quietStart = timers ? setTimeout(quietKeyChecks, 4_000) : null;
@@ -805,7 +819,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return { reset: true, backup };
   });
   r.get('/api/deals/:id', 'any', (ctx) => {
-    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking'), runtime: store.get('runtime') }, ctx.params.id!, now());
+    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking'), runtime: store.get('runtime') }, ctx.params.id!, now(), work.seller.account());
     if (!detail) throw new HttpError('not_found', 'No such deal.');
     return detail;
   });
@@ -881,6 +895,17 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/price-from-link', 'ui', async (ctx): Promise<PriceFromLinkResponse> => {
     const url = text(obj(await ctx.body()).url, 'url', 2048);
     return priceFromLink({ store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, cache: work.cache, pace: work.pace }, url);
+  });
+  // Nov 25: "I ship this part myself": FBA's answer from his seller account then does not hold the deal (agent/seller.ts).
+  r.post('/api/seller/self-ship/:asin', 'ui', async (ctx) => {
+    const asin = ctx.params.asin!;
+    if (!/^[A-Z0-9]{10}$/.test(asin)) throw new HttpError('bad_request', 'An ASIN is 10 letters and digits.');
+    if (!store.get('deals').bundles.some((b) => b.options.some((o) => o.parts.some((p) => p.asin === asin)))) throw new HttpError('not_found', 'No deal holds this listing.');
+    const on = flag(obj(await ctx.body()).selfShip, 'selfShip');
+    return refusals(async () => {
+      await work.setSelfShip(asin, on);
+      return { asin, selfShip: on };
+    });
   });
   r.delete('/api/deals/:id/parts/:part/price', 'ui', (ctx) => {
     const plan = planRemoveConfirmedPrice(dealOf(ctx.params.id!), ctx.params.part!);

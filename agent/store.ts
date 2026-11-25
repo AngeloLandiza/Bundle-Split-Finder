@@ -46,6 +46,8 @@ import type { KeepUsage } from '../core/src/tracking/keepCurrent';
 import type { ChromeAttempt } from '../core/src/selfRun/chrome';
 import type { WeeklySent } from '../core/src/selfRun/weekly';
 import { emptyTracking, seedAnnounced, type TrackingState } from '../core/src/tracking/state';
+import type { SellerCredentials, SpOperation, SpSample } from '../core/src/amazon/spapi/types';
+import type { SellerPartCheck } from '../core/src/amazon/seller';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
 // ---------------------------------------------------------------- collection types
@@ -58,6 +60,8 @@ export interface StoredKeys {
   openai?: string;
   ebay?: { appId: string; certId: string };
   telegram?: { botToken: string; chatId: string };
+  /** Nov 25: the Amazon seller account (KeyValues.amazonSeller); every field a secret. */
+  amazonSeller?: SellerCredentials;
 }
 
 /** A bundle as the extension's audit export lists it (POST /api/bridge). */
@@ -282,6 +286,13 @@ export interface AgentRuntime {
   keepaCodeCost?: KeepaCodeCost;
   /** Nov 25: the first code answers, bounded and without the key (codeSampleOf), for the next fix to be written from. */
   keepaCodeSamples?: KeepaCodeSample[];
+  /**
+   * Nov 25: the seller API's first answers per operation, scrubbed of every credential and seller id and bounded
+   * (core/src/amazon/spapi/client.ts), for the notes to be corrected from real data. In the audit export.
+   */
+  spapiSamples?: SpSample[];
+  /** Nov 25: the seller API's calls today per operation (the app's own cap a day, shown in Settings, Keys). */
+  spapiUsage?: { day: string; used: Partial<Record<SpOperation, number>> };
   /** Step 15: the last rejection of each key by its service, in plain words; cleared when replaced or next accepted. */
   keyProblems?: Partial<Record<KeyName, string>>;
   /** Nov 23: the last verdict of each saved key's own service (agent/keyChecks.ts); dropped when the key is replaced or removed. */
@@ -342,7 +353,7 @@ export interface CostRuntime {
   /** What the blocker held, this month only, newest last, at most 50 a service. */
   blocked: Partial<Record<CostService, CostBlocked[]>>;
   /** eBay calls and Telegram messages by local day ("2026-11-25"), the last 400 days. */
-  counts: Record<string, { ebay?: number; telegram?: number }>;
+  counts: Record<string, { ebay?: number; telegram?: number; amazon?: number }>;
 }
 
 /**
@@ -355,6 +366,13 @@ export interface TrackingCollection extends TrackingState {
   derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate>; groups?: Record<string, BogoGroup> };
   /** The sanity findings the owner marked "This is right", by clearKey (SanityFinding.clearKey); never shown again. */
   sanityCleared?: string[];
+  /**
+   * Nov 25: what the owner's Amazon seller account said about each listing, by ASIN (core/src/amazon/seller.ts). Kept while
+   * a deal holds the listing; a record of another account is not used.
+   */
+  sellerChecks?: Record<string, SellerPartCheck>;
+  /** Nov 25: listings the owner ships himself (FBA's answer does not hold a deal), by ASIN, with when he said so. */
+  selfShip?: Record<string, string>;
 }
 
 /**

@@ -10,12 +10,13 @@
 // asked about is pulled once (1 token, above the reserve, after the lookups), so its sales figure is not left missing.
 
 import type { NotifyEvent } from '../core/src/api/contract';
+import type { SellerLookup } from '../core/src/amazon/seller';
 import { heldDeals, sanityFindings, type SanityFinding } from '../core/src/audit/sanity';
 import type { TokenBudget } from '../core/src/keepa/budget';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
 import { keepingTrends, readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import type { KeepaTrackingDepth } from '../core/src/keepa/types';
-import { buildReport } from '../core/src/scan/report';
+import { buildReport, type AmazonFeesLookup } from '../core/src/scan/report';
 import { savePrice } from '../core/src/scan/runner';
 import type { BundleRow, ScanReport, ScanSettings, ScanStore } from '../core/src/scan/types';
 import type { Cache, SearchResult } from '../core/src/serpapi/client';
@@ -53,9 +54,10 @@ export function pullKeepingTrends(cache: Cache, pull: ProductPull): ProductPull 
 }
 
 /** The report built from the scan's store with the Keepa trends stored for every matched listing (its FBA fee, referral). */
-export async function reportWithTrends(store: ScanStore, settings: ScanSettings, cache: Cache): Promise<ScanReport> {
+export async function reportWithTrends(store: ScanStore, settings: ScanSettings, cache: Cache, amazonFees?: AmazonFeesLookup): Promise<ScanReport> {
   const asins = (await store.listMatches()).flatMap((m) => (m.asin ? [m.asin] : []));
-  return buildReport(store, settings, { trend: await readTrends(cache, asins) });
+  // Nov 25: with Amazon's own fee estimate for the owner's account where it was read (agent/seller.ts); absent, as before.
+  return buildReport(store, settings, { trend: await readTrends(cache, asins), ...(amazonFees ? { amazonFees } : {}) });
 }
 
 /** The stored trend of every part a way to sell holds. Reads only. */
@@ -79,6 +81,8 @@ export interface SignalsDeps {
    * staleBuyKeys), asked after the signals are stored. Their buy line is not sent (nor marked sent): a stale price is not news.
    */
   stale?: () => ReadonlySet<string>;
+  /** Nov 25: the owner's Amazon seller account's records, when one is connected (agent/seller.ts lookup). */
+  seller?: () => SellerLookup | undefined;
 }
 
 export interface SignalsOutcome {
@@ -104,7 +108,8 @@ export async function evaluateSignals(
   const trend = await trendsOfReport(d.cache, report);
   let evaluated: string[] = [];
   store.update('tracking', (t) => {
-    const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa(), ...(d.flatFee ? { flatFee: d.flatFee() } : {}), held: sanityHolds(store) });
+    const seller = d.seller?.();
+    const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa(), ...(d.flatFee ? { flatFee: d.flatFee() } : {}), held: sanityHolds(store), ...(seller ? { seller } : {}) });
     evaluated = r.evaluated;
     return { ...t, watch: r.state.watch, history: r.state.history, signals: r.state.signals, ...(r.state.announced ? { announced: r.state.announced } : {}) };
   });

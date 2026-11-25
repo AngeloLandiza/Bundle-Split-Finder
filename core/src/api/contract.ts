@@ -27,6 +27,8 @@ import type { BogoView, FreeItem } from '../tracking/bogo';
 import type { BogoChoice, BogoGroup, BogoTag, ListedItem, PromoPageOutcome } from '../tracking/bogoPairs';
 import type { FbaEstimate } from '../tracking/fba';
 import type { OptionMarket, PartMarket, UsualEstimate } from '../tracking/market';
+import type { SellerPartLine } from '../amazon/seller';
+import type { SpOperation } from '../amazon/spapi/types';
 import type { OptionSignals, Signal, SignalKind, SignalNumbers, Velocity } from '../tracking/signals';
 
 export const AGENT_PORT = 8790;
@@ -75,8 +77,8 @@ export function isApiError(body: unknown): body is ApiErrorBody {
 // ---------------------------------------------------------------- keys
 
 /** The keys the agent holds. The UI and the extension only ever see whether each is set. */
-export type KeyName = 'serpapi' | 'keepa' | 'anthropic' | 'openai' | 'ebay' | 'telegram';
-export const KEY_NAMES: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
+export type KeyName = 'serpapi' | 'keepa' | 'anthropic' | 'openai' | 'ebay' | 'telegram' | 'amazonSeller';
+export const KEY_NAMES: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram', 'amazonSeller'];
 
 /** Body of PUT /api/keys/:name, per key. Answered by PutKeyResponse; DELETE /api/keys/:name removes it and answers KeysPresence. */
 export interface KeyValues {
@@ -86,6 +88,12 @@ export interface KeyValues {
   openai: { key: string };
   ebay: { appId: string; certId: string };
   telegram: { botToken: string; chatId: string };
+  /**
+   * Nov 25: the owner's Amazon seller account, read-only (core/src/amazon/spapi): his private app's LWA client id and
+   * secret, its refresh token, and his seller id (merchant token). Sent only to api.amazon.com and
+   * sellingpartnerapi-na.amazon.com.
+   */
+  amazonSeller: { clientId: string; clientSecret: string; refreshToken: string; sellerId: string };
 }
 
 /**
@@ -326,6 +334,11 @@ export interface AgentState {
   keyChecks?: Partial<Record<KeyName, KeyCheckRecord>>;
   /** W4: true until the first scan has finished (the one-time first-run flow). */
   firstRun?: boolean;
+  /**
+   * Nov 25: with a seller account connected, its calls today per operation and the app's own cap a day for each
+   * (core/src/amazon/spapi/types.ts SP_DAILY_CAPS), for Settings, Keys. Absent without an account.
+   */
+  seller?: { used: Record<SpOperation, number>; caps: Record<SpOperation, number> };
   /** D2: when the settings last changed; the shell re-reads GET /api/settings when this moves. */
   settingsAt?: string;
   /**
@@ -663,9 +676,27 @@ export interface DealDetail {
    * no counted part has market figures stored.
    */
   market?: OptionMarket;
+  /** Nov 25: what the owner's Amazon seller account says about each part; absent in an agent from before. */
+  seller?: DealSellerView;
 }
 
-export type { SetContent, SplitEvidence };
+/**
+ * Nov 25: the deal's parts as the owner's own Amazon seller account sees them (core/src/amazon/seller.ts). Connected: one
+ * line per counted part ("You may list it. FBA accepts it. Amazon's fees: $12.41."). Not connected: no lines, and on a Buy
+ * now deal the one quiet `note` (NOT_CONNECTED_LINE). "Not checked" is never shown as allowed.
+ */
+export interface DealSellerView {
+  connected: boolean;
+  note: string | null;
+  parts: SellerPartLine[];
+}
+
+/** POST /api/seller/self-ship/:asin: the owner ships this listing himself (FBA's answer then does not hold his deals). */
+export interface SelfShipBody {
+  selfShip: boolean;
+}
+
+export type { SetContent, SplitEvidence, SellerPartLine };
 
 // ---------------------------------------------------------------- tracking: watchlist, signals, BOGO
 

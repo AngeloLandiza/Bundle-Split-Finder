@@ -6,6 +6,7 @@ import { dayOf } from '../core/src/tracking/state';
 import { buyingView } from '../core/src/tracking/buying';
 import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
 import { keepCurrentView } from './keepCurrent';
+import { NOT_CONNECTED_LINE, sellerPartLine, sellerParts } from '../core/src/amazon/seller';
 import type { HomeDepotPaceState } from '../core/src/api/contract';
 import type {
   ActivityResponse,
@@ -21,6 +22,7 @@ import type {
   DealIncompleteEstimate,
   DealUnpricedPart,
   DealRow,
+  DealSellerView,
   DealSignals,
   EvidenceQuote,
   QuestionChoice,
@@ -60,7 +62,7 @@ import { matchState, WAITING_PAGE, WAITING_PARTS, waitingForText } from '../core
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
 import { estimateBasis, fulfillmentGap } from '../core/src/scan/report';
 import { LOGIN_NOTICE } from '../core/src/selfRun/words';
-import type { AuditBundle, StoreData, StoredKeys } from './store';
+import type { AuditBundle, StoreData, StoredKeys, TrackingCollection } from './store';
 
 const monthStartMs = (now: number): number => {
   const d = new Date(now);
@@ -92,6 +94,7 @@ export function keysPresence(keys: StoredKeys): KeysPresence {
     ebay: Boolean(keys.ebay?.appId && keys.ebay.certId),
     telegram: Boolean(keys.telegram?.botToken && keys.telegram.chatId),
     ...(keys.telegram?.botToken && !keys.telegram.chatId?.trim() ? { telegramWaitingForChat: true } : {}),
+    amazonSeller: Boolean(keys.amazonSeller?.clientId && keys.amazonSeller.clientSecret && keys.amazonSeller.refreshToken && keys.amazonSeller.sellerId),
   };
 }
 
@@ -468,7 +471,11 @@ export function watchlistResponse(data: WithTracking<'deals' | 'review' | 'setti
   return { at: ats.length ? iso(Math.max(...ats)) : null, rows, thresholds };
 }
 
-export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> & Partial<Pick<StoreData, 'runtime'>>, id: string, now?: number): DealDetail | null {
+export function dealDetail(
+  data: WithTracking<'deals' | 'review' | 'settings'> & Partial<Pick<StoreData, 'runtime'>>, id: string, now?: number,
+  /** Nov 25: the connected seller account's tag (agent/seller.ts account()); null or absent when none is connected. */
+  sellerAccount?: string | null,
+): DealDetail | null {
   const found = data.deals.bundles.find((b) => b.key === id);
   if (!found) return null;
   // The listing ladder, round 2: each counted listing no automatic rung will read says why (PartRow.confirmNote).
@@ -523,6 +530,24 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
     ...(bundle.otherBrands && bundle.otherBrands.length > 0 ? { setContents: bundle.otherBrands } : {}),
     ...(looks.length > 0 ? { needsLook: looks } : {}),
     ...(market ? { market } : {}),
+    seller: sellerView(bundle, t, sellerAccount ?? null),
+  };
+}
+
+/**
+ * Nov 25: the parts as the owner's seller account sees them: the primary way to sell's counted parts (else the bundle's),
+ * each with its line. Not connected: no lines, and NOT_CONNECTED_LINE on a deal in Buy now.
+ */
+export function sellerView(bundle: BundleRow, t: Pick<TrackingCollection, 'signals' | 'sellerChecks' | 'selfShip'> | undefined, account: string | null): DealSellerView {
+  if (account === null) {
+    return { connected: false, note: (t?.signals[bundle.key]?.buyNow ?? null) !== null ? NOT_CONNECTED_LINE : null, parts: [] };
+  }
+  const checks = t?.sellerChecks ?? {};
+  const self = t?.selfShip ?? {};
+  const parts = sellerParts(bundle.options[0]?.parts ?? bundle.parts);
+  return {
+    connected: true, note: null,
+    parts: parts.map((p) => sellerPartLine(p, checks[p.asin!]?.account === account ? checks[p.asin!] : undefined, self[p.asin!] !== undefined)),
   };
 }
 

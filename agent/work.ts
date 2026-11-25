@@ -64,7 +64,8 @@ import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
-import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, withoutStale } from './signalsPass';
+import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, trendsOfReport, withoutStale } from './signalsPass';
+import { SellerAccount } from './seller';
 import { dealSnapshots, keepaKeeps, keptNow, pullDue, readOneDue, staleBuyKeys, tokenShareOf, used } from './keepCurrent';
 import { backfillMarkets, cachedMarkets, MARKET_BACKFILL } from './marketBackfill';
 import { amazonDue, failingOf, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
@@ -158,6 +159,9 @@ export interface WorkDeps {
    */
   hdSleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
   hdRandom?: () => number;
+  /** Nov 25, tests: the seller API's two addresses and its wait (agent/seller.ts). */
+  spUrls?: { tokenUrl: string; baseUrl: string };
+  spSleep?: (ms: number) => Promise<void>;
 }
 
 /** A real wait of `ms` that `signal` ends early (rejecting). */
@@ -209,7 +213,8 @@ export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
 
 /** Every key the store holds, as text, so no sentence can carry one out. */
 export function secretsOf(keys: StoredKeys): string[] {
-  return [keys.serpapi, keys.keepa, keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken].filter(
+  const s = keys.amazonSeller;
+  return [keys.serpapi, keys.keepa, keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken, s?.clientId, s?.clientSecret, s?.refreshToken, s?.sellerId].filter(
     (k): k is string => typeof k === 'string' && k.length >= 4,
   );
 }
@@ -285,10 +290,18 @@ export class AgentWork {
   private catchUp: string | null = null;
   /** The key of the scheduled scan that is starting (SelfRun.scanKey, taken before the schedule counts from its start). */
   private scheduledKey: string | null = null;
+  /** Nov 25: the owner's Amazon seller account, read-only (agent/seller.ts). */
+  readonly seller: SellerAccount;
 
   constructor(deps: WorkDeps) {
     this.d = deps;
     this.costs = new CostBook({ store: deps.store, dataDir: deps.dataDir, now: deps.now });
+    this.seller = new SellerAccount({
+      store: deps.store, fetchFn: deps.fetchFn, now: deps.now, dataDir: deps.dataDir,
+      count: (n) => this.costs.count('amazon', n),
+      onKeyProblem: (s) => this.keyProblem('amazonSeller', s),
+      ...(deps.spUrls ? { spUrls: deps.spUrls } : {}), ...(deps.spSleep ? { sleep: deps.spSleep } : {}),
+    });
     this.policy = new NotifyPolicy({ settings: () => deps.store.get('settings').notifications, now: deps.now, emit: deps.notify });
     mkdirSync(deps.dataDir, { recursive: true });
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
@@ -336,6 +349,7 @@ export class AgentWork {
         return Boolean(this.d.store.get('keys').keepa) && app.settings.amazonRefreshViaKeepa && app.lookups?.drip !== false;
       },
       flatFee: () => this.d.store.get('settings').settings.fees.fulfillmentFee,
+      seller: () => this.seller.lookup(),
       stale: () => staleBuyKeys({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') }, this.d.now()),
     };
   }
@@ -352,9 +366,29 @@ export class AgentWork {
   private async afterChange(report: ScanReport, extra?: { text: string; count: number }, before?: ReadonlyMap<string, DealSnapshot>): Promise<void> {
     if (this.live.busy === 'scan') return;
     try {
+      report = await this.sellerPass(report);
       await evaluateSignals(this.signalsDeps(), report, extra, before ? (t) => this.verdictFlips(before, report, t) : undefined);
     } catch (err) {
       this.addError(`Buy signals could not be judged: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
+    }
+  }
+
+  /**
+   * Nov 25: the deals' listings checked against the owner's Amazon seller account (agent/seller.ts), before their signals are
+   * judged, so a first announcement rests on a fresh check. When Amazon's fee estimates were read, the report is built
+   * again so they count. Without an account: nothing, and the report as it is. Never throws.
+   */
+  private async sellerPass(report: ScanReport): Promise<ScanReport> {
+    if (!this.seller.connected()) return report;
+    try {
+      const opts = this.signalsDeps();
+      const trend = await trendsOfReport(this.cache, report);
+      const r = await this.seller.refresh(report, trend, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) });
+      if (r.stopped) this.addError(`Checking your Amazon seller account stopped: ${scrub(r.stopped, this.d.store.get('keys'))}`, null);
+      return r.feesRead > 0 && this.live.busy !== 'scan' ? await this.rebuild() : report;
+    } catch (err) {
+      this.addError(`Your Amazon seller account could not be checked: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
+      return report;
     }
   }
 
@@ -1531,7 +1565,7 @@ export class AgentWork {
     const settings = store.get('settings');
     let report: ScanReport | null = null;
     try {
-      report = (await postScanWork({ store: this.scanStore, settings: toScanSettings(extensionSettingsOf(settings)), cache: this.cache, now: this.d.now })).report;
+      report = (await postScanWork({ store: this.scanStore, settings: toScanSettings(extensionSettingsOf(settings)), cache: this.cache, now: this.d.now, amazonFees: this.seller.amazonFees() })).report;
       // The app replaces a wrong listing itself: what the price guard and the audit withdrew is re-checked before it is asked.
       report = await this.selfCorrected(report);
       await this.publish(report);
@@ -1564,7 +1598,7 @@ export class AgentWork {
       if (ai.problem) notes.push(ai.problem);
       if (ai.waitingForChrome > 0) notes.push(`${ai.waitingForChrome} split ${ai.waitingForChrome === 1 ? 'question waits' : 'questions wait'} for Chrome.`);
       applied = await this.autopilot();
-      if (applied > 0 || ai.asked > 0) report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))), this.cache);
+      if (applied > 0 || ai.asked > 0) report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))), this.cache, this.seller.amazonFees());
       await this.publish(report);
       await this.trackScan(report);
       // The listing ladder, rung 2: within what the scan's cap leaves, the listings its catalog check left unconfirmed.
@@ -1952,7 +1986,8 @@ export class AgentWork {
     const alerts = this.d.store.get('settings').alerts;
     const now = this.d.now();
     const opts = this.signalsDeps();
-    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) }) }));
+    const seller = this.seller.lookup();
+    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store), ...(seller ? { seller } : {}) }) }));
   }
 
   /** What the views show beside each deal: its BOGO promotion's estimate and the FBA-fee estimate, from stored data. */
@@ -2288,7 +2323,7 @@ export class AgentWork {
   private async rebuild(): Promise<ScanReport> {
     // The price guard over what is stored (core/src/scan/priceGuard.ts): free, and never beside a scan, whose end runs it.
     if (this.live.busy !== 'scan') await applyPriceGuard(this.scanStore, this.d.now());
-    let report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    let report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache, this.seller.amazonFees());
     if (this.live.busy !== 'scan') report = await this.selfCorrected(report);
     await this.publish(report);
     return report;
@@ -2305,7 +2340,7 @@ export class AgentWork {
       cleared: this.d.store.get('tracking').sanityCleared ?? [],
     }, report.bundles);
     if (!done.changed) return report;
-    return reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    return reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache, this.seller.amazonFees());
   }
 
   /** Ask AI now, about one question or every open one (the app's buttons). Runs in the background. */
@@ -2490,6 +2525,17 @@ export class AgentWork {
       await this.scanStore.putConfirmedPrice(record);
       await this.refresh();
       return record;
+    });
+  }
+
+  /**
+   * Nov 25: the owner ships this listing himself (or no longer): FBA's answer no longer holds his deals, and Amazon's FBA
+   * fee estimate is not used for it. Remembered by ASIN; the report and the signals are judged again. Never beside a scan.
+   */
+  setSelfShip(asin: string, on: boolean): Promise<void> {
+    return this.serialAnswer('A scan or a search is running. Change it when it has finished.', async () => {
+      this.seller.setSelfShip(asin, on);
+      await this.refresh();
     });
   }
 

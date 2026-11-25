@@ -77,7 +77,7 @@ export function weekUse(c: Pick<CostsInput, 'serp' | 'keepa' | 'counts'> & { ai:
   // eBay calls and Telegram messages are counted by day: the days after `from`'s up to `to`'s.
   const firstDay = localDate(from, tz);
   const lastDay = localDate(to, tz);
-  const counted = (kind: 'ebay' | 'telegram') => {
+  const counted = (kind: 'ebay' | 'telegram' | 'amazon') => {
     const days = Object.fromEntries(Object.entries(c.counts).filter(([d]) => d > firstDay && d <= lastDay).map(([d, v]) => [d, v[kind] ?? 0]));
     return sum(countEvents(days));
   };
@@ -87,6 +87,7 @@ export function weekUse(c: Pick<CostsInput, 'serp' | 'keepa' | 'counts'> & { ai:
     ai: sum(within(aiEvents(c.ai))),
     ebay: counted('ebay'),
     telegram: counted('telegram'),
+    amazon: counted('amazon'),
   };
 }
 
