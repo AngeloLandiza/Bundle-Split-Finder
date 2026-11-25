@@ -5,6 +5,7 @@ import type { AlertSettings } from '../settings';
 import { partKey, type BundleRow, type ScanReport } from '../scan/types';
 import type { BogoPromotion } from './bogo';
 import type { BogoPair } from './bogoPairs';
+import type { SellerLookup } from '../amazon/seller';
 import { marketKey } from './market';
 import { appendHistory, bundleSignals, HISTORY_DAYS, historyPoint, type BundleSignals, type HistoryPoint, type OptionPoint, type Signal, type SignalKind, type TrendLookup } from './signals';
 
@@ -78,6 +79,8 @@ export interface SignalOpts {
   flatFee?: number;
   /** The sanity holds by bundle key (core/src/audit/sanity.ts heldDeals): each such bundle's sentence (SignalInput.held). */
   held?: Readonly<Record<string, string>>;
+  /** Nov 25: the owner's Amazon seller account, when connected (SignalInput.seller). */
+  seller?: SellerLookup;
 }
 
 const signalOpts = (o: SignalOpts, key: string, state: Pick<TrackingState, 'announced'>) => {
@@ -86,6 +89,7 @@ const signalOpts = (o: SignalOpts, key: string, state: Pick<TrackingState, 'anno
     ...(o.keepa !== undefined ? { keepa: o.keepa } : {}),
     ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}),
     ...(o.held?.[key] !== undefined ? { held: o.held[key] } : {}),
+    ...(o.seller ? { seller: o.seller } : {}),
     ...(told ? { announced: { profit: told.profit, at: told.at } } : {}),
   };
 };

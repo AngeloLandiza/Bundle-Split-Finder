@@ -12,6 +12,7 @@
 // sent to the owner (`BundleSignals.announce`) is a deal entering the state, or one already in it rising by at least
 // ANNOUNCE_MARGIN_DOLLARS over the figure he was last told, as the baseline (last check, 7-day average) sees it too.
 
+import { sellerFails, type SellerLookup } from '../amazon/seller';
 import type { PartTrend } from '../keepa/trends';
 import { fulfillmentGap } from '../scan/report';
 import { cannotBuyWords } from './buying';
@@ -364,6 +365,12 @@ export interface SignalInput {
    * never announced or has left the state since. Without it a buy is news.
    */
   announced?: { profit: number; at: number };
+  /**
+   * Nov 25: the owner's Amazon seller account, when one is connected (core/src/amazon/seller.ts). Then every counted part
+   * must be allowed to list and eligible for FBA (or shipped by him), and a part not checked yet keeps the deal from Buy
+   * now. Absent (no account): nothing changes.
+   */
+  seller?: SellerLookup;
 }
 
 const SECTION_WORDS: Record<ReportSection, string> = {
@@ -464,6 +471,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     // Signals round 2: every condition that fails, the binding one first, in one sentence (rule 5: estimates). Nov 25: no
     // "needs a change" among them: a deal that stays good stays worth buying (the announcement is what needs a change).
     const fails: string[] = [];
+    const account: string[] = [];
     if (row.section !== 'confirmed') fails.push(`not confirmed yet: ${SECTION_WORDS[row.section]}`);
     else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
     else {
@@ -489,15 +497,19 @@ export function bundleSignals(input: SignalInput): BundleSignals {
         if (velocity.parts.length === 0) fails.push('no sales data: this way to sell has no parts yet');
         else if (missing.length > 0) fails.push(noSalesWords(missing, input.keepa));
       }
+      // Nov 25: what his own Amazon account says about each part (may he list it, will FBA take it). Said after his
+      // numbers, the usual-price rule, the listings' confirmation and the holds (below).
+      if (input.seller) account.push(...sellerFails(o.parts, input.seller));
     }
     // Buy safety (Nov 23): a buy never rests on a listing nobody confirmed. When the estimate meets the owner's numbers, that
     // is the binding condition and is said first; otherwise after what fails. A buy held back only for its listings stays
     // pending from scan to scan.
-    const pending = pendingAsins.length > 0 && fails.length === 0;
+    const pending = pendingAsins.length > 0 && fails.length === 0 && account.length === 0;
     if (pendingAsins.length > 0) {
       if (meets) fails.unshift(unconfirmedWords(pendingAsins.length));
       else fails.push(unconfirmedWords(pendingAsins.length));
     }
+    fails.push(...account);
     // A sanity hold binds first: the deal waits for the owner's look, whatever else holds or fails. A buy held back for its
     // listings keeps its buyPending (the catalog check still reads those listings first), but is never "looks worth buying".
     if (input.held) fails.unshift(`needs a look: ${input.held.replace(/\.$/, '')}`);

@@ -1076,7 +1076,7 @@ export interface PartFees {
    * flat   the owner's flat fee (his choice 'flat', or with 'keepa' a fallback above $0: see `fulfillmentWhy`)
    * none   signals round 3: no fulfillment fee counted ($0): the estimate is "before fulfillment" for this part
    */
-  fulfillmentFrom: 'keepa' | 'flat' | 'none';
+  fulfillmentFrom: 'keepa' | 'flat' | 'none' | 'amazon';
   /**
    * With fees.fulfillmentSource 'keepa' and no Keepa fee: why. not_pulled: Keepa was not asked about the listing yet (the
    * drip asks); no_keepa_fee: Keepa was asked and has no FBA fee for it; no_listing: priced by a confirmed price, no listing.
@@ -1084,7 +1084,15 @@ export interface PartFees {
   fulfillmentWhy?: 'not_pulled' | 'no_keepa_fee' | 'no_listing';
   /** A fraction (0.15). */
   referralRate: number;
-  referralFrom: 'keepa' | 'flat';
+  referralFrom: 'keepa' | 'flat' | 'amazon';
+  /**
+   * Nov 25: Amazon's own fee estimate for the owner's account (Product Fees, read through his seller account) at the price
+   * the estimate uses. When present (and the fee settings take Amazon's FBA fee, fulfillmentSource 'keepa') it replaces
+   * Keepa's figures: referral from its ReferralFee line, fulfillment from everything else it counted (fulfillmentFrom and
+   * referralFrom 'amazon'). `keepaFulfillment`: Keepa's FBA fee for the same listing, kept so the difference can be shown
+   * and measured; null when Keepa has none.
+   */
+  amazon?: { total: number; referral: number; other: number; at: number; keepaFulfillment: number | null };
 }
 
 /**
