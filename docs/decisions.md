@@ -2388,3 +2388,20 @@ are medians, the old code against the new, runs alternated on one machine (Apple
 - **Not done, the owner's call:** one commit to disk per scan step in place of one per record (it changes which records
   of a step a crash can lose; the replay covers it for listings, prices, bundles and catalog, not yet shown for matches
   and reviews), and reading the agent's collections without copying them on every request.
+
+## Nov 25: the Windows check after supervision, and `--quit`
+
+- **The Windows smoke test's quit step was wrong once the app restarts its agent.** It stopped the agent by posting
+  `/api/agent/quit` itself and expected no agent left. Since supervision that is, to the app, an agent that stopped
+  without being asked, so the app started it again and the step failed (run 45670462330). The app was right. The step is
+  now two: "an agent that stops is started again" (the same post, then a new agent process must listen within 30 s, the
+  first check of supervision on Windows), and "quit leaves no agent" by quitting the app itself.
+- **`--quit` on a second launch quits the running app** (`QUIT_ARG` in `src-tauri/src/lib.rs`). A script cannot click the
+  tray's Exit, and ending the app's process leaves the agent behind, which is not what a user's quit does. The
+  single-instance plugin already hands a second launch's arguments to the running app; `--quit` there calls the same
+  `app.exit(0)` as the menu item. With no app running the launch exits before it starts anything. Any program running as
+  the user could already end the app, so this gives nothing new away.
+- **Two tests that start a real agent process imported its modules by path** (`agent/test/crash.test.ts`,
+  `agent/test/store.test.ts`). Windows' `import()` reads `D:\...` as a URL with the scheme `d:` and fails, so the child
+  exited 1 before it ran anything. They import by file URL now. The flush-count test from the performance pass accepts
+  one or two flushes on Windows, where the folder's flush may be refused.

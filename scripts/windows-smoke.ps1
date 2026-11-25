@@ -322,17 +322,35 @@ if ($listening) {
   }
 }
 
-# ---------------------------------------------------------------- 6. quit
+# ---------------------------------------------------------------- 6. the agent is started again; quit
 
 if ($listening -and $token) {
-  Invoke-Check 'quit leaves no agent' {
+  # Nov 25, supervision (src-tauri/src/agent.rs): an agent that ends without the app quitting is started again, the
+  # first time at once. The agent is asked to stop behind the app's back, as a crash would look to the app.
+  Invoke-Check 'an agent that stops is started again' {
+    $script:agentsBefore = @(Get-AgentProcesses | ForEach-Object { $_.Id })
     $r = Invoke-Agent -Method POST -Path '/api/agent/quit' -Bearer $script:token
     if ($r.Status -ne 200) { return @($false, "POST /api/agent/quit answered $($r.Status)") }
-    $gone = Wait-Until -Seconds 10 -Test { (Get-AgentProcesses).Count -eq 0 }
+    $back = Wait-Until -Seconds 30 -Test {
+      (Test-Listening) -and @(Get-AgentProcesses | Where-Object { $script:agentsBefore -notcontains $_.Id }).Count -gt 0
+    }
+    $now = (Get-AgentProcesses | ForEach-Object { $_.Id }) -join ', '
+    if ($back) { return @($true, "a new agent-dashboard process listens within 30 s (was [$($script:agentsBefore -join ', ')], now [$now])") }
+    return @($false, "after 30 s: agent-dashboard process ids [$now] (before: [$($script:agentsBefore -join ', ')]), listening: $(Test-Listening)")
+  }
+
+  # The app is quit as its Quit menu item quits it: a second launch with --quit (src-tauri/src/lib.rs QUIT_ARG).
+  Invoke-Check 'quit leaves no agent' {
+    $name = [IO.Path]::GetFileNameWithoutExtension($script:appExe)
+    [void](Start-Process -FilePath $script:appExe -ArgumentList '--quit' -PassThru)
+    $gone = Wait-Until -Seconds 20 -Test {
+      (Get-AgentProcesses).Count -eq 0 -and -not (Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($script:appExe)) -ErrorAction SilentlyContinue)
+    }
     $closed = -not (Test-Listening)
-    if ($gone -and $closed) { return @($true, 'no agent-dashboard process and the port is closed within 10 s') }
+    if ($gone -and $closed) { return @($true, 'no app, no agent-dashboard process and the port is closed within 20 s') }
     $left = (Get-AgentProcesses | ForEach-Object { $_.Id }) -join ', '
-    return @($false, "after 10 s: agent-dashboard process ids [$left], port closed: $closed")
+    $app = @(Get-Process -Name $name -ErrorAction SilentlyContinue).Count
+    return @($false, "after 20 s: agent-dashboard process ids [$left], app processes: $app, port closed: $closed")
   }
 }
 

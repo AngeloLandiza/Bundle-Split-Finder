@@ -26,11 +26,21 @@ fn set_launch_at_login(app: AppHandle, enabled: bool) -> Result<bool, String> {
   shell::set_launch_at_login(&app, enabled)
 }
 
+/// `"Split Finder.exe" --quit`: asks the running app to quit, and starts nothing when none runs. The Windows smoke test
+/// quits the app this way (scripts/windows-smoke.ps1): the tray's Quit item cannot be clicked from a script, and ending
+/// the process would leave the agent behind.
+const QUIT_ARG: &str = "--quit";
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
     // Must be the first plugin: a second launch focuses the running window instead.
-    .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+    .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+      // A second launch with --quit quits the running app as its Quit menu item does (RunEvent::Exit stops the agent).
+      if args.iter().any(|a| a == QUIT_ARG) {
+        app.exit(0);
+        return;
+      }
       shell::show_window(app);
     }))
     .plugin(tauri_plugin_opener::init())
@@ -52,6 +62,10 @@ pub fn run() {
     .manage(agent::AgentChild(Mutex::new(None)))
     .manage(shell::ShellState::new())
     .setup(|app| {
+      // --quit reached here, so no app was running to hand it to (the single-instance plugin runs first): nothing to quit.
+      if std::env::args().any(|a| a == QUIT_ARG) {
+        std::process::exit(0);
+      }
       let handle = app.handle().clone();
       if cfg!(debug_assertions) {
         handle.plugin(

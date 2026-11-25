@@ -83,6 +83,8 @@ is linked statically, so nothing else needs installing.
   Pause, Settings, Exit). No taskbar badge: the count is in the tooltip.
 - **Quit.** Windows has no SIGTERM for a windowless child: the shell posts `/api/agent/quit` (app
   token only), waits up to 3 s for the port to close, then kills the process.
+  `"Split Finder.exe" --quit` quits a running app the same way as the tray's Exit (a second launch hands the
+  argument to the running app; with no app running it starts nothing). The Windows smoke test quits with it.
 - **Launch at login.** The autostart plugin writes the per-user Run key.
 
 Unverified until it runs on a Windows PC: install and first launch; Mica and the transparent

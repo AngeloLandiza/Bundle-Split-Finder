@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { Store } from '../store';
@@ -118,7 +119,8 @@ describe('agent store', () => {
     // Nov 25, supervision: a real agent process opens the store and is killed (SIGKILL: no handler, no close), so its lock
     // stays, touched a moment ago. The shell restarts the agent immediately; that start must not wait for the lock to go stale.
     const dir = tempDir();
-    const store = resolve('agent/store.ts');
+    // A file URL, not a path: Windows' import() reads the drive letter of "D:\\..." as a URL scheme and fails.
+    const store = pathToFileURL(resolve('agent/store.ts')).href;
     const child = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', `const { Store } = await import(${JSON.stringify(store)}); Store.open(${JSON.stringify(dir)}); process.kill(process.pid, 'SIGKILL');`], { encoding: 'utf8' });
     expect(child.signal ?? child.status).toBe(process.platform === 'win32' ? 1 : 'SIGKILL');
     const lock = join(dir, 'store', 'store.lock');

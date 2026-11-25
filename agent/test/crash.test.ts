@@ -8,6 +8,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import type { ServerResponse } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { RunRecord } from '../../core/src/api/contract';
@@ -141,9 +142,10 @@ describe('the truly unexpected: a crash line, release, exit non-zero', () => {
 
   it('a real agent process: an unhandled rejection writes the crash line, releases the store lock and exits 70', () => {
     const dir = tempDir();
+    // The modules by file URL, not by path: Windows' import() reads the drive letter of "D:\\..." as a URL scheme.
     const code = `
-      const { createAgent } = await import(${JSON.stringify(resolve('agent/app.ts'))});
-      const { installCrashHandlers } = await import(${JSON.stringify(resolve('agent/crash.ts'))});
+      const { createAgent } = await import(${JSON.stringify(pathToFileURL(resolve('agent/app.ts')).href)});
+      const { installCrashHandlers } = await import(${JSON.stringify(pathToFileURL(resolve('agent/crash.ts')).href)});
       const agent = createAgent({ dataDir: ${JSON.stringify(dir)}, port: 0, timers: false, appVersion: null, shippedHelperVersion: null });
       agent.store.update('keys', (k) => ({ ...k, serpapi: ${JSON.stringify(SERP)} }));
       installCrashHandlers(process, { dataDir: ${JSON.stringify(dir)}, secrets: () => agent.secrets(), step: () => agent.step(), release: () => agent.close(), exit: (c) => process.exit(c) });

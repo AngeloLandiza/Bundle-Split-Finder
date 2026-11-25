@@ -58,7 +58,9 @@ describe('the flush to disk', () => {
       timeout: 60_000,
     });
     expect(run.stderr).toBe('');
-    expect(run.stdout.trim()).toBe('fsyncs=2');
+    // The file, then its folder. Windows may refuse to open a folder for the second flush (store.ts fsyncDir: "not
+    // supported here"), so one real flush is enough there.
+    expect(run.stdout.trim()).toMatch(process.platform === 'win32' ? /^fsyncs=[12]$/ : /^fsyncs=2$/);
   });
 
   it('only the test setup and tests swap the flush out', () => {
