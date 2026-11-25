@@ -18,7 +18,12 @@ import { agentState, dealsResponse } from '../views';
 
 const DIR = join(import.meta.dirname, '..', '..', 'fixtures', 'e2e-2026-11-23', 'after-scan6');
 const TRACKING = JSON.parse(readFileSync(join(DIR, 'store', 'tracking.json'), 'utf8')) as Record<string, unknown> & { signals: Record<string, BundleSignals> };
-const DEALS_AT = Date.parse((JSON.parse(readFileSync(join(DIR, 'store', 'deals.json'), 'utf8')) as { at: string }).at);
+/**
+ * The tests' clock starts at noon, the owner's local time, the day after the deals were stored (Nov 24 23:42Z), whatever
+ * the machine's time zone. Not the deals' own time: in UTC that is 18 minutes before midnight, and the day's counts
+ * (keep-current's pages, Home Depot's "today") would start again partway through a test. Each test spans a few hours.
+ */
+const T0 = new Date(2026, 10, 25, 12).getTime();
 const TEMPLATE = (JSON.parse(readFileSync('fixtures/keepa/product-B0BGYFTPGK-B01H9BL8EO-B09M3TL9BB-stats.json', 'utf8')) as { products: Record<string, unknown>[] }).products[0]!;
 const BOT = '999:bot-secret-token';
 const SAW = 'homedepot:341966856'; // PSK1212SB-PCL515B, $99
@@ -147,7 +152,7 @@ const state = (): AgentState => agentState(
 );
 
 beforeEach(() => {
-  clock = DEALS_AT;
+  clock = T0;
   calls = [];
   telegram = [];
   taken = [];
@@ -204,7 +209,7 @@ describe("Home Depot's price of a Buy now or watched deal, re-read between scans
     expect(taken.slice(34).every((id) => !watched.has(id))).toBe(true);
     // Four hours after their read, the Buy now deals come first again; no watched deal before its 12 hours.
     const first = taken.length;
-    clock = DEALS_AT + HD_RECHECK_BUY_NOW_MS + 4 * HD_DRIP_GAP_MS;
+    clock = T0 + HD_RECHECK_BUY_NOW_MS + 4 * HD_DRIP_GAP_MS;
     await read(4);
     expect(taken.slice(first, first + 3)).toEqual(['344305163', '341965772', '341966856']);
     expect(watched.has(taken[first + 3]!)).toBe(false);
