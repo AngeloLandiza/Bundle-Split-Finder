@@ -4,7 +4,7 @@
 // the id is put into a Home Depot address.
 
 import { catalogEntry } from '../decompose';
-import { kitIndex, kitKey, kitPageStored, kitPageUnread, kitRecords } from '../kitContents';
+import { kitIndex, kitKey, kitPageStored, kitPageUnread, type KitRecord, kitRecords } from '../kitContents';
 import type { BundleRecord, CatalogRecord, PageReading, PartPriceRecord, ScanStore } from './types';
 
 /** A Home Depot item id is digits. Stored data is untrusted, and the id goes into a page address. */
@@ -41,9 +41,28 @@ export type KitPageTarget =
 const sameText = (a: string, b: string): boolean => a.trim().toUpperCase() === b.trim().toUpperCase();
 
 export function kitPageTarget(bundles: BundleRecord[], catalog: CatalogRecord[], brand: string, model: string): KitPageTarget {
-  const own = kitIndex(bundles)(brand, model);
-  const kits = kitIndex(catalog.filter((c) => c.isKit === true))(brand, model);
-  const all = kitIndex(kitRecords(bundles, catalog))(brand, model);
+  return kitPageTargets(bundles, catalog)(brand, model);
+}
+
+/**
+ * kitPageTarget for many kits of the same stored records (buildReport asks once per bundle with a kit not read):
+ * its three indexes are built once, on the first question, not once per question. The records are read as they are
+ * when asked, as before; the lists must not be changed between questions.
+ */
+export function kitPageTargets(bundles: BundleRecord[], catalog: CatalogRecord[]): (brand: string, model: string) => KitPageTarget {
+  type Of<R> = (brand: string, model: string) => R[];
+  let indexes: { own: Of<BundleRecord>; kits: Of<CatalogRecord>; all: Of<KitRecord> } | undefined;
+  return (brand, model) => {
+    indexes ??= {
+      own: kitIndex(bundles),
+      kits: kitIndex(catalog.filter((c) => c.isKit === true)),
+      all: kitIndex(kitRecords(bundles, catalog)),
+    };
+    return targetOf(indexes.own(brand, model), indexes.kits(brand, model), indexes.all(brand, model), brand, model);
+  };
+}
+
+function targetOf(own: BundleRecord[], kits: CatalogRecord[], all: KitRecord[], brand: string, model: string): KitPageTarget {
   if (kitPageStored(all, brand, model)) return { kind: 'stored' };
   if (!kitPageUnread(all, brand, model)) return { kind: 'none' };
   // A bundle record of the kit is read by the bundle pass, not as a catalog kit. Of two written

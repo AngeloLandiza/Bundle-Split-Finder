@@ -7,7 +7,7 @@ import { priceForNet, type BundleResult, type FeeSettings, type ListingFees } fr
 import type { PartTrend } from '../keepa/trends';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
-import { kitCatalog, kitPageTarget } from './kitPage';
+import { kitCatalog, type KitPageTarget, kitPageTargets } from './kitPage';
 import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
 import { factView, staleness, type PartFact } from '../facts/fact';
@@ -17,7 +17,6 @@ import { twinKeys, twinKeysOf } from './twins';
 import {
   type BundleRecord,
   type BundleRow,
-  type CatalogRecord,
   type BundleStatus,
   type ConfirmedPrice,
   type IncompleteEstimate,
@@ -531,11 +530,12 @@ function primaryOf(options: Evaluated[]): number {
 
 /**
  * `recordsOf`: the stored records of one kit's brand and model (kitIndex over kitRecords: bundle
- * records and catalog entries marked a kit), built once per report; `refs` (steps 9 and 10) too.
+ * records and catalog entries marked a kit), built once per report; `refs` (steps 9 and 10) too, and `kitPageOf`
+ * (kitPageTargets over the same stored bundles and catalog).
  */
 async function bundleRow(
   store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => KitRecord[], refs: RefsOf,
-  bundles: BundleRecord[], catalog: CatalogRecord[],
+  kitPageOf: (brand: string, model: string) => KitPageTarget,
 ): Promise<BundleRow> {
   // The split question's id is the runner's: `split:` and the bundle key.
   const question = await store.getReview(`split:${b.key}`);
@@ -596,7 +596,7 @@ async function bundleRow(
     options: [primary, ...evaluated.filter((_, i) => i !== p)].map((e) => e.option),
     kitsNotRead,
     kitReads: kitsNotRead.flatMap((model) => {
-      const target = kitPageTarget(bundles, catalog, b.brand, model);
+      const target = kitPageOf(b.brand, model);
       return target.kind === 'page' ? [{ model, itemId: target.itemId }] : [];
     }),
     range: primary.option.range,
@@ -622,7 +622,7 @@ export async function reportRow(store: ScanStore, settings: ScanSettings, b: Bun
   const stored = await store.listBundles();
   // Nov 23: with the kits Home Depot's part pages name (partPriceKits), so a kit no listing page showed is "not read".
   const catalog = await kitCatalog(store);
-  return bundleRow(store, settings, b, kitIndex(kitRecords(stored, catalog)), await refsOf(store, opts), stored, catalog);
+  return bundleRow(store, settings, b, kitIndex(kitRecords(stored, catalog)), await refsOf(store, opts), kitPageTargets(stored, catalog));
 }
 
 export async function buildReport(store: ScanStore, settings: ScanSettings, opts: ReportOptions = {}): Promise<ScanReport> {
@@ -636,8 +636,10 @@ export async function buildReport(store: ScanStore, settings: ScanSettings, opts
   const catalog = await kitCatalog(store);
   const recordsOf = kitIndex(kitRecords(stored, catalog));
   const refs = await refsOf(store, opts);
+  // kitPageTarget's indexes, built once per report (at the first bundle with a kit not read), not once per such bundle.
+  const kitPageOf = kitPageTargets(stored, catalog);
   for (const b of stored) {
-    bundles.push(await bundleRow(store, settings, b, recordsOf, refs, stored, catalog));
+    bundles.push(await bundleRow(store, settings, b, recordsOf, refs, kitPageOf));
     for (const part of [...resolvedParts(b), ...kitItemParts(b, recordsOf)]) held.add(part.key);
   }
   bundles.sort((a, b) => {
