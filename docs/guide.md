@@ -128,6 +128,16 @@ Once a day Split Finder looks at the project's public page on GitHub (one plain 
 
 To switch it off, open **Settings, General** and turn off "Tell me when a new version is ready" (no request is made then), or **Settings, Notifications** to stop only the message. Activity lists the versions you were told about.
 
+### Setting up Telegram when you are away from the computer
+
+Normally you paste the bot's token and chat id in Settings, Keys. If you are not at the computer but it is on, with Split Finder open and iCloud Drive turned on:
+
+1. In Telegram, create the bot with @BotFather (`/newbot`), then open your bot, press Start and send it any message.
+2. On your iPhone, copy the token BotFather gave you. In the Files app, under iCloud Drive, make a text file named `telegram.txt` and paste the token into it.
+3. On the computer (or from a remote session on it) run `npm run telegram:setup` in the project folder.
+
+The command reads the token from that file, asks Telegram which chat wrote to your bot, saves both in Split Finder, sends the test message, and removes the file. It never prints the token. Afterwards, empty Recently Deleted in Files on your phone.
+
 ## 7. When something looks wrong
 
 Banners appear near the top. One shows at a time, with "N more" if there are others.
