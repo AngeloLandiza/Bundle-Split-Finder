@@ -341,7 +341,7 @@ if ($listening -and $token) {
 
   # The app is quit as its Quit menu item quits it: a second launch with --quit (src-tauri/src/lib.rs QUIT_ARG).
   # The app's own stop may take 16 s at worst (agent.rs stop: 3 s to prove the listener, 10 s for its answer, 3 s for
-  # the port), so the check allows 30 s. If that is not enough it says what was left and whether another 30 s ended it.
+  # the port), so the check allows 30 s. If that is not enough it says what was left, asks again, and says whether that ended it.
   Invoke-Check 'quit leaves no agent' {
     $name = [IO.Path]::GetFileNameWithoutExtension($script:appExe)
     $describe = {
@@ -360,8 +360,10 @@ if ($listening -and $token) {
       return @($true, "no app, no agent-dashboard process and the port is closed after $([int]((Get-Date) - $sent).TotalSeconds) s")
     }
     $at30 = & $describe
+    # Asked a second time, to tell a request the app never acted on from a stop that hangs.
+    [void](Start-Process -FilePath $script:appExe -ArgumentList '--quit' -PassThru)
     $later = Wait-Until -Seconds 30 -Test $isGone
-    $end = if ($later) { "gone after $([int]((Get-Date) - $sent).TotalSeconds) s" } else { "still there after 60 s: $(& $describe)" }
+    $end = if ($later) { "a second --quit ended it, $([int]((Get-Date) - $sent).TotalSeconds) s after the first" } else { "still there 30 s after a second --quit: $(& $describe)" }
     return @($false, "--quit sent at $($sent.ToString('HH:mm:ss')). Before: $before. After 30 s: $at30. Then: $end")
   }
 }
