@@ -289,6 +289,11 @@ export interface AgentState {
   firstRun?: boolean;
   /** D2: when the settings last changed; the shell re-reads GET /api/settings when this moves. */
   settingsAt?: string;
+  /**
+   * Nov 25: a version newer than the running app is ready (the release note said so, once). Absent when none is, when the
+   * owner turned "Tell me when a new version is ready" off, or when he dismissed this version (POST /api/update/dismiss).
+   */
+  update?: UpdateNotice;
 }
 
 // ---------------------------------------------------------------- deals
@@ -1174,6 +1179,8 @@ export interface ActivityResponse {
   answers?: OwnerAnswerEntry[];
   /** Outcomes: what he recorded about purchases and sales, one sentence each, newest first, at most 50 (POST /api/outcomes/entries/:id/undo). */
   outcomes?: OutcomeEntry[];
+  /** Nov 25: the new versions the app told him about, newest first, at most 20. */
+  versions?: VersionEntry[];
 }
 
 // ---------------------------------------------------------------- settings
@@ -1220,7 +1227,7 @@ export interface AppearanceSettings {
   density: 'regular' | 'compact';
 }
 
-export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error'] as const;
+export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version'] as const;
 
 /** D2: which messages reach the owner and when. Times are local "HH:MM". */
 export interface NotificationSettings {
@@ -1294,6 +1301,32 @@ export interface AppSettings {
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
   shell: ShellSettings;
+  /**
+   * Nov 25, new versions: `tellMeAboutNewVersion` (default on; absent: on) lets the agent read the project's public release
+   * note on GitHub (core/src/release/note.ts RELEASE_URL) once a day and say when a newer version is ready. The request sends
+   * nothing about the owner. Off: no request at all.
+   */
+  updates?: UpdateSettings;
+}
+
+export interface UpdateSettings {
+  tellMeAboutNewVersion: boolean;
+}
+
+/** A newer version than the one running, as the notice shows it (GET /api/state `update`). `link` passed core's safeDownloadLink, else null. */
+export interface UpdateNotice {
+  version: string;
+  date: string;
+  notes: string[];
+  link: string | null;
+}
+
+/** One announced version in Activity (GET /api/activity `versions`), newest first. */
+export interface VersionEntry {
+  id: string;
+  at: string;
+  version: string;
+  sentence: string;
 }
 
 /** GET /api/settings and the answer to PATCH /api/settings (whose body is a SettingsPatch). */
@@ -1303,7 +1336,7 @@ export interface SettingsResponse {
   keys: KeysPresence;
 }
 
-export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell' | 'scan' | 'prices'>> & {
+export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell' | 'scan' | 'prices' | 'updates'>> & {
   settings?: Partial<AppSettings['settings']>;
   scan?: Partial<NonNullable<AppSettings['scan']>>;
   ebaySettings?: Partial<EbaySettings>;
@@ -1314,6 +1347,7 @@ export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings
     quietHours?: Partial<NotificationSettings['quietHours']>;
   };
   shell?: Partial<ShellSettings>;
+  updates?: Partial<UpdateSettings>;
   ai?: Partial<Omit<AiAgentSettings, 'judge' | 'assist' | 'research' | 'brief'>> & {
     judge?: Partial<AiPipelineSetting>;
     assist?: Partial<AiPipelineSetting>;
@@ -1525,7 +1559,7 @@ export interface TelegramTestResponse {
 /** The shell turns this into a native notification (src-tauri/src/events.rs reads title, body, kind, count). */
 export interface NotifyEvent {
   id: string;
-  kind: 'review' | 'deal' | 'autopilot' | 'scan' | 'error';
+  kind: 'review' | 'deal' | 'autopilot' | 'scan' | 'error' | 'version';
   title: string;
   body: string;
   /** How many things the message is about, when it counts them. */

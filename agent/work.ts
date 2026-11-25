@@ -2362,6 +2362,17 @@ export class AgentWork {
     return this.sendTelegram(text);
   }
 
+  /**
+   * Nov 25: a new version is ready. One message, the same text on each channel the owner has on: the system notification (the
+   * policy: its kind switch, and quiet hours hold it) and Telegram when it is set up. The "new version" kind switched off
+   * means neither. Telegram's failure is the usual one (a sentence in Activity, sent again after the next run).
+   */
+  async announceVersion(text: string): Promise<void> {
+    if (!this.d.store.get('settings').notifications.kinds.version) return;
+    this.policy.send({ kind: 'version', title: 'Split Finder', body: text, route: '/today' });
+    await this.sendTelegram(text);
+  }
+
   /** Quiet hours ended or the morning came: the held notifications go out, and the morning digest to Telegram. */
   async flushMessages(): Promise<void> {
     const text = this.policy.flush();

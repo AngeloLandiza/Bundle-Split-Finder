@@ -6,6 +6,7 @@ import { dayOf } from '../core/src/tracking/state';
 import type { HomeDepotPaceState } from '../core/src/api/contract';
 import type {
   ActivityResponse,
+  VersionEntry,
   AgentState,
   AutopilotEntry,
   DripState,
@@ -655,7 +656,7 @@ export function entriesView(data: StoreData['outcomes']): OutcomeEntry[] {
     });
 }
 
-export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers' | 'outcomes'>>, sinceIso: string, now: number): ActivityResponse {
+export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers' | 'outcomes'>> & { versions?: VersionEntry[] }, sinceIso: string, now: number): ActivityResponse {
   const since = Date.parse(sinceIso);
   const runs = data.activity.runs.filter((r) => Date.parse(r.startedAt) >= since);
   const autopilot: AutopilotEntry[] = data.autopilot.map((e) => ({
@@ -677,6 +678,8 @@ export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' 
       .map((a) => ({ id: a.id, questionId: a.questionId, title: a.title, answer: a.answer, at: a.at, undoable: a.undoneAt === null && a.undoable, undoneAt: a.undoneAt }))
       .reverse(),
     ...(data.outcomes ? { outcomes: entriesView(data.outcomes) } : {}),
+    // Nov 25: the new versions the app told him about, newest first.
+    ...(data.versions && data.versions.length > 0 ? { versions: [...data.versions].reverse() } : {}),
     errors: (data.activity.errors ?? [])
       .filter((e) => e.resolvedAt === null)
       .map((e) => ({ id: e.id, at: e.at, sentence: e.sentence, retry: e.retry ? { label: e.retry.label, searches: e.retry.searches, usd: e.retry.usd } : null }))

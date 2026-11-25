@@ -110,11 +110,14 @@ export function isNewer(note: Pick<ReleaseNote, 'version'>, running: string | nu
 
 const sentence = (s: string): string => (/[.!?]$/.test(s) ? s : `${s}.`);
 
+/** "Split Finder 0.1.1 is ready. What changed: …": the version and the lines, with no link (Activity shows this). */
+export function releaseChanges(note: ReleaseNote): string {
+  return `Split Finder ${note.version} is ready. What changed: ${note.notes.map(sentence).join(' ')}`;
+}
+
 /** The one message every channel carries: the version, what changed, and the link or what to do without one. */
 export function releaseMessage(note: ReleaseNote): string {
-  const changed = note.notes.map(sentence).join(' ');
-  const tail = note.downloadUrl ? `Download: ${note.downloadUrl}` : 'Ask the developer for the download link.';
-  return `Split Finder ${note.version} is ready. What changed: ${changed} ${tail}`;
+  return `${releaseChanges(note)} ${note.downloadUrl ? `Download: ${note.downloadUrl}` : 'Ask the developer for the download link.'}`;
 }
 
 export interface ReleaseNoteInput {

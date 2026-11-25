@@ -21,8 +21,10 @@ import type {
   Purchase,
   ReviewAnswer,
   RunRecord,
+  VersionEntry,
   WorkerJob,
 } from '../core/src/api/contract';
+import type { ReleaseNote } from '../core/src/release/note';
 import type { StoredSuggestion } from '../core/src/assist/stored';
 import type { FollowUpState } from '../core/src/research/followUp';
 import { DEFAULT_BRIEF_MODEL } from '../core/src/brief/pipeline';
@@ -207,6 +209,19 @@ export interface PendingMessage {
   tries: number;
 }
 
+/** The release note's state. `latest` is the last file that passed every check; a failed look changes nothing but `checkedAt`. */
+export interface ReleaseRuntime {
+  /** The last look at the release note, successful or not (epoch ms): the next is a day later. */
+  checkedAt: number | null;
+  latest: ReleaseNote | null;
+  /** Versions already announced (an Activity entry and one message): a version is announced once. Newest last, at most 20. */
+  announced: string[];
+  /** Versions whose notice the owner closed. Newest last, at most 20. */
+  dismissed: string[];
+  /** What Activity lists. Newest last, at most 20. */
+  history: VersionEntry[];
+}
+
 /** W4: what the scheduler, the meters and the alert engine keep between runs. Never a key. */
 export interface AgentRuntime {
   /** When the last scheduled scan started (epoch ms); the schedule counts from it. */
@@ -247,6 +262,8 @@ export interface AgentRuntime {
   /** Question ids already counted in a message: the same questions do not alert again. */
   notifiedQuestions: string[];
   telegram: { pending: PendingMessage[]; lastSentAt: string | null; lastError: string | null };
+  /** Nov 25, new versions (agent/versionCheck.ts): what the daily look at the release note found, and what the owner was told. */
+  release?: ReleaseRuntime;
   /** Seconds a unit of each kind took in recent scans, for the progress estimate (pipeline.ts). */
   rates: UnitRates;
   /** The last scan's job, as the Deals limit notice reads it (core/src/deals/limitCopy.ts). */
@@ -360,13 +377,15 @@ export function defaultSettings(): StoreData['settings'] {
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
-      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true },
+      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true },
       sound: false,
       quietHours: { enabled: false, from: '22:00', to: '07:00' },
       digest: 'each-run',
       morningAt: '08:00',
     },
     shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
+    // Nov 25: the app reads the project's public release note once a day and says when a new version is ready.
+    updates: { tellMeAboutNewVersion: true },
   };
 }
 
@@ -446,6 +465,7 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
         quietHours: { ...d.notifications.quietHours, ...(s.notifications?.quietHours ?? {}) },
       },
       shell: { ...d.shell, ...(s.shell ?? {}) },
+      updates: { ...d.updates!, ...(s.updates ?? {}) },
       lookups: { drip: true, ...(s.lookups ?? {}) },
       scan: { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false, ...(s.scan ?? {}) },
       // Suggested prices (Nov 23): off, and kept off whatever a stored file says. The PO: his approval is the answer.

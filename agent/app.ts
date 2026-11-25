@@ -64,6 +64,8 @@ import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './wo
 import { WorkerJobs } from './workerJobs';
 import { priceFromLink } from './priceFromLink';
 import { OutcomeBook, outcomesCsvOf, outcomesResponse } from './outcomes';
+import { parseSemver } from '../core/src/release/note';
+import { checkForNewVersion, dismissUpdate, releaseState, updateNoticeOf, type VersionCheck } from './versionCheck';
 
 /** A paired extension counts as connected this long after it was last heard from. */
 export const HELPER_CONNECTED_MS = 90_000;
@@ -88,6 +90,10 @@ export interface AgentOptions {
   keyCheckTimeoutMs?: number;
   /** Nov 23: the helper build this app ships; default the bundled zip's manifest (setup.ts shippedHelperVersion). Tests set it. */
   shippedHelperVersion?: string | null;
+  /** Nov 25: the running app's version; default the shell's SPLIT_FINDER_APP_VERSION. Null: nothing to compare, so no release check. */
+  appVersion?: string | null;
+  /** Nov 25: one line for a developer when the release note cannot be read; default console.warn. */
+  releaseLog?: (line: string) => void;
 }
 
 /** Nov 23: a helper build as a heartbeat may name it ("0.1.0+3c92cc7"). */
@@ -101,6 +107,8 @@ export interface Agent {
   events: EventHub;
   work: AgentWork;
   notify(n: Omit<NotifyEvent, 'id'>): NotifyEvent;
+  /** Nov 25: look at the release note now (tests; the timers do it at start and daily). */
+  checkVersion(o?: { force?: boolean }): Promise<VersionCheck>;
   close(): void;
 }
 
@@ -330,6 +338,10 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
     if ('digest' in n) out.digest = oneOf(n.digest, ['each-run', 'morning', 'off'], 'notifications.digest');
     if ('morningAt' in n) out.morningAt = clock(n.morningAt, 'notifications.morningAt');
   }
+  if ('updates' in patch) {
+    const u = obj(patch.updates, 'updates');
+    if ('tellMeAboutNewVersion' in u) next.updates = { ...(next.updates ?? { tellMeAboutNewVersion: true }), tellMeAboutNewVersion: flag(u.tellMeAboutNewVersion, 'updates.tellMeAboutNewVersion') };
+  }
   if ('shell' in patch) {
     const sh = obj(patch.shell, 'shell');
     for (const f of ['menuBarIcon', 'dockIcon', 'launchAtLogin', 'keepAwakeDuringScan'] as const) if (f in sh) next.shell[f] = flag(sh[f], `shell.${f}`);
@@ -474,13 +486,32 @@ export function createAgent(opts: AgentOptions): Agent {
   // Signals round 2: then the deals rebuilt and their buy signals judged, with what is stored now (no network).
   void work.withdrawWaitingQuestions().then(() => work.signalsAtStart()).catch(() => 0);
 
+  // Nov 25, new versions: the running app's version is the shell's (Cargo's package version, handed over at launch), not the
+  // helper's build id. Not an x.y.z: nothing to compare, and the release note is never requested.
+  const rawVersion = opts.appVersion !== undefined ? opts.appVersion : (process.env.SPLIT_FINDER_APP_VERSION ?? null);
+  const appVersion = parseSemver(rawVersion) ? rawVersion : null;
+  const checkVersion = (o: { force?: boolean } = {}): Promise<VersionCheck> =>
+    checkForNewVersion(
+      { store, fetchFn: opts.fetchFn ?? fetch, now, appVersion, announce: (text) => work.announceVersion(text), changed: () => mark('state', 'activity'), ...(opts.releaseLog ? { log: opts.releaseLog } : {}) },
+      o,
+    );
+  // Once shortly after start, then the hourly tick looks only when a day has passed since the last look.
+  const releaseStart = timers ? setTimeout(() => void checkVersion({ force: true }).catch(() => undefined), 30_000) : null;
+  const releaseTimer = timers ? setInterval(() => void checkVersion().catch(() => undefined), 3_600_000) : null;
+  releaseStart?.unref?.();
+  releaseTimer?.unref?.();
+
   const state = () => {
     const data = Object.fromEntries(COLLECTIONS.map((n) => [n, store.get(n)])) as unknown as StoreData;
     const live = work.state();
-    return agentState(data, {
-      ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
-      ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(),
-    });
+    const update = updateNoticeOf(store, appVersion);
+    return {
+      ...agentState(data, {
+        ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
+        ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(),
+      }),
+      ...(update ? { update } : {}),
+    };
   };
 
   function flush(): void {
@@ -580,6 +611,13 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   r.post('/api/notify/test', 'ui', () => notify({ kind: 'scan', title: 'Split Finder', body: 'Notifications from the agent work.' }));
   r.post('/api/notify/test-telegram', 'ui', () => testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram));
+  // Nov 25: the owner closed the new-version notice; it stays closed for that version.
+  r.post('/api/update/dismiss', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    if (typeof b.version !== 'string' || parseSemver(b.version) === null) throw new HttpError('bad_request', 'version must be like 0.1.1.');
+    dismissUpdate(store, b.version);
+    return { ok: true };
+  });
 
   // ------------------------------------------------------------ settings and keys
   r.get('/api/settings', 'any', () => settingsResponse({ settings: store.get('settings'), keys: store.get('keys') }));
@@ -838,7 +876,7 @@ export function createAgent(opts: AgentOptions): Agent {
 
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>
-    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions'), outcomes: store.get('outcomes') }, monthStart(now()), now()),
+    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions'), outcomes: store.get('outcomes'), versions: releaseState(store).history }, monthStart(now()), now()),
   );
   r.post('/api/activity/errors/:id/retry', 'ui', (ctx) => refusals(async () => {
     await work.retry(ctx.params.id!);
@@ -1088,7 +1126,10 @@ export function createAgent(opts: AgentOptions): Agent {
     events,
     work,
     notify,
+    checkVersion,
     close() {
+      if (releaseStart) clearTimeout(releaseStart);
+      if (releaseTimer) clearInterval(releaseTimer);
       if (flushTimer) clearTimeout(flushTimer);
       if (connectionTimer) clearInterval(connectionTimer);
       if (quietStart) clearTimeout(quietStart);
