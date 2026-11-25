@@ -278,7 +278,12 @@ function RunRow({ r }: { r: Run }) {
         <p className="arow-title">
           {w.title} <span className={w.problem ? 'arow-outcome arow-outcome-bad' : 'arow-outcome'}>· {w.outcome.toLowerCase()}</span>
         </p>
-        {r.summary ? <p className="arow-sub arow-say">{r.summary}</p> : null}
+        {r.summary ? (
+          <p className="arow-sub arow-say">
+            {/* A verdict a refreshed price changed names its source: each address is a link. */}
+            {linkPieces(r.summary).map((p, k) => (p.url ? <SourceLink key={k} source={{ label: p.text, url: p.url }} /> : <span key={k}>{p.text}</span>))}
+          </p>
+        ) : null}
         {r.error && r.error !== r.summary ? <p className="arow-sub arow-error">{r.error}</p> : null}
         {failedSteps.map((st) => (
           <p key={st.label} className="arow-sub">

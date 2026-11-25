@@ -1,3 +1,4 @@
+import { checkedWords, staleWhy } from '../lib/pricesChecked';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type DealRow, type DealSection, type DealSort } from '../api/types';
@@ -296,6 +297,15 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
           </span>
           <span className="deal-sub">
             {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
+            {/* Keeping deals current: how old its prices are, beside the verdict, never hidden by it. */}
+            {r.pricesChecked ? (
+              <>
+                {' · '}
+                <span className={r.pricesChecked.staleSince ? 'attention-text' : undefined} title={r.pricesChecked.staleSince ? staleWhy(r.pricesChecked) : undefined}>
+                  {checkedWords(r.pricesChecked)}
+                </span>
+              </>
+            ) : null}
           </span>
           {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
           {lineOf(r, matchShown) ? (

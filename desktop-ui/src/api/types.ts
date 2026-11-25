@@ -128,6 +128,8 @@ export interface AgentView {
   lastScan: LastScan | null;
   /** The background lookups; absent from an older agent. */
   drip?: Drip;
+  /** Keeping watched deals current between scans; absent when nothing is watched or from an older agent. */
+  keepCurrent?: KeepCurrent;
 }
 
 export interface HelperState {
@@ -234,6 +236,24 @@ export interface DealRow {
   incomplete?: DealIncomplete | null;
   /** Checking the app's own work: the first finding that holds this deal from Buy now ("Needs a look: …"); null when none. */
   needsLook?: NeedsLook | null;
+  /** A watched deal: when its Home Depot price and its Amazon prices were last checked; a stale Buy now since when. */
+  pricesChecked?: PricesChecked | null;
+}
+
+/** When a watched deal's prices were last checked (ISO), and for a Buy now kept from going stale, since when they were not. */
+export interface PricesChecked {
+  homeDepotAt: string;
+  amazonAt: string | null;
+  staleSince?: string;
+}
+
+/** The agent keeping watched deals current between scans: the cost a day in its own words. */
+export interface KeepCurrent {
+  buyNow: number;
+  watched: number;
+  pagesWaiting: number;
+  pullsWaiting: number;
+  sentence: string;
 }
 
 export interface DealsView {
@@ -374,6 +394,8 @@ export interface DealDetail {
   estimate: Estimate | null;
   /** The row's one-sentence verdict, in full (every row with an estimate carries one). */
   signalNote?: string | null;
+  /** A watched deal: when its prices were last checked (shown beside the verdict, never hidden by it). */
+  pricesChecked?: PricesChecked | null;
   /** The estimate counts no fulfillment fee for `parts` of its `of` parts. */
   beforeFulfillment?: { parts: number; of: number } | null;
   /** Nov 23: in place of `estimate` while some model part has no counted price; null otherwise. */

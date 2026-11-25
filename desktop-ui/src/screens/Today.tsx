@@ -329,6 +329,15 @@ function AgentBlock({ state }: { state: AppState }) {
             ) : null}
           </Fact>
         ) : null}
+        {agent.keepCurrent ? (
+          <Fact label="Watched deals">
+            <span>
+              <span className="fig">{count(agent.keepCurrent.buyNow + agent.keepCurrent.watched)}</span> kept current
+              {agent.keepCurrent.pagesWaiting + agent.keepCurrent.pullsWaiting > 0 ? <span className="attention-text"> · some prices wait</span> : null}
+            </span>
+            <span className="fact-sub">{agent.keepCurrent.sentence}</span>
+          </Fact>
+        ) : null}
         <Fact label="AI this month">
           <span>
             <span className="fig">{usdSpend(budget.aiSpentUsd)}</span>

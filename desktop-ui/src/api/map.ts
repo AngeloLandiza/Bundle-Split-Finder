@@ -22,6 +22,8 @@ import type {
   DealsView,
   DealSort,
   Drip,
+  KeepCurrent,
+  PricesChecked,
   FollowUp,
   SettledPart,
   Grade,
@@ -131,6 +133,24 @@ function dripOf(v: unknown): Drip | undefined {
   return { active: o.active, waiting, nextAt: typeof o.nextAt === 'string' ? o.nextAt : null, lastLookupAt: typeof o.lastLookupAt === 'string' ? o.lastLookupAt : null, ...(num(o.feesWaiting) ? { feesWaiting: num(o.feesWaiting)! } : {}) };
 }
 
+/** The agent's keep-current figures, when it sends them with their types. */
+function keepCurrentOf(v: unknown): KeepCurrent | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as Record<string, unknown>;
+  const [buyNow, watched, pagesWaiting, pullsWaiting] = [num(o.buyNow), num(o.watched), num(o.pagesWaiting), num(o.pullsWaiting)];
+  if (buyNow === undefined || watched === undefined || typeof o.sentence !== 'string') return undefined;
+  return { buyNow, watched, pagesWaiting: pagesWaiting ?? 0, pullsWaiting: pullsWaiting ?? 0, sentence: o.sentence };
+}
+
+/** A row's prices-checked times, only in their checked shape. */
+export function pricesCheckedOf(v: unknown): PricesChecked | null {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  const time = (x: unknown): x is string => typeof x === 'string' && Number.isFinite(Date.parse(x));
+  if (!time(o.homeDepotAt)) return null;
+  return { homeDepotAt: o.homeDepotAt, amazonAt: time(o.amazonAt) ? o.amazonAt : null, ...(time(o.staleSince) ? { staleSince: o.staleSince } : {}) };
+}
+
 const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
 
 /** The sentences the agent says about keys it holds but a service did not accept: only a non-empty sentence for a key it knows. */
@@ -168,6 +188,7 @@ function updateOf(v: unknown): AppState['update'] {
 export function mapState(s: C.AgentState): AppState {
   const a = s.agent;
   const drip = dripOf((a as { drip?: unknown }).drip);
+  const keepCurrent = keepCurrentOf((a as { keepCurrent?: unknown }).keepCurrent);
   const refill = num((s.budget as { keepaRefillPerMin?: unknown }).keepaRefillPerMin);
   const problems = keyProblemsOf((s as { keyProblems?: unknown }).keyProblems);
   const checks = keyChecksOf((s as { keyChecks?: unknown }).keyChecks);
@@ -179,6 +200,7 @@ export function mapState(s: C.AgentState): AppState {
       nextScanAt: a.nextScanAt,
       lastScan: a.lastScan ? lastScanOf(a.lastScan) : null,
       ...(drip ? { drip } : {}),
+      ...(keepCurrent ? { keepCurrent } : {}),
     },
     helper: helperOf(s),
     budget: {
@@ -255,6 +277,7 @@ export function mapRow(r: C.DealRow): DealRow {
     updatedAt: r.updatedAt,
     lookup: r.lookup ?? null,
     ...(r.incomplete ? { incomplete: r.incomplete } : {}),
+    ...(pricesCheckedOf(r.pricesChecked) ? { pricesChecked: pricesCheckedOf(r.pricesChecked) } : {}),
   };
 }
 
@@ -445,6 +468,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     link: b.link,
     estimate: e ? { profit: e.profit, roi: e.roi, roiRange: priceRangeOf(b.range), cost: e.cost, partsSellFor: e.partsSellFor, afterFees: e.afterFees, basis: e.basis, countedAtZero: e.countedAtZero } : null,
     signalNote: d.row.signalNote ?? null,
+    pricesChecked: pricesCheckedOf(d.row.pricesChecked),
     beforeFulfillment: d.row.beforeFulfillment ?? null,
     ...(d.incompleteEstimate ? { incomplete: d.incompleteEstimate } : {}),
     noEstimate: e ? null : noEstimateSentence(b),

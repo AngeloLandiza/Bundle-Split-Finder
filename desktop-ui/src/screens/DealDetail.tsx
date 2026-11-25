@@ -1,3 +1,4 @@
+import { checkedWords, staleWhy } from '../lib/pricesChecked';
 import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine } from '../api/types';
@@ -125,7 +126,14 @@ function Detail({ d }: { d: DealDetail }) {
           </p>
           <p className="detail-meta">
             <SourceLink source={{ label: 'Open on Home Depot', url: d.link }} />
-            {d.seenAt ? <span className="muted"> · price seen {when(d.seenAt)}</span> : null}
+            {d.pricesChecked ? (
+              <span className={d.pricesChecked.staleSince ? 'attention-text' : 'muted'} title={d.pricesChecked.staleSince ? staleWhy(d.pricesChecked) : undefined}>
+                {' · '}
+                {checkedWords(d.pricesChecked)}
+              </span>
+            ) : d.seenAt ? (
+              <span className="muted"> · price seen {when(d.seenAt)}</span>
+            ) : null}
           </p>
           <WatchBar d={d} />
         </header>
