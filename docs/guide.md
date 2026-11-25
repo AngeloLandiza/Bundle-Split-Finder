@@ -173,7 +173,8 @@ Banners appear near the top. One shows at a time, with "N more" if there are oth
 - **"Chrome is not connected."** Press **Connect Chrome** and repeat step 1 above.
 - **"The ... key is not accepted."** The service refused the saved key. Press the button on the banner and paste a new key in Settings, Keys.
 - **"Searches are at your reserve."** No scan spends a search then: Amazon lookups wait for Keepa. To look some up now, press **Use searches for these** on Deals; that is the only way the reserve is spent.
-- **"The agent is not running."** Open Split Finder from the notification area.
+- **"The agent stopped unexpectedly and is being restarted."** Wait: the app starts its background agent again by itself (at once, then after 2 seconds, 10 seconds and a minute). Activity then says when it stopped and what became of a scan that was running; **Scan again** continues that scan from its last saved step.
+- **"The agent keeps stopping."** It stopped more than 5 times in 10 minutes, so the app stopped restarting it. Press **Exit and open again** (Mac: **Quit and open again**). If it stops again, send the audit file (below).
 
 **Activity** shows what happened: errors that need you (some have a retry button), your saved answers, what Autopilot did, and every scan with its searches, Keepa tokens and AI cost. If something is wrong, look there first.
 

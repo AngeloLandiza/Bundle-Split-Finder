@@ -2092,3 +2092,40 @@ the Split Finder helper, so a scan at 7:00 with Chrome closed had nothing to rea
   network (`core/test/self-run.test.ts`, `core/test/weekly-summary.test.ts` on after-scan6 and after-keepcurrent,
   `agent/test/openChrome.test.ts`, `agent/test/selfRun.test.ts`). The real macOS and Windows commands are checked as text
   only; they were not run on a Windows machine.
+## Nov 25: the shell restarts an agent that died; the agent dies cleanly and says why
+
+Before this, the shell started the Node agent once and dropped the sidecar's event receiver, so a crash went unseen:
+scheduled scans, the drip, price refreshes and Telegram stopped until the owner quit and reopened the app, while the
+banner told him to open the app that was already open.
+
+- **Supervision** (`src-tauri/src/agent.rs`, `restart_delay`): the receiver is kept. An exit the shell did not ask for (Quit
+  and the update relaunch go through `stop()`, which takes the child out of the guard and sets `QUITTING` first) is a
+  crash: the guard is cleared and the agent started again after **0 s, 2 s, 10 s, 60 s, 60 s** for the 1st to 5th crash
+  inside a **10-minute** window. The 6th crash in the window gives up: one system notification ("keeps stopping … Quit
+  Split Finder and open it again") and the banner's **Quit and open again** button (`relaunch_app`, Tauri's
+  `request_restart`, which stops the agent the usual way first). Open Split Finder from the menu also ends a give-up and
+  starts the count over. Same on macOS and Windows: the logic is platform-free; only `stop()` differs, as before.
+  *Why these numbers:* the first restart at once loses nothing; a crash that repeats at start (a bad file it reads) must
+  not spin, and five in ten minutes is a loop, not bad luck.
+- **Same port, token and data folder** on every start. The dead agent's `store.lock` names a dead pid; `takeLock` already
+  took over a lock whose holder is not alive whatever its age, so the immediate restart is not blocked (tested with a real
+  agent process killed with SIGKILL). A clean crash also releases the lock itself.
+- **The agent's last resort** (`agent/crash.ts`, installed first in `server.ts`): `uncaughtException` and
+  `unhandledRejection` write one line to `<dataDir>/agent-crash.jsonl` (time, kind, error name, first line of the message,
+  the step that ran; every stored key and the app token replaced, any 20+ character key-like run masked, at most 200
+  characters, last 20 lines kept), release (store lock, keep-awake, timers) and exit **70**. It never keeps running in an
+  unknown state.
+- **One job's failure is not the process's**: the scheduler tick, the held-message flush, a drip round (it used to be
+  swallowed silently), the event flush, the Chrome connection check, the worker lease sweep and a request handler that
+  throws are caught where they run: an Activity error ("The scheduler failed: …", scrubbed, not repeated while the same
+  one is open) or a 500 for that request.
+- **What he is told** (`createAgent`, `restart`): the shell passes `SPLIT_FINDER_RESTART` (the crash count in the window)
+  and `SPLIT_FINDER_STOPPED_AT`. Runs left as `running` are closed as stopped at every start (nothing runs when an agent
+  starts). After a restart one Activity error says when it stopped, that nothing saved was lost, what stopped it, and the
+  scan: **an interrupted scan is not resumed by itself** (it may spend searches; a crash loop must not spend them). Its
+  saved job stays `running`, and the next scan (Scan again, the error's retry button, or the next scheduled scan, whose
+  clock counts from the interrupted one's start) continues it from its last saved step (core runner: "an interrupted job
+  is continued as saved"). The Chrome reads in flight are abandoned at start and asked again. A system notification and a
+  Telegram message (the "error" kind switch) go only when a scheduled scan was cut off or on the second restart in the
+  window; the notification is held by the event hub until the shell's stream (`?client=shell`) reconnects.
+  Held quiet-hours notifications live in memory and are lost in a crash, hence "nothing saved was lost".
