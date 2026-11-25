@@ -10,6 +10,7 @@ import { ShortcutsSheet } from './components/ShortcutsSheet';
 import { Sidebar } from './components/Sidebar';
 import { INSPECTOR_DEFAULT, UiContext, clampInspector, type UiValue } from './components/ui';
 import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } from './lib/appearance';
+import { useKeptState } from './lib/keepIfSame';
 import { globalKey, pressOf, windowsKey } from './lib/keys';
 import { tabForSettingsId } from './lib/prefs';
 import { onRunStepRequest } from './lib/runStep';
@@ -66,7 +67,7 @@ function focusFind() {
 
 export function App() {
   const [route, setRoute] = useState<Route>(() => (typeof window !== 'undefined' ? parseRoute(window.location.hash) : DEFAULT_ROUTE));
-  const [state, setState] = useState<AppState | null>(null);
+  const [state, setState] = useKeptState<AppState>();
   const [online, setOnline] = useState(true);
   const [offlineSentence, setOfflineSentence] = useState<string | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
