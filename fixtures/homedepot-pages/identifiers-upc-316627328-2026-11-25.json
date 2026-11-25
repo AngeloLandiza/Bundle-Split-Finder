@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-11-25",
+  "source": "homedepot.com product page read in the owner's Chrome (free): window.__APOLLO_STATE__['base-catalog-316627328'].identifiers, values of the identity fields only",
+  "what": "Home Depot's product page state carries the product's barcode. The app's Chrome readers do not keep it: on Nov 25 the owner's catalog (50 entries) and part prices (200) held no barcode at all.",
+  "path": "/p/DEWALT-ATOMIC-20V-MAX-Cordless-Brushless-Compact-1-4-in-Impact-Driver-Tool-Only-DCF850B/316627328",
+  "stateKey": "base-catalog-316627328",
+  "identifierKeys": ["__typename", "productType", "storeSkuNumber", "brandName", "productLabel", "canonicalUrl", "itemId", "parentId", "omsThdSku", "specialOrderSku", "isSuperSku", "sampleId", "brandMainPageUrl", "skuClassification", "modelNumber", "toolRentalSkuNumber", "rentalCategory", "rentalSubCategory", "upc", "upcGtin13"],
+  "identifiers": {
+    "brandName": "DEWALT",
+    "modelNumber": "DCF850B",
+    "itemId": "316627328",
+    "upc": "885911758215",
+    "upcGtin13": "0885911758215"
+  },
+  "jsonLd": { "gtin13": "0885911758215", "model": "DCF850B" }
+}
