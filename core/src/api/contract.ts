@@ -365,6 +365,14 @@ export interface AgentState {
    * quiet notice offers Turn off; POST /api/self-run/login-notice closes it (`turnOff` also turns the setting off). Absent when closed.
    */
   loginNotice?: { sentence: string };
+  /**
+   * Nov 25: what the profit estimates leave out while the owner has not answered his sales tax or inbound shipping
+   * ("before sales tax and inbound shipping", core/src/estimateNote.ts). Every screen that states a profit says it. Absent
+   * when both are answered.
+   */
+  profitNote?: string;
+  /** Nov 25: the one calm question about those costs, with the unanswered ones named; absent once answered or closed (POST /api/costs-prompt/dismiss). */
+  costsPrompt?: { sentence: string };
 }
 
 // ---------------------------------------------------------------- deals

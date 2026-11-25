@@ -14,6 +14,7 @@
 
 import { sellerFails, type SellerLookup } from '../amazon/seller';
 import type { PartTrend } from '../keepa/trends';
+import { pctVs, usdVs } from '../money';
 import { fulfillmentGap } from '../scan/report';
 import { cannotBuyWords } from './buying';
 import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption, VerifiedBy } from '../scan/types';
@@ -476,9 +477,9 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
     else {
       if (profit < alerts.minProfit) {
-        fails.push(`est. ${usd(profit)} is below your ${usdShort(alerts.minProfit)}${roi < alerts.minRoiPercent ? ` and ${pct(roi)} ROI below your ${pct(alerts.minRoiPercent)}` : ''}`);
+        fails.push(`est. ${usdVs(profit, alerts.minProfit)} is below your ${usdShort(alerts.minProfit)}${roi < alerts.minRoiPercent ? ` and ${pctVs(roi, alerts.minRoiPercent)} ROI below your ${pct(alerts.minRoiPercent)}` : ''}`);
       } else if (roi < alerts.minRoiPercent) {
-        fails.push(`est. ROI ${pct(roi)} is below your ${pct(alerts.minRoiPercent)} (profit ${usd(profit)})`);
+        fails.push(`est. ROI ${pctVs(roi, alerts.minRoiPercent)} is below your ${pct(alerts.minRoiPercent)} (profit ${usd(profit)})`);
       }
       // Rule 1 of the market: a buy clears the owner's numbers at today's prices and at the usual ones.
       if (meets && usual !== null && !usual.meets) fails.push(usualFailWords(usual, alerts));

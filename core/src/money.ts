@@ -15,6 +15,14 @@ export interface FeeSettings {
   /** Per-bundle cost to get stock to Amazon or to the buyer. */
   inboundCost: number;
   /**
+   * Whether the owner has answered the sales tax (a saved value, a typed 0 or "0 is right" all count). A stored 0 alone
+   * cannot tell "none" from "never asked", so profit estimates say they leave it out until this is true (core/src/estimateNote.ts).
+   * Absent reads as: answered when `salesTaxRate` is not 0 (the agent migrates a store once, agent/store.ts COST_ANSWERED_MIGRATION).
+   */
+  salesTaxAnswered?: boolean;
+  /** The same for `inboundCost`. */
+  inboundAnswered?: boolean;
+  /**
    * Signals round 2: where a part's fulfillment fee comes from. 'keepa': Amazon's FBA pick-and-pack fee Keepa stored for
    * the part's listing, else `fulfillmentFee`; 'flat': `fulfillmentFee` for every unit. Absent reads as 'flat' (a store
    * written before it; the agent migrates once, agent/store.ts FULFILLMENT_KEEPA_MIGRATION).
@@ -60,6 +68,25 @@ export function bundleProfit(bundlePrice: number, netRevenue: number, fees: FeeS
   const cost = round2(bundlePrice * (1 + fees.salesTaxRate) + fees.inboundCost);
   const profit = round2(netRevenue - cost);
   return { cost, netRevenue: round2(netRevenue), profit, roi: cost ? Math.round((profit / cost) * 10000) / 10000 : 0 };
+}
+
+// ---------------------------------------------------------------- figures beside a threshold
+
+/**
+ * A percentage in words, whole by default. One that is below its `threshold` never reads as the threshold: 19.9% against
+ * 20% shows "19.9%", not "20%" (a sentence saying "20% ... below your 20%" contradicts itself). Rounded down to a tenth then.
+ */
+export function pctVs(value: number, threshold: number): string {
+  const whole = Math.round(value);
+  if (value < threshold && whole >= threshold) return `${Math.floor(value * 10) / 10}%`;
+  return `${whole}%`;
+}
+
+/** Dollars with cents; one below its `threshold` never reads as the threshold ($19.996 against $20 shows $19.99). */
+export function usdVs(value: number, threshold: number): string {
+  const text = (n: number): string => (n < 0 ? `-$${(-n).toFixed(2)}` : `$${n.toFixed(2)}`);
+  if (value < threshold && Math.round(value * 100) / 100 >= threshold) return text(Math.floor(value * 100) / 100);
+  return text(value);
 }
 
 // ---------------------------------------------------------------- packaging rule

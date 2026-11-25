@@ -9,7 +9,7 @@
 // (fixtures/keepa/stats-sample-2026-11-25.json) and is written down with its distribution in docs/decisions.md.
 
 import type { PartTrend } from '../keepa/trends';
-import { amazonNet, DEFAULT_FEES } from '../money';
+import { amazonNet, DEFAULT_FEES, pctVs, usdVs } from '../money';
 import type { BundleResult } from '../money';
 import type { PartRow } from '../scan/types';
 import { estimateRoiPercent } from '../settings';
@@ -181,7 +181,9 @@ export function usualFailWords(u: UsualEstimate, t: { minProfit: number; minRoiP
   const below = u.profit < t.minProfit
     ? `below your ${usdShort(t.minProfit)}${u.roiPercent < t.minRoiPercent ? ` and ${pct(t.minRoiPercent)}` : ''}`
     : `ROI below your ${pct(t.minRoiPercent)}`;
-  return `at ${averagesWords(u)} it is ${signed(u.profit)} (${pct(u.roiPercent)} ROI), ${below}`;
+  // A figure below its own number never rounds up to it: "+$19.99 (19.9% ROI), below your $20 and 20%".
+  const figure = u.profit < t.minProfit && u.profit >= 0 ? `+${usdVs(u.profit, t.minProfit)}` : signed(u.profit);
+  return `at ${averagesWords(u)} it is ${figure} (${pctVs(u.roiPercent, t.minRoiPercent)} ROI), ${below}`;
 }
 
 /** The verdict of a deal held back by its usual prices alone (rule 1). */
