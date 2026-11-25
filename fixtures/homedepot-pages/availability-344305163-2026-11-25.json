@@ -1,0 +1,20 @@
+{
+  "recordedAt": "2026-11-25",
+  "source": "homedepot.com product page read in the owner's Chrome (free), one page: window.__APOLLO_STATE__['base-catalog-344305163'], the fields about buying only",
+  "what": "What a bundle's own page states about buying it. The app keeps none of this today. The page's first state holds NO per-store stock or delivery estimate (no fulfillment key on this page; it is loaded later by the page itself), so 'in stock at his store' cannot be read from it; 'buyable online', 'discontinued', the per-order limit, the return window and the promotion's dates can.",
+  "path": "/p/RYOBI-ONE-18V-Lithium-Starter-Kit-w-1-2-0-Ah-Battery-1-4-0-Ah-Battery-Charger-w-ONE-18V-Hybrid-LED-Work-Light-PSK1212SB-PCL633B/344305163",
+  "stateKey": "base-catalog-344305163",
+  "productKeys": ["__typename", "dataSources", "identifiers", "availabilityType", "media", "info", "itemId", "taxonomy", "pricing({\"isBrandPricingPolicyCompliant\":false,\"storeId\":\"8119\"})", "dataSource", "badges({\"storeId\":\"8119\"})", "reviews", "details", "subscription", "bundleItems", "specificationGroup", "seo", "keyProductFeatures", "bundleFlag"],
+  "identifiers": { "itemId": "344305163", "modelNumber": "PSK1212SB-PCL633B" },
+  "availabilityType": { "__typename": "AvailabilityType", "type": "Online", "discontinued": false, "status": false, "buyable": true },
+  "info": { "quantityLimit": 3, "returnable": "90-Day", "isInStoreReturnMessageEligible": false, "isLiveGoodsProduct": false },
+  "pricing": {
+    "value": 99,
+    "original": 183,
+    "promotion": { "type": "DISCOUNT", "dollarOff": 84, "experienceTag": null, "dates": { "__typename": "Dates", "start": "10/26/2026", "end": "01/31/2027" } },
+    "conditionalPromotions": []
+  },
+  "bundleItems": null,
+  "bundleFlag": null,
+  "renderedWords": ["Limit 3 per order", "Pickup", "Delivery", "Add to Cart", "Free & Easy Returns In Store or Online"]
+}
