@@ -41,6 +41,7 @@
     "audit": "tsx scripts/audit.ts",
     "release:note": "tsx scripts/release-note.ts",
     "telegram:setup": "tsx scripts/telegram-setup.ts",
+    "costs": "tsx scripts/costs.ts",
     "audit:sanity": "tsx scripts/audit-sanity.ts",
     "redteam:listings": "tsx scripts/redteam-listings.ts",
     "measure:autoconfirm": "tsx scripts/measure-autoconfirm.ts",

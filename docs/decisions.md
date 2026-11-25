@@ -1819,3 +1819,55 @@ an hour sustained is too fast, and keep-current adds about 80 pages a day.
   hour is the least that still serves the Buy now checks with room for the backlog; raising 5 per 6 clean hours from the
   next day climbs back slowly enough that one good morning does not undo a refused one. *Live check:* whether 10 to 20 an
   hour is refused; the Activity runs say the ceiling each hour.
+
+## Nov 25 (step 18): what the services cost, a forecast as a range, and a limit that holds
+
+**Where the numbers come from.** Only the app's own records: SerpApi's and Keepa's ledgers in the data folder (a row a
+search; a row a charged Keepa call with its tokens), the AI's dollars as `aiSpentThisMonth` counts them (each ask, each
+brief, each run's eBay judge, once), and eBay calls and Telegram messages counted by day from now on (`runtime.costs`;
+nothing earlier was kept, so those two start at zero). Days are local. A price is the owner's: until he enters one, a
+subscription is "price not entered", left out of the dollar totals, which name it. SerpApi's free plan is known from the
+account check and is $0; eBay's Browse API and Telegram's bot API are free. Earlier months use today's entered price for a
+month whose ledger shows use: the app does not know an older price.
+
+**The forecast.** Month-end use = used so far + (scheduled scans left × what a scan uses) + (days left × what a day uses
+besides scheduled scans; today counts as the part of a day still to come). Manual scans are part of a day's use: they
+are his habit, not his schedule. With at least 7 complete days of history (and 5 scans when scheduled scans are left) the
+two amounts are resampled from his own scans and days in the last 60: 2,000 replays of the rest of the month with a
+seeded generator (mulberry32, seeded by month and service, so the same data gives the same figures), the median as the
+forecast, the 10th to 90th percentile as the range, and the day the limit is reached from the median spread over the
+days left as an average day and scan fall. With less, the forecast is the most his settings allow (the per-scan cap for
+each scheduled scan, the listing check's searches a day, Keepa's refill, the AI limit; his limit where the blocker holds
+it), said as a bound ("at most"), and it never names a day.
+
+Considered and not chosen at this amount of data: a regression of use on the number of scans (two to three weeks of
+history give a handful of points, and use per scan swings from 0 to 17 searches with what Home Depot lists that day, so
+its slope would be noise with a confident line), and exponential smoothing (it needs a steady series and a chosen decay;
+his use comes in bursts, a scan or a drip hour, between empty days, and the smoothing constant would be a guess). The
+bootstrap assumes only that the rest of the month looks like his own recent days and scans, which is what he can check,
+and its range widens by itself when his use is uneven. Why 7 days: below that the percentiles of a few draws are only
+their extremes, and a week holds his weekly rhythm once. Worth revisiting with three months or more of daily history (a
+weekday effect and a trend can then be told from noise), or when scans are scheduled at a rate whose per-scan use
+changes with the backlog.
+
+**One AI limit.** `costs.services.ai.monthlyLimit` is where it lives; `ai.monthlyCapUsd`, which every AI pass, the eBay
+judge and the briefs read, is kept equal to it on every store write and PATCH (`syncAiLimit`); a store from before moves
+its cap in once (`costs-ai-limit` in the migration log). The AI limit stays a hard stop whatever `blockWhenOver` says.
+
+**The blocker.** Before each paid step: the scan's searches, the scan's Keepa lookups, the drip's Keepa lookups, the
+listing check's searches (in a scan and in the drip), the eBay judge, the Review cards, Ask AI, Look up, Verify and
+"Use searches for these". It allows when used + the step's high end (the 90th percentile of his scans when there are 5,
+else its cap: the per-scan cap, each question's estimate) stays inside the limit and, for AI dollars, the total budget.
+A held automatic step does not run, the rest of the run does, and Costs, the run's summary and one message per service
+per run say what would let it run. The owner's own click (Look up, Verify, Ask AI past the budget) gets the same
+sentence and `canForce`; his `{ force: true }` is the yes. A limit only ever lowers a cap: the reserve, the per-scan
+cap and the hourly limit hold as before. The total budget holds metered dollars only: a subscription's searches and
+tokens cost nothing more once paid for.
+
+The drip's Keepa calls (lookups, catalog checks, re-checks, fee and sales pulls, and the keep-current price pulls of
+Buy now and watched deals) share one token budget: the blocker asks for room for its smallest call (a lookup when one
+waits, else a 1-token pull) and the budget's per-run cap is lowered to what the limit leaves.
+
+*Known gaps:* the listing
+check's high end is its daily allowance, not a history of its own; a month boundary between the AI passes' UTC month
+(`aiSpentThisMonth`) and the costs' local month can differ by a few hours of spend.
