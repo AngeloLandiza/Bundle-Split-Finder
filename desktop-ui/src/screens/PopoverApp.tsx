@@ -5,7 +5,6 @@ import { Button } from '../components/Button';
 import { Profit, Roi } from '../components/Figure';
 import { ProgressBar, Spinner } from '../components/States';
 import { count, percentOff } from '../lib/format';
-import { useKeptState } from '../lib/keepIfSame';
 import { modLabel } from '../lib/keys';
 import { isMac as mac, words } from '../lib/platform';
 import { bestDeal, isRunning, needsYou, popoverStatus, scanBlocked, scanCost } from '../lib/popover';
@@ -66,7 +65,7 @@ interface Data {
  * the stream is closed and nothing is requested, so a hidden popover costs the agent nothing.
  */
 function useAgent(open: boolean): Data {
-  const [state, setState] = useKeptState<AppState>();
+  const [state, setState] = useState<AppState | null>(null);
   const [online, setOnline] = useState(true);
   const [questions, setQuestions] = useState<ReviewQuestion[] | null>(null);
   const [deals, setDeals] = useState<DealRow[] | null>(null);
