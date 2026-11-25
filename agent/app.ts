@@ -30,6 +30,7 @@ import {
   type AskResponse,
   type QueuedResponse,
   type ReviewAnswer,
+  type RunRecord,
   type UndoAnswerResponse,
   type WorkerJobInputs,
   type LookupsRunResponse,
@@ -52,6 +53,7 @@ import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './
 import { measuredByDefault, modelIdentity } from './autopilot';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
+import { closeOrphanRuns, freshCrash, readCrashes, restartError, restartNotifies, restartSentence, type RestartInfo } from './crash';
 import { checkForOwner, checkStoredKey, forgetKeyCheck, recheckStaleKeys, type KeyCheckHost } from './keyChecks';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
@@ -63,7 +65,7 @@ import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_LISTING_SOURCE, isBundleListingPath, LISTING_SOURCES } from '../core/src/scan/listingSource';
 import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
-import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
+import { AgentWork, extensionSettingsOf, secretsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 import { priceFromLink } from './priceFromLink';
 import { OutcomeBook, outcomesCsvOf, outcomesResponse } from './outcomes';
@@ -98,6 +100,8 @@ export interface AgentOptions {
   appVersion?: string | null;
   /** Nov 25: one line for a developer when the release note cannot be read; default console.warn. */
   releaseLog?: (line: string) => void;
+  /** Nov 25, supervision: the shell started this agent again after the last one died (crash.ts restartFromEnv). */
+  restart?: RestartInfo | null;
 }
 
 /** Nov 23: a helper build as a heartbeat may name it ("0.1.0+3c92cc7"). */
@@ -115,6 +119,11 @@ export interface Agent {
   checkVersion(o?: { force?: boolean }): Promise<VersionCheck>;
   /** Nov 25: the Telegram reader and its buttons (agent/telegramBot.ts). */
   telegram: TelegramBot;
+  /** Nov 25, supervision: what runs now, and every secret a crash line must not hold (the keys and the app's token). */
+  step(): string | null;
+  secrets(): string[];
+  /** Resolves when the restart line (if any) is written and sent. */
+  restartNoted: Promise<void>;
   close(): void;
 }
 
@@ -436,7 +445,7 @@ export function createAgent(opts: AgentOptions): Agent {
   const auth = new Auth(store, { dataDir: opts.dataDir, port: opts.port, extraUiOrigins: opts.extraUiOrigins, now });
   const jobs = new WorkerJobs(store, { now });
   jobs.abandonUnfinished('The agent restarted before this read was answered.');
-  const events = new EventHub();
+  const events = new EventHub(now);
   const timers = opts.timers !== false;
 
   // Nov 23: which helper build is connected, and whether it is the one this app ships. `reportedBy`: the build that answered
@@ -471,6 +480,7 @@ export function createAgent(opts: AgentOptions): Agent {
       mark('state');
     }
   };
+  jobs.onError = (err) => work.jobFailed("Handing Chrome's page reads out again", err);
   jobs.onOutdated = () => {
     helper.reportedBy = helper.version;
     reloadIfOutdated();
@@ -508,6 +518,27 @@ export function createAgent(opts: AgentOptions): Agent {
     changed: () => mark('state'), ...(opts.work ?? {}),
   });
 
+  // Nov 25, supervision: nothing runs when an agent starts, so a run stored as running was the last agent's, cut off. After
+  // a restart by the shell, one Activity line says so and what became of the scan (crash.ts); a scheduled scan cut off, or a
+  // second restart in the shell's window, is also a notification and a Telegram message.
+  const orphans = closeOrphanRuns(store.get('activity').runs, iso());
+  if (orphans.closed.length > 0) store.update('activity', (a) => ({ ...a, runs: orphans.runs }));
+  const restartNoted = opts.restart ? noteRestart(opts.restart, orphans.closed.filter((r) => r.kind === 'scan').pop() ?? null) : Promise.resolve();
+  async function noteRestart(restart: RestartInfo, scanRun: RunRecord | null): Promise<void> {
+    try {
+      const at = now();
+      const newest = scanRun ? (await work.scanStore.listScans())[0] : undefined;
+      const interrupted = scanRun ? { trigger: scanRun.trigger ?? 'manual', continues: newest?.status === 'running' } : null;
+      const crash = freshCrash(readCrashes(opts.dataDir), at, restart.stoppedAt);
+      const sentence = restartSentence({ at: crash ? Date.parse(crash.at) : (restart.stoppedAt ?? at), attempt: restart.attempt, crash, interrupted });
+      const error = restartError(sentence, at, interrupted, store.get('settings').settings.searchesPerScan);
+      store.update('activity', (a) => ({ ...a, errors: [...(a.errors ?? []), error].slice(-50) }));
+      if (restartNotifies(restart.attempt, interrupted)) await work.announceProblem(sentence);
+    } catch (err) {
+      work.jobFailed('Noting the restart', err);
+    }
+  }
+
   // Nov 23: questions opened for bundles whose page was never read are withdrawn once at start (the next scan would too).
   // Signals round 2: then the deals rebuilt and their buy signals judged, with what is stored now (no network).
   void work.withdrawWaitingQuestions().then(() => work.signalsAtStart()).catch(() => 0);
@@ -544,6 +575,14 @@ export function createAgent(opts: AgentOptions): Agent {
     flushTimer = null;
     const names = [...dirty];
     dirty.clear();
+    // Nov 25, supervision: building the events is one job; its failure is an Activity error, not the agent's end.
+    try {
+      publishEvents(names);
+    } catch (err) {
+      work.jobFailed('Telling the app what changed', err);
+    }
+  }
+  function publishEvents(names: AgentEventName[]): void {
     for (const name of names) {
       if (name === 'deals') {
         const d = store.get('deals');
@@ -569,10 +608,14 @@ export function createAgent(opts: AgentOptions): Agent {
   let lastConnected = helperLive().connected;
   const connectionTimer = timers
     ? setInterval(() => {
-        const c = helperLive().connected;
-        if (c !== lastConnected) {
-          lastConnected = c;
-          mark('state');
+        try {
+          const c = helperLive().connected;
+          if (c !== lastConnected) {
+            lastConnected = c;
+            mark('state');
+          }
+        } catch (err) {
+          work.jobFailed("Checking Chrome's connection", err);
         }
       }, 15_000)
     : null;
@@ -635,7 +678,8 @@ export function createAgent(opts: AgentOptions): Agent {
     return { ok: true };
   });
   r.get('/api/events', 'any', (ctx) => {
-    events.attach(ctx.res, { name: 'state', data: state() });
+    // The shell names itself, so the notify events held while it was away reach it (events.ts).
+    events.attach(ctx.res, { name: 'state', data: state() }, { shell: ctx.url.searchParams.get('client') === 'shell' });
     return HANDLED;
   });
   r.post('/api/notify/test', 'ui', () => notify({ kind: 'scan', title: 'Split Finder', body: 'Notifications from the agent work.' }));
@@ -1082,7 +1126,20 @@ export function createAgent(opts: AgentOptions): Agent {
   // ------------------------------------------------------------ the request pipeline
   const PAIRING_PATHS = new Set(['/api/pair/request', '/api/pair/claim']);
 
+  // Nov 25, supervision: one request's failure is that request's 500, never the agent's end (the helper's long poll included).
   const handle = (req: IncomingMessage, res: ServerResponse): void => {
+    try {
+      handleRequest(req, res);
+    } catch (err) {
+      console.error(`[agent] ${req.method} request failed: ${err instanceof Error ? err.name : 'error'}`);
+      try {
+        sendError(res, 'internal', 'Something went wrong in the agent.');
+      } catch {
+        res.destroy();
+      }
+    }
+  };
+  const handleRequest = (req: IncomingMessage, res: ServerResponse): void => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     if (!auth.hostAllowed(req.headers.host)) {
       sendError(res, 'forbidden', 'This address is not the agent.');
@@ -1193,7 +1250,7 @@ export function createAgent(opts: AgentOptions): Agent {
         return bodyRead as Promise<T>;
       },
     };
-    void runHandler(route.handler, ctx);
+    void runHandler(route.handler, ctx).catch(() => res.destroy());
   };
 
   return {
@@ -1206,6 +1263,9 @@ export function createAgent(opts: AgentOptions): Agent {
     notify,
     checkVersion,
     telegram,
+    step: () => work.currentStep(),
+    secrets: () => [...secretsOf(store.get('keys')), auth.uiToken],
+    restartNoted,
     close() {
       telegram.stop();
       if (releaseStart) clearTimeout(releaseStart);

@@ -4,7 +4,8 @@
 import { createServer } from 'node:http';
 
 import { AGENT_PORT } from '../core/src/api/contract';
-import { createAgent } from './app';
+import { createAgent, type Agent } from './app';
+import { installCrashHandlers, restartFromEnv } from './crash';
 import { KeepAwake } from './keepAwake';
 import { systemChrome } from './openChrome';
 import { agentDataDir } from './paths';
@@ -14,10 +15,24 @@ const extraUiOrigins = (process.env.SPLIT_FINDER_UI_ORIGINS ?? '')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
+const dataDir = agentDataDir();
+
+// Nov 25, supervision: installed before anything can throw. The truly unexpected (a job's failure is caught where it runs)
+// writes one scrubbed line to agent-crash.jsonl, releases the store lock and the keep-awake hold, and exits non-zero, so the
+// desktop shell starts the agent again (src-tauri/src/agent.rs). It never keeps running in a state nobody knows.
+let agent: Agent | null = null;
+installCrashHandlers(process, {
+  dataDir,
+  secrets: () => agent?.secrets() ?? [],
+  step: () => agent?.step() ?? null,
+  release: () => agent?.close(),
+  exit: (code) => process.exit(code),
+  log: (line) => console.error(line),
+});
 
 // The real agent keeps the computer awake while a scan runs (shell.keepAwakeDuringScan) and may open the owner's Chrome for a
 // scheduled scan (settings.scan.openChrome); tests build theirs without either.
-const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins, onQuit: () => stop(), work: { keepAwake: new KeepAwake(), chrome: systemChrome() } });
+agent = createAgent({ dataDir, port, extraUiOrigins, onQuit: () => stop(), work: { keepAwake: new KeepAwake(), chrome: systemChrome() }, restart: restartFromEnv(process.env) });
 const server = createServer(agent.handle);
 // Long polls and event streams stay open; only idle keep-alive sockets are timed out.
 server.requestTimeout = 0;
@@ -29,7 +44,7 @@ let stopping = false;
 function stop(): void {
   if (stopping) return;
   stopping = true;
-  agent.close();
+  agent?.close();
   server.close(() => process.exit(0));
   server.closeAllConnections();
   setTimeout(() => process.exit(0), 2_000).unref();

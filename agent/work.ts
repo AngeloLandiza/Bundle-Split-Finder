@@ -482,11 +482,48 @@ export class AgentWork {
   start(): void {
     if (this.timer) return;
     void backfillBriefs(this.briefCtx()).catch(() => {});
+    // Nov 25, supervision: one tick's failure (the scheduler, the held messages) is an Activity error, never the process's end.
     this.timer = setInterval(() => {
-      void this.tick();
-      void this.flushMessages();
+      try {
+        this.tick();
+      } catch (err) {
+        this.jobFailed('The scheduler', err);
+      }
+      void this.flushMessages().catch((err: unknown) => this.jobFailed('Sending the held messages', err));
     }, TICK_MS);
     this.timer.unref?.();
+  }
+
+  /** What is running now, for the crash line: "scan: Reading Home Depot pages", "drip", or null. */
+  currentStep(): string | null {
+    if (this.live.busy) return this.live.pipeline?.current.label ? `${this.live.busy}: ${this.live.pipeline.current.label}` : this.live.busy;
+    return this.dripping ? 'drip' : null;
+  }
+
+  /**
+   * Nov 25, supervision: a background job failed where it runs (a tick, a drip round, a send). One Activity error, scrubbed,
+   * and not again while the same sentence is still open, so a job failing every tick is one line, not fifty.
+   */
+  jobFailed(what: string, err: unknown): void {
+    try {
+      const sentence = `${what} failed: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`;
+      if ((this.d.store.get('activity').errors ?? []).some((e) => e.sentence === sentence && !e.resolvedAt)) return;
+      this.addError(sentence, null);
+    } catch {
+      // the store itself failed: there is nowhere to say it, and the job is already over
+    }
+  }
+
+  /** A drip round that threw: an Activity error, unless the round was stopped on purpose (a scan claimed the slot). */
+  private dripFailed(err: unknown): void {
+    if (!this.dripCtl.signal.aborted) this.jobFailed('A background lookup', err);
+  }
+
+  /** Nov 25, supervision: a problem the owner should hear of (the restart after a crash). The "error" kind switch decides both channels. */
+  async announceProblem(text: string): Promise<void> {
+    if (this.d.store.get('settings').notifications.kinds.error === false) return;
+    this.policy.send({ kind: 'error', title: 'Split Finder', body: text, route: '/activity' });
+    await this.sendTelegram(text);
   }
 
   close(): void {
@@ -514,13 +551,13 @@ export class AgentWork {
     const next = this.nextScanAt();
     if (next === null || Date.parse(next) > this.d.now()) {
       // Step 15: nothing else runs, so the drip may look up a waiting part with Keepa.
-      void this.drip().catch(() => {});
+      void this.drip().catch((err: unknown) => this.dripFailed(err));
       return false;
     }
     // Free scan: with Chrome closed a scheduled scan waits for it (unless the owner let SerpApi find the bundles then).
     // Nov 25: unless the app opened Chrome for this scan and the wait is over: then the scan does what it can without it.
     if (scheduledScanWaits(this.d.store.get('settings'), this.d.helperConnected()) && !this.selfRun.mayScanWithoutChrome()) {
-      void this.drip().catch(() => {});
+      void this.drip().catch((err: unknown) => this.dripFailed(err));
       return false;
     }
     this.catchUp = this.catchUpOf(before);

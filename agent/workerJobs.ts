@@ -50,6 +50,9 @@ export class WorkerJobs {
   /** Nov 23: told when a helper answers that it does not know a job's kind. */
   onOutdated: ((kind: WorkerJobKind) => void) | undefined;
 
+  /** Nov 25: told when the lease sweep failed (the agent makes it an Activity error). */
+  onError: ((err: unknown) => void) | undefined;
+
   /** Nov 23: a job of this kind is waiting (queued or leased). */
   hasWaiting(kind: WorkerJobKind): boolean {
     return this.store.get('jobs').some((j) => j.kind === kind && (j.status === 'queued' || j.status === 'leased'));
@@ -209,7 +212,14 @@ export class WorkerJobs {
 
   start(everyMs = 5_000): void {
     if (this.sweeper) return;
-    this.sweeper = setInterval(() => this.sweep(), everyMs);
+    // Nov 25, supervision: a sweep that fails is reported (onError), never the agent's end; the next sweep tries again.
+    this.sweeper = setInterval(() => {
+      try {
+        this.sweep();
+      } catch (err) {
+        this.onError?.(err);
+      }
+    }, everyMs);
     this.sweeper.unref?.();
   }
 
