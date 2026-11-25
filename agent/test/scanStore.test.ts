@@ -1,10 +1,11 @@
-import { chmodSync, copyFileSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type { BundleRecord, ConfirmedPrice, PartPriceRecord, ScanJob } from '../../core/src/scan/types';
 import { storeConformance } from '../../core/test/storeConformance';
+import { setSyncForTests } from '../fsync';
 import { DirCache, FileScanStore } from '../scanStore';
 
 const fresh = () => mkdtempSync(join(tmpdir(), 'sf-scan-'));
@@ -109,12 +110,16 @@ describe('FileScanStore skips a write that would not change the file', () => {
   it('a write that failed is not taken as on disk: the same put afterwards writes', async () => {
     const { dir, s, file } = await seeded();
     const b = bundles[3]!;
-    chmodSync(dir, 0o500);
+    // The write is made to fail at its flush, before the rename (a folder made read-only does not stop a write on Windows).
+    setSyncForTests(() => {
+      throw Object.assign(new Error('EIO: i/o error, fsync'), { code: 'EIO' });
+    });
     try {
-      await expect(s.putBundle({ ...b, seenAt: b.seenAt + 1 })).rejects.toThrow();
+      await expect(s.putBundle({ ...b, seenAt: b.seenAt + 1 })).rejects.toThrow(/EIO/);
     } finally {
-      chmodSync(dir, 0o700);
+      setSyncForTests(() => {});
     }
+    expect(readFileSync(file, 'utf8')).not.toContain(`"seenAt":${b.seenAt + 1}`);
     await s.putBundle({ ...b, seenAt: b.seenAt + 1 });
     expect((await new FileScanStore(dir).getBundle(b.key))?.seenAt).toBe(b.seenAt + 1);
     expect(readFileSync(file, 'utf8')).toContain(`"seenAt":${b.seenAt + 1}`);
