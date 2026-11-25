@@ -48,6 +48,7 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   const reload = useAction(api.reloadHelper);
   const [reloaded, setReloaded] = useState(false);
   const update = useUpdateNotice(state?.update);
+  const login = useAction(api.answerLoginNotice);
 
   const items: NoticeItem[] = [];
   if (online && pairing.requests.length > 0) {
@@ -249,6 +250,26 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
         });
       }
     }
+  }
+  // Nov 25: the app turned Open at login on for his schedule. A quiet note, closed by OK or by turning the setting off.
+  if (online && state?.loginNotice) {
+    items.push({
+      kind: 'login',
+      key: 'login',
+      tone: 'quiet',
+      title: 'Open at login is on.',
+      body: state.loginNotice.sentence,
+      action: (
+        <>
+          <Button size="sm" busy={login.busy} busyLabel="Turning off…" onClick={() => void login.run(true).then(() => refreshState())}>
+            Turn off
+          </Button>
+          <Button size="sm" variant="quiet" disabled={login.busy} onClick={() => void login.run(false).then(() => refreshState())}>
+            OK
+          </Button>
+        </>
+      ),
+    });
   }
   // A new version of the app: the quietest notice, shown on any screen when nothing else needs him.
   if (online && update) items.push({ kind: 'update', key: 'update', tone: 'quiet', title: update.title, body: update.body, action: update.action });

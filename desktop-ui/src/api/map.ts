@@ -198,6 +198,7 @@ export function mapState(s: C.AgentState): AppState {
       pipeline: (a.pipeline as AgentView['pipeline']) ?? null,
       step: a.step ?? null,
       nextScanAt: a.nextScanAt,
+      ...(typeof a.nextScanNote === 'string' && a.nextScanNote ? { nextScanNote: a.nextScanNote } : {}),
       lastScan: a.lastScan ? lastScanOf(a.lastScan) : null,
       ...(drip ? { drip } : {}),
       ...(keepCurrent ? { keepCurrent } : {}),
@@ -225,6 +226,7 @@ export function mapState(s: C.AgentState): AppState {
     ...(problems ? { keyProblems: problems } : {}),
     ...(checks ? { keyChecks: checks } : {}),
     ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),
+    ...(s.loginNotice && typeof s.loginNotice.sentence === 'string' ? { loginNotice: { sentence: s.loginNotice.sentence } } : {}),
   };
 }
 

@@ -532,6 +532,12 @@ export function createMockClient(): ApiClient {
       state.update = undefined;
       sync();
     },
+    async answerLoginNotice(turnOff) {
+      await online();
+      state.loginNotice = undefined;
+      if (turnOff) settings = { ...settings, shell: { ...settings.shell, launchAtLogin: false } };
+      sync();
+    },
     async stop() {
       await online();
       stopTimer();

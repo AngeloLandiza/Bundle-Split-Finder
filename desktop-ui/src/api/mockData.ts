@@ -33,7 +33,7 @@ export const SETTINGS: AppSettings = {
   autopilot: false,
   appearance: { theme: 'system', accent: 'system', density: 'regular' },
   notifications: {
-    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true },
+    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true, weekly: true },
     sound: false,
     quietHours: { enabled: false, from: '22:00', to: '07:00' },
     digest: 'each-run',

@@ -96,6 +96,8 @@ export interface ApiClient {
   reloadHelper(): Promise<void>;
   /** Closes the new-version notice for this version, for good (POST /api/update/dismiss). */
   dismissUpdate(version: string): Promise<void>;
+  /** Closes the notice that Open at login was turned on for the schedule; `turnOff` also turns it off (POST /api/self-run/login-notice). */
+  answerLoginNotice(turnOff: boolean): Promise<void>;
   stop(): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;

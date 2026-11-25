@@ -129,6 +129,8 @@ export interface AgentView {
   /** The agent's own one-line step, when it reports one without the stages. */
   step: string | null;
   nextScanAt: string | null;
+  /** What the next scheduled scan needs and does not have (Chrome closed, the helper not connected), in one sentence; absent when nothing is missing. */
+  nextScanNote?: string;
   lastScan: LastScan | null;
   /** The background lookups; absent from an older agent. */
   drip?: Drip;
@@ -176,6 +178,8 @@ export interface AppState {
   keyChecks?: KeyChecks;
   /** A version newer than this app is ready (the agent read the project's release note); absent when none, when he turned it off, or when he closed this version's notice. */
   update?: UpdateNotice;
+  /** The app turned "Open at login" on itself because a schedule was set; a quiet notice with Turn off, until he closes it. */
+  loginNotice?: { sentence: string };
 }
 
 export type KeyProblems = Partial<Record<KeyName, string>>;
