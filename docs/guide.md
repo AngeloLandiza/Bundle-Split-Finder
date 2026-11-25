@@ -96,6 +96,14 @@ The app can only say what it expects. To find out whether its estimates can be t
 
 Set the schedule in **Settings, Scanning**: only when you press Scan now, every few hours, or once a day. The app scans on its own only while the PC is awake and Split Finder is running. Chrome must be open for Home Depot reads. With Chrome closed, those reads wait and the app tells you. Everything else keeps going.
 
+A daily 7:00 scan that runs without you needs three things, and the app takes care of two of them:
+
+- **Chrome.** With a schedule set, a few minutes before a scan the app starts your own Chrome in the background (your profile, nothing hidden, no window brought forward) and waits four minutes for the Split Finder helper to connect. It does the same once a day if Home Depot pages have waited an hour with Chrome closed. If Chrome does not open, the scan runs without Home Depot pages and its summary says "Chrome did not open, so Home Depot pages wait." The app never closes a Chrome you opened. A Chrome it opened stays open unless you tick **Close it again after the scan** in Settings, Scanning. Turn the whole thing off with **Open Chrome for scheduled scans**. Today, Next scan says what the scan depends on while Chrome is closed.
+- **Open at login.** The first time you have a schedule, the app turns on Open at login (a note with **Turn off** appears, and Activity says so). Turn it off and it stays off.
+- **An awake computer.** Nothing in the app can wake a sleeping PC or Mac, and it does not touch your power settings. If the computer was asleep at 7:00, or Split Finder was not running, the scan runs once when the app is back, and its summary says so: "The 7:00 AM scan ran at 9:12 AM because the computer was asleep." While a scan runs the computer is kept awake (Settings, General).
+
+Once a week (default Monday 8:00; Settings, Notifications) you get one summary: new deals and how many were worth buying now, what you recorded as bought, profit realised, how the estimates compare with what you recorded, open questions, what the week cost by service and whether the month is inside its limits, and anything held back. Dollar figures say whether they are estimates or recorded. It is a short notification on the computer and the full text on Telegram. Turn it off with "Your weekly summary" in the same place.
+
 Searches are limited. A scan stops at **Searches per scan**. A scheduled scan never touches the **Reserve**. Only a scan or lookup you start yourself may use it. Settings shows how many searches the month allows. Between scans, if you have a Keepa key, the app looks up waiting parts as Keepa tokens refill. This costs no searches.
 
 **Autopilot** is off by default. If you turn it on, it saves an AI answer only when the app has checked the answer against the pages and you marked that model as trusted. Each one appears in Activity with Undo. Anything else waits for you in Review.

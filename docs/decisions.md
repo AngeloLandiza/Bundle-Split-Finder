@@ -2035,3 +2035,60 @@ for Nov 25, after-scan6 for Nov 23). On the Nov 23 deals the Nov 25 averages sta
   market makes the gap to the New average visible and judges both, it does not change which price counts. *For v2:* with
   sales outcomes recorded (Outcomes), measure whether "Amazon sells it" or crowding predicts a slow sale before letting
   either hold a buy.
+## Nov 25: running without the owner (Chrome, open at login, the weekly summary)
+
+The owner scheduled a daily 7:00 scan and wants it to run without him. Home Depot's pages are read through his own Chrome and
+the Split Finder helper, so a scan at 7:00 with Chrome closed had nothing to read them with and waited (agent/scanSource.ts
+`scheduledScanWaits`), for ever if he did not open it. What was decided, and why:
+
+- **The app starts his ordinary Chrome, and nothing else** (`agent/openChrome.ts`; rules in `core/src/selfRun/chrome.ts`).
+  macOS: `open -g -a "Google Chrome"` (starts it, or leaves a running one alone, without taking focus). Windows: the
+  installed `chrome.exe` found from the registry's App Paths key (HKLM, then HKCU), else the standard install folders,
+  started minimised with `start "" /min` through cmd.exe with every word quoted as `scripts/spawn-tool.ts` does (a path with
+  a `%` or `"` is refused, not escaped). No profile flag, no automation or remote-debugging flag, no headless or hidden
+  window, no new profile: **Home Depot must see an ordinary browser and nothing is disguised.** A hidden or automated
+  browser would be a different thing from the one the owner uses (and it would not have his helper). It is also why the
+  app waits for the helper to connect instead of driving the page itself.
+- **No Rust.** The agent is a Node sidecar and may start a process (as `keepAwake.ts` already does), so there is no shell
+  command and no capability to add. The shell re-reads settings when `settingsAt` moves, which is how "open at login" reaches
+  it (`get_launch_at_login` / `set_launch_at_login` are unchanged).
+- **When**: five minutes before a scheduled scan is due (at once for a catch-up), and once a day when Home Depot pages have
+  waited an hour with Chrome closed and Home Depot has not paused reading. Never when the helper is connected, never when
+  the schedule is manual, the agent paused, or a run is working, and **at most one try per scan** (the try is kept in
+  `runtime.selfRun.chrome`, so a restart does not try again). The wait for the helper is four minutes; after it, or at once
+  if Chrome would not start, the scan does what needs no Home Depot page and says so once ("Chrome did not open, so Home
+  Depot pages wait." / "Chrome opened, but the Split Finder helper did not connect, so Home Depot pages wait."). The
+  scan's own "No new bundles ... Chrome is closed" is left out of that summary so it is said once. With the setting off the
+  old rule holds: the scan waits for Chrome.
+- **Closing**: a setting, default off. Only a Chrome the app started (none was running when it started it, `pgrep` /
+  `tasklist`) is ever quit, once, after the scan it was started for, and not while anything runs or a read waits. macOS
+  quits it politely with `osascript`; Windows runs `taskkill /IM chrome.exe` without `/F`. Quitting is the whole Chrome,
+  which is why it is opt-in and says "only if Split Finder opened it".
+- **No power settings.** A sleeping computer cannot scan and the app does not try to change that: no `pmset`, no wake
+  timer, no scheduled task. Changing a machine's power policy is the owner's to do, and a wake timer that the OS may refuse
+  would promise what it cannot keep. What the app does instead is tell the truth afterwards: the catch-up (core/src/
+  schedule.ts `nextRun`, unchanged) runs the missed scan once, and its summary says "The 7:00 AM scan ran at 9:12 AM
+  because the computer was asleep." The cause is named only when it is known: the app itself started after the slot ("because
+  Split Finder was not running at 7:00 AM"), or its scheduler's own clock stopped across the slot ("the computer was
+  asleep"). A scan that is merely late with the app awake says when and no cause. The Agent panel's Next scan carries one
+  sentence on what the scan needs while Chrome or the helper is missing (`core/src/selfRun/words.ts`). Keeping the computer
+  awake *during* a scan is the existing setting.
+- **Open at login**: with a schedule other than manual, the first time it is seen, the app sets `shell.launchAtLogin` itself
+  (the owner approved this default), says so in Activity, and shows a quiet notice with Turn off. It looks once
+  (`runtime.selfRun.login`), whether it turned the switch on or found it on: a switch he turns off is never turned on again by
+  the app. A manual schedule is left alone.
+- **The weekly summary** (`core/src/selfRun/weekly.ts`, a pure function of the stores). Default Monday 8:00, a setting;
+  switched off by the `weekly` notification kind. The first look at a store only records "this week's moment has passed", so a
+  new install does not send an empty message. The week it was sent for is recorded before it is sent, so a restart loses a
+  message at worst and never sends two. A message that comes late covers at most the last seven days. A deal is "found" when
+  its first stored scan point falls in the period and every part is priced; "announced as worth buying now" counts the
+  distinct deals in `tracking.notified` that day and later; "worth buying now as of this message" is the watched deals in
+  the state. Profit is only what he recorded: realised from parts settled in the week, and estimate against actual only over
+  deals he finished; with nothing recorded the message says "No purchases recorded this week." Dollar figures say estimate or
+  recorded. Costs are the week's use from the ledgers, with the month against its limits from the costs view. Plain lines, no
+  table or markup, because Telegram would mangle them. The notification is the short form (the `weekly` kind, and quiet hours
+  hold it as for any kind); Telegram gets the full text and is not held.
+- **Tests** run on a fake clock, a fake Chrome control and a fake fetch: no browser is ever started and nothing reaches the
+  network (`core/test/self-run.test.ts`, `core/test/weekly-summary.test.ts` on after-scan6 and after-keepcurrent,
+  `agent/test/openChrome.test.ts`, `agent/test/selfRun.test.ts`). The real macOS and Windows commands are checked as text
+  only; they were not run on a Windows machine.
