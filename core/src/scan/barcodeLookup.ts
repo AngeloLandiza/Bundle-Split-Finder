@@ -101,6 +101,35 @@ export async function applyBarcodeFinding(
   return record;
 }
 
+/**
+ * What the stored records say about "same barcode" so far, for the measurement that must come before it decides anything:
+ * same-barcode products, how many of them the ladder confirmed and how many it did not, and, on the parts the owner has
+ * answered (decidedBy 'user'), how many same-barcode products are the listing he chose and how many are not.
+ */
+export interface BarcodeTally {
+  sameBarcode: number;
+  ladderConfirmed: number;
+  ladderNotConfirmed: number;
+  ownerAgreed: number;
+  ownerDisagreed: number;
+}
+
+export function barcodeTally(matches: readonly MatchRecord[]): BarcodeTally {
+  const t: BarcodeTally = { sameBarcode: 0, ladderConfirmed: 0, ladderNotConfirmed: 0, ownerAgreed: 0, ownerDisagreed: 0 };
+  for (const m of matches) {
+    for (const p of m.barcodeLookup?.products ?? []) {
+      if (!p.sameBarcode) continue;
+      t.sameBarcode += 1;
+      if (p.confirmed) t.ladderConfirmed += 1;
+      else t.ladderNotConfirmed += 1;
+      if (m.decidedBy !== 'user') continue;
+      if (m.status === 'matched' && m.asin === p.asin) t.ownerAgreed += 1;
+      else t.ownerDisagreed += 1;
+    }
+  }
+  return t;
+}
+
 /** One product's record in words: whether it has the part's barcode, and what the matcher and the ladder made of it. */
 function noteOf(
   code: string, same: boolean, confirmed: boolean, graded: { grade: string; reasons: string[] },

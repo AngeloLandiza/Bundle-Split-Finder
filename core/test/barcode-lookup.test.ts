@@ -9,7 +9,7 @@ import { addLookupWay, lookupWaysSentence, NO_WAYS } from '../src/deals/lookupCo
 import { TokenBudget } from '../src/keepa/budget';
 import { KeepaClient } from '../src/keepa/client';
 import { keepaPartLookup, keepaProductSearchResult } from '../src/keepa/fetchStep';
-import { partBarcode } from '../src/scan/barcodeLookup';
+import { barcodeTally, partBarcode } from '../src/scan/barcodeLookup';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { keepaLookupOne } from '../src/scan/runner';
 import { knownModels } from '../src/scan/split';
@@ -163,6 +163,24 @@ describe('the lookup asks by barcode before any term search', () => {
     const r = await keepaPartLookup(k.client, 'DEWALT', 'DCF850B', 'test', { barcode: DCF850B, codeOnly: true });
     expect(k.seen.map((s) => s.path)).toEqual(['/product']);
     expect(r.barcode).toEqual({ code: DCF850B, via: 'code', products: [], codeTokens: 1, searchTokens: 0 });
+  });
+});
+
+describe('the records count how often "same barcode" agreed with the ladder and with the owner', () => {
+  it('reads the stored barcode records of the parts', async () => {
+    const store = await world({ brand: 'DEWALT', model: 'DCF850B', upc: DCF850B });
+    const k = keepa({
+      code: () => ({ ...meta(2), products: [
+        dewalt('B0C1AAAAAA', 'DEWALT ATOMIC 20V MAX 1/4 in. Brushless Cordless Impact Driver, Tool Only (DCF850B)'),
+        dewalt('B0C1BBBBBB', 'DEWALT DCF850B Impact Driver (Renewed)'),
+      ] }),
+    });
+    await lookUp(store, k, { brand: 'DEWALT', model: 'DCF850B' });
+    expect(barcodeTally(await store.listMatches())).toEqual({ sameBarcode: 2, ladderConfirmed: 1, ladderNotConfirmed: 1, ownerAgreed: 0, ownerDisagreed: 0 });
+    // The owner answers with the first listing: one same-barcode product is his, the other is not.
+    const m = (await store.getMatch('DEWALT:DCF850B'))!;
+    await store.putMatch({ ...m, decidedBy: 'user' });
+    expect(barcodeTally(await store.listMatches())).toMatchObject({ ownerAgreed: 1, ownerDisagreed: 1 });
   });
 });
 
