@@ -48,6 +48,8 @@ When you first open the app, a welcome window shows three steps. You can use the
 | eBay | Sold prices on eBay, shown as a reference. They are not counted in the profit estimate. |
 | Telegram | The same summary message sent to your phone. |
 
+**Your sales tax and inbound shipping.** The app does not know what sales tax you pay at Home Depot or what it costs you to send stock to Amazon, and it does not guess. Until you say, every profit figure is "before sales tax and inbound shipping", and the line under each list of deals says so. Open **Settings, Scanning**, enter both, or press **It is 0%** / **It is $0** if zero is right. The note then goes away for good. Do this before you trust a deal that is close to your minimum profit.
+
 ## 4. A normal day
 
 **Today** is the first screen. Look at "Needs you" (questions waiting) and "Worth buying now" (or "Best deals" if nothing has that verdict). The four figures at the top are open questions, best estimated profit, bundles found and searches left.
