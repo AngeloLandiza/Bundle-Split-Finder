@@ -1927,3 +1927,48 @@ re-checked every two hours every good deal lost its verdict at the first re-chec
   (not a buy) and now asserts a buy that is not news once announced; `agent/test/keepCurrent.test.ts`'s two withdrawal
   sentences now name the failing condition; `signalsPass.test.ts`'s restart case clears `announced` with `notified` (it
   stands for a buy never sent).
+
+## Nov 25: acting from Telegram, and finding the chat
+
+The owner wants to act from his phone without opening the app (approved Nov 25). `agent/telegramBot.ts`.
+
+- **Reading**: long polling of `getUpdates` (timeout 50 s), one reader, backoff 5 s, 15 s, 1 min, then 5 min. It runs only while a
+  bot is saved and "Let me act from Telegram" is on (default off, an existing install too), or while a token waits for its chat.
+  It follows every change to the keys and the settings, and stops at once when either goes. A token Telegram refuses (401/404)
+  stops it until the key changes. The `offset` is stored before an update is handled, so nothing is handled twice across a
+  restart (at most once: an update lost in a crash is a press the owner repeats).
+- **No webhook**: a webhook needs an address on the internet that Telegram can reach, so a port opened on the owner's computer
+  or a relay we would run. Long polling opens nothing: the agent still listens only on 127.0.0.1.
+- **Who can send**: anyone can write to a bot. Only an update whose chat is the saved chat id, a private chat, from that same
+  user and not a bot, is acted on; anything else gets no answer and one developer line. A free-text message never answers
+  a question. A command older than an hour (the computer slept) is not acted on.
+- **Buttons**: each callback is `sf:` and 16 random characters the agent issued and stored with what it does and an expiry
+  (48 h; a confirm 15 min; an Undo 24 h). A press spends it and its message's other buttons before anything is done, and the
+  message is edited to the result, so a replay, a double tap, a restart or a forged id does nothing. The callback holds no
+  meaning of its own: forging one requires guessing a stored id.
+- **What a press does is the app's own code**: the purchase through `OutcomeBook.record` (after one more "Yes"; the estimate
+  frozen), an answer through `work.answerRemembering` with the question's signature from when it was sent (the same check
+  refuses a question that changed), Undo through `undoAnswer` and `OutcomeBook.undo`, pause and resume through the routes' own
+  functions, Scan now through `work.scanNow`, Not for me through `setWatch` (Unwatch). A resume is refused from the phone when
+  the app paused itself for a problem: resuming acknowledges it, so he reads it in the app first.
+- **The reserve**: a scan never spends it (only Look up's explicit yes does). Scan now from the phone starts at once only
+  when the last account check this month is at or below the reserve; otherwise (or with no check this month) it says what it
+  may spend, at most the per-scan cap and what lies above the reserve, and waits for "Yes". The cost blocker holds inside the
+  scan as for the app's button.
+- **What a stolen token could do**: read and answer the bot's chat. It could not act here: the agent acts only on the saved
+  chat's own user, and the button ids are on the owner's computer. It could take updates before the agent does (Telegram
+  allows one reader: the agent's reads would fail with 409 and back off), so the owner's presses would be lost, and it could
+  send him messages as the bot. It cannot reach the agent, the keys or the computer. Replace the token in BotFather.
+- **What a stolen phone could do**: what the buttons do (record a purchase, answer a question, pause, Scan now within the
+  reserve rule, unwatch), each with Undo in Activity. Nothing changes a key, a limit, a budget, the reserve or a setting.
+- **Activity**: an answer and a purchase are in their own lists, their sentence saying "from Telegram"; pause, resume, Scan now
+  and Not for me are in "From Telegram" with Undo where the app has one (`POST /api/telegram/actions/:id/undo`).
+- **Which messages carry buttons**: the scan's digest (its top Buy now deal, Pause or Resume, Scan now), up to two further
+  Buy now deals and three new questions as their own messages, the digest between scans (its Buy now deals), and a cost
+  message (Open Costs). The morning digest goes as text (the held texts are merged; `/status` has the rest).
+- **Finding the chat** (the PO on Windows cannot run `npm run telegram:setup`): the chat id may be left empty at save. The
+  reader then collects the private chats that write to the bot (chatIn's rule), acts on nothing and answers nothing, and the
+  app offers each by name for one explicit "Use this chat"; two chats are both listed and neither is picked, since anyone who
+  finds the bot could write first. The choice must be a chat that wrote to this token (a hash of the token tags the list);
+  then the key is checked and the test message sent.
+

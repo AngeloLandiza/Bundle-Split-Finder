@@ -138,6 +138,21 @@ Normally you paste the bot's token and chat id in Settings, Keys. If you are not
 
 The command reads the token from that file, asks Telegram which chat wrote to your bot, saves both in Split Finder, sends the test message, and removes the file. It never prints the token. Afterwards, empty Recently Deleted in Files on your phone.
 
+### Finding your Telegram chat without typing its id
+
+In **Settings, Keys**, paste only the bot's token and leave the chat id empty. Then open your bot in Telegram, press Start and send it any message. Within a few seconds Keys shows "Use the chat with <your name>?" Press **Use this chat** only if the name is yours: anyone who finds the bot could write to it too, so the app never picks a chat by itself, and if more than one chat wrote, it lists them all. Once you choose, it saves the chat and sends the test message.
+
+### Acting from Telegram
+
+Turn on **Let me act from Telegram** in **Settings, Notifications** (off until you do). Then the messages carry buttons:
+
+- A deal worth buying now: **I bought this** (it asks once more, "Record 1 bought at $99.00 today?", then records it as the app does, with the estimate kept as it stood, and offers **Undo**), **Not for me** (you stop watching it, so it is not announced again) and **Open Home Depot**.
+- A new Review question with up to four choices: a button per choice, the AI's suggestion marked, and **Skip**. With more choices it says to answer in the app. Typing a reply never answers a question.
+- A cost warning: **Open Costs** only. Limits change only in the app.
+- A scan's summary: **Pause scans** or **Resume**, and **Scan now**. A scan never spends your reserve; when searches are above it, the phone says how many it may spend and waits for your yes.
+
+You can also send `/status` (deals worth buying now, open questions, searches left, this month's costs and the next scan), `/pause`, `/resume` and `/help`. Only your own chat with the bot is listened to. Keys, limits, budgets, the reserve and settings cannot be changed from the phone. Everything done there is in Activity, marked "from Telegram", with the same Undo as in the app. A button works once and stops working after two days.
+
 ## 7. When something looks wrong
 
 Banners appear near the top. One shows at a time, with "N more" if there are others.
