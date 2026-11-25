@@ -18,6 +18,8 @@ export interface KeepaLedgerRow {
   tokens: number;
   tokensLeft?: number;
   refillRate?: number;
+  /** Key stacking (Nov 25): the saved key the call was made with; absent on older rows, which are the first key's. */
+  keyId?: string;
 }
 
 /** The rows of a keepa-ledger.jsonl text: a damaged line, or one without a time or a token count, is skipped. */
@@ -32,6 +34,7 @@ export function parseKeepaLedger(text: string): KeepaLedgerRow[] {
         at: j.at, tokens: j.tokens,
         ...(typeof j.tokensLeft === 'number' ? { tokensLeft: j.tokensLeft } : {}),
         ...(typeof j.refillRate === 'number' ? { refillRate: j.refillRate } : {}),
+        ...(typeof j.keyId === 'string' && j.keyId ? { keyId: j.keyId } : {}),
       });
     } catch {
       // A half-written line is not a row.

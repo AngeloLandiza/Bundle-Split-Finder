@@ -52,10 +52,29 @@ export interface KeepaLedgerEntry {
   /** Nov 25, a code request only: the codes asked and the products that came back, so its cost can be read per code. */
   codes?: number;
   products?: number;
+  /**
+   * Nov 25, key stacking: the id of the saved key the call was made with (never the key). Absent with one key given as
+   * `apiKey`, and on rows written before key stacking: those are read as the first key's. `tokensLeft` and `refillRate`
+   * on a row with a key id are that key's own.
+   */
+  keyId?: string;
 }
 
+/** Key stacking: one key's free token status, or why it could not be read. */
+export type KeepaKeyStatus =
+  | { id: string; ok: true; tokensLeft: number; refillRate: number; refillIn: number }
+  | { id: string; ok: false; error: KeepaError };
+
 export interface KeepaClientOptions {
-  apiKey: string;
+  /** One key (scripts, the extension, a key check). Give this or `keys`. */
+  apiKey?: string;
+  /**
+   * Nov 25, key stacking (the desktop agent): several saved keys. Tokens available and the refill are the sums; each
+   * request uses one key that holds its tokens (TokenBudget.pickKey). No request is sent again with another key.
+   */
+  keys?: readonly { id: string; key: string }[];
+  /** A key Keepa refused (401): the agent records it beside the key in Settings. Never the key. */
+  onKeyRefused?: (keyId: string, message: string) => void | Promise<void>;
   budget: TokenBudget;
   cache?: Cache;
   fetchFn?: typeof fetch;
@@ -103,7 +122,7 @@ export class KeepaClient {
   private learned: KeepaCodeCost | null;
 
   constructor(private readonly opts: KeepaClientOptions) {
-    if (!opts.apiKey) throw new KeepaError('No Keepa key set.');
+    if (!opts.apiKey && !(opts.keys && opts.keys.some((k) => k.key))) throw new KeepaError('No Keepa key set.');
     this.fetchFn = opts.fetchFn ?? fetch;
     this.cache = opts.cache ?? new MemoryCache();
     this.now = opts.now ?? Date.now;
@@ -205,9 +224,43 @@ export class KeepaClient {
    * refused by the budget. Its body carries the same meta fields as every other Keepa answer (parseMeta); the balance it
    * reports is noted on the budget like any other answer's, with nothing spent.
    */
-  async tokenStatus(): Promise<{ tokensLeft: number; refillRate: number; refillIn: number }> {
+  async tokenStatus(): Promise<{ tokensLeft: number; refillRate: number; refillIn: number; keys?: KeepaKeyStatus[] }> {
+    const pool = this.pool();
+    if (!pool) {
+      const meta = await this.statusOf(this.opts.apiKey!);
+      this.opts.budget.noteMeta(meta.tokensLeft, 0, meta.refillRate);
+      return { tokensLeft: meta.tokensLeft, refillRate: meta.refillRate, refillIn: meta.refillIn };
+    }
+    // Key stacking: each key's own status (free), one after another; the sums over the keys Keepa answered for. A refused
+    // key is marked; when no key answered, the first key's failure is thrown as with one key.
+    const keys: KeepaKeyStatus[] = [];
+    for (const k of pool) {
+      try {
+        const meta = await this.statusOf(k.key);
+        this.opts.budget.noteMeta(meta.tokensLeft, 0, meta.refillRate, k.id);
+        keys.push({ id: k.id, ok: true, tokensLeft: meta.tokensLeft, refillRate: meta.refillRate, refillIn: meta.refillIn });
+      } catch (err) {
+        const e = err instanceof KeepaError ? err : new KeepaError('Keepa sent an answer this app could not read.');
+        if (e.status === 401) {
+          this.opts.budget.markOut(k.id);
+          await this.opts.onKeyRefused?.(k.id, e.message);
+        }
+        keys.push({ id: k.id, ok: false, error: e });
+      }
+    }
+    const ok = keys.filter((k): k is Extract<KeepaKeyStatus, { ok: true }> => k.ok);
+    if (ok.length === 0) throw (keys[0] as Extract<KeepaKeyStatus, { ok: false }>).error;
+    return {
+      tokensLeft: ok.reduce((n, k) => n + k.tokensLeft, 0),
+      refillRate: ok.reduce((n, k) => n + k.refillRate, 0),
+      refillIn: Math.min(...ok.map((k) => k.refillIn)),
+      keys,
+    };
+  }
+
+  private async statusOf(key: string): Promise<KeepaMeta> {
     const url = new URL(`${this.baseUrl}/token`);
-    url.searchParams.set('key', this.opts.apiKey);
+    url.searchParams.set('key', key);
     let res: Response;
     try {
       res = await this.fetchFn(url.toString());
@@ -218,8 +271,13 @@ export class KeepaClient {
     if (!res.ok) throw new KeepaError(`Keepa returned HTTP ${res.status}.`, res.status);
     const meta = parseMeta((await res.json()) as Record<string, unknown>);
     if (meta.error) throw new KeepaError(meta.error.message);
-    this.opts.budget.noteMeta(meta.tokensLeft, 0, meta.refillRate);
-    return { tokensLeft: meta.tokensLeft, refillRate: meta.refillRate, refillIn: meta.refillIn };
+    return meta;
+  }
+
+  /** Key stacking: the saved keys, or null with one plain key. */
+  private pool(): readonly { id: string; key: string }[] | null {
+    const keys = this.opts.keys?.filter((k) => k.key);
+    return keys && keys.length > 0 ? keys : null;
   }
 
   private async call<T extends KeepaParsed>(
@@ -246,8 +304,13 @@ export class KeepaClient {
     const reason = this.opts.budget.blockReason(estimate);
     if (reason) throw new KeepaBudgetExceededError(reason);
 
+    // Key stacking: one key that holds this request's tokens, chosen before the call.
+    const pool = this.pool();
+    const pick = pool ? pool.find((k) => k.id === this.opts.budget.pickKey(pool.map((p) => p.id), estimate)) : { id: undefined, key: this.opts.apiKey! };
+    if (!pick) throw new KeepaBudgetExceededError('no_tokens');
+
     const url = new URL(`${this.baseUrl}/${path}`);
-    url.searchParams.set('key', this.opts.apiKey);
+    url.searchParams.set('key', pick.key);
     for (const [k, v] of Object.entries(query)) url.searchParams.set(k, v);
 
     let res: Response;
@@ -257,13 +320,19 @@ export class KeepaClient {
       throw new KeepaError(`${KEEPA_NETWORK}: ${(err as Error).message}`);
     }
     if (res.status === 429) throw new KeepaRateLimitedError('Keepa refused the request: no tokens left or rate limited.');
-    if (res.status === 401) throw new KeepaError('Keepa did not accept this key.', 401);
+    if (res.status === 401) {
+      if (pick.id !== undefined) {
+        this.opts.budget.markOut(pick.id);
+        await this.opts.onKeyRefused?.(pick.id, 'Keepa did not accept this key.');
+      }
+      throw new KeepaError('Keepa did not accept this key.', 401);
+    }
     if (!res.ok) throw new KeepaError(`Keepa returned HTTP ${res.status}.`, res.status);
 
     const body = (await res.json()) as Record<string, unknown>;
     const parsed = parse(body);
     if (parsed.meta.tokensConsumed > 0 || Number.isFinite(parsed.meta.tokensLeft)) {
-      this.opts.budget.noteMeta(parsed.meta.tokensLeft, parsed.meta.tokensConsumed, parsed.meta.refillRate);
+      this.opts.budget.noteMeta(parsed.meta.tokensLeft, parsed.meta.tokensConsumed, parsed.meta.refillRate, pick.id);
     }
     if (parsed.meta.error) throw new KeepaError(parsed.meta.error.message);
 
@@ -277,6 +346,7 @@ export class KeepaClient {
       refillIn: parsed.meta.refillIn,
       refillRate: parsed.meta.refillRate,
       ...(code ? { codes: code.codes, products: Array.isArray(body.products) ? body.products.length : 0 } : {}),
+      ...(pick.id !== undefined ? { keyId: pick.id } : {}),
     });
     await code?.onAnswer(body, parsed);
     const at = this.now();
