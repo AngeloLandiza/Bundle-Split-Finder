@@ -5,7 +5,6 @@
 import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse } from '@core/api/contract';
 import type { CostSettingsPatch } from '../lib/costs';
 import { createHttpClient } from './http';
-import { createMockClient } from './mock';
 import type {
   ActivityView,
   AgentEvent,
@@ -155,4 +154,6 @@ export interface ApiClient {
   subscribe(onEvent: (e: AgentEvent) => void, onStatus: (s: StreamStatus) => void): () => void;
 }
 
-export const api: ApiClient = import.meta.env.VITE_MOCK === '1' ? createMockClient() : createHttpClient();
+// The mock is loaded by a dynamic import so a production build leaves it (and its fixture data) out.
+export const api: ApiClient =
+  import.meta.env.VITE_MOCK === '1' ? (await import('./mock')).createMockClient() : createHttpClient();
