@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import type { AppSettings, AskResponse, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
 import { keepaTokensForScan, routeAmazonWork, type KeepaRoom, type SerpRoom } from '../core/src/keepa/route';
-import { lookupsSentence } from '../core/src/deals/lookupCopy';
+import { lookupsSentence, lookupWaysSentence, type LookupWays, sumWays } from '../core/src/deals/lookupCopy';
 import { gatherEvidence } from '../core/src/assist/evidence';
 import { afterLead, pipelinesFrom } from '../core/src/ai/factory';
 import { liveSuggestion, agreedWith, type StoredSuggestion } from '../core/src/assist/stored';
@@ -22,7 +22,7 @@ import { EbayClient } from '../core/src/ebay/client';
 import { partPriceDropMessage } from '../core/src/keepa/alerts';
 import { TokenBudget } from '../core/src/keepa/budget';
 import { KeepaClient, KeepaError } from '../core/src/keepa/client';
-import { keepaLookupSearchResult, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
+import { type KeepaLookupAsk, keepaPartLookup, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
 import { keepCodeSample } from '../core/src/keepa/barcode';
 import { readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
@@ -633,7 +633,7 @@ export class AgentWork {
       try {
         out = await keepaLookupOne({
           store: this.scanStore, settings, now: this.d.now, keepaBudget: budget, catalog, prefix: 'agent:drip',
-          keepaLookup: (brand, model, label) => keepaLookupSearchResult(keepa, `${brand} ${model}`, { label }),
+          keepaLookup: (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask),
           keepaProduct: product,
         }, step);
       } catch (err) {
@@ -1288,6 +1288,9 @@ export class AgentWork {
         waiting: job.lookupsWaiting ?? 0, keepa: via.keepa, serpapi: via.serpapi, blockedBy: job.lookupsBlockedBy, refillPerMin: this.d.store.get('runtime').keepa?.refillRate ?? null,
       });
       if (sentence) parts.push(sentence);
+      // Nov 25: how many Keepa lookups the barcode found and how many the search, and what Keepa counted for each.
+      const ways = lookupWaysSentence(job.lookupsBy);
+      if (ways) parts.push(ways);
     }
     const held = this.reserveHeld;
     if (held) {
@@ -1472,7 +1475,7 @@ export class AgentWork {
     return {
       keepaBudget,
       keepaProduct: (asin: string, label: string, maxAgeMs?: number) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: s.trackingDepth }),
-      keepaLookup: (brand: string, model: string, label: string) => keepaLookupSearchResult(keepa, `${brand} ${model}`, { label }),
+      keepaLookup: (brand: string, model: string, label: string, ask?: KeepaLookupAsk) => keepaPartLookup(keepa, brand, model, label, ask),
       keepaScale: {
         tokensPerRun: s.keepaTokensPerScan, discoveryShare: s.keepaDiscoveryShare, reserve: s.keepaReserve, mode: s.discoveryMode,
         tokensLeft: status?.tokensLeft ?? null, trackingDepth: s.trackingDepth,

@@ -33,7 +33,7 @@ import { kitPageTarget } from '@core/scan/kitPage';
 import { partKey, type BudgetView, type BundleRow, type PageOutcome, type PageReading, type PaidAction, type Quote, type ReadPages, type ReadPartPrices, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
 import { TokenBudget } from '@core/keepa/budget';
 import { KeepaClient } from '@core/keepa/client';
-import { keepaLookupSearchResult, keepaProductSearchResult } from '@core/keepa/fetchStep';
+import { type KeepaLookupAsk, keepaPartLookup, keepaProductSearchResult } from '@core/keepa/fetchStep';
 import type { KeepaScaleSettings } from '@core/keepa/plan';
 import { bundlesNewlyConfirmed, partPriceDropMessage, reviewDigestMessage, trendCrosses } from '@core/keepa/alerts';
 import { readAlertBaseline, writeAlertBaseline, writePartTrend } from '@core/keepa/trends';
@@ -520,7 +520,7 @@ export function createWorker(env: WorkerEnv): Worker {
 
   type KeepaRunDeps = {
     keepaProduct?: (asin: string, label: string, maxAgeMs?: number) => ReturnType<typeof keepaProductSearchResult>;
-    keepaLookup?: (brand: string, model: string, label: string) => ReturnType<typeof keepaLookupSearchResult>;
+    keepaLookup?: (brand: string, model: string, label: string, ask?: KeepaLookupAsk) => ReturnType<typeof keepaPartLookup>;
     keepaBudget?: TokenBudget;
     keepaScale?: KeepaScaleSettings;
     productPage?: AmazonProductPage;
@@ -547,8 +547,9 @@ export function createWorker(env: WorkerEnv): Worker {
     });
     const keepaProduct = (asin: string, label: string, maxAgeMs?: number) =>
       keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: s.trackingDepth });
-    const keepaLookup = (brand: string, model: string, label: string) =>
-      keepaLookupSearchResult(keepa, `${brand} ${model}`, { label });
+    // Nov 25: barcode first when the part's Home Depot barcode is stored (keepaPartLookup), then the term search.
+    const keepaLookup = (brand: string, model: string, label: string, ask?: KeepaLookupAsk) =>
+      keepaPartLookup(keepa, brand, model, label, ask);
     return {
       keepaProduct,
       keepaLookup,

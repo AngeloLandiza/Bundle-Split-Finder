@@ -14,6 +14,7 @@ import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
 import type { BlockReason } from '../serpapi/budget';
 import type { Params, SearchOptions, SearchResult } from '../serpapi/client';
 import type { LookupBlock } from '../keepa/route';
+import type { LookupWays } from '../deals/lookupCopy';
 import type { PipelineStep } from './pipeline';
 
 // ---------------------------------------------------------------- ports
@@ -480,6 +481,41 @@ export interface MatchRecord {
   verifyEvidence?: string;
   /** Listings Amazon's catalog was read for, for this part, each once: none is pulled twice. Absent when none. */
   catalogChecks?: CatalogCheckRecord[];
+  /**
+   * Nov 25: the last lookup that asked Keepa by the part's barcode (scan/barcodeLookup.ts): each product the code returned,
+   * whether its catalog barcodes hold Home Depot's, and what the matcher and the ladder made of it. A record for measuring
+   * "same barcode" later, never what decided the match. Absent when the part was never asked by barcode.
+   */
+  barcodeLookup?: BarcodeLookupRecord;
+}
+
+/** Nov 25: one product a barcode lookup returned, as recorded for measurement (scan/barcodeLookup.ts). */
+export interface BarcodeProductRecord {
+  asin: string;
+  /** Its own catalog barcodes (upcList, eanList, gtinList) hold the part's barcode. */
+  sameBarcode: boolean;
+  /** The matcher's grade of it as a search row (match.ts grade), and the ladder's rungs 0 and 1 on its fields (checkListingFields). */
+  grade: 'exact' | 'strong' | 'probable' | 'review' | 'reject';
+  check: 'confirmed' | 'contradicted' | 'unknown';
+  /** The part's match ended on this listing, confirmed by the ladder (CONFIRMING_SOURCES). */
+  confirmed: boolean;
+  /** "same barcode as Home Depot's page; not confirmed because ...", or what confirmed it. */
+  note: string;
+}
+
+/** Nov 25: what one lookup by barcode found and cost (MatchRecord.barcodeLookup). */
+export interface BarcodeLookupRecord {
+  /** Home Depot's barcode for the part, a 12-digit UPC-A. */
+  code: string;
+  at: number;
+  /** 'code': the code's products were the candidates; 'search': the term search ran after it. */
+  via: 'code' | 'search';
+  /** Tokens Keepa counted, as its answers said (0 from the cache). */
+  codeTokens: number;
+  searchTokens: number;
+  /** The listing ladder's version that judged the products (catalogCheck.ts LADDER_VERSION). */
+  ladder: number;
+  products: BarcodeProductRecord[];
 }
 
 /** How a match's listing was verified: Amazon's catalog by Keepa, a SerpApi product page, the owner, or only its title. */
@@ -782,6 +818,12 @@ export interface ScanJob {
    * lookups it left waiting (in `deferred`), and why they wait. Absent on a job saved before step 15.
    */
   lookupsVia?: { keepa: number; serpapi: number };
+  /**
+   * Nov 25: the Keepa lookups of this job by what found their candidates: Home Depot's barcode (the code request alone) or
+   * the term search (with or without a code request before it), and the tokens Keepa counted for each kind of request.
+   * `codeMisses`: code requests that left nothing the matcher keeps, so the search ran after them. Absent when none.
+   */
+  lookupsBy?: LookupWays;
   lookupsWaiting?: number;
   lookupsBlockedBy?: LookupBlock | null;
   /**

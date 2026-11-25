@@ -39,6 +39,9 @@ import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
 import { LIST_EMPTY, type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
 import { type PageWant, pagesWanted } from './hdOrder';
 import type { PromoPage } from '../hdPage';
+import { addLookupWay, type LookupWays } from '../deals/lookupCopy';
+import type { KeepaLookupAsk } from '../keepa/fetchStep';
+import { applyBarcodeFinding, lookupAsk } from './barcodeLookup';
 import { toUpc12 } from '../identifiers';
 import type { PromoPageOutcome } from '../tracking/bogoPairs';
 
@@ -89,7 +92,8 @@ export interface ScanDeps {
    * SerpApi still owns HD pages and amazon text search.
    */
   keepaProduct?: (asin: string, label: string, maxAgeMs?: number) => Promise<SearchResult>;
-  keepaLookup?: (brand: string, model: string, label: string) => Promise<SearchResult>;
+  /** Nov 25: `ask` carries the part's barcode (asked by code first) and the part as the matcher wants it (keepa/fetchStep.ts). */
+  keepaLookup?: (brand: string, model: string, label: string, ask?: KeepaLookupAsk) => Promise<SearchResult>;
   keepaBudget?: TokenBudget;
   /** When set with keepaProduct, refresh steps are capped by planKeepaRun instead of SerpApi. */
   keepaScale?: KeepaScaleSettings;
@@ -605,6 +609,8 @@ async function runQueue(run: Run): Promise<void> {
       const via = result.billAs === 'keepa' ? 'keepa' : 'serpapi';
       job.lookupsVia = { keepa: job.lookupsVia?.keepa ?? 0, serpapi: job.lookupsVia?.serpapi ?? 0 };
       job.lookupsVia[via] += 1;
+      // Nov 25: a Keepa lookup by what found its candidates (barcode or search) and what Keepa counted for each.
+      if (via === 'keepa') job.lookupsBy = addLookupWay(job.lookupsBy, result);
       if (via === 'keepa' && follow === null) await schedulePricePull(run, step);
       if (follow === null) await scheduleCatalogCheck(run, step);
     }
@@ -841,7 +847,9 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
       if (run.keepaLookup && run.settings.amazonRefreshViaKeepa && step.via !== 'serpapi') {
         const block = run.keepaBudget?.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
         if (block) throw new KeepaBudgetExceededError(block);
-        return run.keepaLookup(step.brand, step.model, `${prefix}:lookup:${step.model}`);
+        // Nov 25: the part's Home Depot barcode, when stored, is asked by code before the term search.
+        const keepaLookup = run.keepaLookup;
+        return lookupAsk(run, step).then((ask) => keepaLookup(step.brand, step.model, `${prefix}:lookup:${step.model}`, ask));
       }
       return sendLookup(run, step);
     case 'identify':
@@ -893,8 +901,12 @@ async function apply(run: Run, step: ScanStep, result: SearchResult): Promise<st
     case 'listing':
       await applyListing(run, step, data, at);
       return null;
-    case 'lookup':
-      return applyLookup(run, step, data, at);
+    case 'lookup': {
+      const follow = await applyLookup(run, step, data, at);
+      // Nov 25: the code's products through the ladder (free), and what the barcode found recorded for measurement.
+      if (result.barcode) await applyBarcodeFinding(run, step, result, run.job);
+      return follow;
+    }
     case 'identify':
       if (step.check) {
         const page = parseAmazonProduct(data, step.asin);
@@ -2842,6 +2854,8 @@ export type KeepaOneOutcome = {
   /** Catalog check: the price pull's fields verified the match's listing (1), or showed it is not the part (removed: 1). */
   verified?: number;
   removed?: number;
+  /** Nov 25: what found the candidates (barcode or search) and what Keepa counted for each; absent when refused. */
+  way?: LookupWays;
 };
 
 /** A search client that refuses: the drip never searches SerpApi. */
@@ -2862,17 +2876,23 @@ export async function keepaLookupOne(d: KeepaOneDeps, step: LookupStep): Promise
   };
   const ctx: PartContext = { client: NO_SEARCH, store: d.store, settings: d.settings, now: d.now, prefix, catalog: d.catalog, job: { counts } };
   const plain: LookupStep = { kind: 'lookup', brand: step.brand, model: step.model };
-  const result = await d.keepaLookup(plain.brand, plain.model, `${prefix}:lookup:${plain.model}`);
+  const result = await d.keepaLookup(plain.brand, plain.model, `${prefix}:lookup:${plain.model}`, await lookupAsk(ctx, plain));
   let tokens = result.source === 'network' ? (result.keepaTokens ?? 0) : 0;
+  const way = addLookupWay(undefined, result);
   const follow = await applyLookup(ctx, plain, result.data, result.at);
+  const tally: Pick<ScanJob, 'matchesVerified' | 'matchesRemoved'> = {};
+  // Nov 25: the code's products through the ladder (free), and the record for measurement.
+  if (result.barcode) await applyBarcodeFinding(ctx, plain, result, tally);
   const match = await d.store.getMatch(partKey(plain.brand, plain.model));
+  const checked = { ...(tally.matchesVerified ? { verified: tally.matchesVerified } : {}), ...(tally.matchesRemoved ? { removed: tally.matchesRemoved } : {}) };
   if (match?.status === 'matched' && match.asin !== null) {
-    const tally: Pick<ScanJob, 'matchesVerified' | 'matchesRemoved'> = {};
     tokens += await pullMatchedPrice(ctx, plain, d.keepaProduct, d.keepaBudget, tally);
-    return { status: 'matched', tokens, ...(tally.matchesVerified ? { verified: tally.matchesVerified } : {}), ...(tally.matchesRemoved ? { removed: tally.matchesRemoved } : {}) };
+    return {
+      status: 'matched', tokens, way, ...(tally.matchesVerified ? { verified: tally.matchesVerified } : {}), ...(tally.matchesRemoved ? { removed: tally.matchesRemoved } : {}),
+    };
   }
   if (follow) await notePageDue(ctx, plain, follow);
-  return { status: match?.status === 'review' ? 'review' : 'none', tokens };
+  return { status: match?.status === 'review' ? 'review' : 'none', tokens, way, ...checked };
 }
 
 /**

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { TokenBudget } from '../core/src/keepa/budget';
 import { KeepaClient } from '../core/src/keepa/client';
-import { keepaLookupSearchResult, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
+import { type KeepaLookupAsk, keepaPartLookup, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
 import type { KeepaScaleSettings } from '../core/src/keepa/plan';
 import { writePartTrend } from '../core/src/keepa/trends';
 import { MemoryScanStore } from '../core/src/scan/memoryStore';
@@ -45,7 +45,7 @@ async function runOnce(): Promise<void> {
   const store = new MemoryScanStore();
   const settings = { ...DEFAULT_SCAN_SETTINGS, amazonRefreshViaKeepa: withKeepa };
   let keepaProduct: ((asin: string, label: string, maxAgeMs?: number) => Promise<SearchResult>) | undefined;
-  let keepaLookup: ((brand: string, model: string, label: string) => Promise<SearchResult>) | undefined;
+  let keepaLookup: ((brand: string, model: string, label: string, ask?: KeepaLookupAsk) => Promise<SearchResult>) | undefined;
   let keepaBudget: TokenBudget | undefined;
   let keepaScale: KeepaScaleSettings | undefined;
   if (withKeepa) {
@@ -53,7 +53,7 @@ async function runOnce(): Promise<void> {
     keepaBudget = new TokenBudget({ reserve: 0, maxPerRun: 5 });
     const keepa = new KeepaClient({ apiKey: 'fixture', budget: keepaBudget, cache: agentCache });
     keepaProduct = (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs });
-    keepaLookup = (brand, model, label) => keepaLookupSearchResult(keepa, `${brand} ${model}`, { label });
+    keepaLookup = (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask);
     keepaScale = { tokensPerRun: 5, discoveryShare: 90, reserve: 0, mode: 'auto' };
   }
   const ended = await runScan({

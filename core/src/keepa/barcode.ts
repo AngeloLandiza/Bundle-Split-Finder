@@ -22,6 +22,21 @@ export function holdsBarcode(p: Pick<KeepaProduct, 'upcList' | 'eanList' | 'gtin
   return [...(p.upcList ?? []), ...(p.eanList ?? []), ...(p.gtinList ?? [])].some((c) => toUpc12(c) === want);
 }
 
+/**
+ * What one lookup's code request found (SearchResult.barcode). `via` says what supplied the candidates the lookup returned:
+ * 'code' when the code's products left something the matcher keeps, 'search' when the term search ran after it.
+ */
+export interface BarcodeLookup {
+  /** The part's barcode as asked, a 12-digit UPC-A. */
+  code: string;
+  via: 'code' | 'search';
+  /** Each product the code request returned, and whether its own catalog barcodes hold the part's (holdsBarcode). */
+  products: { asin: string; sameBarcode: boolean }[];
+  /** Tokens Keepa counted for the code request (0 from the cache), and for the term search after it. */
+  codeTokens: number;
+  searchTokens: number;
+}
+
 /** What code requests have cost, from their responses: requests, codes asked, tokens consumed, the most one code cost. */
 export interface KeepaCodeCost {
   requests: number;

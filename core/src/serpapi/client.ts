@@ -4,6 +4,7 @@
 // Runs in a Chrome extension service worker and in Node (tests, scripts): it
 // only needs a fetch function, a cache and a budget.
 
+import type { BarcodeLookup } from '../keepa/barcode';
 import type { KeepaProduct } from '../keepa/types';
 import { type AccountInfo, type BlockReason, BLOCK_MESSAGE, parseAccount, SearchBudget } from './budget';
 
@@ -103,6 +104,13 @@ export interface SearchResult {
   keepaTokens?: number;
   /** Parsed Keepa product when the step used Keepa (for trend cache). */
   keepaProduct?: KeepaProduct;
+  /**
+   * Nov 25: a Keepa lookup that asked by the part's barcode first (keepa/fetchStep.ts keepaPartLookup): what the code
+   * request found and cost, and whether the term search ran after it. Absent on a lookup with no barcode.
+   */
+  barcode?: BarcodeLookup;
+  /** Nov 25: the products the code request returned, whole (the catalog check reads them free: scan/barcodeLookup.ts). */
+  keepaProducts?: KeepaProduct[];
 }
 
 export class SerpApiClient {

@@ -15,6 +15,8 @@ import { parseAmazonProduct, parseBuyBox } from '../serpapi/parsers';
 import { checkListingFields } from '../keepa/listingFields';
 import { identityFromKeepa, identityFromSerpProduct } from '../keepa/verify';
 import { amazonListingLink } from './catalogCheck';
+import { applyBarcodeFinding, lookupAsk } from './barcodeLookup';
+import type { KeepaLookupAsk } from '../keepa/fetchStep';
 import { wantedFor } from './classify';
 import { listingFrom } from './listings';
 import {
@@ -66,7 +68,8 @@ export interface QuoteKeepaOpts {
   trackingDepth?: KeepaTrackingDepth;
 }
 
-export type KeepaLookup = (brand: string, model: string, label: string) => Promise<SearchResult>;
+/** Nov 25: `ask` carries the part's barcode, asked by code before the term search (keepa/fetchStep.ts keepaPartLookup). */
+export type KeepaLookup = (brand: string, model: string, label: string, ask?: KeepaLookupAsk) => Promise<SearchResult>;
 
 function fittingKeepa(budget: Pick<TokenBudget, 'blockReason'>, parts: number, costEach: number): number {
   let n = 0;
@@ -220,7 +223,7 @@ async function lookUp(
       if (useKeepaLookup) {
         const block = keepaBudget!.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
         if (block) throw new KeepaBudgetExceededError(block);
-        result = await keepaLookup!(part.brand, part.model, `${ctx.prefix}:lookup:${part.model}`);
+        result = await keepaLookup!(part.brand, part.model, `${ctx.prefix}:lookup:${part.model}`, await lookupAsk(ctx, part));
       } else {
         result = await sendLookup(ctx, step);
       }
@@ -229,6 +232,8 @@ async function lookUp(
       throw err;
     }
     const asin = await applyLookup(ctx, step, result.data, result.at);
+    // Nov 25: the code's products through the ladder (free), and what the barcode found recorded for measurement.
+    if (result.barcode) await applyBarcodeFinding(ctx, part, result);
     // Step 15: a Keepa match has no price yet (its search rows carry none): its listing is pulled once, 1 token.
     if (!asin && useKeepaLookup && productPage && keepaBudget) {
       try {
