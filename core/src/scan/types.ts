@@ -1004,6 +1004,11 @@ export interface PartRow {
   grade: Grade | null;
   price: number | null;
   priceSeenAt: number | null;
+  /**
+   * Keeping deals current (Nov 25): when the counted Amazon New price was last checked (the price record's checkedAt),
+   * found or not; `priceSeenAt` is when that price was last seen. Absent when the listing has no price record.
+   */
+  priceCheckedAt?: number;
   /** Picture of the chosen listing, when it is among the saved listings. */
   image: string | null;
   /** Title of the chosen listing, when it is among the saved listings. */
