@@ -7,7 +7,7 @@
 import type { SanityFinding } from '../core/src/audit/sanity';
 import { DEFAULT_LISTING_SOURCE } from '../core/src/scan/listingSource';
 import { randomBytes } from 'node:crypto';
-import { closeSync, existsSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, utimesSync, writeSync } from 'node:fs';
+import { closeSync, existsSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, utimesSync, writeSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 
 import type {
@@ -44,6 +44,7 @@ import type { FbaEstimate } from '../core/src/tracking/fba';
 import type { KeepaCodeCost, KeepaCodeSample } from '../core/src/keepa/barcode';
 import type { KeepUsage } from '../core/src/tracking/keepCurrent';
 import { emptyTracking, seedAnnounced, type TrackingState } from '../core/src/tracking/state';
+import { syncFd } from './fsync';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
 // ---------------------------------------------------------------- collection types
@@ -630,7 +631,7 @@ function fsyncDir(dir: string): void {
   let fd: number | null = null;
   try {
     fd = openSync(dir, 'r');
-    fsyncSync(fd);
+    syncFd(fd);
   } catch {
     // not supported here
   } finally {
@@ -658,7 +659,7 @@ export function writeFileAtomic(path: string, text: string, mode = 0o644): void 
     const buf = Buffer.from(text, 'utf8');
     let off = 0;
     while (off < buf.length) off += writeSync(fd, buf, off, buf.length - off);
-    fsyncSync(fd);
+    syncFd(fd);
   } finally {
     closeSync(fd);
   }
