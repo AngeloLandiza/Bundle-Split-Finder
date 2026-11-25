@@ -5,7 +5,7 @@
 // the test for "same model" (titleHasModel, which adds RYOBI's tool-only B): nothing here makes a
 // match on weaker evidence.
 
-import { type Candidate, MODEL_PATTERNS, titleHasModel } from '../match';
+import { type Candidate, MODEL_PATTERNS, modelForms, modelTokenTest } from '../match';
 import type { ListingRecord } from './types';
 
 const upper = (s: string): string => s.trim().toUpperCase();
@@ -47,7 +47,14 @@ export function listingFrom(c: Candidate, brands: string[], now: number, old?: L
  */
 export function candidatesFor(brand: string, model: string, listings: ListingRecord[]): Candidate[] {
   const want = upper(brand);
+  // titleHasModel(want, l.title, model) for each listing, with the forms and their tests built once per call, not
+  // once per listing, and each title upper-cased once (core/test/candidates-for-equivalence.test.ts).
+  const tests = modelForms(want, model).map(modelTokenTest);
   return listings
-    .filter((l) => upper(l.brand) === want && titleHasModel(want, l.title, model))
+    .filter((l) => {
+      if (upper(l.brand) !== want) return false;
+      const title = l.title.toUpperCase();
+      return tests.some((has) => has(title));
+    })
     .map((l) => ({ asin: l.asin, title: l.title, brand: l.brand, price: l.price, reviews: l.reviews, image: l.image }));
 }

@@ -232,9 +232,21 @@ export interface Wanted {
 const clean = (model: string): string => model.toUpperCase().replace(/[^A-Z0-9-]/g, '');
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/**
+ * hasModelToken's test for one model, built once: it takes a text already upper-cased (`text.toUpperCase()`), so a
+ * caller testing many texts against many forms (candidatesFor) upper-cases each text once and builds each regex once.
+ * The regex is not global, so it keeps no lastIndex between texts. It matches the model's upper-cased string literally,
+ * so a text that does not contain that string cannot match: `includes` first is the same answer, sooner.
+ */
+export function modelTokenTest(model: string): (upperText: string) => boolean {
+  const m = model.toUpperCase();
+  const re = new RegExp(`(?<![A-Z0-9])${escapeRe(m)}(?![A-Z0-9])`);
+  return (upperText) => upperText.includes(m) && re.test(upperText);
+}
+
 /** Whole-token match: PBLRC25B must not match inside PBLRC2501SB or PBLRC25BK. */
 export function hasModelToken(text: string, model: string): boolean {
-  return new RegExp(`(?<![A-Z0-9])${escapeRe(model.toUpperCase())}(?![A-Z0-9])`).test(text.toUpperCase());
+  return modelTokenTest(model)(text.toUpperCase());
 }
 
 const norm = (s: string): string => s.toUpperCase().trim();
