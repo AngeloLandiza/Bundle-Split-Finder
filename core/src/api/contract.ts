@@ -87,7 +87,11 @@ export interface KeyValues {
   telegram: { botToken: string; chatId: string };
 }
 
-export type KeysPresence = Record<KeyName, boolean>;
+/**
+ * Which keys are saved (never their values). Nov 25: `telegramWaitingForChat`, a bot token saved without its chat id yet
+ * (`telegram` stays false until the chat is chosen: GET /api/telegram/chat).
+ */
+export type KeysPresence = Record<KeyName, boolean> & { telegramWaitingForChat?: boolean };
 
 /**
  * Nov 23: what a key's own service said when the key was checked (agent/keyChecks.ts). `rejected`: the service answered and
@@ -1225,6 +1229,38 @@ export interface ActivityResponse {
   outcomes?: OutcomeEntry[];
   /** Nov 25: the new versions the app told him about, newest first, at most 20. */
   versions?: VersionEntry[];
+  /**
+   * Nov 25: what he did from Telegram that has no list of its own here (pause, resume, Scan now, Not for me), newest first,
+   * at most 50, with Undo where the app has one (POST /api/telegram/actions/:id/undo). An answer or a purchase from Telegram
+   * is in its own list, its sentence saying "from Telegram".
+   */
+  fromTelegram?: TelegramActionEntry[];
+}
+
+/**
+ * GET /api/telegram/chat: a bot token saved without a chat id waits for the owner's chat. `waiting`: nobody wrote to the bot
+ * yet; `found`: the private chats that did, newest first, for him to choose (POST /api/telegram/chat { chatId }), never chosen
+ * for him. `no_bot`: no token saved; `chosen`: a chat is saved.
+ */
+export interface TelegramChatResponse {
+  state: 'no_bot' | 'chosen' | 'waiting' | 'found';
+  chats: { id: string; name: string; at: string }[];
+}
+
+/** POST /api/telegram/chat: the chat saved, the key's check, and the test message's answer. */
+export interface TelegramChatSaveResponse {
+  saved: true;
+  check?: KeyCheck;
+  test: TelegramTestResponse;
+}
+
+/** One thing done from Telegram, in one sentence. */
+export interface TelegramActionEntry {
+  id: string;
+  at: string;
+  sentence: string;
+  undoable: boolean;
+  undoneAt: string | null;
 }
 
 // ---------------------------------------------------------------- settings
@@ -1284,6 +1320,11 @@ export interface NotificationSettings {
   /** 'each-run' sends the run's digest at once; 'morning' holds deal/review/autopilot lines until morningAt; 'off' sends none (Telegram too). */
   digest: 'each-run' | 'morning' | 'off';
   morningAt: string;
+  /**
+   * Nov 25, "Let me act from Telegram": the agent reads the saved bot's chat (agent/telegramBot.ts) and puts buttons under
+   * its messages. Off (absent) by default, and on an existing install; only with a Telegram key saved does it do anything.
+   */
+  telegramActions?: boolean;
 }
 
 /** D2: the desktop shell's own switches (src-tauri applies them). */

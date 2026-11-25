@@ -25,7 +25,7 @@ import type { TrendLookup } from '../core/src/tracking/signals';
 import { announcedAfter, freshSignals, notifiedKey, retrackReport, type SignalLine, type TrackingState } from '../core/src/tracking/state';
 import { buildDigest } from './alerts';
 import type { NotifyPolicy } from './notifyPolicy';
-import type { Store } from './store';
+import type { Store, TelegramAbout } from './store';
 
 /**
  * Checking the app's own work: every time the deals are written (after a scan, and whenever an estimate or a match changes
@@ -68,8 +68,8 @@ export interface SignalsDeps {
   cache: Cache;
   now: () => number;
   policy: NotifyPolicy;
-  /** Sends the text to Telegram when set up (with what waits), and records a failure. */
-  telegram: (text: string | null) => Promise<void>;
+  /** Sends the text to Telegram when set up (with what waits), and records a failure. `about`: what its buttons are for (Nov 25). */
+  telegram: (text: string | null, about?: TelegramAbout[]) => Promise<void>;
   /** Whether a Keepa pull can be made now (a key, Keepa on): the "no sales data" words say what happens next. */
   keepa: () => boolean;
   /** Signals round 3: the owner's flat fulfillment fee, for the words of an estimate before fulfillment. */
@@ -114,10 +114,11 @@ export async function evaluateSignals(
   const fresh = withoutStale(found, tracking.notified, d.stale?.() ?? new Set(), now);
   const changed = changes?.(tracking as TrackingState) ?? null;
   const behind = pairsBehindBest(Object.values(tracking.derived.groups ?? {}));
+  const buyNow = fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey));
   const digest = buildDigest({
     report: { bundles: [], review: [] }, alerts: app.alerts, notifiedDeals: store.get('runtime').notifiedDeals, notifiedQuestions: [], autopilotApplied: 0,
     verifiedWaiting: 0, trendLines: [],
-    buyNow: fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey)), marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
+    buyNow, marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
   });
   if (fresh.lines.length > 0) {
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals }));
@@ -130,7 +131,7 @@ export async function evaluateSignals(
   const event: Omit<NotifyEvent, 'id'> = digest.event
     ? { ...digest.event, body: text, count: (digest.event.count ?? 0) + more }
     : { kind: 'deal', title: 'Split Finder', body: text, count: more, route: '/' };
-  await d.telegram(d.policy.digest(event, text));
+  await d.telegram(d.policy.digest(event, text), buyNow.length > 0 && app.alerts.enabled ? [{ kind: 'buyNow', keys: buyNow.map((l) => l.bundleKey) }] : undefined);
   return { evaluated, text };
 }
 

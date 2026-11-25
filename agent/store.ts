@@ -134,6 +134,8 @@ export interface ActivityCollection {
   /** W4: errors the owner may retry, newest last. */
   errors?: ActivityErrorRecord[];
   helper: HelperSnapshot | null;
+  /** Nov 25: what he did from Telegram that has no list of its own (agent/telegramBot.ts), newest last. */
+  fromTelegram?: TelegramActionRecord[];
   lastScan: LastScanSummary | null;
   bridge: { at: string; kind: string | null; bundleCount: number } | null;
 }
@@ -210,6 +212,42 @@ export interface PendingMessage {
   text: string;
   at: string;
   tries: number;
+  /** Nov 25: what the message is about, so its buttons are made as it is sent (agent/telegramBot.ts); absent: plain text. */
+  about?: TelegramAbout[];
+}
+
+/** Nov 25: what a Telegram message is about: the deals entering Buy now (best first), new questions, a cost message, a scan's summary. */
+export type TelegramAbout =
+  | { kind: 'buyNow'; keys: string[] }
+  | { kind: 'questions'; ids: string[] }
+  | { kind: 'costs' }
+  | { kind: 'scan' };
+
+/** Nov 25: one thing done from Telegram, kept for Activity with what its Undo needs (agent/telegramBot.ts). */
+export interface TelegramActionRecord {
+  id: string;
+  at: string;
+  sentence: string;
+  /** What Undo puts back; null: nothing to undo (Scan now). */
+  undo: { kind: 'watch'; deal: string; before: { watched: boolean; by: 'auto' | 'owner'; since: number } | null } | { kind: 'pause' } | { kind: 'resume' } | null;
+  undoneAt: string | null;
+}
+
+/** Nov 25: the Telegram reader's state (agent/telegramBot.ts). Never the token. */
+export interface TelegramBotRuntime {
+  /** The next update id to ask for: an update below it was handled already (getUpdates `offset`). */
+  offset: number;
+  /** The buttons the agent issued, by id: what each does, until when, and when it was used (a button works once). */
+  actions: Record<string, { act: unknown; group: string; issuedAt: number; expiresAt: number; usedAt: number | null }>;
+  /** When the "I only take …" line was last sent (at most once an hour). */
+  unknownReplyAt: number | null;
+  /** The last problem reading the chat, in plain words, token scrubbed. */
+  lastError: string | null;
+  /**
+   * A token saved without a chat id: the private chats that wrote to the bot, newest first, offered in the app for the owner to
+   * choose (never adopted by themselves). `tag`: a hash of the token they wrote to, so a new token starts with none.
+   */
+  candidates?: { tag: string; chats: { id: string; name: string; at: number }[] };
 }
 
 /** The release note's state. `latest` is the last file that passed every check; a failed look changes nothing but `checkedAt`. */
@@ -267,6 +305,8 @@ export interface AgentRuntime {
   /** Question ids already counted in a message: the same questions do not alert again. */
   notifiedQuestions: string[];
   telegram: { pending: PendingMessage[]; lastSentAt: string | null; lastError: string | null };
+  /** Nov 25: the Telegram reader (agent/telegramBot.ts); absent until it first runs. */
+  telegramBot?: TelegramBotRuntime;
   /** Nov 25, new versions (agent/versionCheck.ts): what the daily look at the release note found, and what the owner was told. */
   release?: ReleaseRuntime;
   /** Seconds a unit of each kind took in recent scans, for the progress estimate (pipeline.ts). */
@@ -399,6 +439,8 @@ export function defaultSettings(): StoreData['settings'] {
       quietHours: { enabled: false, from: '22:00', to: '07:00' },
       digest: 'each-run',
       morningAt: '08:00',
+      // Nov 25: acting from Telegram is the owner's choice; off until he turns it on (an existing install reads it off too).
+      telegramActions: false,
     },
     shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
     // Nov 25: the app reads the project's public release note once a day and says when a new version is ready.

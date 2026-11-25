@@ -74,7 +74,7 @@ import type { FactField } from '../core/src/facts/fact';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
-import { buildDigest, sendPending } from './alerts';
+import { buildDigest, sendPending, type OutgoingTelegram } from './alerts';
 import { scrubKeyText } from './keyChecks';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
@@ -84,7 +84,7 @@ import { backlogSentence, fullPerHour, HD_LIST_REREAD_MS, HdPace, type HdMode, p
 import { backlogOf, pagesWanted } from '../core/src/scan/hdOrder';
 import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
-import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
+import type { ActivityErrorRecord, PendingMessage, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer, TelegramAbout } from './store';
 import { aiSpentThisMonth, asksAboutEbay } from './views';
 import { CostBook, scanHistory } from './costs';
 import type { CostStep } from '../core/src/costs/decide';
@@ -265,6 +265,8 @@ export class AgentWork {
   readonly costs: CostBook;
   /** Step 18: the run a held step belongs to (its message goes once per service per run). */
   private costRun = 'start';
+  /** Nov 25: makes each Telegram message as it goes out, with its buttons when the owner acts from Telegram (agent/telegramBot.ts). */
+  telegramCompose: ((m: PendingMessage) => OutgoingTelegram[]) | null = null;
 
   constructor(deps: WorkDeps) {
     this.d = deps;
@@ -302,8 +304,8 @@ export class AgentWork {
   private signalsDeps(): SignalsDeps {
     return {
       store: this.d.store, cache: this.cache, now: this.d.now, policy: this.policy,
-      telegram: async (text) => {
-        await this.sendTelegram(text);
+      telegram: async (text, about) => {
+        await this.sendTelegram(text, about);
       },
       keepa: () => {
         const app = this.d.store.get('settings');
@@ -1101,7 +1103,7 @@ export class AgentWork {
   private async costMessage(title: string, body: string): Promise<void> {
     if (this.d.store.get('settings').notifications.kinds.costs === false) return;
     this.policy.send({ kind: 'costs', title, body, route: '/costs' });
-    await this.sendTelegram(`${title}. ${body}`);
+    await this.sendTelegram(`${title}. ${body}`, [{ kind: 'costs' }]);
   }
 
   /** The cost warnings due now (a warn percent, a forecast past a limit, a limit reached), each once a month. */
@@ -2601,7 +2603,15 @@ export class AgentWork {
     store.update('tracking', (t) => ({ ...t, notified: [...fresh.notified, ...bogo.keys].slice(-2000), announced: announcedAfter(t.announced, fresh.lines, now) }));
     // Through the notification policy (its kinds, quiet hours and the morning digest): a deal line goes as kind 'deal'.
     const text = digest.event && digest.text ? this.policy.digest(digest.event, digest.text) : null;
-    return this.sendTelegram(text);
+    // Nov 25: what the message is about, for its buttons: the deals it names as worth buying now, the questions new to him, the scan.
+    const newQuestions = app.alerts.reviewDigest ? report.review.filter((q) => q.answer === null && !runtime.notifiedQuestions.includes(q.id)).map((q) => q.id) : [];
+    const buyKeys = app.alerts.enabled ? fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey)).map((l) => l.bundleKey) : [];
+    const about: TelegramAbout[] = [
+      ...(buyKeys.length ? [{ kind: 'buyNow' as const, keys: buyKeys }] : []),
+      ...(newQuestions.length ? [{ kind: 'questions' as const, ids: newQuestions }] : []),
+      { kind: 'scan' },
+    ];
+    return this.sendTelegram(text, about);
   }
 
   /**
@@ -2622,12 +2632,14 @@ export class AgentWork {
   }
 
   /** The waiting Telegram messages and `text` (when there is one), in order. Returns a sentence when Telegram failed. */
-  private async sendTelegram(text: string | null): Promise<string | null> {
+  private async sendTelegram(text: string | null, about?: TelegramAbout[]): Promise<string | null> {
     const { store } = this.d;
     const tg = store.get('keys').telegram;
     const pending = store.get('runtime').telegram.pending;
-    if (!tg || (!text && pending.length === 0)) return null;
-    const sent = await sendPending(this.d.fetchFn, tg, pending, text ? { text, at: new Date(this.d.now()).toISOString() } : null);
+    // Nov 25: a bot saved without its chat yet (the app finds it: agent/telegramBot.ts) sends nothing.
+    if (!tg?.chatId?.trim() || (!text && pending.length === 0)) return null;
+    const next = text ? { text, at: new Date(this.d.now()).toISOString(), ...(about?.length ? { about } : {}) } : null;
+    const sent = await sendPending(this.d.fetchFn, tg, pending, next, this.telegramCompose ?? undefined);
     this.costs.count('telegram', sent.sent);
     const at = new Date(this.d.now()).toISOString();
     store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
@@ -2641,8 +2653,8 @@ export class AgentWork {
   private async resendPending(): Promise<string | null> {
     const tg = this.d.store.get('keys').telegram;
     const pending = this.d.store.get('runtime').telegram.pending;
-    if (!tg || pending.length === 0) return null;
-    const sent = await sendPending(this.d.fetchFn, tg, pending, null);
+    if (!tg?.chatId?.trim() || pending.length === 0) return null;
+    const sent = await sendPending(this.d.fetchFn, tg, pending, null, this.telegramCompose ?? undefined);
     this.costs.count('telegram', sent.sent);
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
@@ -2657,8 +2669,8 @@ export class AgentWork {
     else if (err.retry.kind === 'ask') this.askNow();
     else {
       const tg = this.d.store.get('keys').telegram;
-      if (!tg) throw new WorkRefused('Add the Telegram bot token and chat id in Settings.');
-      const sent = await sendPending(this.d.fetchFn, tg, this.d.store.get('runtime').telegram.pending, null);
+      if (!tg?.chatId?.trim()) throw new WorkRefused('Add the Telegram bot token and chat id in Settings.');
+      const sent = await sendPending(this.d.fetchFn, tg, this.d.store.get('runtime').telegram.pending, null, this.telegramCompose ?? undefined);
       this.d.store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? new Date(this.d.now()).toISOString() : r.telegram.lastSentAt, lastError: sent.error } }));
       if (sent.error) throw new WorkRefused(`Telegram: ${sent.error}`);
     }
