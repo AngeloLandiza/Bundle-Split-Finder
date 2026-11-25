@@ -4,7 +4,7 @@
 // answers nothing. At each model call the line must name the long work and count it; "Finishing up" waits behind it; and a
 // time left is not shown from a guess. No network, no key.
 
-import { copyFileSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -42,6 +42,10 @@ describe('the scan line after the runner has ended', () => {
     for (const kind of ['bundles', 'catalog', 'matches', 'prices', 'listings', 'partPrices', 'reviews']) {
       copyFileSync(join('fixtures/e2e-2026-11-23/after-scan5/scan', `${kind}.json`), join(dir, 'scan', `${kind}.json`));
     }
+    // The line is measured while the AI works a match question: PBP2003's is the store's only one, and Home Depot's own
+    // "(2-Pack)" title would settle it at the agent's start (Nov 24, rule D), so that title is left out here.
+    const prices = join(dir, 'scan', 'partPrices.json');
+    writeFileSync(prices, readFileSync(prices, 'utf8').replace('ONE+ 18V Lithium 2.0 Ah Battery (2-Pack)', 'ONE+ 18V Lithium 2.0 Ah Battery'));
     const seen: { view: PipelineView; status: string }[] = [];
     let t = T0;
     const fetchFn = (async (input: string | URL | Request) => {

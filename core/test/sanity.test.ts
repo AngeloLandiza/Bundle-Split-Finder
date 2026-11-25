@@ -109,12 +109,14 @@ describe('measured on the labelled listings (validation set of Nov 18, audit cor
   }
   const count = (pred: (r: (typeof rows)[number]) => boolean) => ({ right: rows.filter((r) => r.ok && pred(r)).length, wrong: rows.filter((r) => !r.ok && pred(r)).length });
 
-  it('title names another model and not the part: 0 right listings, 841 wrong', () => {
-    expect(count((r) => !titleHasModel(r.brand, r.title, r.model) && otherModels(r.brand, r.title, r.model).length > 0)).toEqual({ right: 0, wrong: 841 });
+  // Nov 24 (rule D): PBP2003 is matched from the saved listings now (Home Depot's own pack size), so its lookup's search rows
+  // left the committed results: 841 wrong became 804, 137 became 136; no right listing changed.
+  it('title names another model and not the part: 0 right listings, 804 wrong', () => {
+    expect(count((r) => !titleHasModel(r.brand, r.title, r.model) && otherModels(r.brand, r.title, r.model).length > 0)).toEqual({ right: 0, wrong: 804 });
   });
 
-  it('title names the part and another model (not a kit): 1 right listing (P119, a charger that lists what it charges), 137 wrong', () => {
-    expect(count((r) => !isKitModel(r.brand, r.model) && titleHasModel(r.brand, r.title, r.model) && otherModels(r.brand, r.title, r.model).length > 0)).toEqual({ right: 1, wrong: 137 });
+  it('title names the part and another model (not a kit): 1 right listing (P119, a charger that lists what it charges), 136 wrong', () => {
+    expect(count((r) => !isKitModel(r.brand, r.model) && titleHasModel(r.brand, r.title, r.model) && otherModels(r.brand, r.title, r.model).length > 0)).toEqual({ right: 1, wrong: 136 });
   });
 
   it('Amazon against Home Depot sold alone: right listings 0.39 to 1.00 (24); of the wrong ones that name the part, 2 above 3 and 82 below 0.3', () => {

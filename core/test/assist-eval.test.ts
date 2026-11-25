@@ -116,11 +116,11 @@ describe('npm run assist:eval', () => {
     }
   });
 
-  it('dry run: no key read, no model, the 26 questions with their truth and an estimate', async () => {
+  it('dry run: no key read, no model, the 25 questions with their truth and an estimate (PBP2003 is no question: Home Depot states its pack size, rule D)', async () => {
     const { code, text } = await run(['--model', MODEL, '--dry-run'], { env: () => { throw new Error('env read'); }, makeModel: () => { throw new Error('model made'); } });
     expect(code).toBe(0);
-    expect(text).toContain('Questions: 26 (19 split, reopened from the answer key; 7 match, open).');
-    expect(text).toContain('Model calls: 24, one each. No call for 2 that offer nothing to choose.');
+    expect(text).toContain('Questions: 25 (19 split, reopened from the answer key; 6 match, open).');
+    expect(text).toContain('Model calls: 23, one each. No call for 2 that offer nothing to choose.');
     expect(text).toContain('split:homedepot:339206615  key reading 0 (PBP004, PBP003, PCG002)');
     expect(text).toContain('split:homedepot:344304336  key none fits');
     expect(text).toContain('match:RYOBI:P553  key uncertain (no answer is right)');
@@ -131,21 +131,21 @@ describe('npm run assist:eval', () => {
     const model = fake();
     const first = await run(['--model', MODEL, '--run'], { makeModel: (m, key) => { expect([m, key]).toEqual([MODEL, KEY]); return model; } });
     expect(first.code).toBe(0);
-    expect(model.requests).toHaveLength(24);
+    expect(model.requests).toHaveLength(23);
     const file = suggestionsPath(first.outDir, MODEL);
     const raw = readFileSync(file, 'utf8');
     expect(raw).not.toContain(KEY);
     const doc = JSON.parse(raw) as SuggestionsFile;
     expect(doc).toMatchObject({ model: MODEL, promptVersion: ASSIST_PROMPT_VERSION, ranAt: '2026-11-20T12:00:00.000Z' });
-    expect(doc.results).toHaveLength(26);
+    expect(doc.results).toHaveLength(25);
     expect(doc.results.filter((r) => !r.called).map((r) => r.questionId)).toEqual(['split:homedepot:314716732', 'split:homedepot:328690510']);
     expect(first.text).toContain('Verified and correct: 1');
     expect(first.text).toContain('Verified but wrong: 0 (must be 0 to trust)');
     expect(first.text).toContain("None fits, the AI's view (never verified, preselects nothing): 1, 1 where the key is not none");
     expect(first.text).toContain('  match:RYOBI:PBP004: key listing B09HDZ5MPV');
-    expect(first.text).toContain('Cannot tell: 22');
+    expect(first.text).toContain('Cannot tell: 21');
     expect(first.text).toContain('Not suggested: 2');
-    expect(first.text).toContain('Tokens: 24000 in, 2400 out.');
+    expect(first.text).toContain('Tokens: 23000 in, 2300 out.');
     expect(first.text).toContain('Overall: no verified suggestion disagrees with the key.');
 
     const again = await run(['--model', MODEL, '--replay'], { outDir: first.outDir, env: () => { throw new Error('env read'); } });
@@ -172,7 +172,7 @@ describe('npm run assist:eval', () => {
     expect(model.requests).toHaveLength(2);
     const doc = JSON.parse(readFileSync(suggestionsPath(outDir, 'claude-opus-5-5'), 'utf8')) as SuggestionsFile;
     expect(doc).toMatchObject({ incomplete: true, maxCost: 0.01 });
-    expect(text).toContain('Run cut by --max-cost $0.0100 after 2 of 26 questions');
+    expect(text).toContain('Run cut by --max-cost $0.0100 after 2 of 25 questions');
   });
 
   it('a failed call is not suggested; a refused key stops the run and writes nothing; no key calls nothing', async () => {

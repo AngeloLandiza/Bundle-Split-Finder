@@ -211,7 +211,9 @@ describe('waiting_parts in the scan and at the agent\'s start', () => {
     expect((await store.getReview('split:homedepot:320243741'))!.answer).toBe(RESOLVED_BY_SCAN);
     const row = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles.find((r) => r.key === b.key)!;
     expect(row.waitingParts).toBe(true);
-    expect(matchState(row)).toBe(WAITING_PARTS_TEXT);
+    // Nov 24: the line names what it waits for.
+    expect(matchState(row)).toBe("Waiting for Home Depot's page of P553");
+    expect(matchState({ ...row, waitingFor: undefined })).toBe(WAITING_PARTS_TEXT);
     // Its parts are read as a resolved split's are, in a run that waits for pages; not elsewhere.
     expect(waitingParts((await store.getBundle(b.key))!).map((p) => p.key)).toEqual(['RYOBI:P553']);
     expect((await partPricesWanted(store, DEFAULT_SCAN_SETTINGS, T0, true)).some((p) => p.key === 'RYOBI:P553')).toBe(true);

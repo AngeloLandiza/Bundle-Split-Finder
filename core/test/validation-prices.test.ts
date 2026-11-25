@@ -58,11 +58,18 @@ describe('the validation set, replayed with the Home Depot prices read on Nov 18
     expect(await withPrices.store.listCatalog()).toEqual(await without.store.listCatalog());
     const splits = async (run: typeof without) => (await run.store.listBundles()).map((b) => [b.key, b.split]);
     expect(await splits(withPrices)).toEqual(await splits(without));
-    // Every results field but the Home Depot price itself is the same.
+    // Every results field but the Home Depot price itself is the same, but for one fact a reading may give the match (Nov 24,
+    // rule D): Home Depot's own title for exactly PBP2003 says "(2-Pack)", so its 2-pack listing B0BG5SPWVL (the labels'
+    // right one) is a title match, not a question. The bundle holding it is compared apart.
+    const pack = (b: { parts: { model: string }[] }) => b.parts.some((p) => p.model === 'PBP2003');
     const noHd = (r: Awaited<ReturnType<typeof buildResults>>) => ({
-      ...r, summary: { ...r.summary, hdPrices: 0 }, bundles: r.bundles.map((b) => ({ ...b, parts: b.parts.map((p) => ({ ...p, hdPrice: null })) })),
+      ...r, summary: { ...r.summary, hdPrices: 0, byGrade: null }, reviewQueue: r.reviewQueue.filter((q) => !JSON.stringify(q).includes('PBP2003')), bundles: r.bundles.filter((b) => !pack(b)).map((b) => ({ ...b, parts: b.parts.map((p) => ({ ...p, hdPrice: null })) })),
     });
-    expect(noHd(await buildResults(withPrices))).toEqual(noHd(await buildResults(without)));
+    const [a, b] = [await buildResults(withPrices), await buildResults(without)];
+    expect(noHd(a)).toEqual(noHd(b));
+    const pbp = (r: typeof a) => r.bundles.filter(pack).flatMap((x) => x.parts.filter((p) => p.model === 'PBP2003').map((p) => [p.status, p.asin]));
+    expect(pbp(a)).toEqual([['matched', 'B0BG5SPWVL']]);
+    expect(pbp(b)).toEqual([['review', null]]);
   });
 
   it('a part read from its RYOBI twin\'s page is labelled with the model Home Depot sells (PCL500 as PCL500B); an exact one is plain', async () => {

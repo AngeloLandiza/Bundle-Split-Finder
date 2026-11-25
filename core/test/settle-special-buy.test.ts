@@ -37,7 +37,7 @@ describe('rule 2 with a special buy among the parts', () => {
     expect(split.waitingFor).toEqual(['PCL406424SB', 'A21701', 'A25RS51']);
   });
 
-  it('read: A21701 is confirmed by its own page, PCL406424SB is a special buy and A25RS51 is not sold on Home Depot, so the question is about those two', async () => {
+  it('read: A21701 is confirmed by its own page, A25RS51 (not sold on Home Depot) by the bundle page\'s Includes line (Nov 24, rule B), PCL406424SB is a special buy, so the question is about it alone', async () => {
     const store = await loadScanFolder('fixtures/e2e-2026-11-23/after-scan3');
     for (const [m, q] of [['PCL406424SB', 'ryobi pcl406424sb'], ['A21701', 'ryobi a21701'], ['A25RS51', 'ryobi a25rs51']] as const) await store.putPartPrice(readingOf(m, q));
     const bundle = (await store.getBundle(BUNDLE))!;
@@ -45,11 +45,13 @@ describe('rule 2 with a special buy among the parts', () => {
     expect(split.status).toBe('needs_review');
     expect(split.waitingFor).toBeUndefined();
     expect(split.notes).toContain('Home Depot sells PCL406424SB as a special buy, itself a bundle, so the parts it holds are asked');
-    expect(split.notes).toContain("Home Depot's search found no A25RS51 sold by itself");
-    expect(split.settledParts).toEqual([{ model: 'A21701', what: '7-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit', url: 'https://www.homedepot.com/p/316546864' }]);
+    expect(split.notes).not.toContain("Home Depot's search found no A25RS51 sold by itself");
+    expect(split.settledParts).toEqual([
+      { model: 'A21701', what: '7-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit', url: 'https://www.homedepot.com/p/316546864' },
+      { model: 'A25RS51', what: 'Includes: A25RS51 1/4 in., 3/8 in., 1/2 in., 5/8 in. straight router bits with a bonus 5/16 in. bit', url: bundle.link! },
+    ]);
     expect(split.unsettledParts).toEqual([
       { model: 'PCL406424SB', why: 'special_buy', what: 'ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)', url: 'https://www.homedepot.com/p/328690521' },
-      { model: 'A25RS51', why: 'not_sold' },
     ]);
     // The reading offered stays the model number's three parts.
     expect(split.alternatives).toEqual([['PCL406424SB', 'A21701', 'A25RS51']]);

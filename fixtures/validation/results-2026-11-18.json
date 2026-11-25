@@ -15,8 +15,8 @@
     "parts": 150,
     "byGrade": {
       "none": 52,
-      "probable": 78,
-      "review": 20
+      "probable": 79,
+      "review": 19
     },
     "notLookedUp": 0,
     "positive": {
@@ -5848,7 +5848,6 @@
             "PCL206",
             "PCL500",
             "PCL430",
-            "PBP2003",
             "18T Carbide Blade",
             "Hex Wrench",
             "Reciprocating Saw Blade",
@@ -5879,8 +5878,7 @@
           "profit": null,
           "roi": null,
           "leftovers": [
-            "PCL1600K2",
-            "PBP2003"
+            "PCL1600K2"
           ],
           "parts": [
             "PCL1600K2",
@@ -6030,12 +6028,12 @@
             "whole",
             "split:PCL1600K2"
           ],
-          "status": "review",
-          "asin": null,
-          "grade": null,
-          "listingTitle": null,
-          "price": null,
-          "source": "lookup",
+          "status": "matched",
+          "asin": "B0BG5SPWVL",
+          "grade": "probable",
+          "listingTitle": "ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003",
+          "price": 67.59,
+          "source": "saved listings",
           "candidates": [
             {
               "asin": "B0BG5SPWVL",
@@ -6043,335 +6041,6 @@
               "brand": "RYOBI",
               "price": 67.59,
               "reviews": 33
-            },
-            {
-              "asin": "B0D97QX1HN",
-              "title": "2Pack 3.0Ah P102 Battery for Ryobi 18V Battery and P117 Charger Combo",
-              "brand": null,
-              "price": 49.99,
-              "reviews": 127
-            },
-            {
-              "asin": "B01EU6ADQK",
-              "title": "P2008A 18V. Lithium-Ion Cordless String Trimmer/Edger - Battery and Charger Not Included",
-              "brand": "RYOBI",
-              "price": 95.99,
-              "reviews": 399
-            },
-            {
-              "asin": "B09HBKJHBV",
-              "title": "One+ 18v Lithium Ion 2.0ah Battery and Charger Kit, Extreme Weather Performance Fast Charging Under 1 hour",
-              "brand": "RYOBI",
-              "price": 48.59,
-              "reviews": 1600
-            },
-            {
-              "asin": "B09HDZ5MPV",
-              "title": "TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery",
-              "brand": null,
-              "price": 59,
-              "reviews": 1500
-            },
-            {
-              "asin": "B0CHWV4789",
-              "title": "ONEAND 18V 2.0 AH Lithium-ION HIGH Performance Battery PBP003",
-              "brand": "RYOBI",
-              "price": 38.99,
-              "reviews": 66
-            },
-            {
-              "asin": "B0HJ5BLNJV",
-              "title": "8Ah 18V P108 Replacement for Ryobi 18V Battery (2 Pack)",
-              "brand": null,
-              "price": 45.99,
-              "reviews": 28
-            },
-            {
-              "asin": "B09SV94MBQ",
-              "title": "ONEAND 18V Lithium-ION 1.5 AH Battery PBP002",
-              "brand": "RYOBI",
-              "price": 35,
-              "reviews": 885
-            },
-            {
-              "asin": "B07WPRHRXH",
-              "title": "P189 18 Volt 1.5 Ah One+ Lithium-Ion Cordless Compact Rechargeable Quick-Release Battery",
-              "brand": "RYOBI",
-              "price": 49.99,
-              "reviews": 2000
-            },
-            {
-              "asin": "B0DKXK1CH8",
-              "title": "AC14RL3A Line String Trimmer Replacement Spool For Ryobi One+18v P2000 P2002 P2003 P2004 P2006 P2006A P20103 P2200 24v RY24021 RY24200 40v RY40021 RY40022 Cordless String Trimmer 11FT 0.065 Inch",
-              "brand": null,
-              "price": 14.99,
-              "reviews": 199
-            },
-            {
-              "asin": "B0DKXKKJN8",
-              "title": "AC14RL3A Line String Trimmer Replacement Spool For Ryobi One+18v P2000 P2002 P2003 P2004 P2006 P2006A P20103 P2200 24v RY24021 RY24200 40v RY40021 RY40022 Cordless String Trimmer 11FT 0.065 Inch",
-              "brand": null,
-              "price": 12.39,
-              "reviews": 199
-            },
-            {
-              "asin": "B0DKXKC1TT",
-              "title": "AC14RL3A Line String Trimmer Replacement Spool For Ryobi One+18v P2000 P2002 P2003 P2004 P2006 P2006A P20103 P2200 24v RY24021 RY24200 40v RY40021 RY40022 Cordless String Trimmer 11FT 0.065 Inch",
-              "brand": null,
-              "price": 12.39,
-              "reviews": 199
-            },
-            {
-              "asin": "B07GV9JQDT",
-              "title": "Upgraded 2Packs P108 18V Battery Replacement for Ryobi 18V ONE+ Battery Fit P102 P103 P104 P105 P107 P109 P122 PBP002 PBP003 PBP004 PBP005 RB18L50 Cordless Tool 6.2Ah Batteries with Indicator",
-              "brand": "DTK",
-              "price": 39.9,
-              "reviews": 1400
-            },
-            {
-              "asin": "B0CRHXFH1Y",
-              "title": "10-Pack 0.065\" AC14RL3A Weed Wacker String Replacement for Ryobi One+",
-              "brand": null,
-              "price": 9.99,
-              "reviews": 1200
-            },
-            {
-              "asin": "B0D1KLV92K",
-              "title": "679034001 Trimmer Compression Spring Fit for Ryobi RY40200,RY24200,P2005",
-              "brand": null,
-              "price": 9.99,
-              "reviews": 25
-            },
-            {
-              "asin": "B0D7849JPX",
-              "title": "PCL1400K2-PBP2003 Fits for RYOBI 18V Cordless 4-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ (2) 2.0 Ah HIGH PERFORMANCE Batteries",
-              "brand": null,
-              "price": 180,
-              "reviews": null
-            },
-            {
-              "asin": "B09BL9VXZX",
-              "title": "ONE+ 18V HIGH Performance Lithium-Ion Compact Battery PBP003",
-              "brand": "RYOBI",
-              "price": 39.99,
-              "reviews": 908
-            },
-            {
-              "asin": "B09QRL49JY",
-              "title": "ONE+ 18V High Performance Lithium-Ion 2.0 Ah Compact Battery (2-Pack)",
-              "brand": "RYOBI",
-              "price": 65,
-              "reviews": 274
-            },
-            {
-              "asin": "B0GRVD35NW",
-              "title": "2 Pack P197 Replace for RYOBI 18V Battery with P117 Charger Combo",
-              "brand": null,
-              "price": 51.29,
-              "reviews": 21
-            },
-            {
-              "asin": "B0FW4ZMCRH",
-              "title": "Replacement for Ryobi 18V Battery and Charger Combo",
-              "brand": null,
-              "price": 68.99,
-              "reviews": 32
-            },
-            {
-              "asin": "B09G1WD2CG",
-              "title": "ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery, ABS Plastic, Up to 3X Runtime vs 1.5Ah, LED Fuel Gauge, Black, PBP005",
-              "brand": "RYOBI",
-              "price": 68.99,
-              "reviews": 5900
-            },
-            {
-              "asin": "B0FQ55N9FQ",
-              "title": "2-Pack 3.0Ah 18V Battery and Charger Replacement for Ryobi 18V Battery and Charger P103 P104 Compatible with Ryobi 18V ONE+ Cordless Power Tools and Chargers",
-              "brand": null,
-              "price": 54.49,
-              "reviews": 50
-            },
-            {
-              "asin": "B00HQXSW4K",
-              "title": "P102 18V One+ Compact Lithium Ion Battery, 2 Pack",
-              "brand": "RYOBI",
-              "price": 49.99,
-              "reviews": 952
-            },
-            {
-              "asin": "B0BFG4YJ1B",
-              "title": "ONE+ 18V 2.0 Ah Lithium-Ion Battery (PBP006)",
-              "brand": "RYOBI",
-              "price": 45,
-              "reviews": 1300
-            },
-            {
-              "asin": "B07J5WJF1C",
-              "title": "18-Volt ONE+ Lithium-Ion 4.0 Ah High Capacity Battery (2-Pack)",
-              "brand": "RYOBI",
-              "price": 129.99,
-              "reviews": 2800
-            },
-            {
-              "asin": "B0FH9M1GMV",
-              "title": "2Pack Upgrade 108000mWh High Capacity Replacement for Ryobi 18V Battery ，Compatible with Ryobi 18V ONE+ System Cordless Power Tools and Charger",
-              "brand": null,
-              "price": 40.84,
-              "reviews": 193
-            },
-            {
-              "asin": "B08L339D94",
-              "title": "ONE+ HP 18V 1.5ah Lithium Ion Battery with Onboard Fuel Gauge PBP002",
-              "brand": "RYOBI",
-              "price": 30.64,
-              "reviews": 1900
-            },
-            {
-              "asin": "B0DT15YRZZ",
-              "title": "P118 Replacement for Ryobi 18V Battery Charger PCG002 PCG004C PCG008, Compatible with Ryobi ONE+ 18 Volt Lithium-Ion Batteries PBP002 PBP003 PBP004 PBP005 PBP006 PBP007 PBP1008 PBP1012 PBP1104",
-              "brand": "TenHutt",
-              "price": 17.99,
-              "reviews": 71
-            },
-            {
-              "asin": "B0HKC3KFNH",
-              "title": "2Pack 8.0Ah P108 Replacement for Ryobi 18V Battery Compatible with Ryobi ONE+ 18V Battery P102 P103 P104 P105 P107 P108 PBP002 PBP003 PBP004 PBP005 P190 P191 P192 P193 Cordless Power Tools",
-              "brand": null,
-              "price": 49.99,
-              "reviews": 12
-            },
-            {
-              "asin": "B0HHF2X6XN",
-              "title": "2 Pack 3600mAh P102 Replacement for Ryobi 18V Battery with LED Indicator",
-              "brand": null,
-              "price": 30.97,
-              "reviews": 2100
-            },
-            {
-              "asin": "B0HHWML2G5",
-              "title": "2Pack 18V 3600mAh P108 P102 Battery Replacement for Ryobi 18V Battery",
-              "brand": null,
-              "price": 30.97,
-              "reviews": 655
-            },
-            {
-              "asin": "B0F833QDTM",
-              "title": "18V ONEAND HP BRUSHLESS Cordless 130 MPH 510 CFM Blower Tool ONLY PBLLB01B",
-              "brand": "RYOBI",
-              "price": null,
-              "reviews": 4
-            },
-            {
-              "asin": "B07DBZDDPC",
-              "title": "P193 6.0 Amp Hour 18V Lithium Ion Battery w/ Onboard Fuel Gauge",
-              "brand": "RYOBI",
-              "price": null,
-              "reviews": 77
-            },
-            {
-              "asin": "B0H86WNDVD",
-              "title": "2PACK 8.0Ah Battery Replacement for Ryobi 18V Battery",
-              "brand": null,
-              "price": 42.99,
-              "reviews": 2500
-            },
-            {
-              "asin": "B0GGZWGKFN",
-              "title": "2Packs 8.0Ah 18 Volt Replacement for Ryobi Battery 18V P108 P102 P103 P104 P105 P107 P109 P122 P190",
-              "brand": null,
-              "price": 37.99,
-              "reviews": 4
-            },
-            {
-              "asin": "B0FF2BM1SM",
-              "title": "【Upgraded】 6.0Ah Replacement for Ryobi 18V Battery PBP005 PBP006 PBP004 PBP007 PBP003 PBP002 PBP1104 PBP1008 PBP1012 P108 P102 P103 P104 P105, Compatible with Ryobi ONE+ Cordless Power Tool & Charger",
-              "brand": null,
-              "price": null,
-              "reviews": 734
-            },
-            {
-              "asin": "B07D38V5Y4",
-              "title": "P164: 2 Pack of P193 6.0 Amp Hour 18V Lithium Ion Batteries w/ Onboard Fuel Gauge",
-              "brand": "RYOBI",
-              "price": 188.99,
-              "reviews": 108
-            },
-            {
-              "asin": "B0H5BWTTNV",
-              "title": "2 Pack P103 Replace for Ryobi 18V ONE+ Battery and 2 Port P117 Charger Kit",
-              "brand": null,
-              "price": 65.99,
-              "reviews": 8
-            },
-            {
-              "asin": "B0F5W9FBKN",
-              "title": "【Simultaneously Charging】 P135/PCG006 Rapid 6-Port Replacement for Ryobi 18V Battery Charger PCG002 PCG004 PCG005 PCG008, Compatible with Ryobi ONE+ 18 Volt Lithium-Ion Batteries(No Battery Included)",
-              "brand": null,
-              "price": null,
-              "reviews": 41
-            },
-            {
-              "asin": "B0CKW7CX84",
-              "title": "[Upgraded to 3.6Ah] 2 Pack P100 Replacement for 18V Ryobi Battery(Orange)",
-              "brand": null,
-              "price": 43.99,
-              "reviews": 742
-            },
-            {
-              "asin": "B0DLKKKB25",
-              "title": "2 Pack 8.0Ah Replacement For Ryobi 18V Lithium-ion Battery",
-              "brand": null,
-              "price": 43.59,
-              "reviews": 188
-            },
-            {
-              "asin": "B07RB2ZC6H",
-              "title": "P192 18 Volt 4.0 Ah ONE+ Lithium-Ion LITHIUM+ HP High Capacity Compact Battery (Non-Retail Packaging)",
-              "brand": "RYOBI",
-              "price": 64.99,
-              "reviews": 116
-            },
-            {
-              "asin": "B0F3XJ6SS1",
-              "title": "Replacement for Ryobi 18V Battery: 18V 4.0Ah Lithium-ion Compatible with Ryobi P102 P103 P105 P107 P108 P109 P122 Cordless Power Tools 2 Pack",
-              "brand": null,
-              "price": 30.99,
-              "reviews": 254
-            },
-            {
-              "asin": "B0DK125SGH",
-              "title": "2 Pack 3.5Ah 18V Battery and Charger Compatible with Ryobi P108",
-              "brand": "Powilling",
-              "price": 60.99,
-              "reviews": 41
-            },
-            {
-              "asin": "B07FPMY62G",
-              "title": "P191 3.0 Amp Hour High Capacity Lithium Ion Battery w/ Cold Weather Performance and LED Power Indicator (Charger Not Included / Battery Only)",
-              "brand": "RYOBI",
-              "price": 68,
-              "reviews": 254
-            },
-            {
-              "asin": "B0CYGJJDVL",
-              "title": "Upgraded 8.0Ah 2Packs P108 Compatible with Ryobi 18V Battery",
-              "brand": "Powilling",
-              "price": 45.99,
-              "reviews": 1600
-            },
-            {
-              "asin": "B0DK34YYVB",
-              "title": "Upgraded 4.0Ah 2Packs P189 Compatible with Ryobi 18V Battery",
-              "brand": "Powilling",
-              "price": 30.99,
-              "reviews": 113
-            },
-            {
-              "asin": "B0H6F6WCNY",
-              "title": "2Pack Upgraded 8.0Ah Replacement for Ryobi 18V Battery Compatible with",
-              "brand": null,
-              "price": 46.99,
-              "reviews": 227
             }
           ],
           "hdPrice": 149
@@ -34135,13 +33804,6 @@
       "brand": "RYOBI",
       "model": "PBP004",
       "reason": "title begins TTI Ryobi (TTI makes RYOBI), brand field empty"
-    },
-    {
-      "id": "match:RYOBI:PBP2003",
-      "kind": "match",
-      "brand": "RYOBI",
-      "model": "PBP2003",
-      "reason": "title says a pack of 2, and a RYOBI model number does not say the part's pack size"
     },
     {
       "id": "match:RYOBI:PCL265B",

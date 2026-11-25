@@ -121,13 +121,9 @@ describe('answer once', () => {
     };
     for (const [m, q] of [['PCL406424SB', 'ryobi pcl406424sb'], ['A21701', 'ryobi a21701'], ['A25RS51', 'ryobi a25rs51']] as const) await store.putPartPrice(reading(m, q));
     const bundle = (await store.getBundle('homedepot:335724135'))!;
-    expect(readSplit(bundle, await knownModels(store)).unsettledParts?.map((u) => u.model)).toEqual(['PCL406424SB', 'A25RS51']);
+    // Nov 24 (rule B): A25RS51, which Home Depot does not sell alone, is a part by the bundle page's own Includes line.
+    expect(readSplit(bundle, await knownModels(store)).unsettledParts?.map((u) => u.model)).toEqual(['PCL406424SB']);
     await putFact(store, 'RYOBI', 'PCL406424SB', 'sellAs', { at: NOW, bundle: 'PCL406424SB-A21701-A25RS51' }, ['PCL406B', 'PCL424B']);
-    // Only one of the two asked parts settled: still a question, now about A25RS51 alone.
-    const half = readSplit(bundle, await knownModels(store));
-    expect(half.status).toBe('needs_review');
-    expect(half.unsettledParts?.map((u) => u.model)).toEqual(['A25RS51']);
-    await putFact(store, 'RYOBI', 'A25RS51', 'isPart', { at: NOW, bundle: 'PCL406424SB-A21701-A25RS51' });
     const whole = readSplit(bundle, await knownModels(store));
     expect(whole).toMatchObject({ status: 'resolved', components: ['PCL406B', 'PCL424B', 'A21701', 'A25RS51'] });
     // Sold whole instead: the special buy stays one part.
