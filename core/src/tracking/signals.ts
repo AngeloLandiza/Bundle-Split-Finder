@@ -12,10 +12,13 @@
 // sent to the owner (`BundleSignals.announce`) is a deal entering the state, or one already in it rising by at least
 // ANNOUNCE_MARGIN_DOLLARS over the figure he was last told, as the baseline (last check, 7-day average) sees it too.
 
+import { sellerFails, type SellerLookup } from '../amazon/seller';
 import type { PartTrend } from '../keepa/trends';
 import { fulfillmentGap } from '../scan/report';
+import { cannotBuyWords } from './buying';
 import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption, VerifiedBy } from '../scan/types';
 import { DEFAULT_MIN_MONTHLY_SOLD, estimateRoiPercent, type AlertSettings } from '../settings';
+import { optionMarket, todayOnlyVerdict, usualFailWords, usualHoldsWords, type OptionMarket } from './market';
 
 /** A part's stored Keepa trend by ASIN (keepa:trend:<asin> in the cache). */
 export type TrendLookup = (asin: string) => PartTrend | undefined;
@@ -302,6 +305,11 @@ export interface OptionSignals {
    * "No sales data for DCS382B yet — Keepa is asked on the next lookup."); null when it is.
    */
   notBuyNow: string | null;
+  /**
+   * The market around each counted part's listing (core/src/tracking/market.ts), from the stored Keepa trends, and the
+   * estimate at the usual prices when a part is unusually priced. Absent when no counted part has market figures stored.
+   */
+  market?: OptionMarket;
 }
 
 export interface BundleSignals {
@@ -357,6 +365,12 @@ export interface SignalInput {
    * never announced or has left the state since. Without it a buy is news.
    */
   announced?: { profit: number; at: number };
+  /**
+   * Nov 25: the owner's Amazon seller account, when one is connected (core/src/amazon/seller.ts). Then every counted part
+   * must be allowed to list and eligible for FBA (or shipped by him), and a part not checked yet keeps the deal from Buy
+   * now. Absent (no account): nothing changes.
+   */
+  seller?: SellerLookup;
 }
 
 const SECTION_WORDS: Record<ReportSection, string> = {
@@ -393,6 +407,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
   }
   const firstSeen = confirmed && history.length === 0;
 
+  const cannotBuy = cannotBuyWords(row.buying, now);
   const options: OptionSignals[] = [];
   const buys: Signal[] = [];
   const pendings: { optionId: string; listings: number; asins: string[]; profit: number }[] = [];
@@ -410,6 +425,9 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       monthlySold: velocity.slowest?.monthlySold ?? null,
     };
     const meets = profit !== null && roi !== null && profit >= alerts.minProfit && roi >= alerts.minRoiPercent;
+    // The market (Nov 25): a part counted at a price unusual for its listing is judged at its 90-day average too.
+    const market = optionMarket(o, input.trend, alerts);
+    const usual = market?.usual ?? null;
     const lastP = baseline.last?.profit ?? null;
     const lastR = baseline.last?.roiPercent ?? null;
     const thresholds = `your ${usd(alerts.minProfit)} and ${pct(alerts.minRoiPercent)} thresholds`;
@@ -453,6 +471,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     // Signals round 2: every condition that fails, the binding one first, in one sentence (rule 5: estimates). Nov 25: no
     // "needs a change" among them: a deal that stays good stays worth buying (the announcement is what needs a change).
     const fails: string[] = [];
+    const account: string[] = [];
     if (row.section !== 'confirmed') fails.push(`not confirmed yet: ${SECTION_WORDS[row.section]}`);
     else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
     else {
@@ -461,6 +480,8 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       } else if (roi < alerts.minRoiPercent) {
         fails.push(`est. ROI ${pct(roi)} is below your ${pct(alerts.minRoiPercent)} (profit ${usd(profit)})`);
       }
+      // Rule 1 of the market: a buy clears the owner's numbers at today's prices and at the usual ones.
+      if (meets && usual !== null && !usual.meets) fails.push(usualFailWords(usual, alerts));
       // Signals round 3: an estimate missing a fulfillment fee is never a buy (a profit already below the number binds first).
       const before = beforeFulfillmentWords(o.parts, input.flatFee ?? 0, input.keepa);
       if (before !== null) fails.push(before);
@@ -476,18 +497,25 @@ export function bundleSignals(input: SignalInput): BundleSignals {
         if (velocity.parts.length === 0) fails.push('no sales data: this way to sell has no parts yet');
         else if (missing.length > 0) fails.push(noSalesWords(missing, input.keepa));
       }
+      // Nov 25: what his own Amazon account says about each part (may he list it, will FBA take it). Said after his
+      // numbers, the usual-price rule, the listings' confirmation and the holds (below).
+      if (input.seller) account.push(...sellerFails(o.parts, input.seller, now));
     }
     // Buy safety (Nov 23): a buy never rests on a listing nobody confirmed. When the estimate meets the owner's numbers, that
     // is the binding condition and is said first; otherwise after what fails. A buy held back only for its listings stays
     // pending from scan to scan.
-    const pending = pendingAsins.length > 0 && fails.length === 0;
+    const pending = pendingAsins.length > 0 && fails.length === 0 && account.length === 0;
     if (pendingAsins.length > 0) {
       if (meets) fails.unshift(unconfirmedWords(pendingAsins.length));
       else fails.push(unconfirmedWords(pendingAsins.length));
     }
+    fails.push(...account);
     // A sanity hold binds first: the deal waits for the owner's look, whatever else holds or fails. A buy held back for its
     // listings keeps its buyPending (the catalog check still reads those listings first), but is never "looks worth buying".
     if (input.held) fails.unshift(`needs a look: ${input.held.replace(/\.$/, '')}`);
+    // Nov 25: Home Depot's own page, as last read, says it cannot be bought (not buyable, or discontinued). It comes back by
+    // itself when a later read says it can. A bundle whose page was not read since this was kept is not here: not checked yet.
+    if (cannotBuy !== null) fails.unshift(cannotBuy);
     const notBuyNow = fails.length > 0 ? `${capital(fails.join('; '))}.` : null;
     const buyNow = notBuyNow === null;
     if (buyNow) {
@@ -508,17 +536,22 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       ...(pending ? { buyPending: { listings: pendingAsins.length, asins: pendingAsins } } : {}),
       ...(pendingAsins.length > 0 ? { unconfirmed: pendingAsins } : {}),
       notBuyNow,
+      ...(market ? { market } : {}),
     });
     const figures = () => `+${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month`;
     // The state in the present tense; how it moved since the last check is information, never the reason.
     const moved = buyNow && lastP !== null && Math.abs(profit! - lastP) >= 0.005 && (profit! < lastP || whyShort === '')
       ? `. ${profit! < lastP ? 'Down' : 'Up'} from ${usd(lastP)} at the last check`
       : '';
+    // Held back by its usual prices alone: it says so in those words, not as "not worth buying".
+    const todayOnly = !buyNow && usual !== null && !usual.meets && fails.length === 1 && fails[0] === usualFailWords(usual, alerts);
     verdicts.set(o.id, buyNow
-      ? `Worth buying now: ${figures()}${whyShort ? `, ${whyShort}` : ''}${moved}`
-      : pending && !input.held
-        ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
-        : `Not worth buying now: ${fails.join('; ')}`);
+      ? `Worth buying now: ${figures()}${whyShort ? `, ${whyShort}` : ''}${moved}${usual ? `. ${usualHoldsWords(usual)}` : ''}`
+      : todayOnly
+        ? todayOnlyVerdict(usual, alerts)
+        : pending && !input.held && cannotBuy === null
+          ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
+          : `Not worth buying now: ${fails.join('; ')}`);
   }
   const best = buys.reduce<Signal | null>((a, b) => (a === null || (b.numbers.profit ?? 0) > (a.numbers.profit ?? 0) ? b : a), null);
   const held = best === null ? pendings.reduce<(typeof pendings)[number] | null>((a, b) => (a === null || b.profit > a.profit ? b : a), null) : null;

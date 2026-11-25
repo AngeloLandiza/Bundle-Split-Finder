@@ -142,8 +142,9 @@ describe('one scan on the real second scan’s data, 57 Keepa tokens', () => {
     const { job, numbers, serpCalls, keepaCalls, tokens, budget, looked, estimated, backwards } = await scanWith(18);
     expect(backwards).toEqual([]);
     // The recorded numbers: 53 bundles; 29 with every part looked up, and estimated; 4 lookups on Keepa, 18 on SerpApi,
-    // 10 waiting for Keepa tokens (3 of them the parts of the 3 splits the part prices settled); 12 part prices read.
-    expect(numbers).toMatchObject({ bundles: 53, everyPartLookedUp: 29, estimated: 29, waiting: 10, partPricesRead: 12, lookupsAfterPrices: 0 });
+    // 10 waiting for Keepa tokens (3 of them the parts of the 3 splits the part prices settled); 13 part prices read (12
+    // before Nov 25's rule G, which reads DCKTS681D1P1W34 as DCKTS681D1P1 + DCS334B: one more part to read).
+    expect(numbers).toMatchObject({ bundles: 53, everyPartLookedUp: 29, estimated: 29, waiting: 10, partPricesRead: 13, lookupsAfterPrices: 0 });
     expect(numbers.steps).toEqual([
       'hdPages:skipped (none found)', 'bundlePages:skipped (none found)', 'kitPages:done', 'amazon:done (4 Keepa, 18 searches, 10 wait)',
       'partPrices:done', 'ebay:skipped (not in this run)', 'judge:skipped (not in this run)', 'finish:done',

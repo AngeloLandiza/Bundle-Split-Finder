@@ -2,7 +2,7 @@
 // the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse } from '@core/api/contract';
+import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse, TelegramChatResponse, TelegramChatSaveResponse } from '@core/api/contract';
 import type { CostSettingsPatch } from '../lib/costs';
 import { createHttpClient } from './http';
 import type {
@@ -95,6 +95,8 @@ export interface ApiClient {
   reloadHelper(): Promise<void>;
   /** Closes the new-version notice for this version, for good (POST /api/update/dismiss). */
   dismissUpdate(version: string): Promise<void>;
+  /** Closes the notice that Open at login was turned on for the schedule; `turnOff` also turns it off (POST /api/self-run/login-notice). */
+  answerLoginNotice(turnOff: boolean): Promise<void>;
   stop(): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;
@@ -116,6 +118,8 @@ export interface ApiClient {
   priceFromLink(url: string): Promise<PriceFromLinkResponse>;
   /** Removes the confirmed price (DELETE on the same path). */
   removePrice(dealId: string, model: string): Promise<void>;
+  /** Nov 25: he ships this listing himself, or no longer (POST /api/seller/self-ship/:asin); FBA's answer then does not hold the deal. */
+  setSelfShip(asin: string, selfShip: boolean): Promise<void>;
 
   settings(): Promise<AppSettings>;
   patchSettings(patch: SettingsPatch): Promise<AppSettings>;
@@ -132,6 +136,12 @@ export interface ApiClient {
   testNotification(): Promise<void>;
   /** Sends one test message to the saved Telegram bot and chat (POST /api/notify/test-telegram). `problem` is Telegram's refusal in plain words. */
   testTelegram(): Promise<{ ok: boolean; problem?: string }>;
+  /** A bot saved without its chat: the private chats that wrote to it, for the owner to choose (GET /api/telegram/chat). */
+  telegramChat(): Promise<TelegramChatResponse>;
+  /** Saves the chosen chat and sends the test message (POST /api/telegram/chat). */
+  useTelegramChat(chatId: string): Promise<TelegramChatSaveResponse>;
+  /** Takes back something done from Telegram (POST /api/telegram/actions/:id/undo). */
+  undoTelegramAction(id: string): Promise<void>;
 
   /** Chrome's pairing requests waiting for the owner, newest last. */
   pairRequests(): Promise<PendingPairRequest[]>;

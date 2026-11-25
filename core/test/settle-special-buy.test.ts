@@ -41,7 +41,9 @@ describe('rule 2 with a special buy among the parts', () => {
     const store = await loadScanFolder('fixtures/e2e-2026-11-23/after-scan3');
     for (const [m, q] of [['PCL406424SB', 'ryobi pcl406424sb'], ['A21701', 'ryobi a21701'], ['A25RS51', 'ryobi a25rs51']] as const) await store.putPartPrice(readingOf(m, q));
     const bundle = (await store.getBundle(BUNDLE))!;
-    const split = readSplit(bundle, await knownModels(store));
+    // Nov 25, rule F off: what this question was before it (core/test/questions-round2.test.ts has it on).
+    const known = await knownModels(store);
+    const split = readSplit(bundle, { ...known, settle: { ...known.settle, off: ['special_buy_twin'] } });
     expect(split.status).toBe('needs_review');
     expect(split.waitingFor).toBeUndefined();
     expect(split.notes).toContain('Home Depot sells PCL406424SB as a special buy, itself a bundle, so the parts it holds are asked');
@@ -55,6 +57,19 @@ describe('rule 2 with a special buy among the parts', () => {
     ]);
     // The reading offered stays the model number's three parts.
     expect(split.alternatives).toEqual([['PCL406424SB', 'A21701', 'A25RS51']]);
+  });
+
+  it('Nov 25, rule F: Home Depot sells the same set as PCL424B-PCL406B, so it waits for PCL406B\'s reading, then is PCL406B + PCL424B with the accessories', async () => {
+    const store = await loadScanFolder('fixtures/e2e-2026-11-23/after-scan3');
+    for (const [m, q] of [['PCL406424SB', 'ryobi pcl406424sb'], ['A21701', 'ryobi a21701'], ['A25RS51', 'ryobi a25rs51']] as const) await store.putPartPrice(readingOf(m, q));
+    const bundle = (await store.getBundle(BUNDLE))!;
+    // PCL424B was read in scan 3; PCL406B was not: a free read, so no question.
+    expect(readSplit(bundle, await knownModels(store)).waitingFor).toEqual(['PCL406B']);
+    // The same recorded search ("RYOBI PCL406424SB") shows PCL406B sold by itself.
+    await store.putPartPrice(readingOf('PCL406B', 'ryobi pcl406424sb'));
+    const split = readSplit(bundle, await knownModels(store));
+    expect(split).toMatchObject({ status: 'resolved', components: ['PCL406B', 'PCL424B', 'A21701', 'A25RS51'] });
+    expect(split.evidence?.[0]).toMatchObject({ kind: 'hd_same_title', url: expect.stringContaining('/324615781') });
   });
 
   it('a special buy found on Home Depot is never settled as one part (the key splits PCL500525SB and PSK1212SB into their contents)', () => {

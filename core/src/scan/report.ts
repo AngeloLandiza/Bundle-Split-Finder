@@ -5,6 +5,7 @@ import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, typ
 import { isBulkPackaging } from '../match';
 import { priceForNet, type BundleResult, type FeeSettings, type ListingFees } from '../money';
 import type { PartTrend } from '../keepa/trends';
+import type { AmazonFeeRecord } from '../amazon/seller';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { kitCatalog, type KitPageTarget, kitPageTargets } from './kitPage';
@@ -62,6 +63,7 @@ interface RefsOf {
   confirmed(brand: string, model: string): ConfirmedPrice | undefined;
   /** Signals round 2: Keepa's stored figures for a listing (keepa:trend:<asin>), when the caller read them. */
   trend(asin: string): KeepaFees | undefined;
+  amazonFees: AmazonFeesLookup;
   /** Answer once (Nov 23): what the owner settled about this model (its own key only: a fact is about that model). */
   fact(brand: string, model: string): PartFact | undefined;
 }
@@ -73,7 +75,15 @@ export type KeepaFees = Pick<PartTrend, 'fbaFee' | 'referralPercent'> & Partial<
 export interface ReportOptions {
   /** A listing's stored Keepa trend (core/src/keepa/trends.ts readTrends), or undefined. */
   trend?: (asin: string) => KeepaFees | undefined;
+  /**
+   * Nov 25: Amazon's fee estimate for the owner's account for a listing at a price (core/src/amazon/seller.ts feesAtPrice),
+   * or undefined. Absent (no seller account connected): every estimate is exactly as without it.
+   */
+  amazonFees?: AmazonFeesLookup;
 }
+
+/** Amazon's fee estimate for `asin` read at exactly `price`, or undefined. */
+export type AmazonFeesLookup = (asin: string, price: number) => Pick<AmazonFeeRecord, 'at' | 'total' | 'referral' | 'other'> | undefined;
 
 async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsOf> {
   const hdByKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
@@ -95,6 +105,7 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
     ebayListings: (brand, model) => first(ebayListed, brand, model),
     confirmed: (brand, model) => confirmedByKey.get(partKey(brand, model)),
     trend: (asin) => opts.trend?.(asin),
+    amazonFees: (asin, price) => opts.amazonFees?.(asin, price),
     fact: (brand, model) => factByKey.get(partKey(brand, model)),
   };
 }
@@ -109,8 +120,17 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
  * fulfillment for that part instead of mixing a $0 into it. Referral: Keepa's percentage only with referralSource 'keepa'.
  * Never a figure from another listing (rule 4).
  */
-export function feesOf(fees: FeeSettings, listing: KeepaFees | 'confirmed' | undefined): PartFees {
+export function feesOf(fees: FeeSettings, listing: KeepaFees | 'confirmed' | undefined, amazon?: { price: number; fees: Pick<AmazonFeeRecord, 'at' | 'total' | 'referral' | 'other'> }): PartFees {
   const trend = listing === 'confirmed' ? undefined : listing;
+  // Nov 25: Amazon's own estimate for his account at this price, in place of Keepa's figures (both fees), with Keepa's FBA
+  // fee kept beside it. Only where the settings take Amazon's FBA fee: a flat fulfillment choice stays his.
+  if (amazon && listing !== 'confirmed' && fees.fulfillmentSource === 'keepa' && amazon.price > 0) {
+    const a = amazon.fees;
+    return {
+      fulfillment: a.other, fulfillmentFrom: 'amazon', referralRate: a.referral / amazon.price, referralFrom: 'amazon',
+      amazon: { total: a.total, referral: a.referral, other: a.other, at: a.at, keepaFulfillment: typeof trend?.fbaFee === 'number' ? trend.fbaFee : null },
+    };
+  }
   const ref = fees.referralSource === 'keepa' && typeof trend?.referralPercent === 'number' && trend.referralPercent > 0 && trend.referralPercent < 100
     ? Math.round(trend.referralPercent * 100) / 10_000
     : null;
@@ -126,7 +146,7 @@ export function feesOf(fees: FeeSettings, listing: KeepaFees | 'confirmed' | und
 const ownFees = (f: PartFees | undefined): ListingFees | undefined =>
   !f || (f.fulfillmentFrom === 'flat' && f.referralFrom === 'flat')
     ? undefined
-    : { ...(f.fulfillmentFrom !== 'flat' ? { fulfillmentFee: f.fulfillment } : {}), ...(f.referralFrom === 'keepa' ? { referralRate: f.referralRate } : {}) };
+    : { ...(f.fulfillmentFrom !== 'flat' ? { fulfillmentFee: f.fulfillment } : {}), ...(f.referralFrom !== 'flat' ? { referralRate: f.referralRate } : {}) };
 
 /**
  * Signals round 3: the counted parts an estimate has no fulfillment fee for ('none'), of all its counted parts. Empty
@@ -228,7 +248,10 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
     const featured = prices.find((o) => o.kind === 'amazon_new' && !o.reference);
     const confirmedOpt = prices.find((o) => o.kind === 'confirmed' && !o.reference);
     // The fees of a counted price: Keepa's for the listing whose Amazon New price counts, the flat settings for a confirmed one.
-    const fees = featured && match?.asin ? feesOf(settings.fees, refs.trend(match.asin)) : confirmedOpt ? feesOf(settings.fees, 'confirmed') : undefined;
+    const amazonFees = featured && match?.asin ? refs.amazonFees(match.asin, featured.price) : undefined;
+    const fees = featured && match?.asin
+      ? feesOf(settings.fees, refs.trend(match.asin), amazonFees ? { price: featured.price, fees: amazonFees } : undefined)
+      : confirmedOpt ? feesOf(settings.fees, 'confirmed') : undefined;
     // Answer once (Nov 23): what he settled about the model, unless newer evidence contradicts it (facts/fact.ts staleness).
     const fact = refs.fact(brand, model);
     const stale = fact ? staleness(fact, { hd: refs.hd(brand, model), ...(price ? { amazon: price } : {}) }) : null;
@@ -542,6 +565,7 @@ async function bundleRow(
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
+    ...(b.buying ? { buying: b.buying } : {}),
     answer: ownerAnswer(question, b.split ?? null),
     // Fix round 3: a Home Depot set ("Set · 5 items"): it has no model number.
     ...(b.set ? { setItems: b.set.items.reduce((n, i) => n + i.quantity, 0) } : {}),
@@ -730,6 +754,18 @@ function fulfillmentWords(fees: FeeSettings, counted: { model: string; qty: numb
  */
 export function estimateBasis(fees: FeeSettings, parts: Pick<PartRow, 'model' | 'qty' | 'fees'>[]): string {
   const counted = parts.filter((p): p is typeof p & { fees: PartFees } => p.fees !== undefined);
+  // Nov 25: parts with Amazon's own fee estimate for his account are said first, with the day it was read; the others as before.
+  const amazon = counted.filter((p) => p.fees.fulfillmentFrom === 'amazon' && p.fees.amazon !== undefined);
+  if (amazon.length > 0) {
+    const day = new Date(Math.min(...amazon.map((p) => p.fees.amazon!.at))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const each = amazon.map((p) => perUnit(basisUsd(p.fees.amazon!.total), p.qty)).join(', ');
+    const head = `Amazon's fee estimate for your account, read ${day}`;
+    const rest = counted.filter((p) => !amazon.includes(p));
+    if (rest.length === 0) {
+      return `${head}, for ${counted.length === 1 ? 'the 1 part' : `all ${counted.length} parts`} (referral and FBA: ${each}); ${basisPct(fees.salesTaxRate)} tax; ${basisUsd(fees.inboundCost)} inbound. An estimate, not your real Amazon fees.`;
+    }
+    return `${head}, for ${basisList(amazon.map((p) => p.model))} (referral and FBA: ${each}); for the others: ${estimateBasis(fees, rest)}`;
+  }
   const keepaFba = fees.fulfillmentSource === 'keepa';
   const keepaRef = fees.referralSource === 'keepa';
   const minRef = `(at least ${basisUsd(fees.minReferral)})`;

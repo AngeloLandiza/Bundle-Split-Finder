@@ -34,7 +34,7 @@ export function WatchBar({ d }: { d: DealDetail }) {
   // Outcomes: I bought this, and what he already recorded for this deal.
   const [outcomes] = useResource(() => api.outcomes(), [], ['deals']);
   const mine = (outcomes.data?.purchases ?? []).filter((p) => p.dealId === d.id);
-  const buy = () => ui.openPurchase({ mode: 'new', dealId: d.id, title: d.title, model: d.model, price: d.price, estimate: d.estimate?.profit ?? null });
+  const buy = () => ui.openPurchase({ mode: 'new', dealId: d.id, title: d.title, model: d.model, price: d.price, estimate: d.estimate?.profit ?? null, limit: d.buying?.limit ?? null });
   const pick = (id: string) => {
     switch (id as DetailMenuId) {
       case 'lookup':

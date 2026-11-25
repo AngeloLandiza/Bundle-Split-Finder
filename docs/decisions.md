@@ -1928,6 +1928,426 @@ re-checked every two hours every good deal lost its verdict at the first re-chec
   sentences now name the failing condition; `signalsPass.test.ts`'s restart case clears `announced` with `notified` (it
   stands for a buy never sent).
 
+## Nov 25: acting from Telegram, and finding the chat
+
+The owner wants to act from his phone without opening the app (approved Nov 25). `agent/telegramBot.ts`.
+
+- **Reading**: long polling of `getUpdates` (timeout 50 s), one reader, backoff 5 s, 15 s, 1 min, then 5 min. It runs only while a
+  bot is saved and "Let me act from Telegram" is on (default off, an existing install too), or while a token waits for its chat.
+  It follows every change to the keys and the settings, and stops at once when either goes. A token Telegram refuses (401/404)
+  stops it until the key changes. The `offset` is stored before an update is handled, so nothing is handled twice across a
+  restart (at most once: an update lost in a crash is a press the owner repeats).
+- **No webhook**: a webhook needs an address on the internet that Telegram can reach, so a port opened on the owner's computer
+  or a relay we would run. Long polling opens nothing: the agent still listens only on 127.0.0.1.
+- **Who can send**: anyone can write to a bot. Only an update whose chat is the saved chat id, a private chat, from that same
+  user and not a bot, is acted on; anything else gets no answer and one developer line. A free-text message never answers
+  a question. A command older than an hour (the computer slept) is not acted on.
+- **Buttons**: each callback is `sf:` and 16 random characters the agent issued and stored with what it does and an expiry
+  (48 h; a confirm 15 min; an Undo 24 h). A press spends it and its message's other buttons before anything is done, and the
+  message is edited to the result, so a replay, a double tap, a restart or a forged id does nothing. The callback holds no
+  meaning of its own: forging one requires guessing a stored id.
+- **What a press does is the app's own code**: the purchase through `OutcomeBook.record` (after one more "Yes"; the estimate
+  frozen), an answer through `work.answerRemembering` with the question's signature from when it was sent (the same check
+  refuses a question that changed), Undo through `undoAnswer` and `OutcomeBook.undo`, pause and resume through the routes' own
+  functions, Scan now through `work.scanNow`, Not for me through `setWatch` (Unwatch). A resume is refused from the phone when
+  the app paused itself for a problem: resuming acknowledges it, so he reads it in the app first.
+- **The reserve**: a scan never spends it (only Look up's explicit yes does). Scan now from the phone starts at once only
+  when the last account check this month is at or below the reserve; otherwise (or with no check this month) it says what it
+  may spend, at most the per-scan cap and what lies above the reserve, and waits for "Yes". The cost blocker holds inside the
+  scan as for the app's button.
+- **What a stolen token could do**: read and answer the bot's chat. It could not act here: the agent acts only on the saved
+  chat's own user, and the button ids are on the owner's computer. It could take updates before the agent does (Telegram
+  allows one reader: the agent's reads would fail with 409 and back off), so the owner's presses would be lost, and it could
+  send him messages as the bot. It cannot reach the agent, the keys or the computer. Replace the token in BotFather.
+- **What a stolen phone could do**: what the buttons do (record a purchase, answer a question, pause, Scan now within the
+  reserve rule, unwatch), each with Undo in Activity. Nothing changes a key, a limit, a budget, the reserve or a setting.
+- **Activity**: an answer and a purchase are in their own lists, their sentence saying "from Telegram"; pause, resume, Scan now
+  and Not for me are in "From Telegram" with Undo where the app has one (`POST /api/telegram/actions/:id/undo`).
+- **Which messages carry buttons**: the scan's digest (its top Buy now deal, Pause or Resume, Scan now), up to two further
+  Buy now deals and three new questions as their own messages, the digest between scans (its Buy now deals), and a cost
+  message (Open Costs). The morning digest goes as text (the held texts are merged; `/status` has the rest).
+- **Finding the chat** (the PO on Windows cannot run `npm run telegram:setup`): the chat id may be left empty at save. The
+  reader then collects the private chats that write to the bot (chatIn's rule), acts on nothing and answers nothing, and the
+  app offers each by name for one explicit "Use this chat"; two chats are both listed and neither is picked, since anyone who
+  finds the bot could write first. The choice must be a chat that wrote to this token (a hash of the token tags the list);
+  then the key is checked and the test message sent.
+
+## Nov 25: the market around a listing (usual prices, Amazon selling, crowding, stock, hazards)
+
+On Nov 23 PSK1212SB-PCL515B was Buy now at +$43.19 with PCL515B counted at $79.99; two days later Amazon's price was $53.00
+and the deal $16.73. Keepa's own record of the listing (`fixtures/keepa/stats-sample-2026-11-25.json`, the stats=180
+records of all 83 listings the owner's app counts) already said its 90-day average New price was $61.12. Every rule below
+was measured on those 83 records before it was adopted; the counted prices are the owner's stored ones (after-keepcurrent
+for Nov 25, after-scan6 for Nov 23). On the Nov 23 deals the Nov 25 averages stand for what Keepa said two days earlier.
+
+- **What a pull keeps** (`keepa/parse.ts marketOf`, `trends.ts TrendMarket`): from the stats every pull already asks for (no
+  extra call, no token) the 30/90/180-day average New price (the lowest New offer's, else Amazon's own, as suggested prices
+  read them), Amazon's own current offer (`stats.current[0]`), `buyBoxIsAmazon`, the New offer count now and over 90 days
+  (CsvType 11), the share of the last 90 days with no New offer (`outOfStockPercentage90[1]`) and `hazardousMaterials` when
+  it names a UN number. **Empty in the recordings and not used:** `offerCountFBA` / `offerCountFBM` / `buyBoxPrice` /
+  `buyBoxShipping` / `retrievedOfferCount` / `tradeInPrice` (all -2: offers were not requested), every `buyBoxIs*` but
+  `buyBoxIsAmazon`, `buyBoxCondition`, `lastBuyBoxUpdate`, `sellerIdsLowestFBA/FBM` (null in 83 of 83). `buyBoxIsAmazon`
+  is never false: true in 20, null in 63, so null is "not stated". Stored trends from before get the figures once at start
+  from the Keepa answers already in the cache (`agent/marketBackfill.ts`, `keepa-market-backfill` in runtime.migrations),
+  and the start's refresh judges the stored deals again: no scan, nothing spent.
+- **Rule 1, a price unusual for the listing** (`tracking/market.ts UNUSUAL_ABOVE_AVG90` 20%). Counted price against its
+  90-day average, the 76 listings with both: minimum -51%, 10th percentile -17%, quartiles -10% / -4% (median) / +3%,
+  90th +9%, 95th +26%, maximum +100%. Above +13% (DCS380B) the next is +22% (DCG407B) on Nov 25; on the Nov 23 prices the
+  gap is +13% to +25%. The six at or above 20% on Nov 25: DCG407B 22%, DWHT16862 25%, DCS334B 26%, DCS382B 40%, DCF630B
+  56%, PCG002 100% (PCL515B was 31% on Nov 23). All six count Amazon's own offer while the lowest New offer averages far
+  below it (PCG002: Amazon $34.97, New $16.99 now, $17.47 over 90 days). The 30- and 180-day averages agree
+  on all but DWHT16862 (180 days: 14%), so the 90-day one decides and the other two are shown. When a part is unusual the
+  way to sell is estimated a second time with that part at its 90-day average and the same fees (`optionMarket`: today's
+  estimate plus each unit's change in net, `amazonNet` with the part's own referral and FBA fee; the setting's minimum
+  referral at its $0.30 default, which binds only below $2), and it is Buy now only when it clears the owner's numbers at
+  both. A part with no 90-day average says "No price history yet" and today's rule holds (none of the 76 priced listings
+  lacks one; the 7 without are all unpriced).
+- **Rule 2, Amazon sells it** (`stats.current[0]` set, or `buyBoxIsAmazon` true): 32 of 83. A note only ("Amazon sells this
+  itself at $34.97: hard to win sales against"): the records hold no sales outcome to say it costs him the sale, so it
+  informs, as the brief's default.
+- **Rule 3, crowding and stock** (notes): New offers now against their 90-day average, 76 with both: median 1.00x, 75th
+  1.26x, 90th 1.66x, maximum 3.2x. Said when at least 2x and at least 10 more sellers (`CROWD_RATIO`, `CROWD_MIN_ADDED`):
+  of the 12 at 2x, five are 1 to 2 (twice), 1 to 3, 4 to 11 and 6 to 14; the seven left grew by 24 to 50 (PCL515B 33 to 74,
+  PCL633B 14 to 43). Out of stock (no New offer) over 90 days: 70 of the 76 priced listings at 0%, three at 1-2%, then
+  DCS380B 17% and A98401 / RHMTS12601 54%; said at 10% or more (`OUT_OF_STOCK_NOTABLE`).
+- **Rule 4, dangerous goods** (notes, never a hold): 17 records carry `hazardousMaterials`; 16 name a UN number: UN3480
+  (lithium-ion batteries: DCB205, DCB606, PBP002-PBP006, PBP2003, FVB03), UN3481 / UN3481b (packed with equipment: DCK240C2,
+  DW089LG, DCK225D2, PCL1201K2, DCK540D1), UN9998 (dry batteries: DW0100, ESF5002). FVB02's only entry is a class "0", no
+  UN number: no note. A lithium entry gets "Lithium battery (UN3480): Amazon treats it as dangerous goods; check it is
+  approved in your FBA account before buying." (packed with equipment says so); another gets the record's own words. No
+  claim about fees or his approval.
+- **Where it shows**: `OptionSignals.market` (per part: the counted price, the three averages, when Keepa read them, the
+  notes; the usual-price estimate), `DealDetail.market` (the primary way to sell's), the inspector's **Market** fold under
+  the parts, and the verdict: "Worth buying now at today's prices only: at the 90-day average of $17.47 for PCG002 it is
+  +$8.48 (9% ROI), below your $20 and 20%. Not marked Buy now." (the row's line; the inspector's headline "Worth buying at
+  today's prices only"). A Buy now deal with an unusual part adds "At the 90-day average of $17.47 for PCG002 it is still
+  +$20.80 (21% ROI)". Leaving the state names the condition ("is no longer worth buying: at the 90-day average …"). The
+  stored signal is judged again when the market's flags change (`state.ts verdictKey`, `marketKey`).
+- **Replay** (`core/test/market.test.ts`): after scan 6, Buy now 3 → 1 (PCL031B and PCL515B leave: PCL515B at +$12.28,
+  12% ROI, with PCG002 at $17.47 and PCL515B at $61.12; PCL031B at the usual price of PCG002; PCL633B stays at +$23.92,
+  24%). After the keep-current re-check, 2 → 1 (PCL031B at +$8.48; PCL633B stays at +$20.80, 21%). So the rule would have
+  kept PSK1212SB-PCL515B off Buy now on Nov 23, mostly through PCG002 (the charger counted at Amazon's own $34.97, double its
+  New average); PCL515B alone at $61.12 would have left +$27.15, still above $20.
+- **The sanity audit's "too good" check is unchanged**: the usual-price estimate is never above today's, so it could only
+  clear a hold; the one recorded `too_good` hold (PCL702B on a two-vacuum listing, ROI 107%) is a wrong listing that must
+  stay held. Not adopted.
+- *Not done:* the counted price itself stays Amazon's own offer when Amazon sells (`parse.ts amazonCentsFromStats`); the
+  market makes the gap to the New average visible and judges both, it does not change which price counts. *For v2:* with
+  sales outcomes recorded (Outcomes), measure whether "Amazon sells it" or crowding predicts a slow sale before letting
+  either hold a buy.
+## Nov 25: running without the owner (Chrome, open at login, the weekly summary)
+
+The owner scheduled a daily 7:00 scan and wants it to run without him. Home Depot's pages are read through his own Chrome and
+the Split Finder helper, so a scan at 7:00 with Chrome closed had nothing to read them with and waited (agent/scanSource.ts
+`scheduledScanWaits`), for ever if he did not open it. What was decided, and why:
+
+- **The app starts his ordinary Chrome, and nothing else** (`agent/openChrome.ts`; rules in `core/src/selfRun/chrome.ts`).
+  macOS: `open -g -a "Google Chrome"` (starts it, or leaves a running one alone, without taking focus). Windows: the
+  installed `chrome.exe` found from the registry's App Paths key (HKLM, then HKCU), else the standard install folders,
+  started minimised with `start "" /min` through cmd.exe with every word quoted as `scripts/spawn-tool.ts` does (a path with
+  a `%` or `"` is refused, not escaped). No profile flag, no automation or remote-debugging flag, no headless or hidden
+  window, no new profile: **Home Depot must see an ordinary browser and nothing is disguised.** A hidden or automated
+  browser would be a different thing from the one the owner uses (and it would not have his helper). It is also why the
+  app waits for the helper to connect instead of driving the page itself.
+- **No Rust.** The agent is a Node sidecar and may start a process (as `keepAwake.ts` already does), so there is no shell
+  command and no capability to add. The shell re-reads settings when `settingsAt` moves, which is how "open at login" reaches
+  it (`get_launch_at_login` / `set_launch_at_login` are unchanged).
+- **When**: five minutes before a scheduled scan is due (at once for a catch-up), and once a day when Home Depot pages have
+  waited an hour with Chrome closed and Home Depot has not paused reading. Never when the helper is connected, never when
+  the schedule is manual, the agent paused, or a run is working, and **at most one try per scan** (the try is kept in
+  `runtime.selfRun.chrome`, so a restart does not try again). The wait for the helper is four minutes; after it, or at once
+  if Chrome would not start, the scan does what needs no Home Depot page and says so once ("Chrome did not open, so Home
+  Depot pages wait." / "Chrome opened, but the Split Finder helper did not connect, so Home Depot pages wait."). The
+  scan's own "No new bundles ... Chrome is closed" is left out of that summary so it is said once. With the setting off the
+  old rule holds: the scan waits for Chrome.
+- **Closing**: a setting, default off. Only a Chrome the app started (none was running when it started it, `pgrep` /
+  `tasklist`) is ever quit, once, after the scan it was started for, and not while anything runs or a read waits. macOS
+  quits it politely with `osascript`; Windows runs `taskkill /IM chrome.exe` without `/F`. Quitting is the whole Chrome,
+  which is why it is opt-in and says "only if Split Finder opened it".
+- **No power settings.** A sleeping computer cannot scan and the app does not try to change that: no `pmset`, no wake
+  timer, no scheduled task. Changing a machine's power policy is the owner's to do, and a wake timer that the OS may refuse
+  would promise what it cannot keep. What the app does instead is tell the truth afterwards: the catch-up (core/src/
+  schedule.ts `nextRun`, unchanged) runs the missed scan once, and its summary says "The 7:00 AM scan ran at 9:12 AM
+  because the computer was asleep." The cause is named only when it is known: the app itself started after the slot ("because
+  Split Finder was not running at 7:00 AM"), or its scheduler's own clock stopped across the slot ("the computer was
+  asleep"). A scan that is merely late with the app awake says when and no cause. The Agent panel's Next scan carries one
+  sentence on what the scan needs while Chrome or the helper is missing (`core/src/selfRun/words.ts`). Keeping the computer
+  awake *during* a scan is the existing setting.
+- **Open at login**: with a schedule other than manual, the first time it is seen, the app sets `shell.launchAtLogin` itself
+  (the owner approved this default), says so in Activity, and shows a quiet notice with Turn off. It looks once
+  (`runtime.selfRun.login`), whether it turned the switch on or found it on: a switch he turns off is never turned on again by
+  the app. A manual schedule is left alone.
+- **The weekly summary** (`core/src/selfRun/weekly.ts`, a pure function of the stores). Default Monday 8:00, a setting;
+  switched off by the `weekly` notification kind. The first look at a store only records "this week's moment has passed", so a
+  new install does not send an empty message. The week it was sent for is recorded before it is sent, so a restart loses a
+  message at worst and never sends two. A message that comes late covers at most the last seven days. A deal is "found" when
+  its first stored scan point falls in the period and every part is priced; "announced as worth buying now" counts the
+  distinct deals in `tracking.notified` that day and later; "worth buying now as of this message" is the watched deals in
+  the state. Profit is only what he recorded: realised from parts settled in the week, and estimate against actual only over
+  deals he finished; with nothing recorded the message says "No purchases recorded this week." Dollar figures say estimate or
+  recorded. Costs are the week's use from the ledgers, with the month against its limits from the costs view. Plain lines, no
+  table or markup, because Telegram would mangle them. The notification is the short form (the `weekly` kind, and quiet hours
+  hold it as for any kind); Telegram gets the full text and is not held.
+- **Tests** run on a fake clock, a fake Chrome control and a fake fetch: no browser is ever started and nothing reaches the
+  network (`core/test/self-run.test.ts`, `core/test/weekly-summary.test.ts` on after-scan6 and after-keepcurrent,
+  `agent/test/openChrome.test.ts`, `agent/test/selfRun.test.ts`). The real macOS and Windows commands are checked as text
+  only; they were not run on a Windows machine.
+## Nov 25: the shell restarts an agent that died; the agent dies cleanly and says why
+
+Before this, the shell started the Node agent once and dropped the sidecar's event receiver, so a crash went unseen:
+scheduled scans, the drip, price refreshes and Telegram stopped until the owner quit and reopened the app, while the
+banner told him to open the app that was already open.
+
+- **Supervision** (`src-tauri/src/agent.rs`, `restart_delay`): the receiver is kept. An exit the shell did not ask for (Quit
+  and the update relaunch go through `stop()`, which takes the child out of the guard and sets `QUITTING` first) is a
+  crash: the guard is cleared and the agent started again after **0 s, 2 s, 10 s, 60 s, 60 s** for the 1st to 5th crash
+  inside a **10-minute** window. The 6th crash in the window gives up: one system notification ("keeps stopping … Quit
+  Split Finder and open it again") and the banner's **Quit and open again** button (`relaunch_app`, Tauri's
+  `request_restart`, which stops the agent the usual way first). Open Split Finder from the menu also ends a give-up and
+  starts the count over. Same on macOS and Windows: the logic is platform-free; only `stop()` differs, as before.
+  *Why these numbers:* the first restart at once loses nothing; a crash that repeats at start (a bad file it reads) must
+  not spin, and five in ten minutes is a loop, not bad luck.
+- **Same port, token and data folder** on every start. The dead agent's `store.lock` names a dead pid; `takeLock` already
+  took over a lock whose holder is not alive whatever its age, so the immediate restart is not blocked (tested with a real
+  agent process killed with SIGKILL). A clean crash also releases the lock itself.
+- **The agent's last resort** (`agent/crash.ts`, installed first in `server.ts`): `uncaughtException` and
+  `unhandledRejection` write one line to `<dataDir>/agent-crash.jsonl` (time, kind, error name, first line of the message,
+  the step that ran; every stored key and the app token replaced, any 20+ character key-like run masked, at most 200
+  characters, last 20 lines kept), release (store lock, keep-awake, timers) and exit **70**. It never keeps running in an
+  unknown state.
+- **One job's failure is not the process's**: the scheduler tick, the held-message flush, a drip round (it used to be
+  swallowed silently), the event flush, the Chrome connection check, the worker lease sweep and a request handler that
+  throws are caught where they run: an Activity error ("The scheduler failed: …", scrubbed, not repeated while the same
+  one is open) or a 500 for that request.
+- **What he is told** (`createAgent`, `restart`): the shell passes `SPLIT_FINDER_RESTART` (the crash count in the window)
+  and `SPLIT_FINDER_STOPPED_AT`. Runs left as `running` are closed as stopped at every start (nothing runs when an agent
+  starts). After a restart one Activity error says when it stopped, that nothing saved was lost, what stopped it, and the
+  scan: **an interrupted scan is not resumed by itself** (it may spend searches; a crash loop must not spend them). Its
+  saved job stays `running`, and the next scan (Scan again, the error's retry button, or the next scheduled scan, whose
+  clock counts from the interrupted one's start) continues it from its last saved step (core runner: "an interrupted job
+  is continued as saved"). The Chrome reads in flight are abandoned at start and asked again. A system notification and a
+  Telegram message (the "error" kind switch) go only when a scheduled scan was cut off or on the second restart in the
+  window; the notification is held by the event hub until the shell's stream (`?client=shell`) reconnects.
+  Held quiet-hours notifications live in memory and are lost in a crash, hence "nothing saved was lost".
+## Nov 25: questions, round 2: special buys and short codes settled by Home Depot's own records
+
+After the Nov 24 rules 13 questions stayed open on the owner's data (fixtures/e2e-2026-11-23/after-scan6). The owner asked
+that the app settle what it can by itself. Each group was traced to the records the app holds or reads free, and a rule
+adopted only where at least two independent Home Depot records agree, none disagrees, and the measurement is zero wrong
+(CLAUDE.md rule 4). Measured with `npx tsx scripts/measure-questions-round2.ts` (free, no network): (a) the validation
+set against its answer key with Nov 18's readings, each rule alone on top of every adopted rule; (b) the owner's stores
+after-scan3/5/6, every bundle read from its model number and page with his answer set aside, a resolved change scored
+against his answer or checked by hand against its pages; (c) rule F's convention on every special buy any recording holds;
+(d) rule G on every `<kit>W<two digits>` a store holds.
+
+| Rule | Validation: changed / right / wrong / open | Real stores (after-scan6): changed / right by owner / by hand / open | Wrong |
+|---|---|---|---|
+| F. A special buy Home Depot also sells as its tools | 1 / 1 / 0 / 0 (PCL500525SB → PCL500B + PCL525B, the key) | 5 / 1 / 4 / 0 (scan 5: 4 / 1 / 3 / 0; scan 3: 0) | 0 |
+| F, its convention (c) | — | 9 special buys recorded, 3 of the six-digit form, each with a same-titled row; all 3 rows spell the convention's tools, 0 disagree | 0 |
+| G. A two-digit code the page spells out | 0 / 0 / 0 / 0 | 4 / 1 / 1 / 2 (scan 5 the same; scan 3: 1 waits) | 0 |
+| G, every `<kit>W<dd>` (d) | — | W05 → DCB205 (owner's answer), W34 → DCS334B (his stored split), W82 → DCS382B, W21 → DCF921B (offered only) | 0 |
+
+- **Rule F** (`settle.ts specialBuyTools`, `specialBuySplit`; `SettleData.sameTitle` from `split.ts titleIndex`; evidence
+  kind `hd_same_title`). A RYOBI special buy whose model is a prefix and two three-digit numbers (PCL406424SB) is its two
+  tools (PCL406B, PCL424B) only when: Home Depot lists another bundle under exactly the same title (lower case, any
+  punctuation one space: "5-1/2 in." is "5 1/2 in.") whose model number is exactly those two tools joined by a hyphen
+  (PCL424B-PCL406B, item 324615781), and every same-titled bundle reads the same; Home Depot sells each tool by itself under
+  exactly that model, as one tool, "Tool Only" when the title says Tools Only, of a kind the special buy's title names; and
+  the title's tool count is two. A tool with no reading yet makes it wait (the part-price read); one read and not found, a
+  count that differs, a tool of another kind, or no twin leaves the question as it was. In a hyphen bundle
+  (PCL406424SB-A21701-A25RS51) the special buy stands for its tools, as an owner's "sell as" fact does; **the owner's own
+  fact about a special buy (sold whole, or as tools) always wins** over rule F. This does not reverse step 16's rejection:
+  a special buy's own page is still never proof it is one kit; rule F reads it as tools only when Home Depot's own other
+  listing of the same set says which tools, which is the key's convention (PCL500525SB) and the owner's answers on
+  PCL500525SB and PCL406B-PCL416B. The two-digit form decompose.ts already reads (PBLRC2501SB) is unchanged.
+- **Rule G** (`settle.ts pageCode`, `pageCodeSplit`). A DEWALT `<kit>W<two digits>` whose code the catalog cannot read
+  ("'82' matches nothing in the catalog"; decompose.ts never reads a two-character code from listings' titles), whose kit
+  the catalog knows, and whose page names exactly one whole DEWALT model other than the kit ending in those digits
+  (DCKTS681D1P1W82: DCS382B on eight lines), reads as [kit, model], then goes through rule 2's checks (Home Depot sells
+  each part, the page names nothing no part explains, the count fits) and is settled only when the model's own Home Depot
+  title is of a kind the bundle's title names ("Reciprocating Saw"). A page already contradicting the model number (W21's
+  page names DCD999, DCF887, DCL040, DCS386, DCS573: another kit's lines) settles nothing: the question now leads with
+  "'21' is DCF921B, the one model the page names that ends in 21" and offers DCKTS681D1P1 + DCF921B for one tap.
+- **DCK225D2WCS380B / WCS391B / WCS356B / WCS354B stay questions, and say why in one look** (`settle.ts kitPageConflict`,
+  `Decomposition.conflict` → `ReviewItem.conflict`, `brief/view.ts conflictBrief`). What the records show: the four
+  bundles' pages share one template ("Includes 1 DEWALT DCD708B …, 1DEWALT DCF809B …, two 20-Volt MAX lithium-ion 1.3 Ah
+  battery packs", plus DCS381 and DCS393 lines none of them holds), while their titles say "(2) 2Ah Batteries", DCK225D2's
+  own page (322138483) leads with DCD794 and DCF809 and "two 20V MAX* compact 2 Ah batteries", and the siblings WCF850B and
+  WCS369B describe DCD794. Home Depot's two pages genuinely disagree on the drill, so nothing is settled (preferring one of
+  Home Depot's pages over the other would be a guess). The card now asks "Is DCK225D2 in this box, as the model number
+  says, or DCD708B?", quotes each page with its link (the bundle page's 1.3 Ah line; the kit page's "The DCD794
+  drill/driver …"), and its check is the owner's: "Home Depot's two pages disagree. If the box holds DCK225D2, approve
+  DCK225D2 and DCS380B; if it holds DCD708B, enter the parts."
+- **A986501 and A965201: left as they are.** Their bundle pages name the accessory only in words ("65-Piece Drill and
+  Impact Drive Kit", "Diamond Grit Driving Set (52-Piece)"); no Includes line gives its model, no recorded page carries a
+  `bundleItems` list for these bundles (the recorded Bundle lists fill it only on sets), the bundles' own `upc` is null and
+  is the bundle's barcode, not the accessory's. `productsByCode` has no code to ask with and Amazon's catalog holds no
+  record of either; nothing free would settle them. A Keepa catalog check of a listing naming them (rule B) still would.
+- Plain words for the new notes (`review/words.ts`): rule G's reading, "page names …, which do not fit the model number",
+  and "the title does not name what Home Depot's page of … is".
+
+**Replayed on after-scan6** (core/test/questions-round2.test.ts; at start, no scan, nothing spent): 13 open → 8.
+Settled: PCL406416SB (PCL406B + PCL416B), PCL406424SB (PCL406B + PCL424B), PCL406416SB-A21701-A21C901 (PCL406B,
+PCL416B, A21701, A21C901), PCL406424SB-A21701-A25RS51 (PCL406B, PCL424B, A21701, A25RS51), DCKTS681D1P1W82
+(DCKTS681D1P1 + DCS382B); each checked by hand against its pages. Open: the four DCK225D2 bundles (with the two pages
+named), DCKTS681D1P1W21 (offering DCKTS681D1P1 + DCF921B), PCL1600K2-A986501, PCL1600K2-A965201, DWST08017 (price guard).
+On the scan-2 store DCKTS681D1P1W34 now waits for its parts' own pages (its page also names DCS331 "vs. DEWALT DCS331
+Jigsaw") instead of asking; the owner had already answered it DCKTS681D1P1 + DCS334B, the rule's reading.
+
+**What live needs, all free:** rule F needs Home Depot's same-titled hyphen listing in the store (a scan's Bundle lists
+held all three on Nov 23) and each tool's part-price reading (PCL406B, PCL416B, PCL424B, PCL500B, PCL525B were read);
+rule G needs the bundle's page and the code model's part-price reading (DCS382B was read). Nothing spends a search,
+a Keepa token or an AI call. Tests changed for the new counts: fewer-questions (now replays the Nov 24 rules alone),
+settle (W34 waits), settle-special-buy (rule F off for the old question, on for the new path), part-facts, recheck
+(12 → 7 and 13 → 8 open), scan-chrome-listing unchanged.
+
+## Nov 25: what Home Depot's own page says about buying a bundle
+
+Recorded on the owner's Chrome (`fixtures/homedepot-pages/availability-344305163-2026-11-25.json`, PSK1212SB-PCL633B). The page
+state the helper already reads holds, on the product object `base-catalog-<itemId>`: `availabilityType { type: "Online",
+discontinued: false, status: false, buyable: true }`, `info.quantityLimit` 3 ("Limit 3 per order" on the page),
+`info.returnable` "90-Day", and `pricing(...).promotion.dates { start: "10/26/2026", end: "01/31/2027" }`.
+
+- **Kept** (`hdPage.ts buyingOf`, `BuyingFacts`): `buyable`, `discontinued`, `availability` (the `type`), `quantityLimit` (a whole
+  number 1 to 9999, else null), `returnable`, `promotionStart`, `promotionEnd` (MM/DD/YYYY read as a real calendar date and kept as
+  YYYY-MM-DD; a value that is not one, `02/30/2027`, `2027-01-31`, a number, is null and the rest is kept; pricing entries that
+  disagree on the dates give none, as they do for the price). Each is null when the page does not state it; the object is absent
+  when the page states none of it, so a page read before this existed, and a recorded page without them, parse exactly as before.
+  On the record as `BundleRecord.buying` with `readAt` (`BundleBuying`), copied to `BundleRow.buying`; the newest reading wins
+  (`scan/buying.ts withBuying`) and every path that rebuilds a bundle record from a list read keeps it. A message from the helper
+  is cleaned again (`cleanBuying`) before it is stored.
+- **From which reads**: the scan's bundle pages (P1) and the drip's, the item pages a list pass reads (`BogoItem.buying`), the
+  owner's own page through the side panel (`notePage`), and the keep-current re-read of a watched deal's page (a page of the item
+  keeps it with or without a price). *Not from*: a Home Depot list entry, whose `availabilityType` and `info` keys exist but whose
+  values have not been recorded, and a set's own page, which no reader reads (a set's items' pages are, `readBundlePages` skips
+  sets) and which `parsePromoPage` would refuse (no model number). A set deal therefore says "not checked yet" for as long as that
+  holds. *To do*: record a set's own page, then read it in keep-current.
+- **Buy now gets one condition** (`signals.ts`, `tracking/buying.ts cannotBuyWords`): the page, as last read, says it is
+  discontinued or not buyable. The deal leaves the state with the true sentence ("Not worth buying now: Home Depot's page says it
+  cannot be bought right now (read 10:55 AM)", or "... is discontinued ..."), first among the conditions that fail, is never "Looks
+  worth buying" either, and is said once in Activity and the digest as any other exit ("... is no longer worth buying: Home
+  Depot's page says ..."); the next read that says buyable brings it back by itself, not announced again if it was told. A page
+  that states neither is not a reason; a bundle with no reading is not unbuyable: its line says "not checked yet" (`DealBuying`),
+  the verdict string is untouched, and the keep-current re-read (every 4 hours for Buy now) fills it in. Replayed on
+  `after-keepcurrent`: no deal has a reading, every watched deal says "not checked yet", the verdicts and the two deals in the
+  state are exactly as before. Buy now is still a state: nothing here brings back "needs a change".
+- **What it cannot know**: the page's first state holds no per-store stock and no delivery estimate (no `fulfillment` key; the
+  page loads it later), so the app never says "in stock at your store". The most it says is that the page says it can be bought,
+  "online" only when `availabilityType.type` is "Online". Whether a store has it, and what Home Depot would do with an order of
+  more than the limit, are not on the page either.
+- **The limit** is on the Deals row ("Limit 3 per order") and in the inspector, with what it allows at the deal's own estimate
+  ("Up to 3 per order: about +$107 at this estimate", limit times the estimated profit of one bundle, only for a limit above 1
+  and a profit above 0; an estimate that assumes Amazon holds its price for three units, labelled as one). "I bought this" starts
+  at 1 (never above a limit, which is at least 1), says the limit under the quantity and warns above it; it does not refuse, he may
+  buy in more than one order.
+- **The promotion's end** shows ("Home Depot's price ends Jan 31"). One message when a Buy now deal's price ends within
+  `PRICE_ENDS_WITHIN_DAYS` 3 days (chosen: a Friday notice still holds the weekend, the 4-hour re-read has confirmed the price by
+  then, a longer notice would repeat the row for a week), once per deal and end date (`<key>|priceEnds|<end>` in `tracking.notified`;
+  an extended promotion is news again), through the notification policy and Telegram when alerts are on, never for a deal with stale
+  prices. Checked on the agent's own tick (`announcePriceEnds`), needing no read. After the last day (end of that day on his
+  clock) a watched deal whose price was last read before the end is read first, ahead of every cadence and tier, again every 30
+  minutes while a read gives no price (`ENDED_RETRY_MS`, `endedUnread`), shown "ended Jan 31; it has not been read since" and, if
+  Buy now, held back from the digest like a stale one (`staleBuyKeys`) until a read confirms the price. A price a list read moves
+  confirms it too (`seenAt`). It stays a Buy now state; only the announcement waits.
+- **The return window** is shown as the page states it ("90-Day returns, per Home Depot's page") and changes nothing else.
+- Tests: `core/test/buying.test.ts` (the recorded page and variations: not buyable, discontinued, no limit, no promotion, bad
+  dates, disagreeing entries; the words on a fake clock; the replay on `after-keepcurrent`), `agent/test/buyingPage.test.ts` (the
+  re-read, the exit and the return, the message, the ended price, through the agent with a fake Chrome).
+## Nov 25: the owner's Amazon seller account, read-only
+
+Why: the PO has a verified professional seller account. Buying a bundle and then finding a part may not be listed
+(brand or ASIN approval) or will not be taken by FBA (the lithium batteries: Keepa's record for PBP004 carries UN3480)
+is the worst loss in this trade. Amazon itself can answer both before he buys, and give its own fee estimate for his
+account. Everything here is built to `docs/sp-api-notes-2026-11-25.md`; nothing was checked against a live answer yet.
+
+- **What is read** (`core/src/amazon/spapi/client.ts`, one client, fetch injected): the token exchange
+  (`api.amazon.com/auth/o2/token`, refresh grant); Listings Restrictions (`conditionType=new_new`, `reasonLocale=en_US`);
+  FBA Inbound Eligibility (`program=INBOUND`); Product Fees, batch (up to 20, `IsAmazonFulfilled: true`, at the price the
+  estimate uses); Sales `getOrderMetrics` by ASIN and day, as a method and parser only (the owner deferred outcomes to the
+  trial: the seam is `SpApiClient.orderMetrics`, nothing calls it). US marketplace (`ATVPDKIKX0DER`) only.
+- **What is never done**: no listing, no price change, no shipment plan, no order, no report request; the client has no
+  method that writes. No restricted role (no PII), so no 30-day deletion or PII encryption duty. Roles to ask for: Product
+  Listing, Amazon Fulfillment, and Inventory and Order Tracking for sales later.
+- **Why read-only**: the app's job is to tell him before he buys; acting in his account is his. Read-only roles are also
+  the least an app can hold if its key store were ever read.
+- **The key** (`amazonSeller`: client id, client secret, refresh token, seller id) is stored like the others
+  (`keys.json`, owner-only), never returned, scrubbed from every sentence (`keySecrets`, `secretsOf`, `spSecrets`, plain and
+  URL-encoded, before any cut). It goes only to the two hosts above. Checked on save: the token exchange, then one
+  Listings Restrictions read for an ASIN the deals hold (PBP004's when none), so a wrong seller id fails at save, not at
+  the first deal. A record of another account is never used: each is tagged with a hash of the seller id
+  (`sellerAccountTag`), not the id.
+- **Pace**: one request per 1/rate seconds per operation (restrictions 5/s, eligibility 1/s, fees 0.5/s, sales 0.5/s; the
+  burst is not used), and the app's own cap a day (400 listing reads, 400 FBA reads, 40 fee batches, 100 sales reads),
+  shown under the key in Settings. A 429 or a 5xx gets one wait as Amazon's headers say (Retry-After, else
+  x-amzn-RateLimit-Limit, at most 30 s) and one more try; a 401 one new token and one more try; never a loop. Every call is
+  a row in `spapi-ledger.jsonl` (operation, status, items; never an address or a key) and counted in Costs ("Amazon seller
+  API", free, calls).
+- **Which listings, when** (`core/src/amazon/seller.ts checksWanted`, `agent/seller.ts`): the counted listings of every
+  deal that is Buy now or within reach of it (an estimate that clears his numbers, or a watched deal), before its signals
+  are judged. A record is used for a week; before a deal is first announced (judged Buy now with every seller check
+  passing, alerts on, not announced yet) it is read again unless it is under an hour old. Fees are read again when the
+  price the estimate uses moved. At most 40 listings a pass.
+- **Buy now gets two conditions when an account is connected**: every counted part allowed to list, and every part
+  eligible for FBA or one he said he ships himself ("I ship it myself", remembered by ASIN in `tracking.selfShip`). The
+  sentences name the part and the reason ("you need Amazon's approval to list PBP004"; "FBA does not take PBP004 yet:
+  Needs battery details"). A part not checked (or whose check failed) holds the deal: "not checked yet whether you may
+  list PCG002". An unknown reason code is shown as its code and never passes. **With no account nothing changes** but one
+  quiet line on a Buy now deal: "Not checked against your Amazon account: connect it in Settings to see whether you may
+  list these." (tested: the signals are identical with and without the feature).
+- **A check that failed is never silent, and never a loop**: when Amazon's API fails, limits, refuses, or the day's cap
+  is reached, the listing it stopped on and every one the pass did not reach keep the reason and a retry time
+  (`SellerProblem`): an hour after an outage or a limit, the next UTC day for the cap, a day for an unreadable answer,
+  and refused credentials until he replaces them. The deal's sentence says it: "PCG002 could not be checked with Amazon
+  (…); tried again in about 6 hours". No listing is asked again before its time; the first pass after it asks once.
+  The seller conditions come after his numbers, the usual-price rule, the listings' confirmation and the holds.
+- **Amazon's fees in the estimate** (`core/src/scan/report.ts feesOf`): only where the settings take Amazon's FBA fee
+  (`fulfillmentSource 'keepa'`; a flat choice stays his), and only read at exactly the price the estimate uses. The
+  `ReferralFee` line becomes the referral, everything else Amazon counted (FBA fees, closing fees, any unknown type) the
+  fulfillment side, so the estimate's fees equal Amazon's total. An answer with no ReferralFee line, or whose lines do
+  not add up to its total, is not used. Keepa's FBA fee is kept beside it (`PartFees.amazon.keepaFulfillment`) so the
+  difference can be shown and measured. The basis line then says "Amazon's fee estimate for your account, read Nov 25".
+  A part he ships himself keeps Keepa's figures (Amazon's is FBA's).
+- **Samples**: the first three answers per operation (and the token's, with the token removed) are kept in
+  `runtime.spapiSamples`, every credential and every field named like a token, secret or seller id removed, cut to 6,000
+  characters; they are in the audit export so the notes can be corrected from real data.
+- **What the first live run must confirm**: where the seller id is shown; the FeeType names (is `ReferralFee` the
+  referral line, and do the top-level lines add up to `TotalFeesEstimate`?); the batch answer's shape (a bare array or a
+  `payload`); whether Listings Restrictions answers a wrong seller id with 400 or 403; the path-forward link's form (an
+  absolute sellercentral.amazon.com address, or not shown); and the Sales money field casing.
+### Self-healing notices, Nov 25 2026: the app does what it can do itself, and says what is true
+A read-only audit found three places where the app told the owner to do something it could do itself, or told him something untrue.
+- **A new app version updates the helper's own folder** (`agent/helperUpdate.ts`). A reload loads the same files, and only Install
+  helper wrote new ones, so every release left the old helper on every machine. The helper's id is the first 16 bytes of the SHA-256
+  of its folder's path, each nibble as a letter a to p (Chrome's `GenerateIdForPath`; the manifest has no `key`); checked against a
+  real Chrome profile on macOS (a test pins it). The paired helper's id is known from its token, so the folder is the one candidate
+  (`extensionInstallDir()`, where Install helper puts it) that hashes to that id, by its path as written or with links resolved.
+  Windows hashes the UTF-16 path; that is the same code and has not been run on a Windows PC. A folder that hashes to another id is
+  never written: the app has no other way to learn where Chrome loaded the helper from (it could read Chrome's Preferences, which
+  holds the owner's whole profile; not done). Before writing, the folder's manifest must name Split Finder (or Split Finder Helper)
+  with Home Depot's host permission and have background.js (the Nov 23 note that the installer replaces the folder whatever it holds
+  stays true of Install helper, not of this). The new files are unpacked beside it, checked (valid, and the build the zip names), then
+  copied in: a bad zip leaves the folder as it was, and files the new build no longer has are removed. The same folder keeps the same
+  id, so pairing holds. Then the existing reload is queued, once, with the Activity line "The Chrome helper was updated to match the
+  app."
+- **Once per shipped build, never a loop.** The build is recorded in `helper-update.json` in the data folder at the attempt (a restart
+  does not try it again). The helper has 90 seconds after the reload to report the shipped build; if it still reports the old one, or
+  the folder is not known or not the helper's, or there is no zip, `helper.update` is `install` with the reason in words and the
+  banner's one button is "Install the helper again" (POST /api/setup/install-extension, which now also queues a reload). The
+  `chrome://extensions` advice stays only for a helper the app has no files for (no zip, e.g. a development run). The old rule that a
+  reload is queued for any outdated build is now only for a helper that reports the shipped build and still cannot do a job: a reload
+  of old files helps no one.
+- **The waiting pages are counted live** (`state.agent.homeDepot`, now with `nextReadAt` and `slowed`; the same figures
+  `hdBacklog` and the pace already kept). `lastScan.pagesUnread`, written when a scan ends, is ignored whenever the agent sends the
+  live count (an older agent keeps the old banner). While the app is reading them itself it is a quiet line, no button, new notice
+  kind `waiting`, ranked after the cost notice (it used to be the `scan` kind, above Chrome and the keys). It is an attention banner
+  only when reading cannot go on by itself: the app is paused (button: Resume). Chrome closed or not connected is the Chrome notice's
+  to say, and a running scan reads pages itself, so neither shows this line.
+- **A page step says why it read nothing** (`noPagesWhy`, `skippedWhy` on the pipeline step). `left()` is 0 both while Home Depot's
+  pause is in force and when the scan's pages are used up; the steps said "page limit reached" for both. The short reason stays four
+  words ("Home Depot paused", "scan page limit reached"); the step's line and the run's summary read the whole one ("Home Depot
+  paused reading until 10:54 AM", "this scan's page limit of 40 was reached"). A kit step with pages left but all held for the part
+  prices says that.
+
 ## Nov 25: a performance pass, each change measured before and after
 
 Five changes, none of which changes an answer, a byte on disk or a screen. Each has a benchmark in `scripts/perf/` that

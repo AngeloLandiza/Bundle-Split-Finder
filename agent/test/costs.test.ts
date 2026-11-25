@@ -96,7 +96,7 @@ describe('GET /api/costs', () => {
     await open(dataFolder(12));
     const view = (await (await ui('/api/costs')).json()) as CostsView;
     expect(view.month).toBe('2026-11');
-    expect(view.services.map((s) => s.service)).toEqual(['serpapi', 'keepa', 'ai', 'ebay', 'telegram']);
+    expect(view.services.map((s) => s.service)).toEqual(['serpapi', 'keepa', 'ai', 'ebay', 'telegram', 'amazon']);
     expect(view.services[0]).toMatchObject({ label: 'SerpApi', unit: 'searches', used: 12, limit: null });
     expect(view.settings.services.ai.monthlyLimit).toBe(0);
     const anon = await fetch(new URL('/api/costs', `http://127.0.0.1:${(server!.address() as { port: number }).port}`));
@@ -151,6 +151,8 @@ describe('the cost settings', () => {
   });
 });
 
+// Each of these runs a whole scan or lookup pass on the recorded store: 20 to 40 s alone, and past the suite's 60 s limit
+// when the machine is busy (seen Nov 25: two different ones timed out in two full runs while other suites ran).
 describe('the cost blocker in a scan', () => {
   it("holds the scan's searches that would pass the search limit, says why, and the scan goes on", async () => {
     const w = await open(dataFolder(45), { costs: { services: { serpapi: { monthlyLimit: 50 } } } });
@@ -186,7 +188,7 @@ describe('the cost blocker in a scan', () => {
     expect(w.searches).toBeGreaterThan(0);
     expect(w.searches).toBeLessThanOrEqual(18);
     expect(agent.store.get('runtime').costs?.blocked.serpapi ?? []).toEqual([]);
-  });
+  }, 150_000);
 
   it('only warns when the blocker is switched off', async () => {
     const w = await open(dataFolder(45), { costs: { blockWhenOver: false, services: { serpapi: { monthlyLimit: 50 } } } });
@@ -195,7 +197,7 @@ describe('the cost blocker in a scan', () => {
     expect(w.searches).toBeGreaterThan(0);
     expect(agent.store.get('activity').runs.at(-1)!.summary).toContain("The scan's searches ran past a limit: expected to use about 18 searches");
     expect(costsNotes(w).filter((n) => n.title === 'SerpApi: held back')).toEqual([]);
-  });
+  }, 150_000);
 
   it("holds the scan's Keepa lookups past the token limit and looks up with searches instead", async () => {
     const w = await open(dataFolder(), { tokens: 400, costs: { services: { keepa: { monthlyLimit: 5 } } } });
@@ -205,7 +207,7 @@ describe('the cost blocker in a scan', () => {
     expect(run.summary).toMatch(/The scan's Keepa lookups were not made: expected to use about \d+ tokens, and 5 of your Keepa limit of 5 tokens are left\./);
     expect(run.keepaTokensUsed).toBe(0);
     expect(w.searches).toBeGreaterThan(0);
-  });
+  }, 150_000);
 
   it('holds the Review cards past the AI limit, a hard stop, and asks nothing', async () => {
     const w = await open(dataFolder(), { aiCap: 0.01 });
@@ -216,7 +218,7 @@ describe('the cost blocker in a scan', () => {
     expect(w.anthropicCalls).toBe(0);
     const held = agent.store.get('runtime').costs?.blocked.ai ?? [];
     expect(held).toEqual([expect.objectContaining({ what: 'Review cards', why: expect.stringMatching(/^Review cards were not written: expected to cost about \$\d+\.\d\d, and \$0\.01 of your \$0\.01 AI limit is left\. Raise the limit in Costs, or wait until Dec 1\.$/) })]);
-  });
+  }, 150_000);
 });
 
 describe("the owner's own click", () => {

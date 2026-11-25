@@ -5,6 +5,8 @@ import type { AlertSettings } from '../settings';
 import { partKey, type BundleRow, type ScanReport } from '../scan/types';
 import type { BogoPromotion } from './bogo';
 import type { BogoPair } from './bogoPairs';
+import type { SellerLookup } from '../amazon/seller';
+import { marketKey } from './market';
 import { appendHistory, bundleSignals, HISTORY_DAYS, historyPoint, type BundleSignals, type HistoryPoint, type OptionPoint, type Signal, type SignalKind, type TrendLookup } from './signals';
 
 /** auto: watched because it was confirmed and discounted; owner: the owner pressed Watch or Unwatch. */
@@ -77,6 +79,8 @@ export interface SignalOpts {
   flatFee?: number;
   /** The sanity holds by bundle key (core/src/audit/sanity.ts heldDeals): each such bundle's sentence (SignalInput.held). */
   held?: Readonly<Record<string, string>>;
+  /** Nov 25: the owner's Amazon seller account, when connected (SignalInput.seller). */
+  seller?: SellerLookup;
 }
 
 const signalOpts = (o: SignalOpts, key: string, state: Pick<TrackingState, 'announced'>) => {
@@ -85,6 +89,7 @@ const signalOpts = (o: SignalOpts, key: string, state: Pick<TrackingState, 'anno
     ...(o.keepa !== undefined ? { keepa: o.keepa } : {}),
     ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}),
     ...(o.held?.[key] !== undefined ? { held: o.held[key] } : {}),
+    ...(o.seller ? { seller: o.seller } : {}),
     ...(told ? { announced: { profit: told.profit, at: told.at } } : {}),
   };
 };
@@ -153,9 +158,15 @@ export function sameFigures(a: HistoryPoint, b: HistoryPoint): boolean {
   );
 }
 
-/** What a verdict rests on, to tell a changed verdict from the same one evaluated again. */
+/**
+ * What a verdict rests on, to tell a changed verdict from the same one evaluated again. The market's flags too (Nov 25): a
+ * stored signal from before the market figures, or whose notes changed, is stored again with them.
+ */
 const verdictKey = (s: BundleSignals): string =>
-  [s.signals.map((x) => `${x.kind}:${x.optionId ?? ''}`).join(','), s.options.map((o) => `${o.optionId}:${o.velocity.status}:${o.notBuyNow ?? ''}`).join(',')].join('|');
+  [
+    s.signals.map((x) => `${x.kind}:${x.optionId ?? ''}`).join(','),
+    s.options.map((o) => `${o.optionId}:${o.velocity.status}:${o.notBuyNow ?? ''}:${marketKey(o.market)}`).join(','),
+  ].join('|');
 
 /**
  * Signals round 2: the signals evaluated whenever a bundle's estimate or completeness changes between scans (the drip's

@@ -26,6 +26,9 @@ import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartFactView, Pa
 import type { BogoView, FreeItem } from '../tracking/bogo';
 import type { BogoChoice, BogoGroup, BogoTag, ListedItem, PromoPageOutcome } from '../tracking/bogoPairs';
 import type { FbaEstimate } from '../tracking/fba';
+import type { OptionMarket, PartMarket, UsualEstimate } from '../tracking/market';
+import type { SellerPartLine } from '../amazon/seller';
+import type { SpOperation } from '../amazon/spapi/types';
 import type { OptionSignals, Signal, SignalKind, SignalNumbers, Velocity } from '../tracking/signals';
 
 export const AGENT_PORT = 8790;
@@ -74,8 +77,8 @@ export function isApiError(body: unknown): body is ApiErrorBody {
 // ---------------------------------------------------------------- keys
 
 /** The keys the agent holds. The UI and the extension only ever see whether each is set. */
-export type KeyName = 'serpapi' | 'keepa' | 'anthropic' | 'openai' | 'ebay' | 'telegram';
-export const KEY_NAMES: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
+export type KeyName = 'serpapi' | 'keepa' | 'anthropic' | 'openai' | 'ebay' | 'telegram' | 'amazonSeller';
+export const KEY_NAMES: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram', 'amazonSeller'];
 
 /** Body of PUT /api/keys/:name, per key. Answered by PutKeyResponse; DELETE /api/keys/:name removes it and answers KeysPresence. */
 export interface KeyValues {
@@ -85,9 +88,19 @@ export interface KeyValues {
   openai: { key: string };
   ebay: { appId: string; certId: string };
   telegram: { botToken: string; chatId: string };
+  /**
+   * Nov 25: the owner's Amazon seller account, read-only (core/src/amazon/spapi): his private app's LWA client id and
+   * secret, its refresh token, and his seller id (merchant token). Sent only to api.amazon.com and
+   * sellingpartnerapi-na.amazon.com.
+   */
+  amazonSeller: { clientId: string; clientSecret: string; refreshToken: string; sellerId: string };
 }
 
-export type KeysPresence = Record<KeyName, boolean>;
+/**
+ * Which keys are saved (never their values). Nov 25: `telegramWaitingForChat`, a bot token saved without its chat id yet
+ * (`telegram` stays false until the chat is chosen: GET /api/telegram/chat).
+ */
+export type KeysPresence = Record<KeyName, boolean> & { telegramWaitingForChat?: boolean };
 
 /**
  * Nov 23: what a key's own service said when the key was checked (agent/keyChecks.ts). `rejected`: the service answered and
@@ -189,6 +202,13 @@ export interface HomeDepotPaceState {
   perScan: number;
   /** Pages the slow read between scans made today. */
   readToday: number;
+  /**
+   * Nov 25: when the next page is read between scans (ISO): the pause's end while Home Depot paused reading, tomorrow once
+   * today's pages are used, else when the gap since the last read passes (a moment ago: now). Null when nothing waits.
+   */
+  nextReadAt: string | null;
+  /** Nov 25: the hourly pace is below the full one today (Home Depot refused a page earlier). */
+  slowed: boolean;
   /** The words, from these figures; null when nothing waits and reading is not paused. */
   sentence: string | null;
 }
@@ -270,6 +290,8 @@ export interface AgentState {
     homeDepot?: HomeDepotPaceState;
     /** Keeping watched deals current between scans: what it costs a day and what waits; absent when nothing is watched. */
     keepCurrent?: KeepCurrentState;
+    /** Nov 25: what the next scheduled scan needs and does not have (Chrome closed, the helper not connected), in one sentence; absent when nothing is missing. */
+    nextScanNote?: string;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
   helper: {
@@ -284,6 +306,13 @@ export interface AgentState {
     outdated?: boolean;
     /** Nov 23: the helper's build as its heartbeat says it ("0.1.0+3c92cc7"); absent before one said it. */
     version?: string;
+    /**
+     * Nov 25: an outdated helper's files. `updating`: the agent unpacked the shipped helper into the folder Chrome loaded it
+     * from and asked it to reload; waiting for the new build. `install`: it could not (the folder is not known or not the
+     * helper's) or the helper still reports the old build after it did; `why` says which, and the one button that works is
+     * "Install the helper again" (POST /api/setup/install-extension). Absent: a reload is the right thing.
+     */
+    update?: { state: 'updating' } | { state: 'install'; why: string };
   };
   budget: {
     serpLeft: number | null;
@@ -319,6 +348,11 @@ export interface AgentState {
   keyChecks?: Partial<Record<KeyName, KeyCheckRecord>>;
   /** W4: true until the first scan has finished (the one-time first-run flow). */
   firstRun?: boolean;
+  /**
+   * Nov 25: with a seller account connected, its calls today per operation and the app's own cap a day for each
+   * (core/src/amazon/spapi/types.ts SP_DAILY_CAPS), for Settings, Keys. Absent without an account.
+   */
+  seller?: { used: Record<SpOperation, number>; caps: Record<SpOperation, number> };
   /** D2: when the settings last changed; the shell re-reads GET /api/settings when this moves. */
   settingsAt?: string;
   /**
@@ -326,6 +360,11 @@ export interface AgentState {
    * owner turned "Tell me when a new version is ready" off, or when he dismissed this version (POST /api/update/dismiss).
    */
   update?: UpdateNotice;
+  /**
+   * Nov 25: the app turned "Open at login" on itself, once, because a schedule was set (scans run only while it is running). The
+   * quiet notice offers Turn off; POST /api/self-run/login-notice closes it (`turnOff` also turns the setting off). Absent when closed.
+   */
+  loginNotice?: { sentence: string };
 }
 
 // ---------------------------------------------------------------- deals
@@ -429,6 +468,38 @@ export interface DealRow {
    * (PRICES_STALE_MS), since when: the row says "Prices not checked since …" and it is not announced. Never hidden by a verdict.
    */
   pricesChecked?: { homeDepotAt: string; amazonAt: string | null; staleSince?: string };
+  /**
+   * Nov 25: what Home Depot's own page last stated about buying the deal (core/src/tracking/buying.ts): can it be bought, the
+   * per-order limit, the return window, when the promotion's price ends. Never stock at a store or a delivery date: the page
+   * does not state them. Absent on a row that is not a bundle of the deals list.
+   */
+  buying?: DealBuying;
+}
+
+/**
+ * What Home Depot's page states about buying a deal, in words (rule 5: the profit allowance is an estimate). `state` is
+ * 'unchecked' when no page has been read since this was kept: the line says "not checked yet", never "cannot be bought".
+ */
+export interface DealBuying {
+  state: 'unchecked' | 'can' | 'cannot' | 'unstated';
+  /** "Home Depot's page says it can be bought online (read 10:55 AM)", "... cannot be bought right now (read ...)", "... not checked yet". */
+  line: string;
+  /** When the page was read (ISO); null while not checked yet. */
+  readAt: string | null;
+  /** The per-order limit the page states; null when it states none. */
+  limit: number | null;
+  /** "Limit 3 per order"; null without a limit. */
+  limitLine: string | null;
+  /** "Up to 3 per order: about +$107 at this estimate (an estimate ...)"; null without a limit above 1 or a profit above 0. */
+  limitProfitLine: string | null;
+  /** The promotion's last day (YYYY-MM-DD), when the page states it. */
+  priceEnds: string | null;
+  /** "Home Depot's price ends Jan 31", or after the end "Home Depot's price ended Jan 31; it has not been read since"; null otherwise. */
+  priceEndsLine: string | null;
+  /** The promotion ended and Home Depot's price has not been read since. */
+  priceEnded: boolean;
+  /** "90-Day returns, per Home Depot's page"; null when the page states none. */
+  returnsLine: string | null;
 }
 
 /** One sanity finding as the app shows it, with where to check it by eye (Home Depot first, then Amazon). */
@@ -612,9 +683,34 @@ export interface DealDetail {
   setContents?: SetContent[];
   /** Checking the app's own work: every finding on this deal, holds first (DealRow.needsLook is the first hold). */
   needsLook?: NeedsLook[];
+  /**
+   * The market around each counted part's listing for the primary way to sell (core/src/tracking/market.ts, from the stored
+   * Keepa trends at the last judgement): the averages and when Keepa read them, Amazon's own offer, sellers, stock, hazards,
+   * and the estimate at the usual prices when a part is unusually priced (an estimate from the fee settings). Absent when
+   * no counted part has market figures stored.
+   */
+  market?: OptionMarket;
+  /** Nov 25: what the owner's Amazon seller account says about each part; absent in an agent from before. */
+  seller?: DealSellerView;
 }
 
-export type { SetContent, SplitEvidence };
+/**
+ * Nov 25: the deal's parts as the owner's own Amazon seller account sees them (core/src/amazon/seller.ts). Connected: one
+ * line per counted part ("You may list it. FBA accepts it. Amazon's fees: $12.41."). Not connected: no lines, and on a Buy
+ * now deal the one quiet `note` (NOT_CONNECTED_LINE). "Not checked" is never shown as allowed.
+ */
+export interface DealSellerView {
+  connected: boolean;
+  note: string | null;
+  parts: SellerPartLine[];
+}
+
+/** POST /api/seller/self-ship/:asin: the owner ships this listing himself (FBA's answer then does not hold his deals). */
+export interface SelfShipBody {
+  selfShip: boolean;
+}
+
+export type { SetContent, SplitEvidence, SellerPartLine };
 
 // ---------------------------------------------------------------- tracking: watchlist, signals, BOGO
 
@@ -710,7 +806,7 @@ export interface BogoResponse {
   bogo: BogoView | null;
 }
 
-export type { BogoChoice, BogoGroup, BogoTag, BogoView, FbaEstimate, FreeItem, OptionSignals, Signal, SignalKind, SignalNumbers, Velocity };
+export type { BogoChoice, BogoGroup, BogoTag, BogoView, FbaEstimate, FreeItem, OptionMarket, OptionSignals, PartMarket, Signal, SignalKind, SignalNumbers, UsualEstimate, Velocity };
 
 /** W4: GET /api/deals/:id/lookup (the quote shown before the click) and the answer to POST /api/deals/:id/lookup and /verify. */
 export interface PaidResponse {
@@ -1225,6 +1321,38 @@ export interface ActivityResponse {
   outcomes?: OutcomeEntry[];
   /** Nov 25: the new versions the app told him about, newest first, at most 20. */
   versions?: VersionEntry[];
+  /**
+   * Nov 25: what he did from Telegram that has no list of its own here (pause, resume, Scan now, Not for me), newest first,
+   * at most 50, with Undo where the app has one (POST /api/telegram/actions/:id/undo). An answer or a purchase from Telegram
+   * is in its own list, its sentence saying "from Telegram".
+   */
+  fromTelegram?: TelegramActionEntry[];
+}
+
+/**
+ * GET /api/telegram/chat: a bot token saved without a chat id waits for the owner's chat. `waiting`: nobody wrote to the bot
+ * yet; `found`: the private chats that did, newest first, for him to choose (POST /api/telegram/chat { chatId }), never chosen
+ * for him. `no_bot`: no token saved; `chosen`: a chat is saved.
+ */
+export interface TelegramChatResponse {
+  state: 'no_bot' | 'chosen' | 'waiting' | 'found';
+  chats: { id: string; name: string; at: string }[];
+}
+
+/** POST /api/telegram/chat: the chat saved, the key's check, and the test message's answer. */
+export interface TelegramChatSaveResponse {
+  saved: true;
+  check?: KeyCheck;
+  test: TelegramTestResponse;
+}
+
+/** One thing done from Telegram, in one sentence. */
+export interface TelegramActionEntry {
+  id: string;
+  at: string;
+  sentence: string;
+  undoable: boolean;
+  undoneAt: string | null;
 }
 
 // ---------------------------------------------------------------- settings
@@ -1271,7 +1399,7 @@ export interface AppearanceSettings {
   density: 'regular' | 'compact';
 }
 
-export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version', 'costs'] as const;
+export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error', 'version', 'costs', 'weekly'] as const;
 
 /** D2: which messages reach the owner and when. Times are local "HH:MM". */
 export interface NotificationSettings {
@@ -1284,6 +1412,13 @@ export interface NotificationSettings {
   /** 'each-run' sends the run's digest at once; 'morning' holds deal/review/autopilot lines until morningAt; 'off' sends none (Telegram too). */
   digest: 'each-run' | 'morning' | 'off';
   morningAt: string;
+  /**
+   * Nov 25, "Let me act from Telegram": the agent reads the saved bot's chat (agent/telegramBot.ts) and puts buttons under
+   * its messages. Off (absent) by default, and on an existing install; only with a Telegram key saved does it do anything.
+   */
+  telegramActions?: boolean;
+  /** Nov 25: the weekly summary's day (0 is Sunday) and local time; absent: Monday 08:00. The `weekly` kind switches it off. */
+  weekly?: { day: number; at: string };
 }
 
 /** D2: the desktop shell's own switches (src-tauri applies them). */
@@ -1336,7 +1471,17 @@ export interface AppSettings {
    * budget allows; 'chrome': never a search for them; 'serpapi': SerpApi's listing pages as before. `serpWhenChromeClosed`
    * (default off): a scheduled scan with Chrome closed searches SerpApi instead of waiting for Chrome. Absent: the defaults.
    */
-  scan?: { listingSource: ListingSourceSetting; serpWhenChromeClosed: boolean };
+  scan?: {
+    listingSource: ListingSourceSetting;
+    serpWhenChromeClosed: boolean;
+    /**
+     * Nov 25: with a schedule set, the app starts the owner's own Chrome in the background a few minutes before a scheduled scan
+     * (and when Home Depot pages have waited an hour) so the helper can read them. Absent: on. `closeChromeAfter` (absent: off):
+     * after a scan, quit a Chrome the app started itself; a Chrome it did not start is never closed.
+     */
+    openChrome?: boolean;
+    closeChromeAfter?: boolean;
+  };
   /**
    * Suggested prices (Nov 23): `autoAcceptSuggestions` exists and is always false. It is not offered in the UI and no PATCH
    * changes it: the PO ruled that a price counts when he confirms it (docs/decisions.md).
@@ -1392,8 +1537,9 @@ export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings
   ebaySettings?: Partial<EbaySettings>;
   alerts?: Partial<AlertSettings>;
   appearance?: Partial<AppearanceSettings>;
-  notifications?: Partial<Omit<NotificationSettings, 'kinds' | 'quietHours'>> & {
+  notifications?: Partial<Omit<NotificationSettings, 'kinds' | 'quietHours' | 'weekly'>> & {
     kinds?: Partial<NotificationSettings['kinds']>;
+    weekly?: Partial<NonNullable<NotificationSettings['weekly']>>;
     quietHours?: Partial<NotificationSettings['quietHours']>;
   };
   shell?: Partial<ShellSettings>;

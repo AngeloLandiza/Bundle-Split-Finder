@@ -8,6 +8,7 @@
 
 import { HD_DRIP_PAGES_PER_DAY } from '../scan/hdPace';
 import type { BundleRow, PartRow } from '../scan/types';
+import { ENDED_RETRY_MS, priceEndsAt } from './buying';
 import type { BundleSignals } from './signals';
 import { dayOf } from './state';
 
@@ -68,14 +69,19 @@ export interface KeptDeal {
   link: string | null;
   /** When Home Depot's price was last seen (BundleRow.seenAt: a list read or a page read). */
   hdCheckedAt: number;
+  /** Nov 25: the last moment of the promotion's last day, when Home Depot's page states it (buying.ts priceEndsAt); absent when not. */
+  priceEndsAt?: number | null;
   /** Each matched part with an Amazon listing, once per listing. */
   parts: KeptPart[];
 }
 
 /** What the tracking state says about a deal: watched, and its Buy now signal. */
+/** A way to sell's `notBuyNow` that is the page's "cannot be bought" alone (signals.ts: the reasons are joined by "; "). */
+const CANNOT_BUY_ONLY = /^Home Depot's page says it (cannot be bought right now|is discontinued) \(read [^;]*\)\.$/;
+
 export interface KeepTracking {
   watch: Readonly<Record<string, { watched: boolean } | undefined>>;
-  signals: Readonly<Record<string, { buyNow?: unknown } | undefined>>;
+  signals: Readonly<Record<string, { buyNow?: unknown; options?: readonly { notBuyNow?: string | null }[] } | undefined>>;
 }
 
 const partsOf = (b: Pick<BundleRow, 'parts' | 'options'>): PartRow[] => [...b.parts, ...b.options.flatMap((o) => o.parts)];
@@ -88,10 +94,15 @@ export function keptDealOf(b: BundleRow, t: KeepTracking): KeptDeal | null {
     if (p.status !== 'matched' || !p.asin || parts.has(p.asin)) continue;
     parts.set(p.asin, { asin: p.asin, model: p.model, checkedAt: p.priceCheckedAt ?? p.priceSeenAt ?? null });
   }
-  const buy = t.signals[b.key]?.buyNow;
+  const sig = t.signals[b.key];
+  // Nov 25: a deal held out of Buy now only because Home Depot's page says it cannot be bought is read as often as a Buy now
+  // deal: it comes back by itself at the first read that says it can be bought, so that read should not wait 12 hours.
+  const onlyPage = sig?.options?.some((o) => CANNOT_BUY_ONLY.test(o.notBuyNow ?? '')) === true;
+  const buy = sig?.buyNow;
   return {
-    key: b.key, model: b.model || `Set ${b.itemId}`, tier: buy !== null && buy !== undefined ? 'buyNow' : 'watched',
+    key: b.key, model: b.model || `Set ${b.itemId}`, tier: (buy !== null && buy !== undefined) || onlyPage ? 'buyNow' : 'watched',
     itemId: b.itemId || null, link: b.link, hdCheckedAt: b.seenAt, parts: [...parts.values()],
+    ...(b.buying ? { priceEndsAt: priceEndsAt(b.buying) } : {}),
   };
 }
 
@@ -132,8 +143,19 @@ const tierRank = (t: KeepTier): number => (t === 'buyNow' ? 0 : 1);
  */
 export function hdDue(deals: readonly KeptDeal[], now: number, tried: Readonly<Record<string, number>> = {}): KeptDeal[] {
   return deals
-    .filter((d) => d.itemId !== null && now - Math.max(d.hdCheckedAt, tried[`hd:${d.key}`] ?? 0) >= hdCadence(d.tier))
-    .sort((a, b) => tierRank(a.tier) - tierRank(b.tier) || a.hdCheckedAt - b.hdCheckedAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    .filter((d) => d.itemId !== null && (endedUnread(d, now)
+      ? now - (tried[`hd:${d.key}`] ?? 0) >= ENDED_RETRY_MS
+      : now - Math.max(d.hdCheckedAt, tried[`hd:${d.key}`] ?? 0) >= hdCadence(d.tier)))
+    .sort((a, b) => Number(endedUnread(b, now)) - Number(endedUnread(a, now)) || tierRank(a.tier) - tierRank(b.tier) || a.hdCheckedAt - b.hdCheckedAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
+/**
+ * Nov 25: the deal's Home Depot promotion has ended (the page said when) and its price has not been read since. Such a deal's
+ * price is read first, whatever its cadence (at most every ENDED_RETRY_MS while a read gives no price), and a Buy now one is
+ * not announced until a read confirms the price (agent/keepCurrent.ts staleBuyKeys).
+ */
+export function endedUnread(d: Pick<KeptDeal, 'priceEndsAt' | 'hdCheckedAt'>, now: number): boolean {
+  return d.priceEndsAt != null && now > d.priceEndsAt && d.hdCheckedAt <= d.priceEndsAt;
 }
 
 export interface AmazonDue {
@@ -292,7 +314,8 @@ export function failingOf(s: Pick<BundleSignals, 'options' | 'buyPending'> | und
   const t = o?.notBuyNow?.replace(/\.$/, '');
   if (!t) return null;
   // "Est." and "No sales data" read on after a colon in lower case; a model ("DCS382B sells …") keeps its capitals.
-  return /^[A-Z][a-z]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
+  // "Home Depot's page says it cannot be bought" keeps its capitals too (a name).
+  return /^[A-Z][a-z]/.test(t) && !t.startsWith('Home Depot') ? t.charAt(0).toLowerCase() + t.slice(1) : t;
 }
 
 const usd = (n: number): string => (n < 0 ? `-$${(-n).toFixed(2)}` : `$${n.toFixed(2)}`);

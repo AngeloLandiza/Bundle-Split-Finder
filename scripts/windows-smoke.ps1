@@ -35,8 +35,8 @@ $ErrorActionPreference = 'Stop'
 # Windows PowerShell 5.1 does not load System.Net.Http by itself (PowerShell 7 does).
 Add-Type -AssemblyName System.Net.Http
 $base = "http://127.0.0.1:$Port"
-# The six key names from core/src/api/contract.ts (KEY_NAMES).
-$keyNames = @('serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram')
+# The seven key names from core/src/api/contract.ts (KEY_NAMES).
+$keyNames = @('serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram', 'amazonSeller')
 $failures = 0
 $token = $null
 $appProcess = $null

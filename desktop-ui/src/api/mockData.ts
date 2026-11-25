@@ -33,7 +33,7 @@ export const SETTINGS: AppSettings = {
   autopilot: false,
   appearance: { theme: 'system', accent: 'system', density: 'regular' },
   notifications: {
-    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true },
+    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true, weekly: true },
     sound: false,
     quietHours: { enabled: false, from: '22:00', to: '07:00' },
     digest: 'each-run',
@@ -536,7 +536,7 @@ export const STATE: AppState = {
   helper: { paired: true, connected: true, lastSeenAt: ago(1), jobsWaiting: 0 },
   budget: { serpLeft: 187, serpMonthly: 250, serpReserve: 20, serpPerScan: 5, keepaTokens: 1180, aiSpentUsd: 4.12, aiCapUsd: 20 },
   counts: { review: QUESTIONS.length, autopilotApplied: 3, newDeals: 3 },
-  keys: { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false },
+  keys: { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false, amazonSeller: false },
   firstRun: false,
 };
 
@@ -562,5 +562,6 @@ export const ACTIVITY: ActivityView = {
   ],
   outcomes: [],
   versions: [],
+  fromTelegram: [],
   month: { searches: 63, keepaTokens: 820, aiUsd: 4.12 },
 };

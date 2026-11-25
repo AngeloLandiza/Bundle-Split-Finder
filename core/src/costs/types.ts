@@ -5,7 +5,7 @@
 // worth seeing (eBay calls, Telegram). Never goods bought, never Amazon fees: those are the deals' own numbers.
 // A price nobody entered is "not entered" (null), never $0: rule 4, never guess.
 
-export type CostService = 'serpapi' | 'keepa' | 'ai' | 'ebay' | 'telegram';
+export type CostService = 'serpapi' | 'keepa' | 'ai' | 'ebay' | 'telegram' | 'amazon';
 export type CostUnit = 'searches' | 'tokens' | 'usd' | 'calls' | 'messages';
 /** The services the owner can set a price and a limit for. */
 export type BudgetedService = 'serpapi' | 'keepa' | 'ai';

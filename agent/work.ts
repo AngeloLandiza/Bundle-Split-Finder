@@ -27,11 +27,12 @@ import { keepCodeSample } from '../core/src/keepa/barcode';
 import { readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
 import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/scan/answers';
+import { withBuying, withoutBuying } from '../core/src/scan/buying';
 import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
 import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, NOTICE as EBAY_NOTICE } from '../core/src/scan/ebayPass';
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
 import {
-  addSamples, DESKTOP_STEP_WORDS, endStep, finishUnit, moveUnits, newTailSteps, type PipelineStep, pipelineOf, pipelineViewOf, samplesOf, skipStep, startStep, type PipelineView, type StepState,
+  addSamples, DESKTOP_STEP_WORDS, endStep, finishUnit, moveUnits, newTailSteps, type PipelineStep, pipelineOf, pipelineViewOf, samplesOf, skippedPagesSentence, skipStep, startStep, type PipelineView, type StepState,
 } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
 import { applyPriceGuard } from '../core/src/scan/priceGuard';
@@ -41,6 +42,7 @@ import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tr
 import {
   bogoDigestLines, bogoGroups, mergeBogoPairs, pairBundleRecord, pairFacts, pairsBehindBest, readBogoPass, todayOf, type BogoBrandResult, type BogoGroup,
 } from '../core/src/tracking/bogoPairs';
+import { priceEndsMessages } from '../core/src/tracking/buying';
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { announcedAfter, dayOf, freshSignals, trackReport } from '../core/src/tracking/state';
@@ -62,8 +64,10 @@ import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
-import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, withoutStale } from './signalsPass';
+import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, trendsOfReport, withoutStale } from './signalsPass';
+import { SellerAccount } from './seller';
 import { dealSnapshots, keepaKeeps, keptNow, pullDue, readOneDue, staleBuyKeys, tokenShareOf, used } from './keepCurrent';
+import { backfillMarkets, cachedMarkets, MARKET_BACKFILL } from './marketBackfill';
 import { amazonDue, failingOf, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
 import type { TrackingState } from '../core/src/tracking/state';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
@@ -74,7 +78,7 @@ import type { FactField } from '../core/src/facts/fact';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
-import { buildDigest, sendPending } from './alerts';
+import { buildDigest, sendPending, type OutgoingTelegram } from './alerts';
 import { scrubKeyText } from './keyChecks';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
@@ -84,7 +88,7 @@ import { backlogSentence, fullPerHour, HD_LIST_REREAD_MS, HdPace, type HdMode, p
 import { backlogOf, pagesWanted } from '../core/src/scan/hdOrder';
 import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
-import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
+import type { ActivityErrorRecord, PendingMessage, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer, TelegramAbout } from './store';
 import { aiSpentThisMonth, asksAboutEbay } from './views';
 import { CostBook, scanHistory } from './costs';
 import type { CostStep } from '../core/src/costs/decide';
@@ -93,6 +97,11 @@ import type { CostDecision, CostService } from '../core/src/costs/types';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { askQueueOf } from '../core/src/assist/askAll';
 import type { WorkerJobs } from './workerJobs';
+import { catchUpSentence, slotOf } from '../core/src/selfRun/catchUp';
+import { nextScanNeeds } from '../core/src/selfRun/words';
+import type { WeeklySummary } from '../core/src/selfRun/weekly';
+import type { ChromeControl } from './openChrome';
+import { SelfRun } from './selfRun';
 
 /** How often the scheduler looks whether a scan is due. */
 export const TICK_MS = 30_000;
@@ -142,12 +151,17 @@ export interface WorkDeps {
   runScan?: typeof runScan;
   /** Holds the computer awake while a scan or Look up all runs (agent/keepAwake.ts). Absent: nothing is held (tests). */
   keepAwake?: { hold(): () => void };
+  /** Starts (and may quit) the owner's Chrome for a scheduled scan (agent/openChrome.ts). Absent: never (tests give a fake). */
+  chrome?: ChromeControl;
   /**
    * Home Depot's pace (core/src/scan/hdPace.ts): how it waits for the gap (default a real timer that a Stop ends) and its
    * jitter draw (default Math.random). Tests pass a sleep that moves their clock.
    */
   hdSleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
   hdRandom?: () => number;
+  /** Nov 25, tests: the seller API's two addresses and its wait (agent/seller.ts). */
+  spUrls?: { tokenUrl: string; baseUrl: string };
+  spSleep?: (ms: number) => Promise<void>;
 }
 
 /** A real wait of `ms` that `signal` ends early (rejecting). */
@@ -199,7 +213,8 @@ export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
 
 /** Every key the store holds, as text, so no sentence can carry one out. */
 export function secretsOf(keys: StoredKeys): string[] {
-  return [keys.serpapi, keys.keepa, keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken].filter(
+  const s = keys.amazonSeller;
+  return [keys.serpapi, keys.keepa, keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken, s?.clientId, s?.clientSecret, s?.refreshToken, s?.sellerId].filter(
     (k): k is string => typeof k === 'string' && k.length >= 4,
   );
 }
@@ -265,15 +280,41 @@ export class AgentWork {
   readonly costs: CostBook;
   /** Step 18: the run a held step belongs to (its message goes once per service per run). */
   private costRun = 'start';
+  /** Nov 25: makes each Telegram message as it goes out, with its buttons when the owner acts from Telegram (agent/telegramBot.ts). */
+  telegramCompose: ((m: PendingMessage) => OutgoingTelegram[]) | null = null;
+  /** Nov 25, running without the owner: Chrome started for a scan, open at login, the weekly summary (agent/selfRun.ts). */
+  readonly selfRun: SelfRun;
+  /** When this agent started, and when the scheduler last looked: a scan that starts late says whether the app was running or the computer asleep. */
+  private readonly startedAt: number;
+  private lastTickAt: number | null = null;
+  private catchUp: string | null = null;
+  /** The key of the scheduled scan that is starting (SelfRun.scanKey, taken before the schedule counts from its start). */
+  private scheduledKey: string | null = null;
+  /** Nov 25: the owner's Amazon seller account, read-only (agent/seller.ts). */
+  readonly seller: SellerAccount;
+  /** Why the last seller pass stopped (said once in Activity), or null. */
+  private sellerStopped: string | null = null;
 
   constructor(deps: WorkDeps) {
     this.d = deps;
     this.costs = new CostBook({ store: deps.store, dataDir: deps.dataDir, now: deps.now });
+    this.seller = new SellerAccount({
+      store: deps.store, fetchFn: deps.fetchFn, now: deps.now, dataDir: deps.dataDir,
+      count: (n) => this.costs.count('amazon', n),
+      onKeyProblem: (s) => this.keyProblem('amazonSeller', s),
+      ...(deps.spUrls ? { spUrls: deps.spUrls } : {}), ...(deps.spSleep ? { sleep: deps.spSleep } : {}),
+    });
     this.policy = new NotifyPolicy({ settings: () => deps.store.get('settings').notifications, now: deps.now, emit: deps.notify });
     mkdirSync(deps.dataDir, { recursive: true });
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
     this.cache = new DirCache(join(deps.dataDir, 'cache'));
     this.dealsAtStart = deps.store.get('deals').bundles.length > 0;
+    this.startedAt = deps.now();
+    this.selfRun = new SelfRun({
+      store: deps.store, now: deps.now, ...(deps.chrome ? { chrome: deps.chrome } : {}), helperConnected: deps.helperConnected,
+      nextScanAt: () => this.nextScanAt(), busy: () => this.writing(), jobsWaiting: () => deps.jobs.waitingCount(), hdPausedUntil: () => this.pace.pausedUntil(),
+      record: (sentence) => this.noteSentence(sentence), changed: () => deps.changed(), costs: this.costs, announceWeekly: (w) => this.announceWeekly(w),
+    });
     this.pace = new HdPace({
       now: deps.now, sleep: deps.hdSleep ?? sleepFor, ...(deps.hdRandom ? { random: deps.hdRandom } : {}),
       load: () => paceStateOf(deps.store.get('runtime').hdPace),
@@ -302,14 +343,15 @@ export class AgentWork {
   private signalsDeps(): SignalsDeps {
     return {
       store: this.d.store, cache: this.cache, now: this.d.now, policy: this.policy,
-      telegram: async (text) => {
-        await this.sendTelegram(text);
+      telegram: async (text, about) => {
+        await this.sendTelegram(text, about);
       },
       keepa: () => {
         const app = this.d.store.get('settings');
         return Boolean(this.d.store.get('keys').keepa) && app.settings.amazonRefreshViaKeepa && app.lookups?.drip !== false;
       },
       flatFee: () => this.d.store.get('settings').settings.fees.fulfillmentFee,
+      seller: () => this.seller.lookup(),
       stale: () => staleBuyKeys({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') }, this.d.now()),
     };
   }
@@ -326,9 +368,33 @@ export class AgentWork {
   private async afterChange(report: ScanReport, extra?: { text: string; count: number }, before?: ReadonlyMap<string, DealSnapshot>): Promise<void> {
     if (this.live.busy === 'scan') return;
     try {
+      report = await this.sellerPass(report);
       await evaluateSignals(this.signalsDeps(), report, extra, before ? (t) => this.verdictFlips(before, report, t) : undefined);
     } catch (err) {
       this.addError(`Buy signals could not be judged: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
+    }
+  }
+
+  /**
+   * Nov 25: the deals' listings checked against the owner's Amazon seller account (agent/seller.ts), before their signals are
+   * judged, so a first announcement rests on a fresh check. When Amazon's fee estimates were read, the report is built
+   * again so they count. Without an account: nothing, and the report as it is. Never throws.
+   */
+  private async sellerPass(report: ScanReport): Promise<ScanReport> {
+    // Credentials Amazon refused are not tried again until he replaces them or the daily key check finds them working
+    // (the Keys pane says why); meanwhile the parts stay "not checked", which holds their deals.
+    if (!this.seller.connected() || this.d.store.get('runtime').keyProblems?.amazonSeller) return report;
+    try {
+      const opts = this.signalsDeps();
+      const trend = await trendsOfReport(this.cache, report);
+      const r = await this.seller.refresh(report, trend, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) });
+      // Said once in Activity, not at every pass that stops the same way.
+      if (r.stopped && r.stopped !== this.sellerStopped) this.addError(`Checking your Amazon seller account stopped: ${scrub(r.stopped, this.d.store.get('keys'))}`, null);
+      this.sellerStopped = r.stopped;
+      return r.feesRead > 0 && this.live.busy !== 'scan' ? await this.rebuild() : report;
+    } catch (err) {
+      this.addError(`Your Amazon seller account could not be checked: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
+      return report;
     }
   }
 
@@ -374,6 +440,12 @@ export class AgentWork {
    * fetched. Only when the store held deals at start.
    */
   async signalsAtStart(): Promise<void> {
+    // The market around a listing (Nov 25): trends stored before it get its figures once from the cached Keepa answers.
+    if (!(this.d.store.get('runtime').migrations ?? []).includes(MARKET_BACKFILL)) {
+      const filled = await backfillMarkets(this.cache, cachedMarkets(join(this.d.dataDir, 'cache'))).catch(() => 0);
+      const log = filled > 0 ? [{ name: MARKET_BACKFILL, at: new Date(this.d.now()).toISOString(), sentence: `Amazon market figures (usual prices, Amazon's own offer, sellers, stock, hazards) read for ${filled} listings from Keepa answers already stored: nothing spent. Deals are judged again with them.` }] : [];
+      this.d.store.update('runtime', (r) => ({ ...r, migrations: [...(r.migrations ?? []), MARKET_BACKFILL], ...(log.length ? { migrationLog: [...(r.migrationLog ?? []), ...log] } : {}) }));
+    }
     if (!this.dealsAtStart || this.live.busy !== null) return;
     if ((await this.scanStore.listBundles()).length === 0) return;
     await this.refresh();
@@ -405,6 +477,40 @@ export class AgentWork {
   }
 
   /**
+   * Nov 25: what the next scheduled scan depends on, in a sentence, for the Agent panel ("Next scan"). Null when nothing is missing
+   * (the helper is connected, or no scheduled scan is coming).
+   */
+  nextScanNote(): string | null {
+    const app = this.d.store.get('settings');
+    return nextScanNeeds({
+      coming: this.nextScanAt() !== null,
+      paired: this.d.store.get('pairing').extensions.length > 0,
+      connected: this.d.helperConnected(),
+      openChrome: app.scan?.openChrome !== false,
+      waitsForChrome: scheduledScanWaits(app, false),
+    });
+  }
+
+  /** The sentence for a scheduled scan that starts well after its slot ("The 7:00 AM scan ran at 9:12 AM because the computer was asleep."). */
+  private catchUpOf(previousTickAt: number | null): string | null {
+    const { store } = this.d;
+    const runtime = store.get('runtime');
+    const anchors = [runtime.lastScheduledRunAt, runtime.scheduleFrom ?? null].filter((t): t is number => t !== null);
+    const startedAt = this.d.now();
+    const slot = slotOf(store.get('settings').settings.schedule, startedAt, anchors.length ? Math.max(...anchors) : null);
+    return slot === null ? null : catchUpSentence({ slot, startedAt, agentStartedAt: this.startedAt, previousTickAt, tickMs: TICK_MS });
+  }
+
+  /** One sentence in Activity that is not a scan: what the app did on its own (opened Chrome, turned on open at login). */
+  private noteSentence(sentence: string): void {
+    const at = this.d.now();
+    this.record({
+      id: `run-${at}-self-${Math.floor(Math.random() * 1e6)}`, kind: 'lookup', startedAt: new Date(at).toISOString(), finishedAt: new Date(at).toISOString(), status: 'finished',
+      searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: sentence, trigger: 'scheduled',
+    });
+  }
+
+  /**
    * Settings were saved. Switching from manual to a schedule does not start a paid scan at the next tick: the first
    * scheduled scan is one interval from now (or the next daily slot), and nextScanAt in the state says when.
    */
@@ -418,11 +524,49 @@ export class AgentWork {
   start(): void {
     if (this.timer) return;
     void backfillBriefs(this.briefCtx()).catch(() => {});
+    // Nov 25, supervision: one tick's failure (the scheduler, the held messages) is an Activity error, never the process's end.
     this.timer = setInterval(() => {
-      void this.tick();
-      void this.flushMessages();
+      try {
+        this.tick();
+      } catch (err) {
+        this.jobFailed('The scheduler', err);
+      }
+      void this.flushMessages().catch((err: unknown) => this.jobFailed('Sending the held messages', err));
+      void this.announcePriceEnds().catch((err: unknown) => this.jobFailed('Telling you a price is about to end', err));
     }, TICK_MS);
     this.timer.unref?.();
+  }
+
+  /** What is running now, for the crash line: "scan: Reading Home Depot pages", "drip", or null. */
+  currentStep(): string | null {
+    if (this.live.busy) return this.live.pipeline?.current.label ? `${this.live.busy}: ${this.live.pipeline.current.label}` : this.live.busy;
+    return this.dripping ? 'drip' : null;
+  }
+
+  /**
+   * Nov 25, supervision: a background job failed where it runs (a tick, a drip round, a send). One Activity error, scrubbed,
+   * and not again while the same sentence is still open, so a job failing every tick is one line, not fifty.
+   */
+  jobFailed(what: string, err: unknown): void {
+    try {
+      const sentence = `${what} failed: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`;
+      if ((this.d.store.get('activity').errors ?? []).some((e) => e.sentence === sentence && !e.resolvedAt)) return;
+      this.addError(sentence, null);
+    } catch {
+      // the store itself failed: there is nowhere to say it, and the job is already over
+    }
+  }
+
+  /** A drip round that threw: an Activity error, unless the round was stopped on purpose (a scan claimed the slot). */
+  private dripFailed(err: unknown): void {
+    if (!this.dripCtl.signal.aborted) this.jobFailed('A background lookup', err);
+  }
+
+  /** Nov 25, supervision: a problem the owner should hear of (the restart after a crash). The "error" kind switch decides both channels. */
+  async announceProblem(text: string): Promise<void> {
+    if (this.d.store.get('settings').notifications.kinds.error === false) return;
+    this.policy.send({ kind: 'error', title: 'Split Finder', body: text, route: '/activity' });
+    await this.sendTelegram(text);
   }
 
   close(): void {
@@ -442,18 +586,25 @@ export class AgentWork {
 
   /** The scheduler: a due scan starts unless the agent is paused or busy. Returns whether one started. */
   tick(): boolean {
+    const before = this.lastTickAt;
+    this.lastTickAt = this.d.now();
+    // Nov 25: Chrome for the next scan, open at login, the weekly summary. Its own steps decide whether anything is due.
+    void this.selfRun.tick();
     if (this.live.busy || this.answering > 0 || this.d.store.get('agent').paused) return false;
     const next = this.nextScanAt();
     if (next === null || Date.parse(next) > this.d.now()) {
       // Step 15: nothing else runs, so the drip may look up a waiting part with Keepa.
-      void this.drip().catch(() => {});
+      void this.drip().catch((err: unknown) => this.dripFailed(err));
       return false;
     }
     // Free scan: with Chrome closed a scheduled scan waits for it (unless the owner let SerpApi find the bundles then).
-    if (scheduledScanWaits(this.d.store.get('settings'), this.d.helperConnected())) {
-      void this.drip().catch(() => {});
+    // Nov 25: unless the app opened Chrome for this scan and the wait is over: then the scan does what it can without it.
+    if (scheduledScanWaits(this.d.store.get('settings'), this.d.helperConnected()) && !this.selfRun.mayScanWithoutChrome()) {
+      void this.drip().catch((err: unknown) => this.dripFailed(err));
       return false;
     }
+    this.catchUp = this.catchUpOf(before);
+    this.scheduledKey = this.selfRun.scanKey();
     this.begin('scan', () => this.scan('scheduled'));
     return true;
   }
@@ -939,7 +1090,7 @@ export class AgentWork {
         pages += 1;
         const b = await store.getBundle(key);
         if (got?.kind === 'read' && b) {
-          await store.putBundle({ ...b, page: { ...got.content, readAt: now() } });
+          await store.putBundle(withBuying({ ...b, page: { ...withoutBuying(got.content), readAt: now() } }, got.content.buying, now()));
           settled += await this.splitAgain([key]);
         }
       } else {
@@ -985,11 +1136,15 @@ export class AgentWork {
     this.noteKeep({ pages: out.pages, ...(out.refused ? {} : { tried: `hd:${out.deal.key}` }) });
     await this.noteBacklog().catch(() => null);
     this.hdRecord(out.pages, 0, 0, out.checked ? 1 : 0);
-    if (out.changed) await this.refresh(undefined, before);
-    else if (out.checked) {
-      // The same price, checked now: the deal's row says so (no rebuild needed).
+    // Nov 25: a price that moved, or what the page states about buying it (can be bought now, the limit, the dates), judges again.
+    if (out.changed || out.buyingChanged) await this.refresh(undefined, before);
+    else if (out.checked || out.buying) {
+      // The same price and the same statements, read now: the deal's row says so (no rebuild needed).
       const at = this.d.now();
-      this.d.store.update('deals', (d) => ({ ...d, bundles: d.bundles.map((b) => (b.key === out.deal.key ? { ...b, seenAt: at } : b)) }));
+      this.d.store.update('deals', (d) => ({
+        ...d,
+        bundles: d.bundles.map((b) => (b.key === out.deal.key ? { ...b, ...(out.checked ? { seenAt: at } : {}), ...(out.buying ? { buying: out.buying } : {}) } : b)),
+      }));
       this.d.changed();
     } else this.d.changed();
     return out.pages;
@@ -1075,6 +1230,13 @@ export class AgentWork {
 
   // ------------------------------------------------------------------ the run
 
+  /** One line in Activity that is not a run's summary ("The Chrome helper was updated to match the app."). Free. */
+  announceActivity(text: string): void {
+    const now = this.d.now();
+    const at = new Date(now).toISOString();
+    this.record({ id: `run-${now}-note`, kind: 'lookup', startedAt: at, finishedAt: at, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: text, trigger: 'scheduled' });
+  }
+
   private record(run: RunRecord): void {
     this.d.store.update('activity', (a) => ({ ...a, runs: [...a.runs.filter((r) => r.id !== run.id), run].slice(-KEEP_RUNS) }));
     // Step 18: a finished run may have moved a service past a warning (once a month each).
@@ -1101,7 +1263,7 @@ export class AgentWork {
   private async costMessage(title: string, body: string): Promise<void> {
     if (this.d.store.get('settings').notifications.kinds.costs === false) return;
     this.policy.send({ kind: 'costs', title, body, route: '/costs' });
-    await this.sendTelegram(`${title}. ${body}`);
+    await this.sendTelegram(`${title}. ${body}`, [{ kind: 'costs' }]);
   }
 
   /** The cost warnings due now (a warn percent, a forecast past a limit, a limit reached), each once a month. */
@@ -1416,7 +1578,7 @@ export class AgentWork {
     const settings = store.get('settings');
     let report: ScanReport | null = null;
     try {
-      report = (await postScanWork({ store: this.scanStore, settings: toScanSettings(extensionSettingsOf(settings)), cache: this.cache, now: this.d.now })).report;
+      report = (await postScanWork({ store: this.scanStore, settings: toScanSettings(extensionSettingsOf(settings)), cache: this.cache, now: this.d.now, amazonFees: this.seller.amazonFees() })).report;
       // The app replaces a wrong listing itself: what the price guard and the audit withdrew is re-checked before it is asked.
       report = await this.selfCorrected(report);
       await this.publish(report);
@@ -1449,7 +1611,7 @@ export class AgentWork {
       if (ai.problem) notes.push(ai.problem);
       if (ai.waitingForChrome > 0) notes.push(`${ai.waitingForChrome} split ${ai.waitingForChrome === 1 ? 'question waits' : 'questions wait'} for Chrome.`);
       applied = await this.autopilot();
-      if (applied > 0 || ai.asked > 0) report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))), this.cache);
+      if (applied > 0 || ai.asked > 0) report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))), this.cache, this.seller.amazonFees());
       await this.publish(report);
       await this.trackScan(report);
       // The listing ladder, rung 2: within what the scan's cap leaves, the listings its catalog check left unconfirmed.
@@ -1492,7 +1654,10 @@ export class AgentWork {
     const backlog = await this.noteBacklog().catch(() => null);
     const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil(), ceiling: this.pace.ceilingWords() }) : null;
     const said = waits ? notes.filter((n) => !waits.includes(n)) : notes;
-    run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, said, again !== undefined, job, waits)}`;
+    // Nov 25: a catch-up scan says when it was due and why it ran late.
+    const late = trigger === 'scheduled' ? this.catchUp : null;
+    this.catchUp = null;
+    run.summary = `${late ? `${late} ` : ''}${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, said, again !== undefined, job, waits)}`;
     this.record(run);
     const open = report ? report.review.length + (asksAboutEbay(store.get('settings')) ? report.ebayQuestions?.length ?? 0 : 0) : 0;
     store.update('activity', (a) => ({
@@ -1541,6 +1706,9 @@ export class AgentWork {
     }
     const verified = job ? catalogSentence(job.matchesVerified ?? 0, job.matchesRemoved ?? 0) : null;
     if (verified) parts.push(verified);
+    // Nov 25: a page step that read nothing says why (Home Depot's pause or this scan's limit), not "page limit reached" for both.
+    const skipped = skippedPagesSentence(job?.pipeline);
+    if (skipped) parts.push(skipped);
     if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
     if (run.questionsAsked) parts.push(`AI asked about ${run.questionsAsked}.`);
     if (run.autopilotApplied) parts.push(`Autopilot applied ${run.autopilotApplied}.`);
@@ -1592,7 +1760,7 @@ export class AgentWork {
     if (lookups) {
       // Look up all reads nothing in Chrome.
     } else if (pausedUntil !== null) notes.push(pausedSentence(pausedUntil));
-    else if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
+    else if (!connected) notes.push((trigger === 'scheduled' && this.scheduledKey ? this.selfRun.closedSentence(this.scheduledKey) : null) ?? 'Chrome is closed, so Home Depot pages wait for the next scan.');
     // BOGO found by itself, free, before the scan: the pairs it finds are bundles the scan then reads, splits and matches.
     else await this.bogoPass(ext, readers, notes);
     const ebay = lookups ? null : this.ebayStep(app, keys, notes);
@@ -1606,7 +1774,9 @@ export class AgentWork {
       app, trigger, chromeConnected: connected, ...(pausedUntil !== null ? { hdPaused: true } : {}), serpCanPay: budget.blockReason(1) === null,
       keepaCanLookUp: Boolean(keepa.keepaLookup) && keepa.keepaScale?.tokensLeft != null, settings: scanSettings, readers,
     });
-    if (discovery?.note) notes.push(discovery.note);
+    // Nov 25: after the app tried to open Chrome, its one sentence says it; the scan's own "No new bundles ... Chrome is closed" would repeat it.
+    const said = trigger === 'scheduled' && !connected && this.scheduledKey !== null && this.selfRun.closedSentence(this.scheduledKey) !== null;
+    if (discovery?.note && !(said && /Chrome is closed/.test(discovery.note))) notes.push(discovery.note);
     const job = await scan({
       bogoPairs, partPricesExtra, catalogFirst: [...buyWaitsOn(store.get('tracking'))],
       // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
@@ -1615,7 +1785,7 @@ export class AgentWork {
       ...(discovery?.chromeListing ? { chromeListing: discovery.chromeListing } : {}),
       shouldStop: () => this.stopCtl.signal.aborted,
       ...(connected
-        ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices, readItemPages: readers.readPromoPages, hdPagesLeft: () => this.pace.left('scan') }
+        ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices, readItemPages: readers.readPromoPages, hdPagesLeft: () => this.pace.left('scan'), hdBlock: () => this.pace.blocked('scan') }
         : { noReaderReason: lookups ? 'not in this run' : pausedUntil !== null ? 'Home Depot paused' : 'Chrome closed' }),
       ...(ebay ? { ebay } : {}),
       ...keepa,
@@ -1832,7 +2002,15 @@ export class AgentWork {
     const alerts = this.d.store.get('settings').alerts;
     const now = this.d.now();
     const opts = this.signalsDeps();
-    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) }) }));
+    // Nov 25: a scan's deals are checked against his seller account before they are judged (its message follows), so a
+    // first announcement rests on a fresh check. Amazon's fees read now count from the next rebuild.
+    if (this.seller.connected() && !this.d.store.get('runtime').keyProblems?.amazonSeller) {
+      const r = await this.seller.refresh(report, trend, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) }).catch(() => null);
+      if (r?.stopped && r.stopped !== this.sellerStopped) this.addError(`Checking your Amazon seller account stopped: ${scrub(r.stopped, this.d.store.get('keys'))}`, null);
+      if (r) this.sellerStopped = r.stopped;
+    }
+    const seller = this.seller.lookup();
+    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store), ...(seller ? { seller } : {}) }) }));
   }
 
   /** What the views show beside each deal: its BOGO promotion's estimate and the FBA-fee estimate, from stored data. */
@@ -2168,7 +2346,7 @@ export class AgentWork {
   private async rebuild(): Promise<ScanReport> {
     // The price guard over what is stored (core/src/scan/priceGuard.ts): free, and never beside a scan, whose end runs it.
     if (this.live.busy !== 'scan') await applyPriceGuard(this.scanStore, this.d.now());
-    let report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    let report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache, this.seller.amazonFees());
     if (this.live.busy !== 'scan') report = await this.selfCorrected(report);
     await this.publish(report);
     return report;
@@ -2185,7 +2363,7 @@ export class AgentWork {
       cleared: this.d.store.get('tracking').sanityCleared ?? [],
     }, report.bundles);
     if (!done.changed) return report;
-    return reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    return reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache, this.seller.amazonFees());
   }
 
   /** Ask AI now, about one question or every open one (the app's buttons). Runs in the background. */
@@ -2370,6 +2548,17 @@ export class AgentWork {
       await this.scanStore.putConfirmedPrice(record);
       await this.refresh();
       return record;
+    });
+  }
+
+  /**
+   * Nov 25: the owner ships this listing himself (or no longer): FBA's answer no longer holds his deals, and Amazon's FBA
+   * fee estimate is not used for it. Remembered by ASIN; the report and the signals are judged again. Never beside a scan.
+   */
+  setSelfShip(asin: string, on: boolean): Promise<void> {
+    return this.serialAnswer('A scan or a search is running. Change it when it has finished.', async () => {
+      this.seller.setSelfShip(asin, on);
+      await this.refresh();
     });
   }
 
@@ -2601,7 +2790,15 @@ export class AgentWork {
     store.update('tracking', (t) => ({ ...t, notified: [...fresh.notified, ...bogo.keys].slice(-2000), announced: announcedAfter(t.announced, fresh.lines, now) }));
     // Through the notification policy (its kinds, quiet hours and the morning digest): a deal line goes as kind 'deal'.
     const text = digest.event && digest.text ? this.policy.digest(digest.event, digest.text) : null;
-    return this.sendTelegram(text);
+    // Nov 25: what the message is about, for its buttons: the deals it names as worth buying now, the questions new to him, the scan.
+    const newQuestions = app.alerts.reviewDigest ? report.review.filter((q) => q.answer === null && !runtime.notifiedQuestions.includes(q.id)).map((q) => q.id) : [];
+    const buyKeys = app.alerts.enabled ? fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey)).map((l) => l.bundleKey) : [];
+    const about: TelegramAbout[] = [
+      ...(buyKeys.length ? [{ kind: 'buyNow' as const, keys: buyKeys }] : []),
+      ...(newQuestions.length ? [{ kind: 'questions' as const, ids: newQuestions }] : []),
+      { kind: 'scan' },
+    ];
+    return this.sendTelegram(text, about);
   }
 
   /**
@@ -2615,6 +2812,42 @@ export class AgentWork {
     await this.sendTelegram(text);
   }
 
+  /** Nov 25: the weekly summary, one message on each channel the owner has on: the notification's short form (its kind switch and quiet hours apply) and Telegram's full text. */
+  async announceWeekly(w: WeeklySummary): Promise<void> {
+    this.policy.send({ kind: 'weekly', title: 'Split Finder', body: w.short, route: '/today' });
+    await this.sendTelegram(w.text);
+  }
+
+  /**
+   * Nov 25: a Buy now deal whose Home Depot price ends within PRICE_ENDS_WITHIN_DAYS days is said once (per deal and end
+   * date), through the same channels as a buy line: the notification policy (kind switch, quiet hours, the morning digest)
+   * and Telegram, when the owner has alerts on. A deal whose prices are stale is not said (it waits for its read).
+   */
+  async announcePriceEnds(): Promise<number> {
+    const { store } = this.d;
+    if (!store.get('settings').alerts.enabled) return 0;
+    const now = this.d.now();
+    const data = { deals: store.get('deals'), tracking: store.get('tracking') };
+    const stale = staleBuyKeys(data, now);
+    const buyNow = data.deals.bundles.filter((b) => data.tracking.watch[b.key]?.watched === true && (data.tracking.signals[b.key]?.buyNow ?? null) !== null && !stale.has(b.key));
+    const due = priceEndsMessages(
+      buyNow.map((b) => ({ key: b.key, model: b.model || `Set ${b.itemId}`, link: b.link, price: b.price, profit: b.estimate?.profit ?? null, buying: b.buying })),
+      now, data.tracking.notified,
+    );
+    if (due.length === 0) return 0;
+    store.update('tracking', (t) => ({ ...t, notified: [...t.notified, ...due.map((m) => m.notifiedKey)].slice(-2000) }));
+    due.forEach((m, i) => {
+      this.record({
+        id: `run-${now}-priceends-${i}`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: new Date(now).toISOString(), status: 'finished',
+        searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: m.sentence, trigger: 'scheduled',
+      });
+    });
+    const text = due.map((m) => m.sentence).join('\n');
+    const sent = this.policy.digest({ kind: 'deal', title: 'Split Finder', body: text, count: due.length, route: '/' }, text);
+    await this.sendTelegram(sent);
+    return due.length;
+  }
+
   /** Quiet hours ended or the morning came: the held notifications go out, and the morning digest to Telegram. */
   async flushMessages(): Promise<void> {
     const text = this.policy.flush();
@@ -2622,12 +2855,14 @@ export class AgentWork {
   }
 
   /** The waiting Telegram messages and `text` (when there is one), in order. Returns a sentence when Telegram failed. */
-  private async sendTelegram(text: string | null): Promise<string | null> {
+  private async sendTelegram(text: string | null, about?: TelegramAbout[]): Promise<string | null> {
     const { store } = this.d;
     const tg = store.get('keys').telegram;
     const pending = store.get('runtime').telegram.pending;
-    if (!tg || (!text && pending.length === 0)) return null;
-    const sent = await sendPending(this.d.fetchFn, tg, pending, text ? { text, at: new Date(this.d.now()).toISOString() } : null);
+    // Nov 25: a bot saved without its chat yet (the app finds it: agent/telegramBot.ts) sends nothing.
+    if (!tg?.chatId?.trim() || (!text && pending.length === 0)) return null;
+    const next = text ? { text, at: new Date(this.d.now()).toISOString(), ...(about?.length ? { about } : {}) } : null;
+    const sent = await sendPending(this.d.fetchFn, tg, pending, next, this.telegramCompose ?? undefined);
     this.costs.count('telegram', sent.sent);
     const at = new Date(this.d.now()).toISOString();
     store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
@@ -2641,8 +2876,8 @@ export class AgentWork {
   private async resendPending(): Promise<string | null> {
     const tg = this.d.store.get('keys').telegram;
     const pending = this.d.store.get('runtime').telegram.pending;
-    if (!tg || pending.length === 0) return null;
-    const sent = await sendPending(this.d.fetchFn, tg, pending, null);
+    if (!tg?.chatId?.trim() || pending.length === 0) return null;
+    const sent = await sendPending(this.d.fetchFn, tg, pending, null, this.telegramCompose ?? undefined);
     this.costs.count('telegram', sent.sent);
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
@@ -2657,8 +2892,8 @@ export class AgentWork {
     else if (err.retry.kind === 'ask') this.askNow();
     else {
       const tg = this.d.store.get('keys').telegram;
-      if (!tg) throw new WorkRefused('Add the Telegram bot token and chat id in Settings.');
-      const sent = await sendPending(this.d.fetchFn, tg, this.d.store.get('runtime').telegram.pending, null);
+      if (!tg?.chatId?.trim()) throw new WorkRefused('Add the Telegram bot token and chat id in Settings.');
+      const sent = await sendPending(this.d.fetchFn, tg, this.d.store.get('runtime').telegram.pending, null, this.telegramCompose ?? undefined);
       this.d.store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? new Date(this.d.now()).toISOString() : r.telegram.lastSentAt, lastError: sent.error } }));
       if (sent.error) throw new WorkRefused(`Telegram: ${sent.error}`);
     }

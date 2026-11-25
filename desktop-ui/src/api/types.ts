@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, OutcomeEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
+  NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -12,6 +12,7 @@ import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
 export type {
   ActivityError,
+  TelegramActionEntry,
   UpdateNotice,
   VersionEntry,
   AppSettings,
@@ -37,8 +38,11 @@ export type {
   FbaEstimate,
   FreeItem,
   FreeItemBody,
+  OptionMarket,
   OptionSignals,
+  PartMarket,
   Signal,
+  UsualEstimate,
   Velocity,
   WatchState,
   KeyCheck,
@@ -117,6 +121,23 @@ export interface Drip {
   feesWaiting?: number;
 }
 
+/** Home Depot's pace as the agent counts it now: what waits for a page read and when the next one is read (agent state `homeDepot`). */
+export interface HomeDepotReading {
+  /** No page is read before this (ISO): Home Depot refused one. Null when reading is not paused. */
+  pausedUntil: string | null;
+  pagesWaiting: number;
+  setsWaiting: number;
+  bundlesWaiting: number;
+  /** Pages between scans an hour at most, now; and a day. */
+  perHour: number;
+  perDay: number;
+  readToday: number;
+  /** When the next page is read between scans (ISO), or null. */
+  nextReadAt: string | null;
+  /** The hourly pace is below the full one today. */
+  slowed: boolean;
+}
+
 export interface AgentView {
   /** 'asking': the agent is busy with the AI pass on Review questions. */
   status: 'idle' | 'scanning' | 'asking' | 'stopping' | 'paused' | 'error';
@@ -125,11 +146,15 @@ export interface AgentView {
   /** The agent's own one-line step, when it reports one without the stages. */
   step: string | null;
   nextScanAt: string | null;
+  /** What the next scheduled scan needs and does not have (Chrome closed, the helper not connected), in one sentence; absent when nothing is missing. */
+  nextScanNote?: string;
   lastScan: LastScan | null;
   /** The background lookups; absent from an older agent. */
   drip?: Drip;
   /** Keeping watched deals current between scans; absent when nothing is watched or from an older agent. */
   keepCurrent?: KeepCurrent;
+  /** The Home Depot pages waiting, counted live by the agent (not the last scan's figure); absent from an older agent or before a count. */
+  homeDepot?: HomeDepotReading;
 }
 
 export interface HelperState {
@@ -142,6 +167,8 @@ export interface HelperState {
   outdated?: boolean;
   /** The helper's own version, when it said one. */
   version?: string;
+  /** What the app does about the old helper's files (agent/helperUpdate.ts); absent: only a reload is left to try. */
+  update?: { state: 'updating' } | { state: 'install'; why: string };
 }
 
 export interface BudgetState {
@@ -163,7 +190,7 @@ export interface AppState {
   budget: BudgetState;
   /** `review` counts the questions that need him; `reviewWorking` the ones the app is still checking itself (not in `review`). Absent from an older agent. */
   counts: { review: number; autopilotApplied: number; newDeals: number; reviewWorking?: number };
-  keys: Record<KeyName, boolean>;
+  keys: KeysPresence;
   /** True until the first scan has finished; drives the one-time first-run flow. */
   firstRun: boolean;
   /** Why a saved key does not work, in the agent's words, by key; absent when none is rejected. */
@@ -172,6 +199,15 @@ export interface AppState {
   keyChecks?: KeyChecks;
   /** A version newer than this app is ready (the agent read the project's release note); absent when none, when he turned it off, or when he closed this version's notice. */
   update?: UpdateNotice;
+  /** The app turned "Open at login" on itself because a schedule was set; a quiet notice with Turn off, until he closes it. */
+  loginNotice?: { sentence: string };
+  /** Nov 25: his seller account's calls today and the app's cap a day per kind of call; absent without an account. */
+  seller?: SellerUsage;
+}
+
+export interface SellerUsage {
+  used: Record<'restrictions' | 'eligibility' | 'fees' | 'sales', number>;
+  caps: Record<'restrictions' | 'eligibility' | 'fees' | 'sales', number>;
 }
 
 export type KeyProblems = Partial<Record<KeyName, string>>;
@@ -238,6 +274,8 @@ export interface DealRow {
   needsLook?: NeedsLook | null;
   /** A watched deal: when its Home Depot price and its Amazon prices were last checked; a stale Buy now since when. */
   pricesChecked?: PricesChecked | null;
+  /** Nov 25: what Home Depot's page last stated about buying it (the limit per order, when its price ends, the return window). */
+  buying?: DealBuying | null;
 }
 
 /** When a watched deal's prices were last checked (ISO), and for a Buy now kept from going stale, since when they were not. */
@@ -303,7 +341,7 @@ export interface SetContent {
 }
 
 export interface SplitEvidence {
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set' | 'amazon_catalog';
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set' | 'amazon_catalog' | 'hd_same_title';
   text: string;
   url?: string;
   /** owner_fact: the model his answer is about ("Change" forgets it). */
@@ -396,6 +434,8 @@ export interface DealDetail {
   signalNote?: string | null;
   /** A watched deal: when its prices were last checked (shown beside the verdict, never hidden by it). */
   pricesChecked?: PricesChecked | null;
+  /** Nov 25: what Home Depot's page last stated about buying it. */
+  buying?: DealBuying | null;
   /** The estimate counts no fulfillment fee for `parts` of its `of` parts. */
   beforeFulfillment?: { parts: number; of: number } | null;
   /** Nov 23: in place of `estimate` while some model part has no counted price; null otherwise. */
@@ -426,6 +466,24 @@ export interface DealDetail {
   fbaEstimate: FbaEstimate | null;
   /** Checking the app's own work: every finding on this deal, holds first, each with its links; empty when none. */
   needsLook?: NeedsLook[];
+  /** The market around each counted part's listing, and the estimate at the usual prices (core/src/tracking/market.ts); null when none is stored. */
+  market?: OptionMarket | null;
+  /**
+   * Nov 25: what his Amazon seller account says about each part (by ASIN), and the quiet line on a Buy now deal when no
+   * account is connected. Null from an agent that does not send it.
+   */
+  seller?: { connected: boolean; note: string | null; parts: SellerPartLine[] } | null;
+}
+
+/** One part's line from his seller account; `link` is Amazon's apply page, already held to sellercentral.amazon.com. */
+export interface SellerPartLine {
+  model: string;
+  asin: string;
+  text: string;
+  tone: 'ok' | 'attention';
+  link: string | null;
+  canSelfShip: boolean;
+  selfShip: boolean;
 }
 
 // ------------------------------------------------------------------ GET /api/review
@@ -624,6 +682,8 @@ export interface ActivityView {
   outcomes: OutcomeEntry[];
   /** The new versions the app told him about, newest first. */
   versions: VersionEntry[];
+  /** What he did from Telegram (pause, resume, Scan now, Not for me), newest first, with Undo where the app has one. */
+  fromTelegram: TelegramActionEntry[];
   /** This month's spend, from the agent's own count. */
   month: { searches: number; keepaTokens: number; aiUsd: number };
 }

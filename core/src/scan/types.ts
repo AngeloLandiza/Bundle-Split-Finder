@@ -5,10 +5,10 @@
 // (tests, the command line) with an in-memory store and in the extension's service
 // worker with IndexedDB behind the same ScanStore.
 
-import type { Decomposition, SetContent, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
+import type { Decomposition, PageConflict, SetContent, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
 import type { PartFact } from '../facts/fact';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
-import type { PageContent } from '../hdPage';
+import type { BuyingFacts, PageContent } from '../hdPage';
 import type { Grade } from '../match';
 import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
 import type { BlockReason } from '../serpapi/budget';
@@ -149,6 +149,12 @@ export interface BundleRecord {
   /** What the bundle's own page said. Undefined or null: not read yet. */
   page?: PageReading | null;
   /**
+   * Nov 25: what a Home Depot page of this bundle last stated about buying it (can be bought, discontinued, the per-order
+   * limit, the return window, the promotion's dates) and when it was read. Absent: no page has been read since this was
+   * kept ("not checked yet"), which is never taken as "cannot be bought".
+   */
+  buying?: BundleBuying;
+  /**
    * Step 15: Home Depot lists this bundle as a BOGO pair (tracking/bogoPairs.ts findBogoPairs: the starter's model, its
    * joiner and the free item, at the starter's price to the cent, the starter carrying the promotion). The pair rule's
    * own fields; the split reads it (scan/settle.ts rule 1). Absent on any other bundle.
@@ -160,6 +166,11 @@ export interface BundleRecord {
    * page has been read for its brand and model. Absent on any other bundle.
    */
   set?: BundleSet;
+}
+
+/** What a Home Depot page stated about buying a bundle (hdPage.ts BuyingFacts), and when it was read. */
+export interface BundleBuying extends BuyingFacts {
+  readAt: number;
 }
 
 /** A set's items as Home Depot lists them, each with what its own page said once read. */
@@ -716,6 +727,8 @@ export interface ReviewItem {
    */
   settledParts?: SettledPart[];
   unsettledParts?: UnsettledPart[];
+  /** Nov 25, split questions: the bundle's page and its kit's own page name different models for the kit (Decomposition.conflict). */
+  conflict?: PageConflict;
   /**
    * A match question the re-check opened (scan/recheck.ts) after no candidate passed: each listing it tried and why it was
    * not taken, so the owner starts where the app stopped. Absent on every other question.
@@ -1063,7 +1076,7 @@ export interface PartFees {
    * flat   the owner's flat fee (his choice 'flat', or with 'keepa' a fallback above $0: see `fulfillmentWhy`)
    * none   signals round 3: no fulfillment fee counted ($0): the estimate is "before fulfillment" for this part
    */
-  fulfillmentFrom: 'keepa' | 'flat' | 'none';
+  fulfillmentFrom: 'keepa' | 'flat' | 'none' | 'amazon';
   /**
    * With fees.fulfillmentSource 'keepa' and no Keepa fee: why. not_pulled: Keepa was not asked about the listing yet (the
    * drip asks); no_keepa_fee: Keepa was asked and has no FBA fee for it; no_listing: priced by a confirmed price, no listing.
@@ -1071,7 +1084,15 @@ export interface PartFees {
   fulfillmentWhy?: 'not_pulled' | 'no_keepa_fee' | 'no_listing';
   /** A fraction (0.15). */
   referralRate: number;
-  referralFrom: 'keepa' | 'flat';
+  referralFrom: 'keepa' | 'flat' | 'amazon';
+  /**
+   * Nov 25: Amazon's own fee estimate for the owner's account (Product Fees, read through his seller account) at the price
+   * the estimate uses. When present (and the fee settings take Amazon's FBA fee, fulfillmentSource 'keepa') it replaces
+   * Keepa's figures: referral from its ReferralFee line, fulfillment from everything else it counted (fulfillmentFrom and
+   * referralFrom 'amazon'). `keepaFulfillment`: Keepa's FBA fee for the same listing, kept so the difference can be shown
+   * and measured; null when Keepa has none.
+   */
+  amazon?: { total: number; referral: number; other: number; at: number; keepaFulfillment: number | null };
 }
 
 /**
@@ -1278,6 +1299,8 @@ export interface BundleRow {
   percentOff: number | null;
   /** When Home Depot's price for the bundle was seen: the bundle record's seenAt, the time of the listing response. */
   seenAt: number;
+  /** Nov 25: what Home Depot's page last stated about buying it (BundleRecord.buying); absent until a page was read. */
+  buying?: BundleBuying;
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];

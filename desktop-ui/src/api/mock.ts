@@ -40,8 +40,9 @@ const REFUSED: Record<KeyName, string> = {
   openai: "DeepSeek answered authentication_error: Authentication Fails (HTTP 401). Copy the key again from that service's API keys page.",
   ebay: 'eBay answered invalid_client: client authentication failed (HTTP 401). Copy the App ID (Client ID) and Cert ID (Client Secret) from the Production keyset at developer.ebay.com › Application Keys.',
   telegram: 'Telegram did not accept the bot token. Copy it again from BotFather in Keys. Telegram said: Unauthorized.',
+  amazonSeller: 'Amazon did not accept these credentials (invalid_grant: The request has an invalid grant parameter) (HTTP 400). The refresh token is not valid: make a new one with Authorize app in Develop Apps.',
 };
-const SERVICE: Record<KeyName, string> = { serpapi: 'SerpApi', keepa: 'Keepa', anthropic: 'Anthropic', openai: 'the model service', ebay: 'eBay', telegram: 'Telegram' };
+const SERVICE: Record<KeyName, string> = { serpapi: 'SerpApi', keepa: 'Keepa', anthropic: 'Anthropic', openai: 'the model service', ebay: 'eBay', telegram: 'Telegram', amazonSeller: 'Amazon' };
 const WORKS: Partial<Record<KeyName, string>> = { serpapi: '118 of 250 searches left', keepa: '60 tokens, 1 a minute', telegram: 'bot @split_finder_bot, chat found' };
 
 function scenario(): Scenario {
@@ -186,7 +187,7 @@ export function createMockClient(): ApiClient {
     state.counts = { ...reviewCounts(questions), autopilotApplied: 2, newDeals: 0 };
     if (!state.counts.reviewWorking) delete state.counts.reviewWorking;
     state.budget = { ...state.budget, serpLeft: 119, serpMonthly: 250, serpReserve: 100, serpPerScan: 18, keepaTokens: 57, keepaRefillPerMin: 1, aiSpentUsd: 0.7, aiCapUsd: 25 };
-    state.keys = { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false };
+    state.keys = { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false, amazonSeller: false };
     state.keyProblems = { ebay: 'eBay did not accept the App ID and Cert ID. Use the production keys from developer.ebay.com, not the sandbox pair.' };
     state.agent.nextScanAt = null;
     const waiting = deals.filter((d) => d.lookup).length;
@@ -209,7 +210,7 @@ export function createMockClient(): ApiClient {
   }
   if (mode === 'firstrun') {
     state.firstRun = true;
-    state.keys = { serpapi: false, keepa: false, anthropic: false, openai: false, ebay: false, telegram: false };
+    state.keys = { serpapi: false, keepa: false, anthropic: false, openai: false, ebay: false, telegram: false, amazonSeller: false };
     state.helper = { paired: false, connected: false, lastSeenAt: null, jobsWaiting: 0 };
     state.agent.lastScan = null;
     state.budget.aiSpentUsd = 0;
@@ -532,6 +533,12 @@ export function createMockClient(): ApiClient {
       state.update = undefined;
       sync();
     },
+    async answerLoginNotice(turnOff) {
+      await online();
+      state.loginNotice = undefined;
+      if (turnOff) settings = { ...settings, shell: { ...settings.shell, launchAtLogin: false } };
+      sync();
+    },
     async stop() {
       await online();
       stopTimer();
@@ -656,6 +663,17 @@ export function createMockClient(): ApiClient {
       emit({ type: 'deals' });
       emit({ type: 'review' });
     },
+    async setSelfShip(asin, selfShip) {
+      await online(200);
+      for (const d of Object.values(details)) {
+        for (const l of d.seller?.parts ?? []) {
+          if (l.asin !== asin) continue;
+          l.selfShip = selfShip;
+          l.canSelfShip = !selfShip;
+        }
+      }
+      emit({ type: 'deals' });
+    },
     async removePrice(id, model) {
       await online(300);
       const d = details[id];
@@ -689,6 +707,20 @@ export function createMockClient(): ApiClient {
     async testTelegram() {
       await online(400);
       return state.keys.telegram ? { ok: true } : { ok: false, problem: 'Telegram is not set up. Add a bot token and chat id in Keys first.' };
+    },
+    async telegramChat() {
+      await online(150);
+      if (state.keys.telegram) return { state: 'chosen', chats: [] };
+      return state.keys.telegramWaitingForChat ? { state: 'found', chats: [{ id: '5150', name: 'Angelo', at: new Date().toISOString() }] } : { state: 'no_bot', chats: [] };
+    },
+    async useTelegramChat() {
+      await online(300);
+      state.keys = { ...state.keys, telegram: true, telegramWaitingForChat: false };
+      return { saved: true, test: { ok: true } };
+    },
+    async undoTelegramAction(id) {
+      await online();
+      activity.fromTelegram = activity.fromTelegram.map((e) => (e.id === id ? { ...e, undoable: false, undoneAt: new Date().toISOString() } : e));
     },
     async patchSettings(patch) {
       await online(150);

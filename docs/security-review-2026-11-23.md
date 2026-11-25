@@ -200,3 +200,28 @@ address, api.telegram.org, homedepot.com and amazon.com (through the paired Chro
   link on those hosts. The link rule limits where it can point, and the installer is unsigned either way (SmartScreen asks
   him to confirm).
 
+
+## Addendum, Nov 25: two more hosts, the owner's Amazon seller account (read-only)
+
+With an Amazon seller account saved (Settings, Keys), the agent talks to two more hosts, and only with that key:
+`api.amazon.com` (the token exchange: client id, client secret, refresh token, form-encoded in a POST body) and
+`sellingpartnerapi-na.amazon.com` (the short-lived access token in `x-amz-access-token`, the seller id in the Listings
+Restrictions query). No other request carries any of them. `core/src/amazon/spapi/client.ts`; docs/decisions.md, "Nov 25:
+the owner's Amazon seller account, read-only".
+
+- **Read-only.** The client has no method that writes; the roles asked for are not restricted (no PII).
+- **Keys at rest and in errors.** The four fields are in `keys.json` like the others, never returned (the Keys pane shows
+  only that it is set). `keySecrets` (agent/keyChecks.ts), `secretsOf` (agent/work.ts) and the client's own `spSecrets`
+  take each field out, as it is and URL-encoded, before a sentence is cut; the access token too. A fetch error's own text
+  is never used. Tested: a refusal that echoes the refresh token, the secret, the seller id or the access token leaves none.
+- **What is written.** `spapi-ledger.jsonl` holds the operation, status and item count of each call. The samples kept for
+  the notes (`runtime.spapiSamples`, in the audit export) have every field named like a token, secret, client id or seller
+  id replaced and every credential string removed. The per-ASIN records hold only the answers and a hash of the seller id.
+- **Links from Amazon.** A Listings Restrictions "apply" link is kept only when it is https on exactly
+  `sellercentral.amazon.com` (no user, password or port; `sellerCentralLink`), checked again in the window before it is
+  shown, and opened through `open_external` after `is_web_url`.
+- **Pace.** Per operation at or below the documented rates, the app's own cap a day, one backoff on 429/5xx; never a loop.
+
+The hosts the app talks to are now: serpapi.com, api.keepa.com, api.ebay.com, api.anthropic.com, the owner's
+OpenAI-compatible address, api.telegram.org, raw.githubusercontent.com (the release note), homedepot.com and amazon.com
+(through the paired Chrome), and, with a seller account saved, api.amazon.com and sellingpartnerapi-na.amazon.com.

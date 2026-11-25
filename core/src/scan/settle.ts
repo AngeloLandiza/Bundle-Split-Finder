@@ -14,7 +14,7 @@
 //
 // Nothing here guesses a part: every model comes from Home Depot's model number or its own pages. Pure: no store.
 
-import { dewaltBundleForm, type Catalog, type Decomposition, OFFERABLE_PART, PACK_WITH_NOTE, type SettledPart, type SplitEvidence, type UnsettledPart } from '../decompose';
+import { dewaltBundleForm, type Catalog, type Decomposition, kindsFromTitle, OFFERABLE_PART, PACK_WITH_NOTE, type PageConflict, type SettledPart, type SplitEvidence, type UnsettledPart } from '../decompose';
 import { type KitItem, kitPageStored, parseIncludes, splitItems, type KitRecord } from '../kitContents';
 import { sameModel } from '../match';
 import { pageCatalog, pageReadingOf, RYOBI_TOKEN } from '../pageSplit';
@@ -38,13 +38,35 @@ export interface SettleData {
    * stored match (catalogConfirmed below), by partKey. Absent: none known.
    */
   amazonCatalog?: ReadonlyMap<string, { text: string; url: string }>;
-  /** The Nov 24 rules turned off, for the measurement only (scripts/measure-fewer-questions.ts). Absent: all on. */
-  off?: readonly Nov24Rule[];
+  /**
+   * Nov 25, rule F: the other Home Depot bundles listed under exactly this title (sameTitleKey), each with its model and page.
+   * Absent: none known.
+   */
+  sameTitle?: (brand: string, title: string) => readonly TitleTwin[];
+  /** The settle rules turned off, for the measurements only (scripts/measure-fewer-questions*.ts). Absent: all on. */
+  off?: readonly SettleRule[];
+}
+
+/** Nov 25, rule F: a Home Depot bundle record as sameTitle gives it. */
+export interface TitleTwin {
+  model: string;
+  title: string;
+  url?: string;
 }
 
 /** Nov 24's settle rules (docs/decisions.md, "Fewer questions"): A the page names the two halves, B a part Home Depot does not sell alone, C a part's own page. */
 export type Nov24Rule = 'page_halves' | 'accessory' | 'part_page';
-const on = (data: SettleData, rule: Nov24Rule): boolean => !(data.off ?? []).includes(rule);
+/** Nov 25's (docs/decisions.md, "Questions, round 2"): F a special buy Home Depot also sells as its tools, G a short code the page spells out. */
+export type Nov25Rule = 'special_buy_twin' | 'page_code';
+export type SettleRule = Nov24Rule | Nov25Rule;
+const on = (data: SettleData, rule: SettleRule): boolean => !(data.off ?? []).includes(rule);
+
+/**
+ * Nov 25, rule F: a title as two Home Depot listings of the same product write it alike: lower case, "&amp;" read as "&", any
+ * run of other characters one space ("5-1/2 in." and "5 1/2 in." are the same words).
+ */
+export const sameTitleKey = (brand: string, title: string): string =>
+  `${up(brand)}|${title.toLowerCase().replace(/&amp;/g, '&').replace(/[^a-z0-9]+/g, ' ').trim()}`;
 
 /** Nov 24, rule C: how many times Home Depot may refuse a part's own page before a split asks without it. */
 export const PART_PAGE_REFUSALS_MAX = 3;
@@ -152,8 +174,9 @@ function spelledOut(bundle: Pick<BundleRecord, 'brand' | 'model'>, split: Decomp
 
 type PartCheck =
   /** `parts`: an owner's fact sells a special buy or combo as these tools in its place (ownerFact). */
-  | { kind: 'confirmed'; title: string | null; evidence: SplitEvidence; parts?: string[] }
-  | { kind: 'missing' }
+  | { kind: 'confirmed'; title: string | null; evidence: SplitEvidence; parts?: string[]; more?: SplitEvidence[] }
+  /** `wait`: the models whose reading it waits for, when not the part's own (rule F: a special buy's tools). */
+  | { kind: 'missing'; wait?: string[] }
   | { kind: 'refused'; why: string; part: UnsettledPart };
 
 /** The stored part-price records of a model, its own and its twin form's (Ruling 70). */
@@ -175,6 +198,13 @@ function checkPart(brand: string, model: string, catalog: Catalog, data: SettleD
     const tools = exact.title === null ? null : titleTools(exact.title);
     // Step 16 (round 2, measured): Home Depot's own page for exactly a special buy, even one naming no other model, is not proof it
     // is one part: PCL500525SB's page names none, and the key splits it into PCL500B + PCL525B (docs/decisions.md).
+    if (special && !data.facts?.get(partKey(brand, m))?.sellAs) {
+      // Nov 25, rule F: a special buy Home Depot also sells under the same title as the tools its model number spells out.
+      // What the owner said he sells it as (whole, or as tools) always wins: then it is his fact, below (ownerFact).
+      const sb = specialBuyTools(brand, m, exact.title, data);
+      if (sb?.kind === 'tools') return { kind: 'confirmed', title: exact.title, evidence: sb.evidence[0]!, parts: sb.tools, more: sb.evidence.slice(1) };
+      if (sb?.kind === 'wait') return { kind: 'missing', wait: sb.models };
+    }
     if (special) return { kind: 'refused', why: `Home Depot sells ${m} as a special buy, itself a bundle, so the parts it holds are asked`, part: { model: m, why: 'special_buy', ...(exact.title ? { what: exact.title } : {}), ...(exact.link ? { url: exact.link } : {}) } };
     if (!kit && tools !== null && tools >= 2) {
       return { kind: 'refused', why: `Home Depot sells ${m} as a ${tools}-tool combo the catalog does not know as a kit`, part: { model: m, why: 'combo', ...(exact.title ? { what: exact.title } : {}), ...(exact.link ? { url: exact.link } : {}) } };
@@ -375,7 +405,7 @@ function settleReading(
   // A special buy he sells as its tools stands for those tools in the reading.
   const replaced = checks.flatMap(([p, c]) => (c.kind === 'confirmed' && c.parts ? c.parts : [p]));
   const refused = checks.flatMap(([, c]) => (c.kind === 'refused' ? [c.why] : []));
-  const missing = checks.filter(([, c]) => c.kind === 'missing').map(([p]) => p);
+  const missing = checks.flatMap(([p, c]) => (c.kind === 'missing' ? c.wait ?? [p] : []));
   // Step 16 (round 2): no question while a part still has a free read to come: the refusals are asked once every part is read.
   if (refused.length > 0 && missing.length > 0) return { ...split, waitingFor: missing };
   if (refused.length > 0) {
@@ -405,10 +435,12 @@ function settleReading(
   const kitCount = on(data, 'part_page') ? kitPageTools(brand, reading[0]!, data) : null;
   const misfit = countMisfit(bundle, reading, titles, kitCount) === null ? null : countMisfit(bundle, reading.filter((p) => !uncounted.has(p)), titles, kitCount);
   if (misfit !== null) return { ...split, notes: [...split.notes, misfit] };
-  const evidence = checks.flatMap(([, c]) => (c.kind === 'confirmed' ? [c.evidence] : []));
+  const evidence = checks.flatMap(([, c]) => (c.kind === 'confirmed' ? [c.evidence, ...(c.more ?? [])] : []));
   const owner = evidence.some((e) => e.kind === 'owner_fact');
   const named2 = evidence.some((e) => e.kind === 'page_quote' || e.kind === 'amazon_catalog');
+  const twin = evidence.some((e) => e.kind === 'hd_same_title');
   const note = owner ? 'Home Depot sells each part under its own model, or you said what it is'
+    : twin ? 'Home Depot sells each part under its own model, and the special buy as those tools under the same title'
     : named2 ? 'Home Depot sells each part under its own model, or names the one it does not sell alone'
     : 'Home Depot sells each part under its own model';
   return { components: replaced, status: 'resolved', notes: [note], evidence };
@@ -453,11 +485,172 @@ export function pageHalvesSplit(
   return { ...out, evidence: [quote, ...(out.evidence ?? [])] };
 }
 
+// ---------------------------------------------------------------- rule F (Nov 25): a special buy Home Depot also sells as its tools
+
+/** A RYOBI special buy whose model number is a prefix and two three-digit tool numbers: PCL406424SB (PCL406B, PCL424B). */
+const SPECIAL_SIX = /^([A-Z]{2,4})(\d{3})(\d{3})SB$/;
+
+/** Rule F's reading of a special buy: its tools, settled with the evidence; waiting for Home Depot's reading of some; or null. */
+export type SpecialBuyRead = { kind: 'tools'; tools: string[]; evidence: SplitEvidence[] } | { kind: 'wait'; models: string[] } | null;
+
 /**
- * The settle rules on a split the model number and the page left in review (rule 1, then rule 2). A resolved split, or
- * one no rule applies to, comes back unchanged.
+ * Rule F: the tools inside a RYOBI special buy, when three independent Home Depot records agree and none disagrees:
+ *   1. the model number reads as a prefix and two three-digit tool numbers (PCL406424SB: PCL406B and PCL424B), the
+ *      special-buy convention decompose.ts already reads with two digits (PBLRC2501SB);
+ *   2. Home Depot lists the same set under exactly the same title as a bundle whose model number is exactly those tools
+ *      joined by a hyphen (PCL424B-PCL406B, "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in.
+ *      Random Orbit Sander (Tools Only)"), and every other bundle of that title reads the same;
+ *   3. Home Depot sells each tool by itself under exactly that model, as one tool whose kind the special buy's title names
+ *      (and "Tool Only" when the title says Tools Only), and the title's tool count is the number of tools.
+ * A tool not read yet makes it wait for that reading. Anything else (no such twin, a count that differs, a tool's page of
+ * another kind) is null: the special buy is asked about, as before. Measured on every recorded special buy before it was
+ * adopted (scripts/measure-questions-round2.ts); "a special buy is one kit" stays rejected.
+ */
+export function specialBuyTools(brand: string, model: string, title: string | null, data: SettleData): SpecialBuyRead {
+  if (!on(data, 'special_buy_twin') || up(brand) !== 'RYOBI' || title === null) return null;
+  const m = SPECIAL_SIX.exec(up(model));
+  if (!m || m[2] === m[3]) return null;
+  const tools = [`${m[1]}${m[2]}B`, `${m[1]}${m[3]}B`];
+  const stated = toolCounts(title);
+  if (stated.length !== 1 || stated[0] !== tools.length) return null;
+  const twins = (data.sameTitle?.(brand, title) ?? []).filter((t) => norm(t.model) !== norm(model));
+  if (twins.length === 0) return null;
+  const isTools = (pieces: readonly string[]): boolean =>
+    pieces.length === tools.length && tools.every((x) => pieces.some((p) => sameModel('RYOBI', p, x))) && pieces.every((p) => tools.some((x) => sameModel('RYOBI', p, x)));
+  if (!twins.every((t) => isTools(up(t.model).split('-')))) return null;
+  // A tool not read yet is waited for; one read and not found sold by itself (or found as another model) settles nothing.
+  if (tools.some((t) => !exactReading('RYOBI', t, data) && readingsOf('RYOBI', t, data).length > 0)) return null;
+  const missing = tools.filter((t) => !exactReading('RYOBI', t, data));
+  if (missing.length > 0) return { kind: 'wait', models: missing };
+  const titleKinds = new Set(kindsFromTitle(title));
+  const twin = twins[0]!;
+  const evidence: SplitEvidence[] = [
+    { kind: 'hd_same_title', text: `Home Depot sells the same set under the same title as ${up(twin.model)}: "${twin.title}".`, ...(twin.url ? { url: twin.url } : {}) },
+  ];
+  for (const t of tools) {
+    const r = exactReading('RYOBI', t, data)!;
+    if (r.title === null || titleTools(r.title) !== 1) return null;
+    if (saysToolsOnly(title) && !saysToolsOnly(r.title)) return null;
+    const kinds = kindsFromTitle(r.title);
+    if (kinds.length === 0 || !kinds.every((k) => titleKinds.has(k))) return null;
+    evidence.push({ kind: 'hd_part_page', text: `Home Depot sells ${t} by itself: ${r.title}${r.price !== null ? ` (${money(r.price)})` : ''}.`, ...(r.link ? { url: r.link } : {}) });
+  }
+  return { kind: 'tools', tools, evidence };
+}
+
+/** Rule F on a bundle that is itself the special buy (PCL406424SB): its tools, through rule 2's checks; null when rule F does not apply. */
+export function specialBuySplit(
+  bundle: Pick<BundleRecord, 'brand' | 'model' | 'title' | 'link' | 'page'>, split: Decomposition, catalog: Catalog, data: SettleData,
+): Decomposition | null {
+  if (split.status === 'resolved' || bundle.model.includes('-') || contradicted(split)) return null;
+  // The owner's own word on how he sells this special buy is never overridden.
+  if (data.facts?.get(partKey(bundle.brand, bundle.model))?.sellAs) return null;
+  const sb = specialBuyTools(bundle.brand, bundle.model, bundle.title, data);
+  if (sb === null) return null;
+  if (sb.kind === 'wait') return { ...split, waitingFor: sb.models };
+  const out = settleReading(bundle, { ...split, alternatives: [sb.tools] }, sb.tools, catalog, data);
+  if (out.status !== 'resolved') return out;
+  return { ...out, notes: ['Home Depot sells each part under its own model, and the special buy as those tools under the same title'], evidence: [sb.evidence[0]!, ...(out.evidence ?? [])] };
+}
+
+// ---------------------------------------------------------------- rule G (Nov 25): a short code the page spells out
+
+/**
+ * Rule G: a DEWALT "<kit>W<two digits>" whose code the stored catalog cannot read (DCKTS681D1P1W82: "'82' matches nothing
+ * in the catalog"; decompose.ts never reads a two-character code from listings' titles), where the bundle's own page names
+ * exactly one whole DEWALT model, other than the kit, that ends in those digits (DCS382B, named on eight of its lines). The
+ * kit must be a kit the catalog knows. The reading [kit, model]; null when the rule does not apply. The code is the tail of
+ * the model's number, as in every DEWALT code Home Depot writes (W05 is DCB205 and W34 DCS334B, both the owner's answers).
+ */
+export function pageCode(bundle: Pick<BundleRecord, 'brand' | 'model' | 'page'>, split: Decomposition, catalog: Catalog): string[] | null {
+  if (up(bundle.brand) !== 'DEWALT' || split.status === 'resolved' || (split.alternatives ?? []).length > 0 || !bundle.page) return null;
+  const form = dewaltBundleForm(bundle.model);
+  if (form?.kind !== 'kit' || !/^\d{2}$/.test(form.bonus) || split.notes[0] !== `'${form.bonus}' matches nothing in the catalog`) return null;
+  if (catalog.get(form.base)?.isKit !== true) return null;
+  const named = [...namedModels('DEWALT', bundle.page.bullets, false).keys()]
+    .filter((m) => WHOLE_DEWALT.test(m) && norm(m) !== norm(form.base) && (norm(m).endsWith(form.bonus) || norm(m).endsWith(`${form.bonus}B`)));
+  return named.length === 1 ? [form.base, named[0]!] : null;
+}
+
+/**
+ * Rule G, then rule 2's checks on that reading (Home Depot sells the model by itself, the page names nothing else no part
+ * explains, the count fits); settled only when the model's own Home Depot title is of a kind the bundle's title names
+ * ("Reciprocating Saw"). A question it leaves offers the reading. Null when rule G does not apply.
+ */
+export function pageCodeSplit(
+  bundle: Pick<BundleRecord, 'brand' | 'model' | 'title' | 'link' | 'page'>, split: Decomposition, catalog: Catalog, data: SettleData,
+): Decomposition | null {
+  if (!on(data, 'page_code')) return null;
+  const reading = pageCode(bundle, split, catalog);
+  if (reading === null) return null;
+  const [kit, tool] = reading as [string, string];
+  const code = dewaltBundleForm(bundle.model)!.bonus;
+  const said = `'${code}' is ${tool}, the one model the page names that ends in ${code}`;
+  // The reading leads the question's reason; "'82' matches nothing in the catalog" is no longer what it is about.
+  const rest = split.notes.filter((n) => n !== `'${code}' matches nothing in the catalog`);
+  const base: Decomposition = { components: split.components, status: 'needs_review', notes: [said, ...rest], alternatives: [[kit, tool]] };
+  // A page that already names models the model number does not fit (W21's page names DCD999, DCF887, …: another kit's lines)
+  // settles nothing: the question offers the reading, for the owner to approve or not.
+  if (contradicted(split)) return base;
+  const out = settleReading(bundle, base, reading, catalog, data);
+  if (out.status !== 'resolved') return out;
+  const title = exactReading('DEWALT', tool, data)?.title ?? null;
+  const kinds = title === null ? [] : kindsFromTitle(title);
+  const bundleKinds = new Set(kindsFromTitle(bundle.title));
+  if (kinds.length === 0 || !kinds.every((k) => bundleKinds.has(k))) {
+    return { ...base, notes: [...base.notes, `the title does not name what Home Depot's page of ${tool} is${title ? ` (${title})` : ''}`] };
+  }
+  const line = (bundle.page?.bullets ?? []).find((b) => b.includes(tool));
+  const quote: SplitEvidence = { kind: 'page_quote', text: `Model ${up(bundle.model)}: ${said}${line ? `: "${line.trim()}"` : ''}.`, ...(bundle.link ? { url: bundle.link } : {}) };
+  return { ...out, evidence: [quote, ...(out.evidence ?? [])] };
+}
+
+// ---------------------------------------------------------------- Nov 25: two Home Depot pages that disagree on a kit
+
+const LEAD_DEWALT = /^\s*(DC[A-Z]{0,3}\d{3,4}[A-Z0-9]*)\b/i;
+const NAMES_NOT_FIT = /^page names (.+), which do not fit the model number$/;
+
+/**
+ * A DEWALT kit + tool bundle left in review because its page names other models for the kit half (DCK225D2WCS380B: "page
+ * names DCD708B, DCF809B, which do not fit the model number"), whose kit has its own Home Depot page that leads its lines
+ * with other models (DCK225D2: "DCD794 - …", "DCF809 - …"). Nothing is settled: the two pages disagree, and which is right
+ * is the owner's call; this only says how they disagree, with both pages (Decomposition.conflict). Null otherwise.
+ */
+export function kitPageConflict(bundle: Pick<BundleRecord, 'brand' | 'model' | 'link' | 'page'>, split: Decomposition, data: SettleData): PageConflict | null {
+  if (up(bundle.brand) !== 'DEWALT' || split.status === 'resolved' || (split.alternatives ?? []).length !== 1) return null;
+  const reading = split.alternatives![0]!;
+  const form = dewaltBundleForm(bundle.model);
+  if (form?.kind !== 'kit' || reading.length !== 2 || norm(reading[0]!) !== norm(form.base)) return null;
+  const [kit, tool] = reading as [string, string];
+  const said = split.notes.map((n) => NAMES_NOT_FIT.exec(n)).find((x) => x !== null);
+  if (!said) return null;
+  const bundleNames = said[1]!.split(',').map((x) => up(x)).filter(Boolean);
+  const kitRecord = data.kitsOf('DEWALT', kit).find((k) => k.page && typeof k.itemId === 'string' && /^\d+$/.test(k.itemId));
+  if (!kitRecord?.page) return null;
+  const kitNames = [...new Set(kitRecord.page.bullets.map((b) => LEAD_DEWALT.exec(b)?.[1]?.toUpperCase()).filter((x): x is string => !!x))];
+  if (kitNames.length === 0) return null;
+  // The bundle's models the kit's page does not name (DCF809B is its DCF809): when it names them all, the pages agree.
+  const differ = bundleNames.filter((b) => !kitNames.some((k) => sameModel('DEWALT', b, k) || b.startsWith(k)));
+  if (differ.length === 0) return null;
+  const bundleQuote = (bundle.page?.bullets ?? []).find((b) => b.includes(differ[0]!)) ?? '';
+  const sentence = (kitRecord.page.description ?? '').split(/(?<=\.)\s+/).find((x) => kitNames.some((k) => x.toUpperCase().includes(k)));
+  const kitQuote = sentence ?? kitRecord.page.bullets.find((b) => LEAD_DEWALT.test(b)) ?? '';
+  return {
+    kit: up(kit), tool: up(tool), bundleNames: differ, bundleQuote: bundleQuote.trim(), ...(bundle.link ? { bundleUrl: bundle.link } : {}),
+    kitNames, kitQuote: kitQuote.trim(), kitUrl: `${HOME_DEPOT}/p/${kitRecord.itemId}`,
+  };
+}
+
+/**
+ * The settle rules on a split the model number and the page left in review (rule 1, then rule 2, then A, G and F). A
+ * resolved split, or one no rule applies to, comes back unchanged, except that a question on two Home Depot pages that
+ * disagree says how (kitPageConflict).
  */
 export function settleSplit(bundle: BundleRecord, split: Decomposition, catalog: Catalog, data: SettleData): Decomposition {
   if (split.status === 'resolved') return split;
-  return bogoSplit(bundle, split) ?? homeDepotSplit(bundle, split, catalog, data) ?? pageHalvesSplit(bundle, split, catalog, data) ?? split;
+  const out = bogoSplit(bundle, split) ?? homeDepotSplit(bundle, split, catalog, data) ?? pageHalvesSplit(bundle, split, catalog, data)
+    ?? pageCodeSplit(bundle, split, catalog, data) ?? specialBuySplit(bundle, split, catalog, data) ?? split;
+  if (out.status === 'resolved' || (out.waitingFor ?? []).length > 0) return out;
+  const conflict = kitPageConflict(bundle, out, data);
+  return conflict ? { ...out, conflict } : out;
 }

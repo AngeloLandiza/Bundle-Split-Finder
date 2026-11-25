@@ -29,7 +29,7 @@ export function ScanningPane() {
   const fromKeepa = fees.fulfillmentSource === 'keepa';
   const budget = state?.budget;
   // Free scan: the bundle lists are read in Chrome unless the owner chose SerpApi; with Keepa, finding bundles spends nothing.
-  const source = settings.scan ?? { listingSource: 'auto' as const, serpWhenChromeClosed: false };
+  const source: NonNullable<typeof settings.scan> = settings.scan ?? { listingSource: 'auto', serpWhenChromeClosed: false };
   const free = source.listingSource !== 'serpapi' && Boolean(state?.keys.keepa) && cfg.amazonRefreshViaKeepa;
   const f = forecast(cfg.schedule, cfg.searchesPerScan, budget?.serpMonthly ?? 250, cfg.reserve, { free });
   const setCfg = (part: Partial<typeof cfg>, delay = 0) => update({ settings: part }, { delay });
@@ -99,6 +99,22 @@ export function ScanningPane() {
               label="Scheduled scans search SerpApi while Chrome is closed"
               checked={source.serpWhenChromeClosed}
               onChange={(serpWhenChromeClosed) => update({ scan: { serpWhenChromeClosed } })}
+            />
+          ) : null}
+        </div>
+      </Row>
+      <Row label="Open Chrome" align="start" help="With a schedule set, a few minutes before a scan, and when Home Depot pages have waited an hour, Split Finder starts your own Chrome in the background (your profile, no window brought forward) so the helper can read them. It never closes a Chrome you opened.">
+        <div className="stack">
+          <Checkbox
+            label="Open Chrome for scheduled scans"
+            checked={source.openChrome !== false}
+            onChange={(openChrome) => update({ scan: { openChrome } })}
+          />
+          {source.openChrome !== false ? (
+            <Checkbox
+              label="Close it again after the scan, only if Split Finder opened it"
+              checked={source.closeChromeAfter === true}
+              onChange={(closeChromeAfter) => update({ scan: { closeChromeAfter } })}
             />
           ) : null}
         </div>

@@ -88,6 +88,14 @@ export function when(at: string | number, now: number = Date.now()): string {
   return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time(d)}`;
 }
 
+/** A moment as a clock time on its own day ("10:54 AM"), or with the day when it is not today ("tomorrow 12:00 AM"). Never "in 12 min". */
+export function clockTime(at: string | number, now: number = Date.now()): string {
+  const ms = typeof at === 'number' ? at : Date.parse(at);
+  if (!Number.isFinite(ms)) return '';
+  const d = new Date(ms);
+  return dayStart(d) === dayStart(new Date(now)) ? time(d) : when(ms, now);
+}
+
 /** "about 4 min", "under a minute", or "estimating" (design.md, Scan progress > The estimate). */
 export function eta(seconds: number | null | undefined): string {
   if (seconds === null || seconds === undefined) return 'estimating';

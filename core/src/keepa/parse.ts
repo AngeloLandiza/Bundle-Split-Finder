@@ -1,6 +1,6 @@
 // Parse Keepa JSON into the fields the matcher and ROI logic need later.
 
-import type { KeepaMeta, KeepaProduct, KeepaProductResponse, KeepaSearchResponse } from './types';
+import type { KeepaMarket, KeepaMeta, KeepaProduct, KeepaProductResponse, KeepaSearchResponse } from './types';
 
 const num = (v: unknown, fallback = 0): number => {
   const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
@@ -76,6 +76,40 @@ function tracking(raw: Record<string, unknown>): Pick<KeepaProduct, 'monthlySold
   };
 }
 
+/** stats[field][index] as a count (0 is a count), or null for Keepa's -1 / -2 and anything else. */
+const statsCount = (stats: Record<string, unknown>, field: string, index: number): number | null => {
+  const arr = stats[field];
+  return Array.isArray(arr) ? count(arr[index]) : null;
+};
+
+/** The product's hazardous-materials entry, when it names a UN number (types.ts KeepaMarket.hazmat). */
+function hazmatOf(v: unknown): KeepaMarket['hazmat'] {
+  if (!Array.isArray(v)) return null;
+  const aspect = (name: string): string | null => {
+    const hit = v.find((x): x is { aspect: string; value: string } => !!x && typeof x === 'object' && (x as { aspect?: unknown }).aspect === name && typeof (x as { value?: unknown }).value === 'string');
+    return hit && hit.value.trim() !== '' ? hit.value.trim() : null;
+  };
+  const unId = aspect('united_nations_regulatory_id');
+  return unId === null ? null : { unId, name: aspect('proper_shipping_name'), transportClass: aspect('transportation_regulatory_class') };
+}
+
+/** The market fields of one pull (types.ts KeepaMarket); undefined without stats. */
+function marketOf(raw: Record<string, unknown>): KeepaMarket | undefined {
+  const stats = raw.stats;
+  if (!stats || typeof stats !== 'object') return undefined;
+  const s = stats as Record<string, unknown>;
+  const oos = statsCount(s, 'outOfStockPercentage90', 1);
+  return {
+    newAvg180: statsCurrent(stats, 1, 'avg180') ?? statsCurrent(stats, 0, 'avg180'),
+    amazonCurrent: statsCurrent(stats, 0),
+    buyBoxIsAmazon: typeof s.buyBoxIsAmazon === 'boolean' ? s.buyBoxIsAmazon : null,
+    newOffers: statsCount(s, 'current', 11),
+    newOffersAvg90: statsCount(s, 'avg90', 11),
+    outOfStock90: oos !== null && oos <= 100 ? oos : null,
+    hazmat: hazmatOf(raw.hazardousMaterials),
+  };
+}
+
 /** The non-empty strings of an array, or none. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : []);
 
@@ -84,8 +118,10 @@ function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
   const price = amazonCentsFromStats(raw.stats);
   const rank = statsCurrent(raw.stats, 3);
   const hasStats = !!raw.stats && typeof raw.stats === 'object';
+  const market = marketOf(raw);
   return {
     ...tracking(raw),
+    ...(market ? { market } : {}),
     // Present (a number or null) only when the pull carried stats, so a trend stored without them reads as "not asked".
     ...(hasStats ? { newAvg30: averageCents(raw.stats, 'avg30'), newAvg90: averageCents(raw.stats, 'avg90') } : {}),
     ...(price ? { amazonPriceSource: price.source } : {}),

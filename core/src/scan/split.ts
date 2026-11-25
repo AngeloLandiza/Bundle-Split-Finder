@@ -6,7 +6,7 @@
 import { type Catalog, catalogEntry, type Decomposition, decompose, dewaltBundleForm, kindsFromTitle, PACK_WITH_NOTE, type SetContent } from '../decompose';
 import { kitIndex, kitRecords } from '../kitContents';
 import { splitWithPage } from '../pageSplit';
-import { catalogConfirmed, type SettleData, settleSplit } from './settle';
+import { catalogConfirmed, sameTitleKey, type SettleData, settleSplit, type TitleTwin } from './settle';
 import type { BundleRecord, ListingRecord, ScanStore, SetItem } from './types';
 import { hdPackSize } from './classify';
 
@@ -100,15 +100,30 @@ export async function knownModels(store: ScanStore, o: { noPacks?: boolean } = {
       if (entry) catalog.set(r.model, { ...entry, packQty: n! });
     }
   }
+  const bundles = await store.listBundles();
   const settle: SettleData = {
     partPrices: new Map(partPrices.map((r) => [r.key, r] as const)),
-    kitsOf: kitIndex(kitRecords(await store.listBundles(), catalogRecords)),
+    kitsOf: kitIndex(kitRecords(bundles, catalogRecords)),
+    // Nov 25, rule F: Home Depot's bundles by their title, so a special buy finds the same set sold under its tools' models.
+    sameTitle: titleIndex(bundles),
     // Answer once (Nov 23): what the owner settled about each model, when the store keeps it (core/src/facts/fact.ts).
     facts: new Map((store.listPartFacts ? await store.listPartFacts() : []).map((f) => [f.key, f] as const)),
     // Nov 24, rule B: the parts whose listing Amazon's catalog confirmed (brand and part number), read from the stored matches.
     amazonCatalog: catalogConfirmed(await store.listMatches()),
   };
   return { stored, catalog, listings, settle };
+}
+
+/** Nov 25, rule F: the stored Home Depot bundles (sets left out) by brand and title (sameTitleKey). */
+export function titleIndex(bundles: readonly BundleRecord[]): (brand: string, title: string) => TitleTwin[] {
+  const by = new Map<string, TitleTwin[]>();
+  for (const b of bundles) {
+    if (b.set || b.retailer !== 'homedepot') continue;
+    const k = sameTitleKey(b.brand, b.title);
+    const twin: TitleTwin = { model: b.model, title: b.title, ...(b.link ? { url: b.link } : {}) };
+    by.set(k, [...(by.get(k) ?? []), twin]);
+  }
+  return (brand, title) => by.get(sameTitleKey(brand, title)) ?? [];
 }
 
 /**

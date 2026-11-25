@@ -1,6 +1,6 @@
 import { Fragment, useEffect, type ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { ActivityError, AutopilotEntry, OutcomeEntry, OwnerAnswer, Run, VersionEntry } from '../api/types';
+import type { ActivityError, AutopilotEntry, OutcomeEntry, OwnerAnswer, Run, TelegramActionEntry, VersionEntry } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { Fold } from '../components/Fold';
 import { Glyph } from '../components/Glyph';
@@ -58,6 +58,11 @@ export function ActivityScreen() {
         {d && d.outcomes.length > 0 ? (
           <Section label="Purchases and sales you recorded" count={d.outcomes.length}>
             <DayRows items={d.outcomes} at={(o) => o.at} row={(o) => <OutcomeRow key={o.id} o={o} />} />
+          </Section>
+        ) : null}
+        {d && d.fromTelegram.length > 0 ? (
+          <Section label="From Telegram" count={d.fromTelegram.length}>
+            <DayRows items={d.fromTelegram} at={(t) => t.at} row={(t) => <TelegramRow key={t.id} t={t} />} />
           </Section>
         ) : null}
         {d && d.versions.length > 0 ? (
@@ -159,6 +164,27 @@ function VersionRow({ v }: { v: VersionEntry }) {
       <div className="arow-main">
         <p className="arow-title">{v.sentence}</p>
       </div>
+    </li>
+  );
+}
+
+/** Something he did from Telegram (pause, resume, Scan now, Not for me), with the same Undo as the app's. */
+function TelegramRow({ t }: { t: TelegramActionEntry }) {
+  const undo = useAction(api.undoTelegramAction);
+  return (
+    <li className="arow">
+      <span className="arow-time">{clock(t.at)}</span>
+      <div className="arow-main">
+        <p className="arow-title">{t.sentence}</p>
+        {undo.error ? <p className="arow-sub arow-error" role="alert">{undo.error}</p> : null}
+      </div>
+      {t.undoneAt ? (
+        <Tag>Undone</Tag>
+      ) : t.undoable ? (
+        <Button size="sm" busy={undo.busy} busyLabel="Undoing…" onClick={() => void undo.run(t.id)}>
+          Undo
+        </Button>
+      ) : null}
     </li>
   );
 }

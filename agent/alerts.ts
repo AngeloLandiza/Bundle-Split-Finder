@@ -9,7 +9,7 @@ import type { NotifyEvent, TelegramTestResponse } from '../core/src/api/contract
 import type { BundleRow, ReviewItem, ScanReport } from '../core/src/scan/types';
 import { estimateRoiPercent, type AlertSettings } from '../core/src/settings';
 import type { SignalLine } from '../core/src/tracking/state';
-import type { PendingMessage } from './store';
+import type { PendingMessage, TelegramAbout } from './store';
 
 /** Deal keys remembered as notified; the oldest are forgotten past this. */
 const KEEP_NOTIFIED = 2000;
@@ -144,8 +144,17 @@ export interface TelegramKeys {
   chatId: string;
 }
 
+/** Nov 25: Telegram's inline keyboard (reply_markup): rows of buttons, each a callback id the agent issued or a web address. */
+export type InlineKeyboard = { inline_keyboard: ({ text: string; callback_data: string } | { text: string; url: string })[][] };
+
+/** One message as it goes out: its text and, when the owner acts from Telegram, its buttons. */
+export interface OutgoingTelegram {
+  text: string;
+  reply_markup?: InlineKeyboard;
+}
+
 /** Telegram's own words, without the token, short. */
-const scrub = (text: string, keys: TelegramKeys): string => {
+export const scrubTelegram = (text: string, keys: TelegramKeys): string => {
   // The whole token, and the secret half after the colon in case Telegram echoes only that.
   const secret = keys.botToken.includes(':') ? keys.botToken.slice(keys.botToken.indexOf(':') + 1) : '';
   const clean = text.split(keys.botToken).join('[token]');
@@ -163,13 +172,14 @@ export async function sendTelegram(
   keys: TelegramKeys,
   text: string,
   signal?: AbortSignal,
+  replyMarkup?: InlineKeyboard,
 ): Promise<{ ok: true } | { ok: false; error: string; /** Telegram's HTTP status; absent when it could not be reached. */ status?: number; /** Telegram's own description, token scrubbed. */ description?: string }> {
   let res: Response;
   try {
     res = await fetchFn(`https://api.telegram.org/bot${keys.botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: keys.chatId, text: text.slice(0, 4096) }),
+      body: JSON.stringify({ chat_id: keys.chatId, text: text.slice(0, 4096), ...(replyMarkup && replyMarkup.inline_keyboard.length > 0 ? { reply_markup: replyMarkup } : {}) }),
       signal: signal ?? AbortSignal.timeout(15_000),
     });
   } catch {
@@ -177,7 +187,7 @@ export async function sendTelegram(
   }
   const body = (await res.json().catch(() => ({}))) as { ok?: unknown; description?: unknown };
   if (res.ok && body.ok === true) return { ok: true };
-  const description = typeof body.description === 'string' ? scrub(body.description, keys) : undefined;
+  const description = typeof body.description === 'string' ? scrubTelegram(body.description, keys) : undefined;
   const said = description !== undefined ? `: ${description}` : '';
   return { ok: false, error: `Telegram refused the message (HTTP ${res.status}${said}).`, status: res.status, ...(description !== undefined ? { description } : {}) };
 }
@@ -196,24 +206,44 @@ export function telegramProblemWords(status: number | undefined, description: st
   return `Telegram refused the message (HTTP ${status}).${theirs}`;
 }
 
+/** Nov 25: what the test message says after its first line about acting from the phone, as the setting stands. */
+export function telegramActionsWords(on: boolean): string {
+  return on
+    ? 'You can act from here: buttons under deals, questions and scan messages, and /status, /pause, /resume, /help. Keys, limits and settings change only in the app.'
+    : 'To act from your phone (buttons under deals and questions, /status, /pause), turn on “Let me act from Telegram” in Settings, Notifications.';
+}
+
 /** The test message: one send to the saved bot and chat, answered as the owner reads it. */
-export async function testTelegram(fetchFn: typeof fetch, keys: TelegramKeys | undefined): Promise<TelegramTestResponse> {
+export async function testTelegram(fetchFn: typeof fetch, keys: TelegramKeys | undefined, actionsOn = false): Promise<TelegramTestResponse> {
   if (!keys) return { ok: false, problem: 'Telegram is not set up. Add a bot token and chat id in Keys first.' };
-  const r = await sendTelegram(fetchFn, keys, TELEGRAM_TEST_TEXT);
+  if (!keys.chatId?.trim()) return { ok: false, problem: 'Your chat is not chosen yet. Open your bot in Telegram, press Start and send it any message, then choose the chat in Keys.' };
+  const r = await sendTelegram(fetchFn, keys, `${TELEGRAM_TEST_TEXT}\n\n${telegramActionsWords(actionsOn)}`);
   return r.ok ? { ok: true } : { ok: false, problem: telegramProblemWords(r.status, r.description) };
 }
 
 /**
  * Sends what waits from earlier runs, then this run's message, in order. A message that fails stays waiting for the
  * next run (dropped after TELEGRAM_MAX_TRIES); once one fails the rest wait too, so they arrive in order.
+ * `compose` (Nov 25, agent/telegramBot.ts): the message as it goes out, with its buttons, then any message that follows it
+ * (a further deal or question); absent, or when it fails, the text alone. A follow-up that fails is not sent again.
  */
 export async function sendPending(
   fetchFn: typeof fetch,
   keys: TelegramKeys,
   pending: PendingMessage[],
-  next: { text: string; at: string } | null,
+  next: { text: string; at: string; about?: TelegramAbout[] } | null,
+  compose?: (m: PendingMessage) => OutgoingTelegram[],
 ): Promise<{ sent: number; pending: PendingMessage[]; error: string | null }> {
-  const queue = [...pending, ...(next ? [{ ...next, tries: 0 }] : [])];
+  const queue: PendingMessage[] = [...pending, ...(next ? [{ ...next, tries: 0 }] : [])];
+  const partsOf = (m: PendingMessage): OutgoingTelegram[] => {
+    if (!compose) return [{ text: m.text }];
+    try {
+      const out = compose(m);
+      return out.length > 0 ? out : [{ text: m.text }];
+    } catch {
+      return [{ text: m.text }];
+    }
+  };
   let sent = 0;
   let error: string | null = null;
   const left: PendingMessage[] = [];
@@ -222,9 +252,12 @@ export async function sendPending(
       left.push(m);
       continue;
     }
-    const r = await sendTelegram(fetchFn, keys, m.text);
-    if (r.ok) sent += 1;
-    else {
+    const [first, ...more] = partsOf(m);
+    const r = await sendTelegram(fetchFn, keys, first!.text, undefined, first!.reply_markup);
+    if (r.ok) {
+      sent += 1;
+      for (const f of more) if ((await sendTelegram(fetchFn, keys, f.text, undefined, f.reply_markup)).ok) sent += 1;
+    } else {
       error = r.error;
       if (m.tries + 1 < TELEGRAM_MAX_TRIES) left.push({ ...m, tries: m.tries + 1 });
     }

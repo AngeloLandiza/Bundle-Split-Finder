@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { TelegramTestResponse } from '../../core/src/api/contract';
-import { telegramProblemWords, testTelegram, TELEGRAM_TEST_TEXT } from '../alerts';
+import { telegramActionsWords, telegramProblemWords, testTelegram, TELEGRAM_TEST_TEXT } from '../alerts';
 import { createAgent, type Agent } from '../app';
 
 const TOKEN = '123456:SECRET-bot-token-abc';
@@ -25,7 +25,10 @@ describe('testTelegram', () => {
     }) as typeof fetch;
     expect(await testTelegram(fetchFn, keys)).toEqual({ ok: true });
     expect(TELEGRAM_TEST_TEXT).toBe('Split Finder can reach you here.');
-    expect(seen).toEqual([{ url: `https://api.telegram.org/bot${TOKEN}/sendMessage`, body: { chat_id: '42', text: 'Split Finder can reach you here.' } }]);
+    expect(seen).toEqual([{ url: `https://api.telegram.org/bot${TOKEN}/sendMessage`, body: { chat_id: '42', text: `Split Finder can reach you here.\n\n${telegramActionsWords(false)}` } }]);
+    // Nov 25: the second paragraph says how to act from the phone, as the setting stands.
+    expect(telegramActionsWords(false)).toMatch(/turn on “Let me act from Telegram” in Settings, Notifications\.$/);
+    expect(telegramActionsWords(true)).toMatch(/^You can act from here: .* Keys, limits and settings change only in the app\.$/);
   });
 
   it('without a bot saved: says so, and sends nothing', async () => {
@@ -116,7 +119,7 @@ describe('POST /api/notify/test-telegram', () => {
     const r = await post();
     expect(r.status).toBe(200);
     expect((await r.json()) as TelegramTestResponse).toEqual({ ok: true });
-    expect(sent).toEqual(['api.telegram.org Split Finder can reach you here.']);
+    expect(sent).toEqual([`api.telegram.org Split Finder can reach you here.\n\n${telegramActionsWords(false)}`]);
   });
 
   it('a refusal comes back as {ok: false, problem} with HTTP 200 and no key in the body', async () => {

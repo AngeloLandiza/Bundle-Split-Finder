@@ -25,19 +25,21 @@ import { KeepaBudgetExceededError } from '../keepa/client';
 import type { KeepaProduct } from '../keepa/types';
 import { identityFromKeepa } from '../keepa/verify';
 import { applyCatalogCheck, catalogChecksWanted } from './catalogCheck';
+import { withBuying, withoutBuying } from './buying';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit, setItemsUnread } from './split';
-import { partPageTarget } from './settle';
+import { partPageTarget, type SettleRule } from './settle';
 import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, reopenStep, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
 import { LIST_EMPTY, type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
 import { type PageWant, pagesWanted } from './hdOrder';
+import { type HdBlock, noPagesWhy } from './hdPace';
 import type { PromoPage } from '../hdPage';
 import { addLookupWay, type LookupWays } from '../deals/lookupCopy';
 import type { KeepaLookupAsk } from '../keepa/fetchStep';
@@ -138,6 +140,11 @@ export interface ScanDeps {
    * Absent: only pageReadsPerScan and the passes' own limits.
    */
   hdPagesLeft?: () => number;
+  /**
+   * Nov 25: why no page may be read now (hdPace.ts, `pace.blocked('scan')`): Home Depot's pause, or this scan's own pages used
+   * up. Said by the step that read nothing, so a pause is not called a page limit. Absent: the scan's limit.
+   */
+  hdBlock?: () => HdBlock | null;
   /** Item pages with their price (the BOGO pass's reader), for a set's items when the lists are not read in this run (Read again). */
   readItemPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
 }
@@ -193,6 +200,7 @@ interface Run extends PartContext {
   /** Free scan: Home Depot refused a list or page in this run: no other Home Depot page is read in it (the doorway rule). */
   hdRefused: boolean;
   hdPagesLeft?: () => number;
+  hdBlock?: () => HdBlock | null;
   readItemPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
   /** Home Depot's pace: pages kept for the part prices that complete an estimate (read after the lookups), not given to page passes. */
   priceReserve: number;
@@ -308,7 +316,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
     bogoPairs: deps.bogoPairs ?? {}, catalogFirst: new Set(deps.catalogFirst ?? []), waitForPages: deps.waitForPages ?? false, partPricesExtra: deps.partPricesExtra ?? [],
-    chromeListing: deps.chromeListing, hdRefused: false, hdPagesLeft: deps.hdPagesLeft, readItemPages: deps.readItemPages, priceReserve: 0,
+    chromeListing: deps.chromeListing, hdRefused: false, hdPagesLeft: deps.hdPagesLeft, hdBlock: deps.hdBlock, readItemPages: deps.readItemPages, priceReserve: 0,
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore, plannedKeys: new Set(), settledParts: new Set(),
   });
 
@@ -1003,16 +1011,18 @@ async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['pa
     if (!known || known.seenAt <= at) {
       const keepPrice = fromChrome && row.price === null && known !== undefined;
       const page = known && known.page !== undefined && known.page !== null ? known.page : row.page ?? known?.page;
-      await store.putBundle({
+      await store.putBundle(withBuying({
         key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: row.page?.upc ?? known?.upc ?? null,
         price: keepPrice ? known.price : row.price, regularPrice: keepPrice ? known.regularPrice : row.regularPrice,
         percentOff: keepPrice ? known.percentOff : row.percentOff, link: row.link, seenAt: at,
         split: known?.split ?? null,
         // A page is read once (P1): a row seen again keeps it.
-        ...(page !== undefined ? { page } : {}),
+        ...(page !== undefined ? { page: page === null ? null : withoutBuying(page) } : {}),
         // A pair's BOGO facts (the BOGO pass's) stay.
         ...(known?.bogo ? { bogo: known.bogo } : {}),
-      });
+        // What a page of it stated about buying it stays; a page this row carries and read later replaces it (withBuying).
+        ...(known?.buying ? { buying: known.buying } : {}),
+      }, row.page?.buying, row.page?.readAt ?? at));
     }
     job.counts.bundlesSeen += 1;
     return 'bundle';
@@ -1057,6 +1067,7 @@ async function saveSet(run: Run, row: HdListing & { set: NonNullable<ListingRow[
     split: known?.split ?? null,
     ...(known?.page !== undefined ? { page: known.page } : {}),
     ...(known?.bogo ? { bogo: known.bogo } : {}),
+    ...(known?.buying ? { buying: known.buying } : {}),
     set: { items, dollarOff: row.set.dollarOff, percentageOff: row.set.percentageOff },
   });
 }
@@ -1487,9 +1498,9 @@ async function readBundlePages(run: Run, chosen: readonly BundleRecord[]): Promi
   // chose, in its order (a saving first), within the scan's pages.
   const unread = chosen.filter((b) => !b.set && (b.page === undefined || b.page === null));
   if (run.shouldStop()) return { goOn: true, notRead: 0 };
-  if (unread.length === 0 && (await store.listBundles()).some((b) => !b.set && (b.page === undefined || b.page === null))) return nothingToRead(run, 'bundlePages', 'page limit reached');
+  if (unread.length === 0 && (await store.listBundles()).some((b) => !b.set && (b.page === undefined || b.page === null))) return noPagesLeft(run, 'bundlePages');
   if (unread.length === 0) return nothingToRead(run, 'bundlePages');
-  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page, ...withBarcode(page) }) })));
+  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle(withBuying({ ...b, page: withoutBuying(page), ...withBarcode(page) }, page.buying, page.readAt)) })));
 }
 
 /**
@@ -1511,7 +1522,7 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   if (!run.readPages) return none;
   const room = Math.max(0, pagesLeft(run) - bundleNotRead - run.priceReserve);
   if (run.shouldStop()) return none;
-  if (room === 0) return nothingToRead(run, 'kitPages', 'page limit reached');
+  if (room === 0) return noPagesLeft(run, 'kitPages', pagesLeft(run) - bundleNotRead > 0);
   const wanted = await kitPagesWanted(store, run.waitForPages);
   // Nov 24 (settle rule C): then the parts' own pages a waiting split needs, in a run that waits for pages (the agent's).
   const partPages = run.waitForPages ? await partPagesWanted(store) : [];
@@ -1832,7 +1843,7 @@ async function readPartPricesPass(run: Run): Promise<void> {
   if (!run.readPartPrices || run.shouldStop()) return;
   // Home Depot's pace: a part price is two pages (its search and its page); with fewer left, none is read in this scan.
   if (run.hdPagesLeft && run.hdPagesLeft() < 2) {
-    await nothingToRead(run, 'partPrices', 'page limit reached');
+    await noPagesLeft(run, 'partPrices');
     return;
   }
   const before = job.pipeline?.find((p) => p.id === 'partPrices')?.unitsDone ?? 0;
@@ -2058,10 +2069,20 @@ async function readInto(run: Run, stage: StepId, targets: PageTarget[]): Promise
  * Step 11: a read step with no page to read did not run: skipped, "none found" (or why there was no room), never
  * "done, 0 read" (UI review of P2).
  */
-async function nothingToRead(run: Run, stage: StepId, why = NONE_FOUND): Promise<PassResult> {
-  skipStep(run.job, stage, why);
+async function nothingToRead(run: Run, stage: StepId, why = NONE_FOUND, whole?: string): Promise<PassResult> {
+  skipStep(run.job, stage, why, whole);
   await run.store.putScan(run.job);
   return { goOn: true, notRead: 0 };
+}
+
+/**
+ * Nov 25: a page step that has no page to read now, and the true reason: Home Depot's pause (until when), or this scan's page
+ * limit (which one). `kept`: pages are left but all held for the part prices that complete an estimate (priceReserve).
+ */
+async function noPagesLeft(run: Run, stage: StepId, kept = false): Promise<PassResult> {
+  if (kept) return nothingToRead(run, stage, 'pages kept for prices', "this scan's remaining pages are kept for part prices");
+  const why = noPagesWhy(run.hdBlock?.() ?? null, Math.floor(run.settings.pageReadsPerScan));
+  return nothingToRead(run, stage, why.short, why.sentence);
 }
 
 /**
@@ -2129,7 +2150,7 @@ export const pageRead = (bundle: Pick<BundleRecord, 'page' | 'set'>): boolean =>
  * Step 15: every other open split question is read again under the settle rules, and closed when they now settle its
  * split or make it wait for Home Depot's part pages. Returns the ids withdrawn or settled.
  */
-export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number): Promise<string[]> {
+export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number, off?: readonly SettleRule[]): Promise<string[]> {
   const out: string[] = [];
   let known: KnownModels | null = null;
   for (const item of await store.listReview()) {
@@ -2144,7 +2165,11 @@ export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number
     // Step 15: the question read again under the settle rules (scan/settle.ts), as the next scan would: a split they
     // settle is saved and its question closed as a scan closes one; one that now waits for Home Depot's part pages is
     // withdrawn. The owner's answers are never touched (only open questions are read).
-    known ??= await knownModels(store);
+    // `off`: settle rules left out, for the tests that replay an earlier day's rules only (core/test/fewer-questions.test.ts).
+    if (known === null) {
+      const k = await knownModels(store);
+      known = off ? { ...k, settle: { ...k.settle, off } } : k;
+    }
     const { split } = await splitOne(store, bundle, known, now, true);
     const after = await store.getReview(item.id);
     if (split.status === 'resolved' || (after && after.answer === RESOLVED_BY_SCAN)) out.push(item.id);
@@ -2223,7 +2248,11 @@ export async function splitOne(
   const reason = split.notes.join('; ');
   const choices = splitChoices(split);
   // Step 16 (round 2): which parts Home Depot's own pages confirmed and which not, so the question is about those only.
-  const narrow = { ...(split.settledParts ? { settledParts: split.settledParts } : {}), ...(split.unsettledParts ? { unsettledParts: split.unsettledParts } : {}) };
+  // Nov 25: two Home Depot pages that disagree on the kit, with both, so the card asks it in one look.
+  const narrow = {
+    ...(split.settledParts ? { settledParts: split.settledParts } : {}), ...(split.unsettledParts ? { unsettledParts: split.unsettledParts } : {}),
+    ...(split.conflict ? { conflict: split.conflict } : {}),
+  };
   if (!item || item.answer === RESOLVED_BY_SCAN) {
     // A new question, or one a scan closed and must ask again.
     await store.putReview({
@@ -2232,10 +2261,10 @@ export async function splitOne(
     });
     return { split, opened: true };
   }
-  const sameNarrow = JSON.stringify([item.settledParts ?? null, item.unsettledParts ?? null]) === JSON.stringify([narrow.settledParts ?? null, narrow.unsettledParts ?? null]);
+  const sameNarrow = JSON.stringify([item.settledParts ?? null, item.unsettledParts ?? null, item.conflict ?? null]) === JSON.stringify([narrow.settledParts ?? null, narrow.unsettledParts ?? null, narrow.conflict ?? null]);
   if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices) || !sameNarrow)) {
     // Still open: a new reading, the same question, so openedAt stays.
-    const { settledParts: _s, unsettledParts: _u, ...rest } = item;
+    const { settledParts: _s, unsettledParts: _u, conflict: _c, ...rest } = item;
     await store.putReview({ ...rest, reason, choices, ...narrow });
   }
   return { split, opened: false };

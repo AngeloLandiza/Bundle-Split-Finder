@@ -21,6 +21,17 @@ import type { ScanJob } from './types';
  */
 export const STEP_IDS = ['hdPages', 'bundlePages', 'kitPages', 'amazon', 'partPrices', 'ebay', 'judge', 'finish'] as const;
 /**
+ * Nov 25: the scan's summary says why Home Depot page steps read nothing, once per reason, in the steps' own words:
+ * "Kit pages and Home Depot part prices were skipped: Home Depot paused reading until 10:54 AM." Null when none was.
+ */
+export function skippedPagesSentence(steps: readonly PipelineStep[] | undefined): string | null {
+  const byWhy = new Map<string, string[]>();
+  for (const s of steps ?? []) if (s.state === 'skipped' && s.skippedWhy) byWhy.set(s.skippedWhy, [...(byWhy.get(s.skippedWhy) ?? []), STEP_NAMES[s.id]]);
+  const out = [...byWhy].map(([why, names]) => `${names.join(' and ')} ${names.length === 1 ? 'was' : 'were'} skipped: ${why}.`);
+  return out.length > 0 ? out.join(' ') : null;
+}
+
+/**
  * Nov 23, the desktop app's steps after the runner: the AI's answers on the Review cards, then the listings an automatic
  * rung reads. Long work with a count of its own, so "Finishing up" is only the short tail (agent/work.ts keeps them; the
  * runner and the extension know nothing of them, and `STEP_IDS` stays the runner's eight).
@@ -41,6 +52,11 @@ export interface PipelineStep {
   endedAt?: number;
   /** Four words or fewer, why the step did not run (skipped) or what went wrong (failed). */
   skippedReason?: string;
+  /**
+   * Nov 25: the whole reason when four words cannot say it truly ("Home Depot paused reading until 10:54 AM", "this scan's
+   * page limit of 40 was reached"). The step's line reads it in place of the short one.
+   */
+  skippedWhy?: string;
   /** Step 15: the done figure, when the runner says more than the count (the Amazon step: "4 Keepa, 14 searches, 2 wait"). */
   note?: string;
   /** The listing check: dollars spent so far, from the tokens the eBay pass counts and the model's price. */
@@ -154,6 +170,7 @@ export function reopenStep(job: ScanJob, id: StepId, o: { remaining: number; now
   if (!s || s.state === 'now') return;
   if (s.state === 'skipped') {
     delete s.skippedReason;
+    delete s.skippedWhy;
     s.unitsDone = 0;
   }
   s.state = 'now';
@@ -230,11 +247,13 @@ export function failStep(job: ScanJob, id: StepId, reason: string, now: number):
 }
 
 /** The step will not run in this scan, for a reason of four words or fewer. A step that has run is not changed. */
-export function skipStep(job: ScanJob, id: StepId, reason: string): void {
+export function skipStep(job: ScanJob, id: StepId, reason: string, why?: string): void {
   const s = stepOf(job, id);
   if (!s || s.state === 'done' || s.state === 'failed') return;
   s.state = 'skipped';
   s.skippedReason = trimReason(reason);
+  if (why) s.skippedWhy = why.trim().slice(0, 160);
+  else delete s.skippedWhy;
   s.unitsTotal = null;
   delete s.startedAt;
   delete s.endedAt;
@@ -501,7 +520,7 @@ function countOf(s: PipelineStep): string {
 
 /** The figure at the right of a step's line. */
 function figureOf(s: PipelineStep): string {
-  if (s.state === 'skipped' || s.state === 'failed') return s.skippedReason ?? '';
+  if (s.state === 'skipped' || s.state === 'failed') return s.skippedWhy ?? s.skippedReason ?? '';
   switch (s.id) {
     case 'amazon':
       if (s.state === 'done' && s.note) return s.note;

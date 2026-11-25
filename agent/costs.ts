@@ -197,7 +197,7 @@ export class CostBook {
   }
 
   /** Counts eBay calls or Telegram messages on today's local day. */
-  count(kind: 'ebay' | 'telegram', n: number): void {
+  count(kind: 'ebay' | 'telegram' | 'amazon', n: number): void {
     if (!(n > 0)) return;
     const today = localDate(this.d.now(), this.d.tz);
     this.d.store.update('runtime', (r) => {

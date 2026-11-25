@@ -5,6 +5,7 @@
 
 import type * as C from '@core/api/contract';
 import { safeDownloadLink } from '@core/release/note';
+import { sellerCentralLink } from '@core/amazon/spapi/parse';
 import { confirmedSourceName, confirmState, ebayListingChoices } from '@core/scan/confirmed';
 import type { BundleRow, PartRow, PriceOption, PriceRange, UnnamedItem } from '@core/scan/types';
 import { money } from '../lib/format';
@@ -12,6 +13,7 @@ import type {
   ActivityView,
   AgentEvent,
   AgentView,
+  SellerUsage,
   AiSuggestion,
   AppState,
   AutopilotEntry,
@@ -22,6 +24,7 @@ import type {
   DealsView,
   DealSort,
   Drip,
+  HomeDepotReading,
   KeepCurrent,
   PricesChecked,
   FollowUp,
@@ -114,6 +117,7 @@ function helperOf(s: C.AgentState): AppState['helper'] {
   const h = s.helper as C.AgentState['helper'] & StateExtras;
   const outdated = bool(h.outdated);
   const version = typeof h.version === 'string' ? h.version : undefined;
+  const update = helperUpdateOf((h as { update?: unknown }).update);
   return {
     paired: h.paired,
     connected: h.connected,
@@ -121,6 +125,29 @@ function helperOf(s: C.AgentState): AppState['helper'] {
     jobsWaiting: h.jobsWaiting ?? s.counts.jobsWaiting,
     ...(outdated !== undefined ? { outdated } : {}),
     ...(version !== undefined ? { version } : {}),
+    ...(update ? { update } : {}),
+  };
+}
+
+/** What the agent does about an outdated helper's files, only in its two shapes. */
+function helperUpdateOf(v: unknown): AppState['helper']['update'] {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const u = v as Record<string, unknown>;
+  if (u.state === 'updating') return { state: 'updating' };
+  if (u.state === 'install' && typeof u.why === 'string' && u.why.trim()) return { state: 'install', why: u.why.trim() };
+  return undefined;
+}
+
+/** The agent's Home Depot reading figures, when it sends them with their types. */
+function homeDepotOf(v: unknown): HomeDepotReading | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as Record<string, unknown>;
+  const [pagesWaiting, setsWaiting, bundlesWaiting, perHour, perDay, readToday] = [num(o.pagesWaiting), num(o.setsWaiting), num(o.bundlesWaiting), num(o.perHour), num(o.perDay), num(o.readToday)];
+  if (pagesWaiting === undefined || perHour === undefined) return undefined;
+  const at = (x: unknown): string | null => (typeof x === 'string' && Number.isFinite(Date.parse(x)) ? x : null);
+  return {
+    pausedUntil: at(o.pausedUntil), pagesWaiting, setsWaiting: setsWaiting ?? 0, bundlesWaiting: bundlesWaiting ?? 0, perHour, perDay: perDay ?? 0, readToday: readToday ?? 0,
+    nextReadAt: at(o.nextReadAt), slowed: o.slowed === true,
   };
 }
 
@@ -151,7 +178,22 @@ export function pricesCheckedOf(v: unknown): PricesChecked | null {
   return { homeDepotAt: o.homeDepotAt, amazonAt: time(o.amazonAt) ? o.amazonAt : null, ...(time(o.staleSince) ? { staleSince: o.staleSince } : {}) };
 }
 
-const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
+/** What Home Depot's page stated about buying a deal, only in its checked shape (a line that is not text drops the whole). */
+export function buyingOf(v: unknown): C.DealBuying | null {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  const text = (x: unknown): x is string => typeof x === 'string' && x !== '';
+  const orNull = (x: unknown): string | null => (text(x) ? x : null);
+  if (o.state !== 'unchecked' && o.state !== 'can' && o.state !== 'cannot' && o.state !== 'unstated') return null;
+  if (!text(o.line)) return null;
+  const limit = typeof o.limit === 'number' && Number.isInteger(o.limit) && o.limit >= 1 ? o.limit : null;
+  return {
+    state: o.state, line: o.line, readAt: orNull(o.readAt), limit, limitLine: limit === null ? null : orNull(o.limitLine), limitProfitLine: limit === null ? null : orNull(o.limitProfitLine),
+    priceEnds: orNull(o.priceEnds), priceEndsLine: orNull(o.priceEndsLine), priceEnded: o.priceEnded === true, returnsLine: orNull(o.returnsLine),
+  };
+}
+
+const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram', 'amazonSeller'];
 
 /** The sentences the agent says about keys it holds but a service did not accept: only a non-empty sentence for a key it knows. */
 export function keyProblemsOf(v: unknown): KeyProblems | undefined {
@@ -189,6 +231,7 @@ export function mapState(s: C.AgentState): AppState {
   const a = s.agent;
   const drip = dripOf((a as { drip?: unknown }).drip);
   const keepCurrent = keepCurrentOf((a as { keepCurrent?: unknown }).keepCurrent);
+  const homeDepot = homeDepotOf((a as { homeDepot?: unknown }).homeDepot);
   const refill = num((s.budget as { keepaRefillPerMin?: unknown }).keepaRefillPerMin);
   const problems = keyProblemsOf((s as { keyProblems?: unknown }).keyProblems);
   const checks = keyChecksOf((s as { keyChecks?: unknown }).keyChecks);
@@ -198,9 +241,11 @@ export function mapState(s: C.AgentState): AppState {
       pipeline: (a.pipeline as AgentView['pipeline']) ?? null,
       step: a.step ?? null,
       nextScanAt: a.nextScanAt,
+      ...(typeof a.nextScanNote === 'string' && a.nextScanNote ? { nextScanNote: a.nextScanNote } : {}),
       lastScan: a.lastScan ? lastScanOf(a.lastScan) : null,
       ...(drip ? { drip } : {}),
       ...(keepCurrent ? { keepCurrent } : {}),
+      ...(homeDepot ? { homeDepot } : {}),
     },
     helper: helperOf(s),
     budget: {
@@ -225,7 +270,22 @@ export function mapState(s: C.AgentState): AppState {
     ...(problems ? { keyProblems: problems } : {}),
     ...(checks ? { keyChecks: checks } : {}),
     ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),
+    ...(s.loginNotice && typeof s.loginNotice.sentence === 'string' ? { loginNotice: { sentence: s.loginNotice.sentence } } : {}),
+    ...(sellerUsageOf((s as { seller?: unknown }).seller) ? { seller: sellerUsageOf((s as { seller?: unknown }).seller)! } : {}),
   };
+}
+
+const SELLER_OPS = ['restrictions', 'eligibility', 'fees', 'sales'] as const;
+
+/** Nov 25: the seller account's calls today and caps, each a whole number; anything else is left out. */
+export function sellerUsageOf(v: unknown): SellerUsage | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as { used?: Record<string, unknown>; caps?: Record<string, unknown> };
+  const whole = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) && x >= 0 ? x : null);
+  const used = Object.fromEntries(SELLER_OPS.map((k) => [k, whole(o.used?.[k])]));
+  const caps = Object.fromEntries(SELLER_OPS.map((k) => [k, whole(o.caps?.[k])]));
+  if (Object.values(used).some((x) => x === null) || Object.values(caps).some((x) => x === null)) return undefined;
+  return { used: used as SellerUsage['used'], caps: caps as SellerUsage['caps'] };
 }
 
 // ---------------------------------------------------------------- deals
@@ -278,6 +338,7 @@ export function mapRow(r: C.DealRow): DealRow {
     lookup: r.lookup ?? null,
     ...(r.incomplete ? { incomplete: r.incomplete } : {}),
     ...(pricesCheckedOf(r.pricesChecked) ? { pricesChecked: pricesCheckedOf(r.pricesChecked) } : {}),
+    ...(buyingOf(r.buying) ? { buying: buyingOf(r.buying) } : {}),
   };
 }
 
@@ -424,7 +485,7 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
   };
 }
 
-const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set', 'amazon_catalog'];
+const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set', 'amazon_catalog', 'hd_same_title'];
 
 /** Nov 24: a set's items as Home Depot lists them, each only with a brand, a model and an http(s) page. */
 export function setContentsOf(v: unknown): SetContent[] | undefined {
@@ -451,6 +512,29 @@ export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
   return out.length ? out : undefined;
 }
 
+/**
+ * Nov 25: his seller account's lines, each only with its text; Amazon's apply link only when it is https on
+ * sellercentral.amazon.com (the agent checked it; checked again here before it is shown or opened).
+ */
+export function sellerOf(v: unknown): DealDetail['seller'] {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  const parts = Array.isArray(o.parts) ? o.parts : [];
+  return {
+    connected: o.connected === true,
+    note: typeof o.note === 'string' && o.note ? o.note : null,
+    parts: parts.flatMap((p) => {
+      if (typeof p !== 'object' || p === null) return [];
+      const r = p as Record<string, unknown>;
+      if (typeof r.text !== 'string' || typeof r.asin !== 'string' || typeof r.model !== 'string') return [];
+      return [{
+        model: r.model, asin: r.asin, text: r.text, tone: r.tone === 'ok' ? ('ok' as const) : ('attention' as const),
+        link: sellerCentralLink(r.link), canSelfShip: r.canSelfShip === true, selfShip: r.selfShip === true,
+      }];
+    }),
+  };
+}
+
 /** `questionId`: the open Review question on this bundle, from GET /api/review (the detail does not carry it). */
 export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetail {
   const b = d.bundle;
@@ -469,6 +553,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     estimate: e ? { profit: e.profit, roi: e.roi, roiRange: priceRangeOf(b.range), cost: e.cost, partsSellFor: e.partsSellFor, afterFees: e.afterFees, basis: e.basis, countedAtZero: e.countedAtZero } : null,
     signalNote: d.row.signalNote ?? null,
     pricesChecked: pricesCheckedOf(d.row.pricesChecked),
+    buying: buyingOf(d.row.buying),
     beforeFulfillment: d.row.beforeFulfillment ?? null,
     ...(d.incompleteEstimate ? { incomplete: d.incompleteEstimate } : {}),
     noEstimate: e ? null : noEstimateSentence(b),
@@ -484,6 +569,8 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     bogoGroup: d.bogoGroup ?? null,
     fbaEstimate: d.fbaEstimate ?? null,
     needsLook: d.needsLook ?? [],
+    market: d.market ?? null,
+    seller: sellerOf(d.seller),
     ...(splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence) ? { splitEvidence: splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence)! } : {}),
     ...(setContentsOf((d as { setContents?: unknown }).setContents) ? { setContents: setContentsOf((d as { setContents?: unknown }).setContents)! } : {}),
   };
@@ -778,6 +865,7 @@ export function mapActivity(r: C.ActivityResponse, titles: ReadonlyMap<string, {
     errors: r.errors ?? [],
     outcomes: r.outcomes ?? [],
     versions: r.versions ?? [],
+    fromTelegram: r.fromTelegram ?? [],
     month: { searches: r.spend.serpSearches, keepaTokens: r.spend.keepaTokens, aiUsd: r.spend.aiUsd },
   };
 }

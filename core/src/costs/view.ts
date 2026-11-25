@@ -36,7 +36,7 @@ export interface CostsInput {
   keepa: { rows: readonly KeepaLedgerRow[]; refillPerMin: number | null };
   ai: AiSpendSources & { label: string };
   /** eBay calls and Telegram messages by local day. */
-  counts: Readonly<Record<string, { ebay?: number; telegram?: number }>>;
+  counts: Readonly<Record<string, { ebay?: number; telegram?: number; amazon?: number }>>;
   runs: readonly CostRun[];
   /** What the blocker held this month, by service. */
   blocked: Partial<Record<CostService, readonly CostBlocked[]>>;
@@ -73,7 +73,7 @@ export function scheduledRunsLeft(schedule: Schedule, now: number, lastRun: numb
 const RECENT_BLOCK_MS = 24 * 60 * 60_000;
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 const round6 = (n: number): number => Math.round(n * 1e6) / 1e6;
-const SERVICE_ORDER: readonly CostService[] = ['serpapi', 'keepa', 'ai', 'ebay', 'telegram'];
+const SERVICE_ORDER: readonly CostService[] = ['serpapi', 'keepa', 'ai', 'ebay', 'telegram', 'amazon'];
 
 interface Spec {
   service: CostService;
@@ -155,7 +155,9 @@ export function buildCostsView(input: CostsInput): CostsView {
   const aiEv = aiEvents(input.ai);
   const ebayEv = countEvents(Object.fromEntries(Object.entries(input.counts).map(([d, c]) => [d, c.ebay ?? 0])));
   const tgEv = countEvents(Object.fromEntries(Object.entries(input.counts).map(([d, c]) => [d, c.telegram ?? 0])));
-  const all = [...serpEv, ...keepaEv, ...aiEv, ...ebayEv, ...tgEv];
+  // Nov 25: the seller API's calls (agent/seller.ts), free: counted like eBay's.
+  const amazonEv = countEvents(Object.fromEntries(Object.entries(input.counts).map(([d, c]) => [d, c.amazon ?? 0])));
+  const all = [...serpEv, ...keepaEv, ...aiEv, ...ebayEv, ...tgEv, ...amazonEv];
   const starts = [...all.map((e) => e.at), ...input.runs.map((r) => Date.parse(r.startedAt)).filter(Number.isFinite)];
   const firstDay = starts.length > 0 ? localDate(Math.min(...starts), tz) : today;
   const runsLeft = scheduledRunsLeft(input.schedule, input.now, input.lastScheduledRunAt, tz);
@@ -194,6 +196,7 @@ export function buildCostsView(input: CostsInput): CostsView {
     },
     { service: 'ebay', label: 'eBay', unit: 'calls', events: ebayEv, perRun: null, limit: null, warnAtPercent: 80, planLimit: null, price: 0, metered: false, bound: null },
     { service: 'telegram', label: 'Telegram', unit: 'messages', events: tgEv, perRun: null, limit: null, warnAtPercent: 80, planLimit: null, price: 0, metered: false, bound: null },
+    { service: 'amazon', label: 'Amazon seller API', unit: 'calls', events: amazonEv, perRun: null, limit: null, warnAtPercent: 80, planLimit: null, price: 0, metered: false, bound: null },
   ];
   const services = specs.map((spec) => serviceCost(spec, { input, today, firstDay, runsLeft }));
   const by = (k: CostService) => services.find((x) => x.service === k)!;

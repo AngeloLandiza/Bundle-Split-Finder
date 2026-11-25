@@ -55,8 +55,15 @@ where the tray flyout opens, and pairing with a real Chrome still need a person 
 2. In Chrome open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**
    and choose that folder.
 
-To update, unzip the new zip over the same folder and click reload on the extension's card.
-Do not remove the extension: that deletes its saved data.
+To update, install the new app. When the helper Chrome is running is older than the app, the app
+unpacks the new helper into the folder Chrome loaded it from and asks Chrome to reload it; it
+says "The Chrome helper was updated to match the app" in Activity, and does it once per app
+build. It only writes into a folder it recognises as Split Finder's own helper (the manifest
+names Split Finder and the folder is the one the app installs into, so the helper's id stays the
+same and pairing holds). If it cannot, or the helper still reports the old build afterwards,
+the banner says why and its one button is **Install the helper again**. Pressing Reload on the
+extension's card is no use then: Chrome would load the same old files. Do not remove the
+extension: that deletes its saved data.
 
 ## 3. Pair them
 

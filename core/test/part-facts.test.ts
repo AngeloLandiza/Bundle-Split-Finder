@@ -49,9 +49,10 @@ describe('the real question shapes', () => {
     const store = await owner();
     const open = (await store.listReview()).filter((q) => q.answer === null && q.kind === 'split');
     expect(open.map((q) => q.id).sort()).toEqual([
-      'split:homedepot:320243671', 'split:homedepot:321809549', 'split:homedepot:321811428', 'split:homedepot:326894185',
+      'split:homedepot:320243671', 'split:homedepot:321809549', 'split:homedepot:321811428',
       'split:homedepot:328690510', 'split:homedepot:334547201',
     ]);
+    // Nov 25 (rule G): DCKTS681D1P1W34 (326894185) now waits for its parts' own pages instead of asking.
     const q = (await store.getReview(A986501))!;
     expect(q.unsettledParts).toEqual([{ model: 'A986501', why: 'not_sold' }]);
     expect(q.settledParts?.map((p) => p.model)).toEqual(['PCL1600K2']);
@@ -122,7 +123,8 @@ describe('answer once', () => {
     for (const [m, q] of [['PCL406424SB', 'ryobi pcl406424sb'], ['A21701', 'ryobi a21701'], ['A25RS51', 'ryobi a25rs51']] as const) await store.putPartPrice(reading(m, q));
     const bundle = (await store.getBundle('homedepot:335724135'))!;
     // Nov 24 (rule B): A25RS51, which Home Depot does not sell alone, is a part by the bundle page's own Includes line.
-    expect(readSplit(bundle, await knownModels(store)).unsettledParts?.map((u) => u.model)).toEqual(['PCL406424SB']);
+    // Nov 25 (rule F): Home Depot sells the same set as PCL424B-PCL406B, so with no fact it waits for PCL406B's reading.
+    expect(readSplit(bundle, await knownModels(store)).waitingFor).toEqual(['PCL406B']);
     await putFact(store, 'RYOBI', 'PCL406424SB', 'sellAs', { at: NOW, bundle: 'PCL406424SB-A21701-A25RS51' }, ['PCL406B', 'PCL424B']);
     const whole = readSplit(bundle, await knownModels(store));
     expect(whole).toMatchObject({ status: 'resolved', components: ['PCL406B', 'PCL424B', 'A21701', 'A25RS51'] });

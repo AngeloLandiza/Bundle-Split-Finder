@@ -2,10 +2,12 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type KeyName } from '../api/types';
 import { plural } from '../lib/format';
+import { offlineNotice, supervisionOf, type AgentSupervision } from '../lib/agentDown';
 import { costNotice } from '../lib/costs';
+import { inShell, invokeShell } from '../lib/shell';
 import { chooseNotices, moreWords, rejectedKeyNotice, type NoticeKind } from '../lib/notices';
 import { words } from '../lib/platform';
-import { helperProblem, scanProblem } from '../lib/scanProblem';
+import { helperProblem, scanProblem, waitingPages } from '../lib/scanProblem';
 import { Button } from './Button';
 import { spacedCode } from './PairingNotice';
 import { Notice } from './States';
@@ -46,8 +48,18 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   const ui = useUi();
   const read = useAction(readPages);
   const reload = useAction(api.reloadHelper);
+  const resume = useAction(api.resume);
   const [reloaded, setReloaded] = useState(false);
+  // "Install the helper again": where the files went, said under the notice.
+  const [installedIn, setInstalledIn] = useState<string | null>(null);
+  const install = useAction(async () => {
+    setInstalledIn(null);
+    setInstalledIn((await api.installExtension()).extensionDir);
+  });
   const update = useUpdateNotice(state?.update);
+  const login = useAction(api.answerLoginNotice);
+  const supervision = useSupervision(online);
+  const relaunch = useAction(() => invokeShell('relaunch_app'));
 
   const items: NoticeItem[] = [];
   if (online && pairing.requests.length > 0) {
@@ -77,17 +89,19 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
     }
   }
   if (!online) {
+    // Nov 25, supervision: the shell says whether it is restarting the agent or gave up (lib/agentDown.ts).
+    const down = offlineNotice(supervision, inShell(), words);
     items.push({
       kind: 'offline',
       key: 'offline',
       tone: 'attention',
-      title: 'The agent is not running.',
-      body: `${offlineSentence ?? `Open Split Finder from the ${words.trayPlace} to start it.`} What is on screen is from before it stopped.`,
-      action: (
-        <Button size="sm" onClick={refreshState}>
-          Try again
+      title: down.title,
+      body: offlineSentence ? `${offlineSentence} ${down.body}` : down.body,
+      action: down.action ? (
+        <Button size="sm" busy={relaunch.busy} busyLabel="Opening again…" onClick={down.action.kind === 'relaunch' ? () => void relaunch.run() : refreshState}>
+          {down.action.label}
         </Button>
-      ),
+      ) : undefined,
     });
   } else if (state) {
     const h = state.helper;
@@ -213,42 +227,102 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
           ),
         });
       }
+      // Nov 25: the pages waiting, counted live: a quiet line while the app reads them itself, a banner only when it cannot.
+      const waiting = waitingPages(state);
+      if (waiting) {
+        items.push({
+          kind: 'waiting',
+          key: 'waiting-pages',
+          tone: waiting.tone,
+          ...(waiting.title ? { title: waiting.title } : {}),
+          body: (
+            <>
+              {waiting.text}
+              {resume.error ? (
+                <span className="notice-more" role="alert">
+                  {resume.error}
+                </span>
+              ) : null}
+            </>
+          ),
+          ...(waiting.action === 'resume'
+            ? {
+                action: (
+                  <Button size="sm" busy={resume.busy} busyLabel="Resuming…" onClick={() => void resume.run().then(() => refreshState())}>
+                    Resume
+                  </Button>
+                ),
+              }
+            : {}),
+        });
+      }
       const helper = helperProblem(state);
       if (helper) {
         items.push({
           kind: 'helper',
           key: 'helper-outdated',
-          tone: 'attention',
+          tone: helper.quiet ? 'quiet' : 'attention',
           title: helper.title,
           body: (
             <>
               {helper.text}
-              <span className="notice-more">{reloaded ? 'Asked Chrome to reload it. This goes away when the helper reconnects.' : helper.fallback}</span>
-              {reload.error ? (
+              {helper.action === 'install' && installedIn ? (
+                <span className="notice-more">{`Installed in ${installedIn}. Chrome was asked to reload it; if it does not change, load that folder with Load unpacked.`}</span>
+              ) : helper.action === 'reload' && reloaded ? (
+                <span className="notice-more">Asked Chrome to reload it. This goes away when the helper reconnects.</span>
+              ) : helper.fallback ? (
+                <span className="notice-more">{helper.fallback}</span>
+              ) : null}
+              {(helper.action === 'install' ? install.error : reload.error) ? (
                 <span className="notice-more" role="alert">
-                  {reload.error}
+                  {helper.action === 'install' ? install.error : reload.error}
                 </span>
               ) : null}
             </>
           ),
-          action: (
-            <Button
-              size="sm"
-              busy={reload.busy}
-              busyLabel="Reloading…"
-              onClick={() =>
-                void reload.run().then((ok) => {
-                  setReloaded(ok);
-                  refreshState();
-                })
-              }
-            >
-              Reload it
-            </Button>
-          ),
+          action:
+            helper.action === 'install' ? (
+              <Button size="sm" busy={install.busy} busyLabel="Installing…" onClick={() => void install.run().then(() => refreshState())}>
+                Install the helper again
+              </Button>
+            ) : helper.action === 'reload' ? (
+              <Button
+                size="sm"
+                busy={reload.busy}
+                busyLabel="Reloading…"
+                onClick={() =>
+                  void reload.run().then((ok) => {
+                    setReloaded(ok);
+                    refreshState();
+                  })
+                }
+              >
+                Reload it
+              </Button>
+            ) : undefined,
         });
       }
     }
+  }
+  // Nov 25: the app turned Open at login on for his schedule. A quiet note, closed by OK or by turning the setting off.
+  if (online && state?.loginNotice) {
+    items.push({
+      kind: 'login',
+      key: 'login',
+      tone: 'quiet',
+      title: 'Open at login is on.',
+      body: state.loginNotice.sentence,
+      action: (
+        <>
+          <Button size="sm" busy={login.busy} busyLabel="Turning off…" onClick={() => void login.run(true).then(() => refreshState())}>
+            Turn off
+          </Button>
+          <Button size="sm" variant="quiet" disabled={login.busy} onClick={() => void login.run(false).then(() => refreshState())}>
+            OK
+          </Button>
+        </>
+      ),
+    });
   }
   // A new version of the app: the quietest notice, shown on any screen when nothing else needs him.
   if (online && update) items.push({ kind: 'update', key: 'update', tone: 'quiet', title: update.title, body: update.body, action: update.action });
@@ -276,6 +350,29 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
       </Notice>
     </div>
   );
+}
+
+/** While the agent does not answer, the shell's supervisor every 2 s (agent_status); null in a browser or an older shell. */
+function useSupervision(online: boolean): AgentSupervision | null {
+  const [sup, setSup] = useState<AgentSupervision | null>(null);
+  useEffect(() => {
+    if (online || !inShell()) {
+      setSup(null);
+      return;
+    }
+    let live = true;
+    const ask = () =>
+      void invokeShell<unknown>('agent_status')
+        .then((raw) => live && setSup(supervisionOf(raw)))
+        .catch(() => live && setSup(null));
+    ask();
+    const timer = setInterval(ask, 2_000);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, [online]);
+  return sup;
 }
 
 /** "1 more": a small popover under the banner with the other notices and their actions. Escape or a click outside closes it. */

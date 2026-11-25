@@ -32,6 +32,14 @@ describe('one notice at a time', () => {
     expect(chooseNotices([item('cost'), item('lookups')], idle).first?.kind).toBe('cost');
   });
 
+  it('the pages the app reads by itself are a quiet line behind the Chrome, key and cost notices, and ahead of waiting lookups', () => {
+    // They used to ride the scan banner, above Chrome and the keys.
+    const { first, more } = chooseNotices([item('lookups'), item('waiting'), item('cost'), item('chrome'), item('key-missing')], idle);
+    expect(first?.kind).toBe('chrome');
+    expect(more.map((m) => m.kind)).toEqual(['key-missing', 'cost', 'waiting', 'lookups']);
+    expect(chooseNotices([item('waiting'), item('update')], idle).first?.kind).toBe('waiting');
+  });
+
   it('shows exactly one banner whatever the count and lists the rest behind it', () => {
     const { first, more } = chooseNotices([item('scan'), item('lookups')], idle);
     expect(first?.kind).toBe('scan');

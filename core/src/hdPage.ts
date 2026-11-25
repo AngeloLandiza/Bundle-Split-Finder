@@ -78,6 +78,91 @@ export interface PageContent {
    * gives none, or none that is a valid barcode. A way to find the product's Amazon listing, never proof of one.
    */
   upc?: string;
+  /**
+   * Nov 25: what the page states about buying the product (buyingOf). Absent when the page states none of it, and on a page
+   * read before this existed.
+   */
+  buying?: BuyingFacts;
+}
+
+/**
+ * Nov 25 (fixtures/homedepot-pages/availability-344305163-2026-11-25.json, read on the owner's Chrome): what a product
+ * page's own first state says about buying it. Every field is null when the page does not state it; none is worked out.
+ * What the page does NOT state, so the app must never say it: stock at a store and a delivery estimate (the page loads
+ * them later, outside its first state).
+ * - `buyable`, `discontinued`, `availability`: `availabilityType { buyable, discontinued, type }` (type "Online" in the record).
+ * - `quantityLimit`: `info.quantityLimit` (3; the page shows "Limit 3 per order").
+ * - `returnable`: `info.returnable` ("90-Day").
+ * - `promotionStart`, `promotionEnd`: `pricing(...).promotion.dates` (MM/DD/YYYY on the page) as YYYY-MM-DD; null for a value
+ *   that is not a real date in that form, and when the page's pricing entries disagree.
+ */
+export interface BuyingFacts {
+  buyable: boolean | null;
+  discontinued: boolean | null;
+  availability: string | null;
+  quantityLimit: number | null;
+  returnable: string | null;
+  promotionStart: string | null;
+  promotionEnd: string | null;
+}
+
+/** "01/31/2027" -> "2027-01-31" when it is a real calendar date in Home Depot's MM/DD/YYYY form; anything else null. */
+export function usDateOf(v: unknown): string | null {
+  if (typeof v !== 'string') return null;
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v.trim());
+  return m ? realDay(`${m[3]}-${m[1]}-${m[2]}`) : null;
+}
+
+/** A YYYY-MM-DD that is a real calendar date, else null. */
+function realDay(v: unknown): string | null {
+  const m = typeof v === 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(v) : null;
+  if (!m) return null;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const t = new Date(Date.UTC(y, mo - 1, d));
+  return t.getUTCFullYear() === y && t.getUTCMonth() === mo - 1 && t.getUTCDate() === d ? (v as string) : null;
+}
+
+const NO_BUYING: BuyingFacts = { buyable: null, discontinued: null, availability: null, quantityLimit: null, returnable: null, promotionStart: null, promotionEnd: null };
+const boolOrNull = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null);
+const shortText = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' && v.trim().length <= 40 ? v.trim() : null);
+const limitOf = (v: unknown): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 9999 ? v : null);
+const hasBuying = (b: BuyingFacts): boolean => (Object.keys(NO_BUYING) as (keyof BuyingFacts)[]).some((k) => b[k] !== null);
+
+/**
+ * What a product object states about buying it (BuyingFacts), from its `availabilityType`, `info` and the `promotion.dates` of
+ * its `pricing(` entries. Undefined when it states none of them. A promotion's dates are read only when every pricing entry
+ * names the same ones (as pricingOf reads the price); entries that disagree give none rather than a guess between them.
+ */
+export function buyingOf(product: Json): BuyingFacts | undefined {
+  const a = asObj(product.availabilityType);
+  const info = asObj(product.info);
+  const dates = Object.keys(product)
+    .filter((k) => k.startsWith('pricing('))
+    .map((k) => asObj(asObj(asObj(product[k]).promotion).dates))
+    .map((d) => ({ start: usDateOf(d.start), end: usDateOf(d.end) }));
+  const first = dates[0];
+  const agree = first !== undefined && dates.every((d) => d.start === first.start && d.end === first.end);
+  const out: BuyingFacts = {
+    buyable: boolOrNull(a.buyable), discontinued: boolOrNull(a.discontinued), availability: shortText(a.type),
+    quantityLimit: limitOf(info.quantityLimit), returnable: shortText(info.returnable),
+    promotionStart: agree ? first.start : null, promotionEnd: agree ? first.end : null,
+  };
+  return hasBuying(out) ? out : undefined;
+}
+
+/**
+ * A BuyingFacts as a message or a stored record gives it (untrusted): each field of its kind or null, dates real
+ * YYYY-MM-DD. Undefined when it is not an object or states nothing.
+ */
+export function cleanBuying(v: unknown): BuyingFacts | undefined {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+  const o = v as Json;
+  const out: BuyingFacts = {
+    buyable: boolOrNull(o.buyable), discontinued: boolOrNull(o.discontinued), availability: shortText(o.availability),
+    quantityLimit: limitOf(o.quantityLimit), returnable: shortText(o.returnable),
+    promotionStart: realDay(o.promotionStart), promotionEnd: realDay(o.promotionEnd),
+  };
+  return hasBuying(out) ? out : undefined;
 }
 
 /**
@@ -148,7 +233,8 @@ function contentOf(product: Json): PageContent {
     if (typeof v === 'string') bullets.push(v);
   }
   const upc = barcodeOf(product);
-  return { bullets, description: typeof details.description === 'string' ? details.description : null, ...(upc !== null ? { upc } : {}) };
+  const buying = buyingOf(product);
+  return { bullets, description: typeof details.description === 'string' ? details.description : null, ...(upc !== null ? { upc } : {}), ...(buying ? { buying } : {}) };
 }
 
 /** A Home Depot product page the owner has open, read from its embedded data (step 7). Never a search. */
@@ -169,6 +255,8 @@ export interface ProductPage {
   description: string | null;
   /** As parseBundlePage reads it (barcodeOf); absent when the page gives no valid barcode. */
   upc?: string;
+  /** As parseBundlePage reads it (buyingOf); absent when the page states none of it. */
+  buying?: BuyingFacts;
 }
 
 /** A price as a pricing entry holds it: a positive number. Anything else is no price. */

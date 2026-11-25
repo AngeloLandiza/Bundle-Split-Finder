@@ -437,6 +437,21 @@
   gap: 8px;
 }
 
+/* Nov 25: the Amazon seller account's steps, a plain numbered list in the disclosure, and the day's use under the key. */
+.key-how {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.key-usage {
+  font-size: 12px;
+  margin: 0;
+}
+
 /* ---- AI */
 .spend {
   display: flex;

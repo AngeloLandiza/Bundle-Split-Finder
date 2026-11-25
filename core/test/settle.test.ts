@@ -239,9 +239,12 @@ describe('waiting_parts in the scan and at the agent\'s start', () => {
     const answered: ReviewItem = { ...(await store.getReview('split:homedepot:320243741'))!, id: 'split:homedepot:999', subject: 'homedepot:999', answer: 'PCL1600K2,P553', answeredAt: T0 };
     await store.putReview(answered);
     const ids = await withdrawUnreadSplitQuestions(store, T0);
-    expect(ids).toHaveLength(11);
+    // Nov 25, rule G: DCKTS681D1P1W34's '34' is DCS334B, the one model its page names that ends in 34; its page also names
+    // DCS331 ("vs. DEWALT DCS331 Jigsaw"), so it waits for the parts' own pages (rule C) before it asks: 12 withdrawn, 3 stay.
+    expect(ids).toHaveLength(12);
+    expect((await bundle(store, '326894185')).split?.waitingFor).toEqual(['DCKTS681D1P1', 'DCS334B']);
     const open = (await store.listReview()).filter((q) => q.kind === 'split' && q.answer === null).map((q) => q.model).sort();
-    expect(open).toEqual(['DCKTS681D1P1W34', 'PCL1600K2-PBP2003', 'PCL1600K2-PSK005', 'PCL500525SB']);
+    expect(open).toEqual(['PCL1600K2-PBP2003', 'PCL1600K2-PSK005', 'PCL500525SB']);
     expect(await store.getReview('split:homedepot:999')).toEqual(answered);
     const pairs = await bundle(store, '344284026');
     expect(pairs.split).toMatchObject({ status: 'resolved', components: ['PCL1201K2', 'FVC51K'] });

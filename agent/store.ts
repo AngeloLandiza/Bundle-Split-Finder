@@ -43,7 +43,11 @@ import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import type { KeepaCodeCost, KeepaCodeSample } from '../core/src/keepa/barcode';
 import type { KeepUsage } from '../core/src/tracking/keepCurrent';
+import type { ChromeAttempt } from '../core/src/selfRun/chrome';
+import type { WeeklySent } from '../core/src/selfRun/weekly';
 import { emptyTracking, seedAnnounced, type TrackingState } from '../core/src/tracking/state';
+import type { SellerCredentials, SpOperation, SpSample } from '../core/src/amazon/spapi/types';
+import type { SellerPartCheck } from '../core/src/amazon/seller';
 import { syncFd } from './fsync';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
@@ -57,6 +61,8 @@ export interface StoredKeys {
   openai?: string;
   ebay?: { appId: string; certId: string };
   telegram?: { botToken: string; chatId: string };
+  /** Nov 25: the Amazon seller account (KeyValues.amazonSeller); every field a secret. */
+  amazonSeller?: SellerCredentials;
 }
 
 /** A bundle as the extension's audit export lists it (POST /api/bridge). */
@@ -135,6 +141,8 @@ export interface ActivityCollection {
   /** W4: errors the owner may retry, newest last. */
   errors?: ActivityErrorRecord[];
   helper: HelperSnapshot | null;
+  /** Nov 25: what he did from Telegram that has no list of its own (agent/telegramBot.ts), newest last. */
+  fromTelegram?: TelegramActionRecord[];
   lastScan: LastScanSummary | null;
   bridge: { at: string; kind: string | null; bundleCount: number } | null;
 }
@@ -211,6 +219,42 @@ export interface PendingMessage {
   text: string;
   at: string;
   tries: number;
+  /** Nov 25: what the message is about, so its buttons are made as it is sent (agent/telegramBot.ts); absent: plain text. */
+  about?: TelegramAbout[];
+}
+
+/** Nov 25: what a Telegram message is about: the deals entering Buy now (best first), new questions, a cost message, a scan's summary. */
+export type TelegramAbout =
+  | { kind: 'buyNow'; keys: string[] }
+  | { kind: 'questions'; ids: string[] }
+  | { kind: 'costs' }
+  | { kind: 'scan' };
+
+/** Nov 25: one thing done from Telegram, kept for Activity with what its Undo needs (agent/telegramBot.ts). */
+export interface TelegramActionRecord {
+  id: string;
+  at: string;
+  sentence: string;
+  /** What Undo puts back; null: nothing to undo (Scan now). */
+  undo: { kind: 'watch'; deal: string; before: { watched: boolean; by: 'auto' | 'owner'; since: number } | null } | { kind: 'pause' } | { kind: 'resume' } | null;
+  undoneAt: string | null;
+}
+
+/** Nov 25: the Telegram reader's state (agent/telegramBot.ts). Never the token. */
+export interface TelegramBotRuntime {
+  /** The next update id to ask for: an update below it was handled already (getUpdates `offset`). */
+  offset: number;
+  /** The buttons the agent issued, by id: what each does, until when, and when it was used (a button works once). */
+  actions: Record<string, { act: unknown; group: string; issuedAt: number; expiresAt: number; usedAt: number | null }>;
+  /** When the "I only take …" line was last sent (at most once an hour). */
+  unknownReplyAt: number | null;
+  /** The last problem reading the chat, in plain words, token scrubbed. */
+  lastError: string | null;
+  /**
+   * A token saved without a chat id: the private chats that wrote to the bot, newest first, offered in the app for the owner to
+   * choose (never adopted by themselves). `tag`: a hash of the token they wrote to, so a new token starts with none.
+   */
+  candidates?: { tag: string; chats: { id: string; name: string; at: number }[] };
 }
 
 /** The release note's state. `latest` is the last file that passed every check; a failed look changes nothing but `checkedAt`. */
@@ -243,6 +287,13 @@ export interface AgentRuntime {
   keepaCodeCost?: KeepaCodeCost;
   /** Nov 25: the first code answers, bounded and without the key (codeSampleOf), for the next fix to be written from. */
   keepaCodeSamples?: KeepaCodeSample[];
+  /**
+   * Nov 25: the seller API's first answers per operation, scrubbed of every credential and seller id and bounded
+   * (core/src/amazon/spapi/client.ts), for the notes to be corrected from real data. In the audit export.
+   */
+  spapiSamples?: SpSample[];
+  /** Nov 25: the seller API's calls today per operation (the app's own cap a day, shown in Settings, Keys). */
+  spapiUsage?: { day: string; used: Partial<Record<SpOperation, number>> };
   /** Step 15: the last rejection of each key by its service, in plain words; cleared when replaced or next accepted. */
   keyProblems?: Partial<Record<KeyName, string>>;
   /** Nov 23: the last verdict of each saved key's own service (agent/keyChecks.ts); dropped when the key is replaced or removed. */
@@ -268,14 +319,32 @@ export interface AgentRuntime {
   /** Question ids already counted in a message: the same questions do not alert again. */
   notifiedQuestions: string[];
   telegram: { pending: PendingMessage[]; lastSentAt: string | null; lastError: string | null };
+  /** Nov 25: the Telegram reader (agent/telegramBot.ts); absent until it first runs. */
+  telegramBot?: TelegramBotRuntime;
   /** Nov 25, new versions (agent/versionCheck.ts): what the daily look at the release note found, and what the owner was told. */
   release?: ReleaseRuntime;
   /** Seconds a unit of each kind took in recent scans, for the progress estimate (pipeline.ts). */
   rates: UnitRates;
   /** The last scan's job, as the Deals limit notice reads it (core/src/deals/limitCopy.ts). */
   lastJob: HelperLastJob | null;
+  /** Nov 25, running without the owner (agent/selfRun.ts): Chrome started for a scan, the one-time login default, the weekly message. */
+  selfRun?: SelfRunRuntime;
   /** Step 18 (agent/costs.ts): the cost warnings sent (by month), what the blocker held this month, and counted eBay calls and Telegram messages by local day. */
   costs?: CostRuntime;
+}
+
+/** What the app keeps between runs about running without the owner. Never a key. */
+export interface SelfRunRuntime {
+  /** The last try to start Chrome (core/src/selfRun/chrome.ts). */
+  chrome?: ChromeAttempt;
+  /** Since when Home Depot pages have waited with Chrome closed (epoch ms), while they do. */
+  pagesWaitingSince?: number | null;
+  /** When "Open at login" was looked at for a schedule, once (epoch ms), and whether the app turned it on. Never looked at again. */
+  login?: { at: number; turnedOn: boolean };
+  /** The notice about it is open until the owner closes it. */
+  loginNotice?: boolean;
+  /** The weekly message last sent (or the first look's seed). */
+  weekly?: WeeklySent;
 }
 
 /** Step 18: what the costs keep between runs. Never a key. */
@@ -285,7 +354,7 @@ export interface CostRuntime {
   /** What the blocker held, this month only, newest last, at most 50 a service. */
   blocked: Partial<Record<CostService, CostBlocked[]>>;
   /** eBay calls and Telegram messages by local day ("2026-11-25"), the last 400 days. */
-  counts: Record<string, { ebay?: number; telegram?: number }>;
+  counts: Record<string, { ebay?: number; telegram?: number; amazon?: number }>;
 }
 
 /**
@@ -298,6 +367,13 @@ export interface TrackingCollection extends TrackingState {
   derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate>; groups?: Record<string, BogoGroup> };
   /** The sanity findings the owner marked "This is right", by clearKey (SanityFinding.clearKey); never shown again. */
   sanityCleared?: string[];
+  /**
+   * Nov 25: what the owner's Amazon seller account said about each listing, by ASIN (core/src/amazon/seller.ts). Kept while
+   * a deal holds the listing; a record of another account is not used.
+   */
+  sellerChecks?: Record<string, SellerPartCheck>;
+  /** Nov 25: listings the owner ships himself (FBA's answer does not hold a deal), by ASIN, with when he said so. */
+  selfShip?: Record<string, string>;
 }
 
 /**
@@ -395,11 +471,14 @@ export function defaultSettings(): StoreData['settings'] {
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
-      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true },
+      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true, costs: true, weekly: true },
       sound: false,
       quietHours: { enabled: false, from: '22:00', to: '07:00' },
       digest: 'each-run',
       morningAt: '08:00',
+      // Nov 25: acting from Telegram is the owner's choice; off until he turns it on (an existing install reads it off too).
+      telegramActions: false,
+      weekly: { day: 1, at: '08:00' },
     },
     shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
     // Nov 25: the app reads the project's public release note once a day and says when a new version is ready.
@@ -483,6 +562,7 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
         ...(s.notifications ?? {}),
         kinds: { ...d.notifications.kinds, ...(s.notifications?.kinds ?? {}) },
         quietHours: { ...d.notifications.quietHours, ...(s.notifications?.quietHours ?? {}) },
+        weekly: { ...d.notifications.weekly!, ...(s.notifications?.weekly ?? {}) },
       },
       shell: { ...d.shell, ...(s.shell ?? {}) },
       updates: { ...d.updates!, ...(s.updates ?? {}) },

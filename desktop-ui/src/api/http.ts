@@ -9,6 +9,7 @@ import type { ApiClient } from './client';
 import { mapActivity, mapDeals, mapDetail, mapEvent, mapReview, mapState, csvSort } from './map';
 import { openEventStream } from './sse';
 import { ApiError, type CostsView, type KeyName, type LookupsRun } from './types';
+import { agentDownHint } from '../lib/agentDown';
 import { words } from '../lib/platform';
 
 declare global {
@@ -17,7 +18,7 @@ declare global {
   }
 }
 
-const OFFLINE = `The agent is not running. Open Split Finder from the ${words.trayPlace} to start it.`;
+const OFFLINE = `The agent is not running. ${agentDownHint(words)}`;
 const DENIED = 'The app is not allowed to reach the agent. Restart Split Finder.';
 const DEV_TOKEN_KEY = 'splitFinder.devToken';
 
@@ -178,6 +179,7 @@ export function createHttpClient(): ApiClient {
     runLookups: (body) => call<LookupsRun>('POST', '/api/lookups/run', body ?? {}),
     reloadHelper: async () => void (await call('POST', '/api/helper/reload', {})),
     dismissUpdate: async (version) => void (await call('POST', '/api/update/dismiss', { version })),
+    answerLoginNotice: async (turnOff) => void (await call('POST', '/api/self-run/login-notice', { turnOff })),
     stop: async () => void (await call('POST', '/api/scan/stop', {})),
     pause: async () => void (await call<C.PauseResponse>('POST', '/api/agent/pause', {})),
     resume: async () => void (await call<C.PauseResponse>('POST', '/api/agent/resume', {})),
@@ -197,6 +199,7 @@ export function createHttpClient(): ApiClient {
     patchSettings: async (patch) => (await call<C.SettingsResponse>('PATCH', '/api/settings', patch)).settings,
     putKey: async <N extends KeyName>(name: N, value: KeyValues[N]) => (await call<C.PutKeyResponse>('PUT', `/api/keys/${name}`, value)).check,
     checkKey: async (name) => (await call<C.CheckKeyResponse>('POST', `/api/keys/${name}/check`, {})).check,
+    setSelfShip: async (asin, selfShip) => void (await call<{ asin: string; selfShip: boolean }>('POST', `/api/seller/self-ship/${id(asin)}`, { selfShip })),
     deleteKey: async (name) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}`)),
 
     costs: () => call<CostsView>('GET', '/api/costs'),
@@ -208,6 +211,9 @@ export function createHttpClient(): ApiClient {
 
     testNotification: async () => void (await call('POST', '/api/notify/test', {})),
     testTelegram: () => call<C.TelegramTestResponse>('POST', '/api/notify/test-telegram', {}),
+    telegramChat: () => call<C.TelegramChatResponse>('GET', '/api/telegram/chat'),
+    useTelegramChat: (chatId) => call<C.TelegramChatSaveResponse>('POST', '/api/telegram/chat', { chatId }),
+    undoTelegramAction: async (aid) => void (await call('POST', `/api/telegram/actions/${id(aid)}/undo`, {})),
 
     pairRequests: () => call<C.PendingPairRequest[]>('GET', '/api/pair/requests'),
     decidePairing: async (requestId, allow) => void (await call('POST', allow ? '/api/pair/approve' : '/api/pair/deny', { requestId } satisfies C.PairDecisionBody)),

@@ -370,6 +370,11 @@
   margin-top: 4px;
 }
 
+/* Nov 25: what his Amazon seller account says about the part, in one line under it. */
+.part-seller {
+  margin-top: 4px;
+}
+
 /* Checking the app's own work: one plain list in the box, hairlines between findings (no card in the card). */
 .needs-look-item + .needs-look-item {
   border-top: 1px solid var(--separator);
@@ -386,4 +391,30 @@
   display: flex;
   gap: 8px;
   margin: 8px 0 0;
+}
+
+/* Market (Nov 25): under the parts, a grouped list like Parts; the usual-price estimate sits above it as plain lines. */
+.market-usual {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 4px 6px;
+}
+
+.market-usual-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.market-usual-label {
+  font-weight: 500;
+}
+
+.detail-figures.market-figures {
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }

@@ -65,6 +65,7 @@ export function NotificationsPane() {
           <Switch label="A scan finished" checked={n.kinds.scan} onChange={(on) => setKind('scan', on)} />
           <Switch label="Something went wrong" checked={n.kinds.error} onChange={(on) => setKind('error', on)} />
           <Switch label="A new version of Split Finder is ready" checked={n.kinds.version} onChange={(on) => setKind('version', on)} />
+          <Switch label="Your weekly summary" checked={n.kinds.weekly} onChange={(on) => setKind('weekly', on)} />
         </div>
       </Row>
       <Rule />
@@ -112,6 +113,24 @@ export function NotificationsPane() {
             </Inline>
           ) : null}
         </div>
+      </Row>
+      <Row label="Weekly summary" align="start" help="One message a week: deals found, what you recorded, profit estimated and recorded, open questions, what the week cost and anything held back. The notification is short; Telegram gets all of it.">
+        <Inline>
+          <Select
+            label={<span className="sr-only">Weekly summary day</span>}
+            value={String(n.weekly?.day ?? 1)}
+            width="sm"
+            onChange={(e) => update({ notifications: { weekly: { day: Number(e.target.value) } } })}
+          >
+            {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((d, i) => (
+              <option key={d} value={String(i)}>
+                {d}
+              </option>
+            ))}
+          </Select>
+          <span>at</span>
+          <ClockField label="Weekly summary time" value={n.weekly?.at ?? '08:00'} onCommit={(at) => update({ notifications: { weekly: { at } } }, { delay: 600 })} />
+        </Inline>
       </Row>
       <Row label="Quiet hours" align="start" help="Notifications wait and arrive as one digest when quiet hours end. Scan finished ones are dropped.">
         <div className="stack">
@@ -162,6 +181,18 @@ export function NotificationsPane() {
             </p>
           ) : null}
         </div>
+      </Row>
+      <Row
+        label="Act from Telegram"
+        align="start"
+        help="From your phone: I bought this, Not for me, answer a Review question that has choices, pause or resume scans, Scan now when it spends no searches (or after your yes), and /status. Not from your phone: keys, limits, budgets, the reserve and settings. Everything done there is in Activity, with Undo."
+      >
+        <Switch
+          label="Let me act from Telegram"
+          checked={telegram && n.telegramActions === true}
+          disabled={!telegram}
+          onChange={(telegramActions) => update({ notifications: { telegramActions } })}
+        />
       </Row>
       <Row label="Test" align="start" help={`Sends one notification to this ${words.computer}, so you can see how they arrive.`}>
         <div className="stack">

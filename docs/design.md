@@ -475,7 +475,12 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   Depot" with when the price was seen, **Watch / Unwatch** and the "…" menu; the **Verdict** (a watched bundle: the headline
   and one sentence, with "Why" folded under it: margin against the last scan and the 7-day average, sales as "Sells about N a
   month (Keepa)" or "No sales data — Keepa leaves it out for slow sellers", Confirmed or Review cleared; it opens by itself
-  only when a reason needs him); the **estimate box** (estimated profit at 26/32, ROI, Bundle costs, Parts sell for, After
+  only when a reason needs him); **On Home Depot** (Nov 25, a group box of plain 11px lines, only those the page states: "Home
+  Depot's page says it can be bought online (read 10:55 AM)" or "... not checked yet", "Limit 3 per order", "Up to 3 per
+  order: about +$107 at this estimate (an estimate ...)", "Home Depot's price ends Jan 31", "90-Day returns, per Home Depot's
+  page"; amber text for "cannot be bought" and for an ended price not read since; never stock at a store or a delivery date,
+  which the page does not state; the Deals row adds only "Limit 3 per order" and the price's end after the brand · model);
+  the **estimate box** (estimated profit at 26/32, ROI, Bundle costs, Parts sell for, After
   fees, the fee basis with Change, and the FBA estimate (Keepa) line beside it, never replacing it); **what is not
   confirmed** (a banner: "Needs your answer." with Answer in Review, else "Not everything is confirmed." and which parts:
   `lib/matchWords.ts` `partsSummary`); then the long sections, each a fold (`components/Fold.tsx`, a native disclosure, his

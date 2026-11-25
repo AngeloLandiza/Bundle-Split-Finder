@@ -1,6 +1,7 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { Store } from '../store';
@@ -111,6 +112,22 @@ describe('agent store', () => {
     s.update('settings', () => mine);
     mine.autopilot = true;
     expect(s.get('settings').autopilot).toBe(false);
+  });
+
+  it('a crashed agent: its lock, fresh and naming its dead pid, is taken over at once by the agent the shell starts next', () => {
+    // Nov 25, supervision: a real agent process opens the store and is killed (SIGKILL: no handler, no close), so its lock
+    // stays, touched a moment ago. The shell restarts the agent immediately; that start must not wait for the lock to go stale.
+    const dir = tempDir();
+    const store = resolve('agent/store.ts');
+    const child = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', `const { Store } = await import(${JSON.stringify(store)}); Store.open(${JSON.stringify(dir)}); process.kill(process.pid, 'SIGKILL');`], { encoding: 'utf8' });
+    expect(child.signal ?? child.status).toBe(process.platform === 'win32' ? 1 : 'SIGKILL');
+    const lock = join(dir, 'store', 'store.lock');
+    const left = JSON.parse(readFileSync(lock, 'utf8')) as { pid: number };
+    expect(left.pid).toBe(child.pid);
+    expect(Date.now() - statSync(lock).mtimeMs).toBeLessThan(60_000);
+    const s = openStore(dir);
+    expect((JSON.parse(readFileSync(lock, 'utf8')) as { pid: number }).pid).toBe(process.pid);
+    s.close();
   });
 
   it('takes over a lock left by a process that is gone', () => {

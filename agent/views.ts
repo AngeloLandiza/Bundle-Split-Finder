@@ -1,10 +1,12 @@
 // What the agent's endpoints answer, built from the store (pure functions; the contract's shapes).
 
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
-import { backlogSentence, ceilingWords, dripCeiling, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
+import { backlogSentence, ceilingWords, dripCeiling, fullPerHour, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { dayOf } from '../core/src/tracking/state';
+import { buyingView } from '../core/src/tracking/buying';
 import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
 import { keepCurrentView } from './keepCurrent';
+import { NOT_CONNECTED_LINE, sellerPartLine, sellerParts } from '../core/src/amazon/seller';
 import type { HomeDepotPaceState } from '../core/src/api/contract';
 import type {
   ActivityResponse,
@@ -20,6 +22,7 @@ import type {
   DealIncompleteEstimate,
   DealUnpricedPart,
   DealRow,
+  DealSellerView,
   DealSignals,
   EvidenceQuote,
   QuestionChoice,
@@ -58,7 +61,8 @@ import { choicesOf, reviewSignature } from '../core/src/scan/answers';
 import { matchState, WAITING_PAGE, WAITING_PARTS, waitingForText } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
 import { estimateBasis, fulfillmentGap } from '../core/src/scan/report';
-import type { AuditBundle, StoreData, StoredKeys } from './store';
+import { LOGIN_NOTICE } from '../core/src/selfRun/words';
+import type { AuditBundle, StoreData, StoredKeys, TrackingCollection } from './store';
 
 const monthStartMs = (now: number): number => {
   const d = new Date(now);
@@ -89,6 +93,8 @@ export function keysPresence(keys: StoredKeys): KeysPresence {
     openai: Boolean(keys.openai),
     ebay: Boolean(keys.ebay?.appId && keys.ebay.certId),
     telegram: Boolean(keys.telegram?.botToken && keys.telegram.chatId),
+    ...(keys.telegram?.botToken && !keys.telegram.chatId?.trim() ? { telegramWaitingForChat: true } : {}),
+    amazonSeller: Boolean(keys.amazonSeller?.clientId && keys.amazonSeller.clientSecret && keys.amazonSeller.refreshToken && keys.amazonSeller.sellerId),
   };
 }
 
@@ -271,6 +277,17 @@ export function confirmingNote(r: DealRow, data: WithTracking<'runtime'>, now: n
   };
 }
 
+/** When the next page is read between scans, and whether the pace is below the full one (see HomeDepotPaceState). */
+function nextReadOf(s: ReturnType<typeof paceStateOf>, paused: number | null, pages: number, now: number): { nextReadAt: string | null; slowed: boolean } {
+  const ceiling = dripCeiling(s, now);
+  const slowed = ceiling < fullPerHour();
+  if (pages <= 0) return { nextReadAt: null, slowed };
+  const readToday = s.day === dayOf(now) ? s.dripPages : 0;
+  const gap = Math.max(HD_LIMITS.dripGapMs, Math.ceil((60 * 60_000) / ceiling));
+  const at = paused !== null ? paused : readToday >= HD_LIMITS.dripPagesPerDay ? new Date(new Date(now).getFullYear(), new Date(now).getMonth(), new Date(now).getDate() + 1).getTime() : Math.max(now, (s.lastEndedAt ?? 0) + gap);
+  return { nextReadAt: new Date(at).toISOString(), slowed };
+}
+
 /**
  * Home Depot's pace for the state and the waiting rows: what the agent last counted waiting (runtime.hdBacklog) and the
  * pace's own state (runtime.hdPace), in figures and in the words built from them. Null before anything was counted and
@@ -288,6 +305,7 @@ export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): Ho
     // The adaptive ceiling in force (core/src/scan/hdPace.ts dripCeiling): halved by a refusal, raised back gradually.
     perHour: dripCeiling(s, now), perDay: HD_LIMITS.dripPagesPerDay, perScan: HD_LIMITS.pagesPerScan,
     readToday: s.day === dayOf(now) ? s.dripPages : 0,
+    ...nextReadOf(s, paused, pages, now),
     sentence: backlogSentence({ pages, sets: b?.sets ?? 0, bundles: b?.bundles ?? 0, pausedUntil: paused, ceiling: ceilingWords(dripCeiling(s, now), s.lastRefusal?.at ?? null, now) }) ?? (paused !== null ? pausedSentence(paused) : null),
   };
 }
@@ -300,6 +318,8 @@ export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): Ho
 export function keptNote(r: DealRow, data: Pick<StoreData, 'deals'> & Partial<Pick<StoreData, 'tracking'>>, now: number): DealRow {
   const b = data.tracking ? data.deals.bundles.find((x) => x.key === r.id) : undefined;
   const d = b && data.tracking ? keptDealOf(b, data.tracking) : null;
+  // Nov 25: what Home Depot's page states about buying it, on a row that has a reading or is watched ("not checked yet").
+  if (b && (b.buying !== undefined || d !== null)) r = { ...r, buying: buyingView(b.buying, { profit: b.estimate?.profit ?? null, priceSeenAt: b.seenAt, now }) };
   if (!d) return r;
   const c = pricesChecked(d);
   const stale = staleSince(d, now);
@@ -463,7 +483,11 @@ export function watchlistResponse(data: WithTracking<'deals' | 'review' | 'setti
   return { at: ats.length ? iso(Math.max(...ats)) : null, rows, thresholds };
 }
 
-export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> & Partial<Pick<StoreData, 'runtime'>>, id: string, now?: number): DealDetail | null {
+export function dealDetail(
+  data: WithTracking<'deals' | 'review' | 'settings'> & Partial<Pick<StoreData, 'runtime'>>, id: string, now?: number,
+  /** Nov 25: the connected seller account's tag (agent/seller.ts account()); null or absent when none is connected. */
+  sellerAccount?: string | null,
+): DealDetail | null {
   const found = data.deals.bundles.find((b) => b.key === id);
   if (!found) return null;
   // The listing ladder, round 2: each counted listing no automatic rung will read says why (PartRow.confirmNote).
@@ -487,6 +511,8 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
   const group = t ? bogoGroupOf(t, id) : null;
   const looks = (data.deals.sanity ?? []).filter((f) => f.bundleId === id).map(needsLookOf);
   if (group) sources.push({ label: `Home Depot: the BOGO starter ${group.starterModel}`, url: group.starterLink, source: 'homedepot' });
+  // The market (Nov 25): the primary way to sell's, as last judged (stored signals, whether watched or not).
+  const market = t?.signals[id]?.options.find((o) => o.optionId === bundle.options[0]?.id)?.market;
   return {
     row: keptNote(
       data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t, data.deals.sanity),
@@ -515,6 +541,25 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
     ...(bundle.splitEvidence && bundle.splitEvidence.length > 0 ? { splitEvidence: bundle.splitEvidence } : {}),
     ...(bundle.otherBrands && bundle.otherBrands.length > 0 ? { setContents: bundle.otherBrands } : {}),
     ...(looks.length > 0 ? { needsLook: looks } : {}),
+    ...(market ? { market } : {}),
+    seller: sellerView(bundle, t, sellerAccount ?? null, now ?? Date.now()),
+  };
+}
+
+/**
+ * Nov 25: the parts as the owner's seller account sees them: the primary way to sell's counted parts (else the bundle's),
+ * each with its line. Not connected: no lines, and NOT_CONNECTED_LINE on a deal in Buy now.
+ */
+export function sellerView(bundle: BundleRow, t: Pick<TrackingCollection, 'signals' | 'sellerChecks' | 'selfShip'> | undefined, account: string | null, now = Date.now()): DealSellerView {
+  if (account === null) {
+    return { connected: false, note: (t?.signals[bundle.key]?.buyNow ?? null) !== null ? NOT_CONNECTED_LINE : null, parts: [] };
+  }
+  const checks = t?.sellerChecks ?? {};
+  const self = t?.selfShip ?? {};
+  const parts = sellerParts(bundle.options[0]?.parts ?? bundle.parts);
+  return {
+    connected: true, note: null,
+    parts: parts.map((p) => sellerPartLine(p, checks[p.asin!]?.account === account ? checks[p.asin!] : undefined, self[p.asin!] !== undefined, now)),
   };
 }
 
@@ -700,6 +745,10 @@ export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' 
     ...(data.outcomes ? { outcomes: entriesView(data.outcomes) } : {}),
     // Nov 25: the new versions the app told him about, newest first.
     ...(data.versions && data.versions.length > 0 ? { versions: [...data.versions].reverse() } : {}),
+    // Nov 25: what he did from Telegram with no list of its own (agent/telegramBot.ts), newest first.
+    ...(data.activity.fromTelegram?.length
+      ? { fromTelegram: [...data.activity.fromTelegram].reverse().map((r) => ({ id: r.id, at: r.at, sentence: r.sentence, undoable: r.undo !== null && r.undoneAt === null, undoneAt: r.undoneAt })) }
+      : {}),
     errors: (data.activity.errors ?? [])
       .filter((e) => e.resolvedAt === null)
       .map((e) => ({ id: e.id, at: e.at, sentence: e.sentence, retry: e.retry ? { label: e.retry.label, searches: e.retry.searches, usd: e.retry.usd } : null }))
@@ -720,8 +769,12 @@ export interface LiveView {
   /** Nov 23: the helper's build, from its heartbeat, and whether it is not the one this app ships. */
   helperVersion?: string | null;
   helperOutdated?: boolean;
+  /** Nov 25: what the agent is doing about an outdated helper's files (agent/helperUpdate.ts). */
+  helperUpdate?: { state: 'updating' } | { state: 'install'; why: string } | null;
   /** Step 15: the drip of Keepa lookups between scans (work.ts dripState). */
   drip?: DripState;
+  /** Nov 25: what the next scheduled scan needs and does not have (work.ts nextScanNote). */
+  nextScanNote?: string | null;
   /**
    * Searches left now: the last account check less the ledger rows written after it (core/src/serpapi/balance.ts). Absent:
    * the last check's own figure (a state built without the agent's ledger).
@@ -758,6 +811,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       ...(view ? { step: view.current.count ? `${view.current.label} · ${view.current.count}` : view.current.label, progress: { done: view.stepsDone, total: view.stepsTotal }, pipeline: view } : {}),
       busy: live.busy === 'paid' ? 'scan' : live.busy,
       nextScanAt: live.nextScanAt,
+      ...(live.nextScanNote ? { nextScanNote: live.nextScanNote } : {}),
       lastScan: lastScanOf(data, live),
       ...(data.agent.problem ? { problem: data.agent.problem } : {}),
       ...(live.drip ? { drip: live.drip } : {}),
@@ -768,6 +822,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting,
       ...(live.helperOutdated ? { outdated: true } : {}),
       ...(live.helperVersion ? { version: live.helperVersion } : {}),
+      ...(live.helperOutdated && live.helperUpdate ? { update: live.helperUpdate } : {}),
     },
     budget: {
       serpLeft: live.serpLeft !== undefined ? live.serpLeft : data.runtime.serp?.left ?? null,
@@ -792,5 +847,6 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
     ...(keyChecks ? { keyChecks } : {}),
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
     settingsAt: data.settings.updatedAt,
+    ...(data.runtime.selfRun?.loginNotice ? { loginNotice: { sentence: LOGIN_NOTICE } } : {}),
   };
 }

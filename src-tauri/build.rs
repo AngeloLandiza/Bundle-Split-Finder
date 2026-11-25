@@ -4,6 +4,7 @@ fn main() {
     tauri_build::Attributes::new().app_manifest(
       tauri_build::AppManifest::new().commands(&[
         "agent_status",
+        "relaunch_app",
         "get_launch_at_login",
         "set_launch_at_login",
         "popover_do",

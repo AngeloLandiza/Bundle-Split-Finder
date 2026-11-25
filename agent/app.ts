@@ -2,6 +2,7 @@
 // wired together. server.ts only listens. Tests build one on a temp data dir.
 
 import { randomBytes } from 'node:crypto';
+import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import {
@@ -26,9 +27,11 @@ import {
   type PairClaimResponse,
   type PartOutcomeBody,
   type PauseResponse,
+  type TelegramChatResponse,
   type AskResponse,
   type QueuedResponse,
   type ReviewAnswer,
+  type RunRecord,
   type UndoAnswerResponse,
   type WorkerJobInputs,
   type LookupsRunResponse,
@@ -45,15 +48,18 @@ import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
 import { costSettingsOf, patchCostSettings, syncAiLimit } from '../core/src/costs/settings';
 import { testTelegram } from './alerts';
+import { TelegramBot } from './telegramBot';
 import { Auth, type PairError } from './auth';
 import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './dataPane';
 import { measuredByDefault, modelIdentity } from './autopilot';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
+import { closeOrphanRuns, freshCrash, readCrashes, restartError, restartNotifies, restartSentence, type RestartInfo } from './crash';
 import { checkForOwner, checkStoredKey, forgetKeyCheck, recheckStaleKeys, type KeyCheckHost } from './keyChecks';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
+import { fileTried, HelperUpdate, RELOAD_GRACE_MS } from './helperUpdate';
 import { COLLECTIONS, defaultAiSettings, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf, workingReviewCount } from './views';
@@ -61,11 +67,12 @@ import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_LISTING_SOURCE, isBundleListingPath, LISTING_SOURCES } from '../core/src/scan/listingSource';
 import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
-import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
+import { AgentWork, extensionSettingsOf, secretsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 import { priceFromLink } from './priceFromLink';
 import { OutcomeBook, outcomesCsvOf, outcomesResponse } from './outcomes';
 import { parseSemver } from '../core/src/release/note';
+import { weeklyOf } from '../core/src/selfRun/weekly';
 import { checkForNewVersion, dismissUpdate, releaseState, updateNoticeOf, type VersionCheck } from './versionCheck';
 
 /** A paired extension counts as connected this long after it was last heard from. */
@@ -81,7 +88,7 @@ export interface AgentOptions {
   /** Every paid call's fetch (SerpApi, Keepa, eBay, models, Telegram). Tests pass a fake; default the global fetch. */
   fetchFn?: typeof fetch;
   /** Tests: the scan itself, reader timeouts, SerpApi's address. */
-  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom'>;
+  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom' | 'chrome' | 'spUrls' | 'spSleep'>;
   /**
    * POST /api/agent/quit: the desktop shell asks the agent to stop as SIGTERM does. Windows has no SIGTERM for a
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
@@ -91,10 +98,14 @@ export interface AgentOptions {
   keyCheckTimeoutMs?: number;
   /** Nov 23: the helper build this app ships; default the bundled zip's manifest (setup.ts shippedHelperVersion). Tests set it. */
   shippedHelperVersion?: string | null;
+  /** Nov 25, tests: unpacks the shipped helper zip into a folder (default: the system's unzip, agent/setup.ts). */
+  helperUnpack?: (zip: string, dest: string) => void;
   /** Nov 25: the running app's version; default the shell's SPLIT_FINDER_APP_VERSION. Null: nothing to compare, so no release check. */
   appVersion?: string | null;
   /** Nov 25: one line for a developer when the release note cannot be read; default console.warn. */
   releaseLog?: (line: string) => void;
+  /** Nov 25, supervision: the shell started this agent again after the last one died (crash.ts restartFromEnv). */
+  restart?: RestartInfo | null;
 }
 
 /** Nov 23: a helper build as a heartbeat may name it ("0.1.0+3c92cc7"). */
@@ -110,6 +121,13 @@ export interface Agent {
   notify(n: Omit<NotifyEvent, 'id'>): NotifyEvent;
   /** Nov 25: look at the release note now (tests; the timers do it at start and daily). */
   checkVersion(o?: { force?: boolean }): Promise<VersionCheck>;
+  /** Nov 25: the Telegram reader and its buttons (agent/telegramBot.ts). */
+  telegram: TelegramBot;
+  /** Nov 25, supervision: what runs now, and every secret a crash line must not hold (the keys and the app's token). */
+  step(): string | null;
+  secrets(): string[];
+  /** Resolves when the restart line (if any) is written and sent. */
+  restartNoted: Promise<void>;
   close(): void;
 }
 
@@ -145,7 +163,15 @@ function parseKey(name: KeyName, body: Record<string, unknown>): Partial<StoredK
     case 'ebay':
       return { ebay: { appId: text(body.appId, 'appId'), certId: text(body.certId, 'certId') } };
     case 'telegram':
-      return { telegram: { botToken: text(body.botToken, 'botToken'), chatId: text(body.chatId, 'chatId') } };
+      // Nov 25: the chat id may wait: the agent offers the private chat that writes to the bot (agent/telegramBot.ts).
+      return { telegram: { botToken: text(body.botToken, 'botToken'), chatId: body.chatId === undefined || body.chatId === null || body.chatId === '' ? '' : text(body.chatId, 'chatId', 64) } };
+    case 'amazonSeller':
+      return {
+        amazonSeller: {
+          clientId: text(body.clientId, 'clientId'), clientSecret: text(body.clientSecret, 'clientSecret'),
+          refreshToken: text(body.refreshToken, 'refreshToken', 2000), sellerId: text(body.sellerId, 'sellerId', 40),
+        },
+      };
     default:
       // `value` is the desktop UI's name for it (W2); `key` the contract's.
       return { [name]: text(body.key ?? body.value, 'key') };
@@ -252,8 +278,12 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
     const sc = obj(patch.scan, 'scan');
     const cur = next.scan ?? { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false };
     next.scan = {
+      ...cur,
       listingSource: 'listingSource' in sc ? oneOf(sc.listingSource, LISTING_SOURCES, 'scan.listingSource') : cur.listingSource,
       serpWhenChromeClosed: 'serpWhenChromeClosed' in sc ? flag(sc.serpWhenChromeClosed, 'scan.serpWhenChromeClosed') : cur.serpWhenChromeClosed,
+      // Nov 25: whether the app opens the owner's Chrome for a scheduled scan, and whether it closes one it opened afterwards.
+      ...('openChrome' in sc ? { openChrome: flag(sc.openChrome, 'scan.openChrome') } : {}),
+      ...('closeChromeAfter' in sc ? { closeChromeAfter: flag(sc.closeChromeAfter, 'scan.closeChromeAfter') } : {}),
     };
   }
   if ('lookups' in patch) {
@@ -336,6 +366,7 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
       for (const kind of NOTIFY_KINDS) if (kind in k) out.kinds[kind] = flag(k[kind], `notifications.kinds.${kind}`);
     }
     if ('sound' in n) out.sound = flag(n.sound, 'notifications.sound');
+    if ('telegramActions' in n) out.telegramActions = flag(n.telegramActions, 'notifications.telegramActions');
     if ('quietHours' in n) {
       const q = obj(n.quietHours, 'notifications.quietHours');
       if ('enabled' in q) out.quietHours.enabled = flag(q.enabled, 'notifications.quietHours.enabled');
@@ -344,6 +375,13 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
     }
     if ('digest' in n) out.digest = oneOf(n.digest, ['each-run', 'morning', 'off'], 'notifications.digest');
     if ('morningAt' in n) out.morningAt = clock(n.morningAt, 'notifications.morningAt');
+    // Nov 25: the weekly summary's day and time.
+    if ('weekly' in n) {
+      const w = obj(n.weekly, 'notifications.weekly');
+      const cur = weeklyOf(out);
+      if ('day' in w && !(typeof w.day === 'number' && Number.isInteger(w.day) && w.day >= 0 && w.day <= 6)) throw new HttpError('bad_request', 'notifications.weekly.day must be a whole number from 0 (Sunday) to 6.');
+      out.weekly = { day: 'day' in w ? (w.day as number) : cur.day, at: 'at' in w ? clock(w.at, 'notifications.weekly.at') : cur.at };
+    }
   }
   if ('updates' in patch) {
     const u = obj(patch.updates, 'updates');
@@ -418,7 +456,7 @@ export function createAgent(opts: AgentOptions): Agent {
   const auth = new Auth(store, { dataDir: opts.dataDir, port: opts.port, extraUiOrigins: opts.extraUiOrigins, now });
   const jobs = new WorkerJobs(store, { now });
   jobs.abandonUnfinished('The agent restarted before this read was answered.');
-  const events = new EventHub();
+  const events = new EventHub(now);
   const timers = opts.timers !== false;
 
   // Nov 23: which helper build is connected, and whether it is the one this app ships. `reportedBy`: the build that answered
@@ -432,15 +470,25 @@ export function createAgent(opts: AgentOptions): Agent {
     jobs.enqueue('reload', {});
     return true;
   };
+  // Nov 25: a helper older than the shipped build is brought up to date in its own folder (helperUpdate.ts), which queues the
+  // reload itself once the files are new; a reload alone would load the same old files.
+  const helperUpdate = new HelperUpdate({
+    shipped, zip: () => extensionZipSource(), candidates: () => [extensionInstallDir()], now,
+    tried: fileTried(join(opts.dataDir, 'helper-update.json')),
+    queueReload: () => void queueReload(),
+    ...(opts.helperUnpack ? { unpack: opts.helperUnpack } : {}),
+    say: (text) => work.announceActivity(text),
+  });
   const reloadIfOutdated = (): void => {
     if (!helperOutdated()) return;
+    if (helper.version !== null && shipped !== null && helper.version !== shipped) return;
     const key = helper.version ?? '';
     if (helper.reloadsFor.has(key)) return;
     helper.reloadsFor.add(key);
     queueReload();
   };
   /** Nov 23: the helper's build, from a heartbeat's `version` or a poll's `v`. A new one clears what the old one reported, and may be outdated itself. */
-  const noteHelperVersion = (version: unknown): void => {
+  const noteHelperVersion = (version: unknown, extensionId: string | null = null): void => {
     if (typeof version === 'string' && HELPER_VERSION.test(version) && version !== helper.version) {
       helper.version = version;
       reloadIfOutdated();
@@ -452,7 +500,18 @@ export function createAgent(opts: AgentOptions): Agent {
       reloadIfOutdated();
       mark('state');
     }
+    if (helper.version !== null) {
+      const before = JSON.stringify(helperUpdate.state());
+      helperUpdate.contact(extensionId, helper.version);
+      const after = helperUpdate.state();
+      if (JSON.stringify(after) !== before) {
+        mark('state');
+        // The update's time is up a moment later: say so then, not at the next poll.
+        if (after?.state === 'updating' && timers) setTimeout(() => mark('state'), RELOAD_GRACE_MS + 500).unref?.();
+      }
+    }
   };
+  jobs.onError = (err) => work.jobFailed("Handing Chrome's page reads out again", err);
   jobs.onOutdated = () => {
     helper.reportedBy = helper.version;
     reloadIfOutdated();
@@ -466,6 +525,7 @@ export function createAgent(opts: AgentOptions): Agent {
       lastSeenAt: seen === null ? null : new Date(seen).toISOString(),
       helperVersion: helper.version,
       helperOutdated: helperOutdated(),
+      helperUpdate: helperUpdate.state(),
     };
   };
 
@@ -489,6 +549,27 @@ export function createAgent(opts: AgentOptions): Agent {
     ...(timers ? {} : { hdSleep: async () => {} }),
     changed: () => mark('state'), ...(opts.work ?? {}),
   });
+
+  // Nov 25, supervision: nothing runs when an agent starts, so a run stored as running was the last agent's, cut off. After
+  // a restart by the shell, one Activity line says so and what became of the scan (crash.ts); a scheduled scan cut off, or a
+  // second restart in the shell's window, is also a notification and a Telegram message.
+  const orphans = closeOrphanRuns(store.get('activity').runs, iso());
+  if (orphans.closed.length > 0) store.update('activity', (a) => ({ ...a, runs: orphans.runs }));
+  const restartNoted = opts.restart ? noteRestart(opts.restart, orphans.closed.filter((r) => r.kind === 'scan').pop() ?? null) : Promise.resolve();
+  async function noteRestart(restart: RestartInfo, scanRun: RunRecord | null): Promise<void> {
+    try {
+      const at = now();
+      const newest = scanRun ? (await work.scanStore.listScans())[0] : undefined;
+      const interrupted = scanRun ? { trigger: scanRun.trigger ?? 'manual', continues: newest?.status === 'running' } : null;
+      const crash = freshCrash(readCrashes(opts.dataDir), at, restart.stoppedAt);
+      const sentence = restartSentence({ at: crash ? Date.parse(crash.at) : (restart.stoppedAt ?? at), attempt: restart.attempt, crash, interrupted });
+      const error = restartError(sentence, at, interrupted, store.get('settings').settings.searchesPerScan);
+      store.update('activity', (a) => ({ ...a, errors: [...(a.errors ?? []), error].slice(-50) }));
+      if (restartNotifies(restart.attempt, interrupted)) await work.announceProblem(sentence);
+    } catch (err) {
+      work.jobFailed('Noting the restart', err);
+    }
+  }
 
   // Nov 23: questions opened for bundles whose page was never read are withdrawn once at start (the next scan would too).
   // Signals round 2: then the deals rebuilt and their buy signals judged, with what is stored now (no network).
@@ -515,10 +596,11 @@ export function createAgent(opts: AgentOptions): Agent {
     const update = updateNoticeOf(store, appVersion);
     return {
       ...agentState(data, {
-        ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
+        ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(), nextScanNote: work.nextScanNote(),
         ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), costs: work.costs.short(),
       }),
       ...(update ? { update } : {}),
+      ...(work.seller.connected() ? { seller: work.seller.usage() } : {}),
     };
   };
 
@@ -526,6 +608,14 @@ export function createAgent(opts: AgentOptions): Agent {
     flushTimer = null;
     const names = [...dirty];
     dirty.clear();
+    // Nov 25, supervision: building the events is one job; its failure is an Activity error, not the agent's end.
+    try {
+      publishEvents(names);
+    } catch (err) {
+      work.jobFailed('Telling the app what changed', err);
+    }
+  }
+  function publishEvents(names: AgentEventName[]): void {
     for (const name of names) {
       if (name === 'deals') {
         const d = store.get('deals');
@@ -551,15 +641,25 @@ export function createAgent(opts: AgentOptions): Agent {
   let lastConnected = helperLive().connected;
   const connectionTimer = timers
     ? setInterval(() => {
-        const c = helperLive().connected;
-        if (c !== lastConnected) {
-          lastConnected = c;
-          mark('state');
+        try {
+          const c = helperLive().connected;
+          if (c !== lastConnected) {
+            lastConnected = c;
+            mark('state');
+          }
+        } catch (err) {
+          work.jobFailed("Checking Chrome's connection", err);
         }
       }, 15_000)
     : null;
   connectionTimer?.unref?.();
-  const keyHost: KeyCheckHost = { store, fetchFn: opts.fetchFn ?? fetch, now, ...(opts.work?.serpBaseUrl ? { serpBaseUrl: opts.work.serpBaseUrl } : {}), ...(opts.keyCheckTimeoutMs ? { timeoutMs: opts.keyCheckTimeoutMs } : {}) };
+  const keyHost: KeyCheckHost = {
+    store, fetchFn: opts.fetchFn ?? fetch, now, ...(opts.work?.serpBaseUrl ? { serpBaseUrl: opts.work.serpBaseUrl } : {}), ...(opts.keyCheckTimeoutMs ? { timeoutMs: opts.keyCheckTimeoutMs } : {}),
+    // Nov 25: the seller account's check reads one listing the deals hold, and is counted in the seller API's ledger.
+    knownAsin: () => store.get('deals').bundles.flatMap((b) => b.parts.flatMap((p) => (p.asin ? [p.asin] : [])))[0],
+    spHooks: work.seller.hooks(),
+    ...(opts.work?.spUrls ? { spUrls: opts.work.spUrls } : {}),
+  };
   // Nov 23: stored keys with no verdict in the last 24 hours are checked quietly (free requests only), at start and every hour after.
   const quietKeyChecks = () => void recheckStaleKeys(keyHost).catch(() => []);
   const quietStart = timers ? setTimeout(quietKeyChecks, 4_000) : null;
@@ -597,13 +697,16 @@ export function createAgent(opts: AgentOptions): Agent {
     return { proof };
   });
   r.get('/api/state', 'any', () => state());
+  // Pause and resume, the app's and Telegram's (agent/telegramBot.ts).
+  const pauseAgent = () => store.update('agent', (a) => ({ ...a, paused: true, pausedAt: iso() }));
+  // Resuming is the owner's acknowledgement of a problem the agent paused itself for.
+  const resumeAgent = () => store.update('agent', () => ({ paused: false, pausedAt: null, problem: null }));
   r.post('/api/agent/pause', 'ui', (): PauseResponse => {
-    store.update('agent', (a) => ({ ...a, paused: true, pausedAt: iso() }));
+    pauseAgent();
     return { paused: true };
   });
   r.post('/api/agent/resume', 'ui', (): PauseResponse => {
-    // Resuming is the owner's acknowledgement of a problem the agent paused itself for.
-    store.update('agent', () => ({ paused: false, pausedAt: null, problem: null }));
+    resumeAgent();
     return { paused: false };
   });
   r.post('/api/agent/quit', 'ui', () => {
@@ -614,16 +717,24 @@ export function createAgent(opts: AgentOptions): Agent {
     return { ok: true };
   });
   r.get('/api/events', 'any', (ctx) => {
-    events.attach(ctx.res, { name: 'state', data: state() });
+    // The shell names itself, so the notify events held while it was away reach it (events.ts).
+    events.attach(ctx.res, { name: 'state', data: state() }, { shell: ctx.url.searchParams.get('client') === 'shell' });
     return HANDLED;
   });
   r.post('/api/notify/test', 'ui', () => notify({ kind: 'scan', title: 'Split Finder', body: 'Notifications from the agent work.' }));
-  r.post('/api/notify/test-telegram', 'ui', () => testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram));
+  r.post('/api/notify/test-telegram', 'ui', () => testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram, store.get('settings').notifications.telegramActions === true));
   // Nov 25: the owner closed the new-version notice; it stays closed for that version.
   r.post('/api/update/dismiss', 'ui', async (ctx) => {
     const b = obj(await ctx.body());
     if (typeof b.version !== 'string' || parseSemver(b.version) === null) throw new HttpError('bad_request', 'version must be like 0.1.1.');
     dismissUpdate(store, b.version);
+    return { ok: true };
+  });
+
+  // Nov 25: the notice that Open at login was turned on for the schedule is closed, with or without turning it off again.
+  r.post('/api/self-run/login-notice', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    work.selfRun.answerLoginNotice('turnOff' in b ? flag(b.turnOff, 'turnOff') : false);
     return { ok: true };
   });
 
@@ -733,7 +844,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return { reset: true, backup };
   });
   r.get('/api/deals/:id', 'any', (ctx) => {
-    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking'), runtime: store.get('runtime') }, ctx.params.id!, now());
+    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking'), runtime: store.get('runtime') }, ctx.params.id!, now(), work.seller.account());
     if (!detail) throw new HttpError('not_found', 'No such deal.');
     return detail;
   });
@@ -809,6 +920,17 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/price-from-link', 'ui', async (ctx): Promise<PriceFromLinkResponse> => {
     const url = text(obj(await ctx.body()).url, 'url', 2048);
     return priceFromLink({ store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, cache: work.cache, pace: work.pace }, url);
+  });
+  // Nov 25: "I ship this part myself": FBA's answer from his seller account then does not hold the deal (agent/seller.ts).
+  r.post('/api/seller/self-ship/:asin', 'ui', async (ctx) => {
+    const asin = ctx.params.asin!;
+    if (!/^[A-Z0-9]{10}$/.test(asin)) throw new HttpError('bad_request', 'An ASIN is 10 letters and digits.');
+    if (!store.get('deals').bundles.some((b) => b.options.some((o) => o.parts.some((p) => p.asin === asin)))) throw new HttpError('not_found', 'No deal holds this listing.');
+    const on = flag(obj(await ctx.body()).selfShip, 'selfShip');
+    return refusals(async () => {
+      await work.setSelfShip(asin, on);
+      return { asin, selfShip: on };
+    });
   });
   r.delete('/api/deals/:id/parts/:part/price', 'ui', (ctx) => {
     const plan = planRemoveConfirmedPrice(dealOf(ctx.params.id!), ctx.params.part!);
@@ -896,6 +1018,34 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   r.post('/api/outcomes/entries/:id/undo', 'ui', (ctx) => outcomes.undo(ctx.params.id!));
 
+  // ------------------------------------------------------------ Telegram: acting from the phone (agent/telegramBot.ts)
+  // The reader runs while a bot is saved and the owner turned "Let me act from Telegram" on, or while a token waits for its
+  // chat; it follows every change to the keys and the settings. The buttons go on the messages as work.ts sends them.
+  const telegram = new TelegramBot({ store, now, fetchFn: opts.fetchFn ?? fetch, work, outcomes, pause: pauseAgent, resume: resumeAgent });
+  work.telegramCompose = (m) => telegram.compose(m);
+  store.onChange((name) => {
+    if (name === 'keys' || name === 'settings') telegram.sync();
+  });
+  if (timers) telegram.start();
+  r.post('/api/telegram/actions/:id/undo', 'ui', (ctx) => ({ undone: true, sentence: telegram.undoAction(ctx.params.id!) }));
+  // A token saved without a chat id: the private chats that wrote to the bot, for the owner to choose one (never chosen for him).
+  r.get('/api/telegram/chat', 'ui', (): TelegramChatResponse => {
+    const tg = store.get('keys').telegram;
+    if (!tg?.botToken) return { state: 'no_bot', chats: [] };
+    if (tg.chatId?.trim()) return { state: 'chosen', chats: [] };
+    const chats = telegram.candidates().map((c) => ({ id: c.id, name: c.name, at: new Date(c.at).toISOString() }));
+    return { state: chats.length === 0 ? 'waiting' : 'found', chats };
+  });
+  r.post('/api/telegram/chat', 'ui', async (ctx) => {
+    const chatId = text(obj(await ctx.body()).chatId, 'chatId', 64);
+    telegram.adoptChat(chatId);
+    clearKeyProblem('telegram');
+    forgetKeyCheck(store, 'telegram');
+    const check = await checkStoredKey(keyHost, 'telegram');
+    const test = await testTelegram(opts.fetchFn ?? fetch, store.get('keys').telegram, store.get('settings').notifications.telegramActions === true);
+    return { saved: true, ...(check ? { check: checkForOwner(check, 'save') } : {}), test };
+  });
+
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>
     activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions'), outcomes: store.get('outcomes'), versions: releaseState(store).history }, monthStart(now()), now()),
@@ -966,7 +1116,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const wait = Number(ctx.url.searchParams.get('wait') ?? NaN);
     const ms = Number.isFinite(wait) ? Math.max(0, Math.min(wait * 1000, WORKER_LONG_POLL_MS)) : WORKER_LONG_POLL_MS;
     // Every poll names the helper's build, so a restarted app learns it at once, not at the next heartbeat.
-    noteHelperVersion(ctx.url.searchParams.get('v') ?? undefined);
+    noteHelperVersion(ctx.url.searchParams.get('v') ?? undefined, ctx.principal?.kind === 'extension' ? ctx.principal.extensionId : null);
     mark('state');
     const job = await jobs.next(ms, ctx.signal);
     mark('state');
@@ -988,7 +1138,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const b = (await ctx.body()) as { jobId?: unknown; version?: unknown } | null;
     const jobId = b?.jobId;
     if (typeof jobId === 'string' && jobId !== '' && jobId.length <= 64) jobs.extendLease(jobId);
-    noteHelperVersion(b?.version);
+    noteHelperVersion(b?.version, ctx.principal?.kind === 'extension' ? ctx.principal.extensionId : null);
     return { ok: true };
   });
   // Nov 23: the app's Reload helper button: one reload job, unless one is waiting already (HelperReloadResponse).
@@ -1017,6 +1167,10 @@ export function createAgent(opts: AgentOptions): Agent {
     try {
       const dir = extensionInstallDir();
       installExtensionFromZip(zip, dir);
+      // The new files are in the folder: judge the helper's next report afresh, and ask a connected helper to load them.
+      helperUpdate.reset();
+      if (helper.version !== null) queueReload();
+      mark('state');
       return { ok: true, ...setupStatus(), extensionDir: dir };
     } catch (err) {
       throw new HttpError('bad_request', err instanceof Error ? err.message : 'Install failed.');
@@ -1026,7 +1180,20 @@ export function createAgent(opts: AgentOptions): Agent {
   // ------------------------------------------------------------ the request pipeline
   const PAIRING_PATHS = new Set(['/api/pair/request', '/api/pair/claim']);
 
+  // Nov 25, supervision: one request's failure is that request's 500, never the agent's end (the helper's long poll included).
   const handle = (req: IncomingMessage, res: ServerResponse): void => {
+    try {
+      handleRequest(req, res);
+    } catch (err) {
+      console.error(`[agent] ${req.method} request failed: ${err instanceof Error ? err.name : 'error'}`);
+      try {
+        sendError(res, 'internal', 'Something went wrong in the agent.');
+      } catch {
+        res.destroy();
+      }
+    }
+  };
+  const handleRequest = (req: IncomingMessage, res: ServerResponse): void => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     if (!auth.hostAllowed(req.headers.host)) {
       sendError(res, 'forbidden', 'This address is not the agent.');
@@ -1137,7 +1304,7 @@ export function createAgent(opts: AgentOptions): Agent {
         return bodyRead as Promise<T>;
       },
     };
-    void runHandler(route.handler, ctx);
+    void runHandler(route.handler, ctx).catch(() => res.destroy());
   };
 
   return {
@@ -1149,7 +1316,12 @@ export function createAgent(opts: AgentOptions): Agent {
     work,
     notify,
     checkVersion,
+    telegram,
+    step: () => work.currentStep(),
+    secrets: () => [...secretsOf(store.get('keys')), auth.uiToken],
+    restartNoted,
     close() {
+      telegram.stop();
       if (releaseStart) clearTimeout(releaseStart);
       if (releaseTimer) clearInterval(releaseTimer);
       if (flushTimer) clearTimeout(flushTimer);

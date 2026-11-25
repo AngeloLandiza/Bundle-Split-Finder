@@ -1,7 +1,8 @@
 import { checkedWords, staleWhy } from '../lib/pricesChecked';
 import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine } from '../api/types';
+import type { DealBuying } from '@core/api/contract';
+import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine, SellerPartLine } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
@@ -18,6 +19,7 @@ import { PART_STATE_WORDS, partsSummary } from '../lib/matchWords';
 import { plainReason } from '../lib/questionWords';
 import { partMenu, type PartMenuId } from '../lib/menus';
 import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
+import { MarketSection } from './DealMarket';
 import './DealDetail.css';
 
 /**
@@ -61,6 +63,29 @@ function NeedsLookSection({ d }: { d: DealDetail }) {
           </div>
         ))}
         {settle.error ? <p className="detail-note">{settle.error}</p> : null}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Nov 25: what Home Depot's own page last stated about buying it, in its words and no more: whether it can be bought, the
+ * per-order limit (with what the limit allows at the estimate), when its price ends and its return window. The page does not
+ * state stock at a store or a delivery date, so neither is shown. Nothing here changes the verdict except "cannot be bought".
+ */
+function BuyingSection({ b }: { b: DealBuying }) {
+  const lines = [b.line, b.limitLine, b.limitProfitLine, b.priceEndsLine, b.returnsLine].filter((x): x is string => x !== null);
+  return (
+    <section className="detail-section" aria-labelledby="buying-title">
+      <h3 className="detail-section-title" id="buying-title">
+        On Home Depot
+      </h3>
+      <div className="detail-box buying">
+        {lines.map((l, i) => (
+          <p key={l} className={i === 0 && b.state === 'cannot' ? 'detail-note attention-text' : b.priceEnded && l === b.priceEndsLine ? 'detail-note attention-text' : 'detail-note'}>
+            {l}
+          </p>
+        ))}
       </div>
     </section>
   );
@@ -154,6 +179,8 @@ function Detail({ d }: { d: DealDetail }) {
           </section>
         ) : null}
 
+        {d.buying ? <BuyingSection b={d.buying} /> : null}
+
         <section className="detail-box" aria-label={!e && d.incomplete ? 'Incomplete estimate' : 'Estimate'}>
           {!e && d.incomplete ? (
             <IncompleteEstimate d={d} i={d.incomplete} look={() => void look.run(d.id)} lookBusy={look.busy} lookError={look.error} searches={searches} scanRunning={scanRunning} />
@@ -204,6 +231,12 @@ function Detail({ d }: { d: DealDetail }) {
                 </p>
               ) : null}
               {d.fbaEstimate ? <FbaLine fba={d.fbaEstimate} /> : null}
+              {d.seller?.note ? (
+                // Nov 25: no seller account connected; "not checked" is never shown as allowed.
+                <p className="detail-note">
+                  {d.seller.note} <LinkButton onClick={() => navigate({ screen: 'settings', id: 'keys' })}>Connect</LinkButton>
+                </p>
+              ) : null}
             </>
           ) : (
             <>
@@ -281,11 +314,13 @@ function Detail({ d }: { d: DealDetail }) {
             ) : null}
             <ul className="detail-list">
               {d.parts.map((p) => (
-                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} />
+                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} seller={p.asin ? d.seller?.parts.find((l) => l.asin === p.asin) : undefined} />
               ))}
             </ul>
           </Fold>
         ) : null}
+
+        {d.market ? <MarketSection market={d.market} /> : null}
 
         {d.bogo ? <BogoSection d={d} bogo={d.bogo} /> : null}
         {d.bogoGroup ? <BogoChoicesSection d={d} group={d.bogoGroup} /> : null}
@@ -455,9 +490,10 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   owner_fact: 'Your answer',
   hd_set: 'Home Depot set page',
   amazon_catalog: "Amazon's catalog record",
+  hd_same_title: 'Home Depot page of the same set',
 };
 
-function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {
+function Part({ part, dealId, brand, questionId, scanRunning, seller }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean; seller?: SellerPartLine | undefined }) {
   const verify = useAction(api.verify);
   const removePrice = useAction(api.removePrice);
   const forget = useAction(api.forgetFact);
@@ -571,6 +607,7 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
           ) : null}
         </p>
       ) : null}
+      {seller ? <SellerLine line={seller} scanRunning={scanRunning} /> : null}
       {forget.error ? <p role="alert">{forget.error}</p> : null}
       {keep.error ? <p role="alert">{keep.error}</p> : null}
       {verify.error ? <p role="alert">{verify.error}</p> : null}
@@ -596,6 +633,40 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
         </>
       ) : null}
     </li>
+  );
+}
+
+/**
+ * Nov 25: one compact line under a part from his Amazon seller account: may he list it, will FBA take it, Amazon's fees.
+ * Amazon's apply page opens in the browser (sellercentral.amazon.com only, checked by the agent and by map.ts). When FBA
+ * does not take it, he may say he ships it himself (remembered by ASIN; the deal is judged again).
+ */
+function SellerLine({ line, scanRunning }: { line: SellerPartLine; scanRunning: boolean }) {
+  const ship = useAction(api.setSelfShip);
+  return (
+    <p className={`detail-note part-seller${line.tone === 'attention' ? ' attention-text' : ''}`}>
+      {line.text}
+      {line.link ? (
+        <>
+          {' '}
+          <LinkButton onClick={() => openPage(line.link)}>Apply</LinkButton>
+        </>
+      ) : null}
+      {line.canSelfShip || line.selfShip ? (
+        <>
+          {' '}
+          <LinkButton disabled={ship.busy || scanRunning} onClick={() => void ship.run(line.asin, !line.selfShip)}>
+            {line.selfShip ? 'Use FBA again' : 'I ship it myself'}
+          </LinkButton>
+        </>
+      ) : null}
+      {ship.error ? (
+        <>
+          <br />
+          <span role="alert">{ship.error}</span>
+        </>
+      ) : null}
+    </p>
   );
 }
 

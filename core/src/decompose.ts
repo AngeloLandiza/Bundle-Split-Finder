@@ -54,6 +54,28 @@ export interface Decomposition {
    * estimated: holds other brands' items". Never a question. Absent otherwise.
    */
   otherBrands?: SetContent[];
+  /**
+   * Nov 25 (questions, round 2): a DEWALT kit + tool bundle whose own page names other models for the kit half than the kit's
+   * own Home Depot page does (DCK225D2WCS380B: DCD708B and DCF809B; DCK225D2's page: DCD794 and DCF809). Home Depot's two
+   * pages disagree, so the split stays a question; this says exactly how, with both pages, so the card asks it in one look.
+   * Absent otherwise.
+   */
+  conflict?: PageConflict;
+}
+
+/** Nov 25: two Home Depot pages that name different models for one kit (Decomposition.conflict). */
+export interface PageConflict {
+  /** The kit half and the tool the model number names (DCK225D2, DCS380B). */
+  kit: string;
+  tool: string;
+  /** The models the bundle's own page names that the kit's page does not, with the bundle page's line naming them. */
+  bundleNames: string[];
+  bundleQuote: string;
+  bundleUrl?: string;
+  /** The models the kit's own Home Depot page leads its lines with, with the line naming the first. */
+  kitNames: string[];
+  kitQuote: string;
+  kitUrl?: string;
 }
 
 /** Nov 24: one item of a Home Depot set as its own page gives it. `priced`: of a brand the app prices (DEWALT, RYOBI). */
@@ -92,8 +114,9 @@ export interface SplitEvidence {
   /**
    * owner_fact (Nov 23): what the owner settled about one of the parts, in another bundle or here (core/src/facts).
    * amazon_catalog (Nov 24, settle rule B): Amazon's catalog lists a product of exactly the part's brand and part number.
+   * hd_same_title (Nov 25, settle rule F): Home Depot sells the same set under the same title as a model that spells its parts.
    */
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set' | 'amazon_catalog';
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set' | 'amazon_catalog' | 'hd_same_title';
   text: string;
   /** owner_fact only: the model the owner's fact is about, so forgetting the fact finds the splits it settled. */
   model?: string;

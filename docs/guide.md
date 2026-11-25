@@ -61,6 +61,8 @@ When you first open the app, a welcome window shows three steps. You can use the
 
 There are also All deals, Confirmed, Needs an answer and Waiting for data.
 
+**Usual prices and the market.** A price can be high for a day. When a part's Amazon price is 20% or more above what its listing averaged over the last 90 days (Keepa's record), the app works the deal out a second time with that part at its 90-day average, with the same fees, and a deal is worth buying now only if it clears your numbers both ways. If it clears them only at today's prices, the row says "Worth buying now at today's prices only: at the 90-day average of $17.47 for PCG002 it is +$8.48 (9% ROI), below your $20 and 20%. Not marked Buy now." A listing too new to have an average says "No price history yet" and is judged at today's price. In the deal's inspector, **Market** under the parts shows each part's counted price beside its 30-, 90- and 180-day averages and when Keepa read them, the second estimate when there is one, and short notes that never hold a deal back by themselves: Amazon sells it itself (hard to win sales against), many more sellers than usual, often out of stock, and a lithium battery ("Lithium battery (UN3480): Amazon treats it as dangerous goods; check it is approved in your FBA account before buying."). These come from the Keepa reads the app already makes; nothing extra is spent.
+
 **Sets.** Some rows read "Set · N items" where a model number would be. These are Home Depot's own sets: Home Depot lists exactly which items are inside, so the app never asks you what a set contains. It reads each item's page for its model and price, then looks the items up on Amazon like any other part.
 
 **Sets with other brands' items.** Some DEWALT and RYOBI sets include an item of another brand (a Husky workbench, Everbilt screws). The app prices only DEWALT and RYOBI parts, so such a set is listed under "Other brands' items" with each item and its link, and gets no estimate. It is never a question for you.
@@ -70,6 +72,8 @@ There are also All deals, Confirmed, Needs an answer and Waiting for data.
 **Why some bundles are still waiting.** The app reads Home Depot slowly on purpose: a pause of 10 to 15 seconds between pages, 40 pages at most in one scan, and up to 40 an hour between scans while Chrome is open. Discounted bundles are read first. If Home Depot refuses a page, the app stops reading for a while and says when it continues; it never tries to get around that. A first scan can leave many bundles under Waiting for data. They fill in over the next hours without you doing anything.
 
 **Reading one deal.** Click a row. You see the estimated profit and ROI, and what the bundle costs, what the parts sell for and what is left after fees. "Open on Home Depot" opens the bundle's page. Each part links to its Amazon listing. Some bundles show **BOGO choices**: buy the starter and pick one free item. The app lists the choices and marks the best estimate. It never picks one for you. If a part has no price, press **Confirm a price**. Enter a price you have seen and a link. It counts in the estimate until an Amazon New price replaces it.
+
+**What Home Depot's page says about buying it.** The app keeps what a bundle's own Home Depot page states: whether it can be bought, whether it is discontinued, the limit per order ("Limit 3 per order"), the return window and the last day of its price. "On Home Depot" in the deal's details says so, with when the page was read. A page that says the bundle cannot be bought, or is discontinued, takes the deal out of Buy now ("Not worth buying now: Home Depot's page says it cannot be bought right now (read 10:55 AM)"); the next read that says it can be bought brings it back by itself. A bundle whose page has not been read yet says "not checked yet", which is never treated as "cannot be bought"; the app reads Buy now deals again every 4 hours. Where there is a limit, the details show what it allows ("Up to 3 per order: about +$107 at this estimate", an estimate from your fee settings), and "I bought this" warns when you enter more than the limit. When a Buy now deal's price ends within 3 days the app tells you once ("Home Depot's price ends Jan 31"). After the last day it reads that price again first and does not announce the deal as a buy until it has. The page does not state stock at your store or a delivery date, so the app never says either; it can only say the page says the bundle can be bought online.
 
 **Review** holds the questions the app will not guess, such as "which parts are in this bundle". The app looks things up itself first. It only asks when it could not settle it. A card shows:
 
@@ -93,6 +97,14 @@ The app can only say what it expects. To find out whether its estimates can be t
 ## 5. Leaving it running
 
 Set the schedule in **Settings, Scanning**: only when you press Scan now, every few hours, or once a day. The app scans on its own only while the PC is awake and Split Finder is running. Chrome must be open for Home Depot reads. With Chrome closed, those reads wait and the app tells you. Everything else keeps going.
+
+A daily 7:00 scan that runs without you needs three things, and the app takes care of two of them:
+
+- **Chrome.** With a schedule set, a few minutes before a scan the app starts your own Chrome in the background (your profile, nothing hidden, no window brought forward) and waits four minutes for the Split Finder helper to connect. It does the same once a day if Home Depot pages have waited an hour with Chrome closed. If Chrome does not open, the scan runs without Home Depot pages and its summary says "Chrome did not open, so Home Depot pages wait." The app never closes a Chrome you opened. A Chrome it opened stays open unless you tick **Close it again after the scan** in Settings, Scanning. Turn the whole thing off with **Open Chrome for scheduled scans**. Today, Next scan says what the scan depends on while Chrome is closed.
+- **Open at login.** The first time you have a schedule, the app turns on Open at login (a note with **Turn off** appears, and Activity says so). Turn it off and it stays off.
+- **An awake computer.** Nothing in the app can wake a sleeping PC or Mac, and it does not touch your power settings. If the computer was asleep at 7:00, or Split Finder was not running, the scan runs once when the app is back, and its summary says so: "The 7:00 AM scan ran at 9:12 AM because the computer was asleep." While a scan runs the computer is kept awake (Settings, General).
+
+Once a week (default Monday 8:00; Settings, Notifications) you get one summary: new deals and how many were worth buying now, what you recorded as bought, profit realised, how the estimates compare with what you recorded, open questions, what the week cost by service and whether the month is inside its limits, and anything held back. Dollar figures say whether they are estimates or recorded. It is a short notification on the computer and the full text on Telegram. Turn it off with "Your weekly summary" in the same place.
 
 Searches are limited. A scan stops at **Searches per scan**. A scheduled scan never touches the **Reserve**. Only a scan or lookup you start yourself may use it. Settings shows how many searches the month allows. Between scans, if you have a Keepa key, the app looks up waiting parts as Keepa tokens refill. This costs no searches.
 
@@ -122,6 +134,34 @@ Open **Costs** (sidebar, under Activity; **⌘6** or **Ctrl+6**) to see what the
 
 Your keys are saved only on your computer, in the app's own folder. On Windows they are readable by your Windows account and by this PC's administrators, the same as SSH keys; on a Mac, by your account alone. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To clear the deals, Review and scan history but keep your keys and settings, open **Settings, Data** and press **Reset scan data…**. The app copies what it deletes into a backup folder first and tells you where. To remove everything, including keys, uninstall the app and delete its data folder (**Settings, Data** shows it; on Windows it is `%APPDATA%\com.bundlesplitfinder.desktop`).
 
+### Connecting your Amazon seller account
+
+Before you buy, the app can ask Amazon itself, from your own seller account, whether you may list each part, whether FBA
+will take it, and what Amazon's fees would be for you. It only reads: nothing is ever listed, changed or ordered. US
+marketplace only for now.
+
+1. Sign in to Seller Central as the Primary User of your professional account.
+2. Open **Apps and Services**, then **Develop Apps**, and register as a private developer. Choose private data access and
+   the roles **Product Listing** and **Amazon Fulfillment** (also **Inventory and Order Tracking**, for sales later). If
+   Amazon opens a case about it, answer within 5 days.
+3. Add an app client for yourself. Under its LWA credentials, **View** shows the **client id** and the **client secret**.
+4. Choose **Authorize app** for it. Amazon shows a **refresh token**. Each click makes a new one; earlier ones keep working.
+5. Your **seller id** is probably in Seller Central under **Account Info**, called **Merchant Token**. Amazon's developer
+   pages do not say where it is shown; if it is not there, ask Seller Support for your merchant token.
+6. In Split Finder open **Settings, Keys**, find **Amazon seller account**, paste the four, and press **Save**. The app
+   signs in and checks one listing; the line under the key says whether it worked, in Amazon's words if not.
+
+After that, each part of a deal that is worth buying (or close to it, or watched) shows one line in the deal: "You may
+list it. FBA accepts it. Amazon's fees: $12.41." A deal is worth buying now only if you may list every part and FBA takes
+every part. If Amazon says you need approval, the line says so with **Apply**, which opens Seller Central. If FBA will not
+take a part (a battery waiting for its dangerous goods review, for example) and you ship that part yourself, press **I ship
+it myself** on it. The app checks each part again after a week, and again just before it first tells you about a deal.
+Amazon's fee estimate then replaces Keepa's in the estimate, and the line under the figures says "Amazon's fee estimate for
+your account, read" and the day. It is still an estimate. These checks are free; Costs counts them.
+
+Without an account connected nothing changes, except that a deal worth buying says it was not checked against your Amazon
+account.
+
 ### New versions
 
 Once a day Split Finder looks at the project's public page on GitHub (one plain request that sends nothing about you) to see whether a new version is ready. If one is, you get one message through the channels you have on (a notification, and Telegram if it is set up), and a quiet line near the top of the window: "Split Finder 0.1.1 is ready", with **Download** and **What changed**. Download opens the link in your browser. You run the installer yourself; the app never downloads or installs anything on its own, and it tells you about each version once. **Dismiss** closes the line for that version. If the message says to ask the developer for the link, the link was missing or not allowed, so nothing is offered to open.
@@ -138,17 +178,34 @@ Normally you paste the bot's token and chat id in Settings, Keys. If you are not
 
 The command reads the token from that file, asks Telegram which chat wrote to your bot, saves both in Split Finder, sends the test message, and removes the file. It never prints the token. Afterwards, empty Recently Deleted in Files on your phone.
 
+### Finding your Telegram chat without typing its id
+
+In **Settings, Keys**, paste only the bot's token and leave the chat id empty. Then open your bot in Telegram, press Start and send it any message. Within a few seconds Keys shows "Use the chat with <your name>?" Press **Use this chat** only if the name is yours: anyone who finds the bot could write to it too, so the app never picks a chat by itself, and if more than one chat wrote, it lists them all. Once you choose, it saves the chat and sends the test message.
+
+### Acting from Telegram
+
+Turn on **Let me act from Telegram** in **Settings, Notifications** (off until you do). Then the messages carry buttons:
+
+- A deal worth buying now: **I bought this** (it asks once more, "Record 1 bought at $99.00 today?", then records it as the app does, with the estimate kept as it stood, and offers **Undo**), **Not for me** (you stop watching it, so it is not announced again) and **Open Home Depot**.
+- A new Review question with up to four choices: a button per choice, the AI's suggestion marked, and **Skip**. With more choices it says to answer in the app. Typing a reply never answers a question.
+- A cost warning: **Open Costs** only. Limits change only in the app.
+- A scan's summary: **Pause scans** or **Resume**, and **Scan now**. A scan never spends your reserve; when searches are above it, the phone says how many it may spend and waits for your yes.
+
+You can also send `/status` (deals worth buying now, open questions, searches left, this month's costs and the next scan), `/pause`, `/resume` and `/help`. Only your own chat with the bot is listened to. Keys, limits, budgets, the reserve and settings cannot be changed from the phone. Everything done there is in Activity, marked "from Telegram", with the same Undo as in the app. A button works once and stops working after two days.
+
 ## 7. When something looks wrong
 
 Banners appear near the top. One shows at a time, with "N more" if there are others.
 
-- **"The last scan could not read N Home Depot pages."** Chrome could not load some pages, so those bundles have no estimate yet. Press **Read pages again** (free). Chrome must be open.
-- **"The Chrome helper is older than the app."** Press **Reload it**. If nothing changes, open `chrome://extensions` and press Reload on Split Finder.
+- **"58 sets are waiting for 105 Home Depot pages. The app is reading them: about 20 an hour today; next at 10:54 AM."** A quiet line, no button: the app reads the pages by itself, slowly, whenever Chrome is open, and the count is live. It says "Home Depot paused reading until ..." after Home Depot refused a page. Only when reading cannot go on (the app is paused) does it become a banner, with **Resume**. If Chrome is closed, the Chrome notice says so instead.
+- **"The Chrome helper is being updated."** After an app update the app puts the new helper files in the helper folder and asks Chrome to reload it. Nothing to do.
+- **"The Chrome helper is older than the app."** The app could not update it (it does not know which folder Chrome loaded it from, or the folder is not the helper's), or Chrome still runs the old one afterwards. The banner says which. Press **Install the helper again**; if the banner then says a folder, choose that folder with Load unpacked in `chrome://extensions` once.
 - **"Chrome is closed."** Open Chrome. Waiting pages are read then.
 - **"Chrome is not connected."** Press **Connect Chrome** and repeat step 1 above.
 - **"The ... key is not accepted."** The service refused the saved key. Press the button on the banner and paste a new key in Settings, Keys.
 - **"Searches are at your reserve."** No scan spends a search then: Amazon lookups wait for Keepa. To look some up now, press **Use searches for these** on Deals; that is the only way the reserve is spent.
-- **"The agent is not running."** Open Split Finder from the notification area.
+- **"The agent stopped unexpectedly and is being restarted."** Wait: the app starts its background agent again by itself (at once, then after 2 seconds, 10 seconds and a minute). Activity then says when it stopped and what became of a scan that was running; **Scan again** continues that scan from its last saved step.
+- **"The agent keeps stopping."** It stopped more than 5 times in 10 minutes, so the app stopped restarting it. Press **Exit and open again** (Mac: **Quit and open again**). If it stops again, send the audit file (below).
 
 **Activity** shows what happened: errors that need you (some have a retry button), your saved answers, what Autopilot did, and every scan with its searches, Keepa tokens and AI cost. If something is wrong, look there first.
 

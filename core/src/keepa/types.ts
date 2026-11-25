@@ -69,6 +69,36 @@ export interface KeepaProduct {
    * kept only when a response carries it, and read by trends.ts as before.
    */
   salesRanks?: Record<string, number[]>;
+  /**
+   * The market around the listing (Nov 25, docs/decisions.md "The market around a listing"), read from the same pull's
+   * stats and product fields: no extra call, no extra token. Absent when the pull carried no stats.
+   */
+  market?: KeepaMarket;
+}
+
+/**
+ * What a pull says about the listing's market, as recorded in fixtures/keepa/stats-sample-2026-11-25.json (83 listings,
+ * stats=180, no offers). Cents for prices; null where Keepa wrote -1 / -2 or nothing. Fields Keepa leaves empty without
+ * offers (offerCountFBA/FBM -2, buyBoxPrice -2, every buyBoxIs* but buyBoxIsAmazon) are not read.
+ */
+export interface KeepaMarket {
+  /** stats.avg180: the average New price over 180 days (NEW, else Amazon's own offer), as newAvg30/newAvg90. */
+  newAvg180: number | null;
+  /** stats.current[0] (AMAZON): Amazon's own current offer; null when Amazon is not selling it now. */
+  amazonCurrent: number | null;
+  /** stats.buyBoxIsAmazon: recorded only as true (20 of 83) or null, never false; null is "not stated". */
+  buyBoxIsAmazon: boolean | null;
+  /** stats.current[11] and stats.avg90[11] (COUNT_NEW): how many New offers now and on average over 90 days. */
+  newOffers: number | null;
+  newOffersAvg90: number | null;
+  /** stats.outOfStockPercentage90[1] (NEW): the percent of the last 90 days with no New offer at all (0-100). */
+  outOfStock90: number | null;
+  /**
+   * The product's `hazardousMaterials`, when it names a UN number: the proper shipping name, the UN number and the transport
+   * class as recorded (PBP004: "LITHIUM ION BATTERIES", "UN3480", "9"). An entry with no UN number (FVB02's lone class "0")
+   * is not a hazard the record states, and gives null.
+   */
+  hazmat: { unId: string; name: string | null; transportClass: string | null } | null;
 }
 
 export interface KeepaProductResponse {

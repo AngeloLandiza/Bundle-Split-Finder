@@ -12,6 +12,7 @@ export const SERVICE_NAME: Record<KeyName, string> = {
   openai: 'the model service',
   ebay: 'eBay',
   telegram: 'Telegram',
+  amazonSeller: 'Amazon',
 };
 
 /** One answer, as the pane keeps it after a Save or a Check again: what the agent said, and when this window heard it. */

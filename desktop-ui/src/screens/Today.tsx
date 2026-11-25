@@ -279,7 +279,10 @@ function AgentBlock({ state }: { state: AppState }) {
           )}
         </Fact>
         )}
-        <Fact label="Next scan">{scheduleWords(state)}</Fact>
+        <Fact label="Next scan">
+          {scheduleWords(state)}
+          {state.agent.nextScanNote && state.agent.status !== 'paused' ? <span className="fact-sub">{state.agent.nextScanNote}</span> : null}
+        </Fact>
         <Fact label="Searches left">
           {budget.serpLeft === null ? (
             'Not checked yet'

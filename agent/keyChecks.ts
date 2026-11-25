@@ -9,6 +9,8 @@
 //   Anthropic    GET api.anthropic.com/v1/models         free (lists models; no tokens are generated)  -> ok, or the error type
 //   OpenAI-like  GET {address}/models                    free (a list, no completion)                  -> ok, or the service's words
 //   Telegram     GET api.telegram.org/bot<t>/getMe, then /getChat (free; no message is sent)           -> the bot's name
+//   Amazon seller POST api.amazon.com/auth/o2/token, then one Listings Restrictions read for an ASIN the app knows
+//                (free; read-only; a wrong seller id is caught by the second)                         -> may list it or not
 // A message to Telegram goes only from the explicit Test button (POST /api/notify/test-telegram).
 //
 // Rule 3: a key is sent only to its own service, never put in a sentence, a log or an answer. Every sentence that leaves this
@@ -32,6 +34,8 @@ import { ANTHROPIC_VERSION } from '../core/src/judge/claude';
 import { KeepaClient, KeepaError, KeepaRateLimitedError } from '../core/src/keepa/client';
 import { TokenBudget } from '../core/src/keepa/budget';
 import { NETWORK_ERROR_PREFIX, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
+import { SpApiClient, SpApiError } from '../core/src/amazon/spapi/client';
+import type { SellerCredentials, SpCallRow, SpSample } from '../core/src/amazon/spapi/types';
 import { telegramProblemWords } from './alerts';
 import type { Store, StoredKeys } from './store';
 
@@ -66,6 +70,10 @@ export function keySecrets(keys: StoredKeys): string[] {
   add(keys.ebay?.appId);
   add(keys.ebay?.certId);
   add(keys.telegram?.botToken);
+  add(keys.amazonSeller?.clientId);
+  add(keys.amazonSeller?.clientSecret);
+  add(keys.amazonSeller?.refreshToken);
+  add(keys.amazonSeller?.sellerId);
   const token = keys.telegram?.botToken.trim();
   if (token && token.includes(':')) add(token.slice(token.indexOf(':') + 1));
   const e = keys.ebay;
@@ -100,7 +108,16 @@ export interface KeyCheckDeps {
   serpBaseUrl?: string;
   /** Default KEY_CHECK_TIMEOUT_MS. */
   timeoutMs?: number;
+  /** Nov 25: an ASIN the app already knows, for the seller account's one harmless read. Default SELLER_CHECK_ASIN. */
+  knownAsin?: string;
+  /** The seller API's ledger and samples (agent/seller.ts), so a key check is counted like every other call. */
+  spHooks?: { onCall?: (row: SpCallRow) => void; onSample?: (s: SpSample) => void };
+  /** Tests: the two Amazon addresses. */
+  spUrls?: { tokenUrl: string; baseUrl: string };
 }
+
+/** RYOBI PBP004's listing (fixtures/e2e-2026-11-23): the ASIN the seller check reads when the deals name none yet. */
+export const SELLER_CHECK_ASIN = 'B09HDZ5MPV';
 
 type Fail = Extract<KeyCheck, { ok: false }>;
 type Kind = Fail['kind'];
@@ -277,6 +294,8 @@ async function checkTelegram(t: { botToken: string; chatId: string }, ctx: Ctx):
   if (me.status < 200 || me.status >= 300 || ok?.ok !== true) return refused(me);
   const name = typeof ok.result?.username === 'string' && /^[A-Za-z0-9_]{1,64}$/.test(ok.result.username) ? ok.result.username : null;
 
+  // Nov 25: a token saved without its chat: the app finds the chat that writes to the bot (agent/telegramBot.ts).
+  if (!t.chatId?.trim()) return { ok: true, detail: name ? `bot @${name}; send it a message to choose your chat` : 'bot found; send it a message to choose your chat' };
   // The chat id is the other half of the pair, and a wrong one fails only when the first message is sent. getChat is free
   // and sends nothing.
   const chat = await call('getChat');
@@ -284,6 +303,42 @@ async function checkTelegram(t: { botToken: string; chatId: string }, ctx: Ctx):
   if (chat.status < 200 || chat.status >= 300 || (chat.body as { ok?: unknown } | undefined)?.ok !== true) return refused(chat);
   return { ok: true, detail: name ? `bot @${name}, chat found` : 'bot and chat found' };
 }
+
+/**
+ * Nov 25: the seller account in two steps, both read-only: the token exchange (are the client id, secret and refresh token
+ * right?), then one Listings Restrictions read for an ASIN the app knows (is the seller id his, and may the app read
+ * listings?). US marketplace only.
+ */
+async function checkAmazonSeller(c: SellerCredentials, ctx: Ctx): Promise<KeyCheck> {
+  const asin = ctx.knownAsin ?? SELLER_CHECK_ASIN;
+  const client = new SpApiClient({
+    credentials: c, fetchFn: ctx.fetchFn, userAgent: SELLER_USER_AGENT, ...(ctx.spUrls ?? {}),
+    ...(ctx.spHooks?.onCall ? { onCall: ctx.spHooks.onCall } : {}), ...(ctx.spHooks?.onSample ? { onSample: ctx.spHooks.onSample } : {}),
+  });
+  const kindOfSp = (e: SpApiError): Kind => (e.kind === 'rejected' || e.kind === 'denied' ? 'rejected' : e.kind === 'limit' || e.kind === 'cap' ? 'limit' : e.kind === 'network' ? 'network' : 'service');
+  try {
+    await client.accessToken();
+  } catch (err) {
+    if (err instanceof SpApiError) return ctx.fail(kindOfSp(err), err.message);
+    throw err;
+  }
+  try {
+    const r = await client.restrictions(asin);
+    const may = r.status === 'allowed' ? 'you may list it' : r.status === 'approval_required' ? 'it needs approval' : r.status === 'not_eligible' ? 'not eligible' : r.status === 'not_found' ? 'not found' : 'restricted';
+    return { ok: true, detail: `signed in; listing check works (${asin}: ${may}); US marketplace` };
+  } catch (err) {
+    if (err instanceof SpApiError) {
+      if (err.kind === 'denied') {
+        return ctx.fail('rejected', `Signed in, but the listing check failed. ${err.message}${err.status === 403 ? '' : '. Check the seller id (Merchant Token).'}`);
+      }
+      return ctx.fail(kindOfSp(err), err.message);
+    }
+    throw err;
+  }
+}
+
+/** The user-agent Amazon requires (app name, version, language). */
+export const SELLER_USER_AGENT = 'SplitFinder/1.0 (Language=TypeScript)';
 
 // ---------------------------------------------------------------- the entry points
 
@@ -294,7 +349,7 @@ interface Ctx extends KeyCheckDeps {
   label: string;
 }
 
-const LABEL: Record<KeyName, string> = { serpapi: 'SerpApi', keepa: 'Keepa', anthropic: 'Anthropic', openai: 'The model service', ebay: 'eBay', telegram: 'Telegram' };
+const LABEL: Record<KeyName, string> = { serpapi: 'SerpApi', keepa: 'Keepa', anthropic: 'Anthropic', openai: 'The model service', ebay: 'eBay', telegram: 'Telegram', amazonSeller: 'Amazon' };
 
 /**
  * `name`'s key, checked with its own service. `keys` holds the key to check and every other key the sentence must never
@@ -325,6 +380,8 @@ export async function checkKey(name: KeyName, keys: StoredKeys, deps: KeyCheckDe
         return keys.ebay ? checkEbay(keys.ebay, ctx) : ctx.fail('rejected', 'No eBay keys are saved.');
       case 'telegram':
         return keys.telegram ? checkTelegram(keys.telegram, ctx) : ctx.fail('rejected', 'No Telegram bot is saved.');
+      case 'amazonSeller':
+        return keys.amazonSeller ? checkAmazonSeller(keys.amazonSeller, ctx) : ctx.fail('rejected', 'No Amazon seller account is saved.');
     }
   };
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -395,6 +452,10 @@ export interface KeyCheckHost {
   serpBaseUrl?: string;
   keepaBaseUrl?: string;
   timeoutMs?: number;
+  /** Nov 25: an ASIN from the deals, for the seller account's check. */
+  knownAsin?: () => string | undefined;
+  spHooks?: KeyCheckDeps['spHooks'];
+  spUrls?: KeyCheckDeps['spUrls'];
 }
 
 /** The stored key `name` checked with its service and recorded. Absent key: no check is made and null comes back. */
@@ -408,6 +469,9 @@ export async function checkStoredKey(host: KeyCheckHost, name: KeyName): Promise
     ...(host.serpBaseUrl ? { serpBaseUrl: host.serpBaseUrl } : {}),
     ...(host.keepaBaseUrl ? { keepaBaseUrl: host.keepaBaseUrl } : {}),
     ...(host.timeoutMs ? { timeoutMs: host.timeoutMs } : {}),
+    ...(name === 'amazonSeller' && host.knownAsin?.() ? { knownAsin: host.knownAsin()! } : {}),
+    ...(host.spHooks ? { spHooks: host.spHooks } : {}),
+    ...(host.spUrls ? { spUrls: host.spUrls } : {}),
   });
   recordKeyCheck(host.store, name, value, check, new Date(host.now()).toISOString());
   return check;
