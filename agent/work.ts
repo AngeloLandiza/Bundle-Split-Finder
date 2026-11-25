@@ -292,6 +292,8 @@ export class AgentWork {
   private scheduledKey: string | null = null;
   /** Nov 25: the owner's Amazon seller account, read-only (agent/seller.ts). */
   readonly seller: SellerAccount;
+  /** Why the last seller pass stopped (said once in Activity), or null. */
+  private sellerStopped: string | null = null;
 
   constructor(deps: WorkDeps) {
     this.d = deps;
@@ -379,12 +381,16 @@ export class AgentWork {
    * again so they count. Without an account: nothing, and the report as it is. Never throws.
    */
   private async sellerPass(report: ScanReport): Promise<ScanReport> {
-    if (!this.seller.connected()) return report;
+    // Credentials Amazon refused are not tried again until he replaces them or the daily key check finds them working
+    // (the Keys pane says why); meanwhile the parts stay "not checked", which holds their deals.
+    if (!this.seller.connected() || this.d.store.get('runtime').keyProblems?.amazonSeller) return report;
     try {
       const opts = this.signalsDeps();
       const trend = await trendsOfReport(this.cache, report);
       const r = await this.seller.refresh(report, trend, { keepa: opts.keepa(), flatFee: opts.flatFee!(), held: sanityHolds(this.d.store) });
-      if (r.stopped) this.addError(`Checking your Amazon seller account stopped: ${scrub(r.stopped, this.d.store.get('keys'))}`, null);
+      // Said once in Activity, not at every pass that stops the same way.
+      if (r.stopped && r.stopped !== this.sellerStopped) this.addError(`Checking your Amazon seller account stopped: ${scrub(r.stopped, this.d.store.get('keys'))}`, null);
+      this.sellerStopped = r.stopped;
       return r.feesRead > 0 && this.live.busy !== 'scan' ? await this.rebuild() : report;
     } catch (err) {
       this.addError(`Your Amazon seller account could not be checked: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
