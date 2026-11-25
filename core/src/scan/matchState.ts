@@ -45,6 +45,9 @@ export function matchState(row: BundleRow): string | null {
   if (row.otherBrands?.length) return otherBrandsText(row.otherBrands);
   const parts = row.parts;
   if (parts.length === 0) return null;
+  // Nov 25: a withdrawn listing the app is replacing by itself (scan/recheck.ts) is no question yet.
+  const rechecked = parts.filter((p) => p.recheck).length;
+  if (rechecked > 0) return `${rechecked} ${rechecked === 1 ? 'listing' : 'listings'} being re-checked`;
   const verify = parts.filter((p) => !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;
   const toLookUp = parts.filter(isWaiting).length;
   switch (row.section) {

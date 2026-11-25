@@ -8,8 +8,11 @@
 import { RESOLVED_BY_SCAN } from './answers';
 import type { MatchRecord, ReviewCandidate, ScanStore } from './types';
 
+/** The reason a held question gives the part's other listings (scan/recheck.ts reads it to know a held question). */
+export const ANOTHER_LISTING = 'another listing found for the part';
+
 /** The listing's candidate row, from what the store holds; `title` when the store has no listing row for it. */
-async function candidate(store: ScanStore, asin: string, reasons: string[], title: string | null): Promise<ReviewCandidate> {
+export async function candidate(store: ScanStore, asin: string, reasons: string[], title: string | null): Promise<ReviewCandidate> {
   const listing = await store.getListing(asin);
   const price = await store.getPrice(asin);
   return {
@@ -31,7 +34,7 @@ export async function holdForOwner(
   const old = await store.getReview(id);
   if (old && old.answer !== null && old.answer !== RESOLVED_BY_SCAN) return false;
   const held = await candidate(store, m.asin, [o.reason], o.title ?? null);
-  const others = await Promise.all(m.alternatives.filter((a) => a !== m.asin).map((a) => candidate(store, a, ['another listing found for the part'], null)));
+  const others = await Promise.all(m.alternatives.filter((a) => a !== m.asin).map((a) => candidate(store, a, [ANOTHER_LISTING], null)));
   await store.putReview({
     id, kind: 'match', subject: m.key, brand: m.brand, model: m.model,
     title: o.catalogTitle ?? (await store.getCatalogEntry(m.key))?.title ?? null,

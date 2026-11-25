@@ -11,6 +11,7 @@ import { kitCatalog, kitPageTarget } from './kitPage';
 import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
 import { factView, staleness, type PartFact } from '../facts/fact';
+import { recheckSentence } from './recheck';
 import { suggestPrice } from './suggest';
 import { twinKeys, twinKeysOf } from './twins';
 import {
@@ -263,9 +264,18 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       ...(fees ? { fees } : {}),
       ...(suggestion ? { priceSuggestion: suggestion } : {}),
       ...(fact ? { fact: { ...factView(fact, stale), ...(notCounted ? { notCounted: true as const } : {}) } } : {}),
+      ...(await recheckOf(store, match)),
     });
   }
   return rows;
+}
+
+/** The part's re-check while it runs (recheck.ts): "being re-checked", with what was tried. */
+async function recheckOf(store: ScanStore, match: MatchRecord | undefined): Promise<Pick<PartRow, 'recheck'>> {
+  if (!match || match.decidedBy !== 'auto' || (match.status !== 'review' && match.status !== 'waiting') || !store.getRecheck) return {};
+  const r = await store.getRecheck(match.key);
+  const sentence = r ? recheckSentence(r) : null;
+  return r && sentence && (r.stage === 'trying' || r.stage === 'lookup') ? { recheck: { stage: r.stage, sentence } } : {};
 }
 
 /** Catalog check: how the part's listing was verified, and the evidence, as the part row carries them. */

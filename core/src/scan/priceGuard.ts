@@ -50,12 +50,17 @@ export interface PriceGuardOutcome {
  */
 export async function priceCheckOf(store: ScanStore, m: MatchRecord): Promise<PriceGuardOutcome | null> {
   if (m.decidedBy !== 'auto' || m.status !== 'matched' || m.asin === null) return null;
-  const price = await store.getPrice(m.asin);
-  const hd = await store.getPartPrice(m.key);
+  return priceCheckFor(store, m, m.asin);
+}
+
+/** The guard's reading of `asin` for the part, matched or not (a re-check's candidate: scan/recheck.ts). */
+export async function priceCheckFor(store: ScanStore, part: Pick<MatchRecord, 'key' | 'brand' | 'model'>, asin: string): Promise<PriceGuardOutcome | null> {
+  const price = await store.getPrice(asin);
+  const hd = await store.getPartPrice(part.key);
   if (!price || !priceActive(price) || price.price === null || price.seenAt === null) return null;
-  if (!hd || hd.price === null || hd.seenAt === null || !sameModel(m.brand, hd.matchedModel ?? hd.model, m.model)) return null;
+  if (!hd || hd.price === null || hd.seenAt === null || !sameModel(part.brand, hd.matchedModel ?? hd.model, part.model)) return null;
   const ratio = priceFarAbove(price.price, hd.price);
-  return ratio === null ? null : { key: m.key, asin: m.asin, ratio, amazon: price.price, homeDepot: hd.price, reason: priceGuardReason(ratio) };
+  return ratio === null ? null : { key: part.key, asin, ratio, amazon: price.price, homeDepot: hd.price, reason: priceGuardReason(ratio) };
 }
 
 /** Every automatic match whose counted price is far above Home Depot's, held for the owner. Returns what was held. */
