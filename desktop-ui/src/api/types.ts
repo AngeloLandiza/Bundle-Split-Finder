@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-<<<<<<< HEAD
+  NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
