@@ -8,7 +8,7 @@ import { count, money, plural } from './format';
 import { niceScale, niceStep } from './chart';
 
 export const BUDGETED: readonly BudgetedService[] = ['serpapi', 'keepa', 'ai'];
-const FALLBACK_LABEL: Record<CostService, string> = { serpapi: 'SerpApi', keepa: 'Keepa', ai: 'AI', ebay: 'eBay', telegram: 'Telegram' };
+const FALLBACK_LABEL: Record<CostService, string> = { serpapi: 'SerpApi', keepa: 'Keepa', ai: 'AI', ebay: 'eBay', telegram: 'Telegram', amazon: 'Amazon seller API' };
 
 export const isBudgeted = (s: CostService): s is BudgetedService => (BUDGETED as readonly string[]).includes(s);
 
@@ -149,7 +149,7 @@ export function costWords(s: ServiceCost): { text: string; missing: boolean } {
     const so = `${money(s.meteredUsd)} so far`;
     return { text: s.forecastUsd !== null && s.forecastUsd > s.meteredUsd ? `${so}, about ${usdRound(s.forecastUsd)} by month end` : so, missing: false };
   }
-  if (s.service === 'ebay' || s.service === 'telegram') return { text: 'Free', missing: false };
+  if (s.service === 'ebay' || s.service === 'telegram' || s.service === 'amazon') return { text: 'Free', missing: false };
   if (s.monthlyPriceUsd === null) return { text: 'Price not entered', missing: true };
   if (s.monthlyPriceUsd === 0) return { text: '$0.00 a month: free plan', missing: false };
   return { text: `${money(s.monthlyPriceUsd)} a month`, missing: false };

@@ -199,6 +199,7 @@ export function createHttpClient(): ApiClient {
     patchSettings: async (patch) => (await call<C.SettingsResponse>('PATCH', '/api/settings', patch)).settings,
     putKey: async <N extends KeyName>(name: N, value: KeyValues[N]) => (await call<C.PutKeyResponse>('PUT', `/api/keys/${name}`, value)).check,
     checkKey: async (name) => (await call<C.CheckKeyResponse>('POST', `/api/keys/${name}/check`, {})).check,
+    setSelfShip: async (asin, selfShip) => void (await call<{ asin: string; selfShip: boolean }>('POST', `/api/seller/self-ship/${id(asin)}`, { selfShip })),
     deleteKey: async (name) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}`)),
 
     costs: () => call<CostsView>('GET', '/api/costs'),

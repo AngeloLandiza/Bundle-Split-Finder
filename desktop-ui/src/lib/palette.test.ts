@@ -7,7 +7,7 @@ const state = (over: { status?: AppState['agent']['status']; keys?: Partial<AppS
   helper: { paired: true, connected: true, lastSeenAt: null, jobsWaiting: 0 },
   budget: { serpLeft: 100, serpMonthly: 250, serpReserve: 20, serpPerScan: 5, keepaTokens: null, aiSpentUsd: 0, aiCapUsd: 20 },
   counts: { review: 0, autopilotApplied: 0, newDeals: 0 },
-  keys: { serpapi: true, keepa: false, anthropic: true, openai: false, ebay: false, telegram: false, ...over.keys },
+  keys: { serpapi: true, keepa: false, anthropic: true, openai: false, ebay: false, telegram: false, amazonSeller: false, ...over.keys },
   firstRun: false,
 });
 

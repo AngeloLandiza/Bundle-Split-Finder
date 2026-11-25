@@ -119,6 +119,8 @@ export interface ApiClient {
   priceFromLink(url: string): Promise<PriceFromLinkResponse>;
   /** Removes the confirmed price (DELETE on the same path). */
   removePrice(dealId: string, model: string): Promise<void>;
+  /** Nov 25: he ships this listing himself, or no longer (POST /api/seller/self-ship/:asin); FBA's answer then does not hold the deal. */
+  setSelfShip(asin: string, selfShip: boolean): Promise<void>;
 
   settings(): Promise<AppSettings>;
   patchSettings(patch: SettingsPatch): Promise<AppSettings>;

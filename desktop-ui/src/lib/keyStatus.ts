@@ -11,6 +11,7 @@ export const KEY_LABEL: Record<KeyName, string> = {
   openai: 'OpenAI-compatible',
   ebay: 'eBay',
   telegram: 'Telegram',
+  amazonSeller: 'Amazon seller account',
 };
 
 export type KeyState = 'missing' | 'saved' | 'rejected';

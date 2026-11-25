@@ -2,7 +2,7 @@ import { checkedWords, staleWhy } from '../lib/pricesChecked';
 import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealBuying } from '@core/api/contract';
-import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine } from '../api/types';
+import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine, SellerPartLine } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
@@ -231,6 +231,12 @@ function Detail({ d }: { d: DealDetail }) {
                 </p>
               ) : null}
               {d.fbaEstimate ? <FbaLine fba={d.fbaEstimate} /> : null}
+              {d.seller?.note ? (
+                // Nov 25: no seller account connected; "not checked" is never shown as allowed.
+                <p className="detail-note">
+                  {d.seller.note} <LinkButton onClick={() => navigate({ screen: 'settings', id: 'keys' })}>Connect</LinkButton>
+                </p>
+              ) : null}
             </>
           ) : (
             <>
@@ -308,7 +314,7 @@ function Detail({ d }: { d: DealDetail }) {
             ) : null}
             <ul className="detail-list">
               {d.parts.map((p) => (
-                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} />
+                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} seller={p.asin ? d.seller?.parts.find((l) => l.asin === p.asin) : undefined} />
               ))}
             </ul>
           </Fold>
@@ -487,7 +493,7 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   hd_same_title: 'Home Depot page of the same set',
 };
 
-function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {
+function Part({ part, dealId, brand, questionId, scanRunning, seller }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean; seller?: SellerPartLine | undefined }) {
   const verify = useAction(api.verify);
   const removePrice = useAction(api.removePrice);
   const forget = useAction(api.forgetFact);
@@ -601,6 +607,7 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
           ) : null}
         </p>
       ) : null}
+      {seller ? <SellerLine line={seller} scanRunning={scanRunning} /> : null}
       {forget.error ? <p role="alert">{forget.error}</p> : null}
       {keep.error ? <p role="alert">{keep.error}</p> : null}
       {verify.error ? <p role="alert">{verify.error}</p> : null}
@@ -626,6 +633,40 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
         </>
       ) : null}
     </li>
+  );
+}
+
+/**
+ * Nov 25: one compact line under a part from his Amazon seller account: may he list it, will FBA take it, Amazon's fees.
+ * Amazon's apply page opens in the browser (sellercentral.amazon.com only, checked by the agent and by map.ts). When FBA
+ * does not take it, he may say he ships it himself (remembered by ASIN; the deal is judged again).
+ */
+function SellerLine({ line, scanRunning }: { line: SellerPartLine; scanRunning: boolean }) {
+  const ship = useAction(api.setSelfShip);
+  return (
+    <p className={`detail-note part-seller${line.tone === 'attention' ? ' attention-text' : ''}`}>
+      {line.text}
+      {line.link ? (
+        <>
+          {' '}
+          <LinkButton onClick={() => openPage(line.link)}>Apply</LinkButton>
+        </>
+      ) : null}
+      {line.canSelfShip || line.selfShip ? (
+        <>
+          {' '}
+          <LinkButton disabled={ship.busy || scanRunning} onClick={() => void ship.run(line.asin, !line.selfShip)}>
+            {line.selfShip ? 'Use FBA again' : 'I ship it myself'}
+          </LinkButton>
+        </>
+      ) : null}
+      {ship.error ? (
+        <>
+          <br />
+          <span role="alert">{ship.error}</span>
+        </>
+      ) : null}
+    </p>
   );
 }
 

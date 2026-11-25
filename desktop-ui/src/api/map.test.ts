@@ -31,7 +31,7 @@ describe('the agent state', () => {
     helper: { paired: true, connected: false, lastSeenAt: null },
     budget: { serpLeft: null, serpReserve: 20, keepaTokens: null, aiSpentUsd: 0, aiCapUsd: 20 },
     counts: { review: 2, autopilotApplied: 0, newDeals: 1, jobsWaiting: 4 },
-    keys: { serpapi: true, keepa: false, anthropic: false, openai: false, ebay: false, telegram: false },
+    keys: { serpapi: true, keepa: false, anthropic: false, openai: false, ebay: false, telegram: false, amazonSeller: false },
   };
   it('reads a scanning agent that is asking the AI as asking, and a limit stop as one', () => {
     const s = mapState(base);

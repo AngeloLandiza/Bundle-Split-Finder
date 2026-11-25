@@ -5,6 +5,7 @@
 
 import type * as C from '@core/api/contract';
 import { safeDownloadLink } from '@core/release/note';
+import { sellerCentralLink } from '@core/amazon/spapi/parse';
 import { confirmedSourceName, confirmState, ebayListingChoices } from '@core/scan/confirmed';
 import type { BundleRow, PartRow, PriceOption, PriceRange, UnnamedItem } from '@core/scan/types';
 import { money } from '../lib/format';
@@ -12,6 +13,7 @@ import type {
   ActivityView,
   AgentEvent,
   AgentView,
+  SellerUsage,
   AiSuggestion,
   AppState,
   AutopilotEntry,
@@ -166,7 +168,7 @@ export function buyingOf(v: unknown): C.DealBuying | null {
   };
 }
 
-const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
+const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram', 'amazonSeller'];
 
 /** The sentences the agent says about keys it holds but a service did not accept: only a non-empty sentence for a key it knows. */
 export function keyProblemsOf(v: unknown): KeyProblems | undefined {
@@ -242,7 +244,21 @@ export function mapState(s: C.AgentState): AppState {
     ...(checks ? { keyChecks: checks } : {}),
     ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),
     ...(s.loginNotice && typeof s.loginNotice.sentence === 'string' ? { loginNotice: { sentence: s.loginNotice.sentence } } : {}),
+    ...(sellerUsageOf((s as { seller?: unknown }).seller) ? { seller: sellerUsageOf((s as { seller?: unknown }).seller)! } : {}),
   };
+}
+
+const SELLER_OPS = ['restrictions', 'eligibility', 'fees', 'sales'] as const;
+
+/** Nov 25: the seller account's calls today and caps, each a whole number; anything else is left out. */
+export function sellerUsageOf(v: unknown): SellerUsage | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as { used?: Record<string, unknown>; caps?: Record<string, unknown> };
+  const whole = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) && x >= 0 ? x : null);
+  const used = Object.fromEntries(SELLER_OPS.map((k) => [k, whole(o.used?.[k])]));
+  const caps = Object.fromEntries(SELLER_OPS.map((k) => [k, whole(o.caps?.[k])]));
+  if (Object.values(used).some((x) => x === null) || Object.values(caps).some((x) => x === null)) return undefined;
+  return { used: used as SellerUsage['used'], caps: caps as SellerUsage['caps'] };
 }
 
 // ---------------------------------------------------------------- deals
@@ -469,6 +485,29 @@ export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
   return out.length ? out : undefined;
 }
 
+/**
+ * Nov 25: his seller account's lines, each only with its text; Amazon's apply link only when it is https on
+ * sellercentral.amazon.com (the agent checked it; checked again here before it is shown or opened).
+ */
+export function sellerOf(v: unknown): DealDetail['seller'] {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  const parts = Array.isArray(o.parts) ? o.parts : [];
+  return {
+    connected: o.connected === true,
+    note: typeof o.note === 'string' && o.note ? o.note : null,
+    parts: parts.flatMap((p) => {
+      if (typeof p !== 'object' || p === null) return [];
+      const r = p as Record<string, unknown>;
+      if (typeof r.text !== 'string' || typeof r.asin !== 'string' || typeof r.model !== 'string') return [];
+      return [{
+        model: r.model, asin: r.asin, text: r.text, tone: r.tone === 'ok' ? ('ok' as const) : ('attention' as const),
+        link: sellerCentralLink(r.link), canSelfShip: r.canSelfShip === true, selfShip: r.selfShip === true,
+      }];
+    }),
+  };
+}
+
 /** `questionId`: the open Review question on this bundle, from GET /api/review (the detail does not carry it). */
 export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetail {
   const b = d.bundle;
@@ -504,6 +543,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     fbaEstimate: d.fbaEstimate ?? null,
     needsLook: d.needsLook ?? [],
     market: d.market ?? null,
+    seller: sellerOf(d.seller),
     ...(splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence) ? { splitEvidence: splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence)! } : {}),
     ...(setContentsOf((d as { setContents?: unknown }).setContents) ? { setContents: setContentsOf((d as { setContents?: unknown }).setContents)! } : {}),
   };

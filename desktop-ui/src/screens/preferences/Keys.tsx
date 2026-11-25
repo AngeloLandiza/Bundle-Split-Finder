@@ -4,6 +4,7 @@ import type * as C from '@core/api/contract';
 import type { KeyName } from '../../api/types';
 import { Button } from '../../components/Button';
 import { TextField } from '../../components/Fields';
+import { Fold } from '../../components/Fold';
 import { Glyph } from '../../components/Glyph';
 import { KeyCheckLine, useKeyCheck } from '../../components/KeyCheck';
 import { ConfirmInline } from '../../components/States';
@@ -18,7 +19,9 @@ interface Def {
   /** The fields, with the names the agent takes: one `key`, or the pair. `optional`: may be left empty (Telegram's chat id). */
   fields: { id: string; label: string; optional?: boolean }[];
   what: ReactNode;
-  getKey: { href: string; label: string };
+  /** Where to get it: a page, or (`how`) steps in the app's own words behind a disclosure. */
+  getKey?: { href: string; label: string };
+  how?: ReactNode;
   /** What stops working when the key is removed. */
   without: string;
 }
@@ -78,7 +81,49 @@ const KEYS: Def[] = [
     getKey: { href: 'https://core.telegram.org/bots#how-do-i-create-a-bot', label: 'How to make a bot' },
     without: 'Messages stop going to Telegram.',
   },
+  {
+    name: 'amazonSeller',
+    label: 'Amazon seller account',
+    fields: [
+      { id: 'clientId', label: 'Client id (LWA)' },
+      { id: 'clientSecret', label: 'Client secret (LWA)' },
+      { id: 'refreshToken', label: 'Refresh token' },
+      { id: 'sellerId', label: 'Seller id (Merchant Token)' },
+    ],
+    what: "Read-only, from your own account: whether you may list each part, whether FBA takes it, and Amazon's fee estimate for you. Nothing is ever listed, changed or ordered. US marketplace only for now. Checked when saved: Amazon's sign-in, then one listing check.",
+    how: <SellerHow />,
+    without: 'Deals are no longer checked against your Amazon account.',
+  },
 ];
+
+/** The steps from docs/sp-api-notes-2026-11-25.md, in the app's words. */
+function SellerHow() {
+  return (
+    <Fold id="keys-amazon-how" title="How to get these" sub>
+      <ol className="key-how">
+        <li>You need a professional seller account, signed in as its Primary User.</li>
+        <li>
+          In Seller Central open Apps and Services, then Develop Apps, and register as a private developer: data access private;
+          roles Product Listing and Amazon Fulfillment (and Inventory and Order Tracking, for sales later). If Amazon opens a case,
+          answer it within 5 days.
+        </li>
+        <li>Add an app client for yourself. Under its LWA credentials, View shows the client id and the client secret.</li>
+        <li>Choose Authorize app for it: Amazon shows a refresh token. Each click makes a new one; earlier ones keep working.</li>
+        <li>
+          Your seller id is probably in Seller Central under Account Info, called Merchant Token. Amazon's developer pages do
+          not say where it is shown, so if it is not there, ask Seller Support for your merchant token.
+        </li>
+      </ol>
+    </Fold>
+  );
+}
+
+/** His seller account's calls today against the app's own cap a day, in one line. */
+function sellerUsageLine(u: NonNullable<ReturnType<typeof useApp>['state']>['seller']): string | null {
+  if (!u) return null;
+  const part = (op: keyof typeof u.used, noun: string) => `${u.used[op]} of ${u.caps[op]} ${noun}`;
+  return `Today: ${part('restrictions', 'listing checks')}, ${part('eligibility', 'FBA checks')}, ${part('fees', 'fee estimates')}. Free; the app keeps under its own cap a day.`;
+}
 
 export function KeysPane() {
   return (
@@ -159,10 +204,14 @@ function KeyRow({ def }: { def: Def }) {
               </Button>
             </span>
           ) : null}
-          <a className="key-get" href={def.getKey.href} target="_blank" rel="noopener noreferrer">
-            {def.getKey.label}
-          </a>
+          {def.getKey ? (
+            <a className="key-get" href={def.getKey.href} target="_blank" rel="noopener noreferrer">
+              {def.getKey.label}
+            </a>
+          ) : null}
         </div>
+        {def.how ?? null}
+        {def.name === 'amazonSeller' && has && sellerUsageLine(state?.seller) ? <p className="muted key-usage">{sellerUsageLine(state?.seller)}</p> : null}
         <KeyCheckLine name={def.name} checking={put.busy || kc.rechecking} now={kc.now} onCheckAgain={kc.recheck} canCheckAgain={!open && !removing} />
         {waitingForChat && !open && !removing ? <TelegramChatFinder /> : null}
         {removing ? (

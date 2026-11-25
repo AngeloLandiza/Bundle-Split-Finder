@@ -180,6 +180,13 @@ export interface AppState {
   update?: UpdateNotice;
   /** The app turned "Open at login" on itself because a schedule was set; a quiet notice with Turn off, until he closes it. */
   loginNotice?: { sentence: string };
+  /** Nov 25: his seller account's calls today and the app's cap a day per kind of call; absent without an account. */
+  seller?: SellerUsage;
+}
+
+export interface SellerUsage {
+  used: Record<'restrictions' | 'eligibility' | 'fees' | 'sales', number>;
+  caps: Record<'restrictions' | 'eligibility' | 'fees' | 'sales', number>;
 }
 
 export type KeyProblems = Partial<Record<KeyName, string>>;
@@ -440,6 +447,22 @@ export interface DealDetail {
   needsLook?: NeedsLook[];
   /** The market around each counted part's listing, and the estimate at the usual prices (core/src/tracking/market.ts); null when none is stored. */
   market?: OptionMarket | null;
+  /**
+   * Nov 25: what his Amazon seller account says about each part (by ASIN), and the quiet line on a Buy now deal when no
+   * account is connected. Null from an agent that does not send it.
+   */
+  seller?: { connected: boolean; note: string | null; parts: SellerPartLine[] } | null;
+}
+
+/** One part's line from his seller account; `link` is Amazon's apply page, already held to sellercentral.amazon.com. */
+export interface SellerPartLine {
+  model: string;
+  asin: string;
+  text: string;
+  tone: 'ok' | 'attention';
+  link: string | null;
+  canSelfShip: boolean;
+  selfShip: boolean;
 }
 
 // ------------------------------------------------------------------ GET /api/review
