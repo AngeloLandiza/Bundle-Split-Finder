@@ -463,7 +463,10 @@ describe('checking the app\'s own work: a held deal is never Buy now until the o
     await twoToolListing();
     await expect(agent.work.settleNeedsLook(HELD, `bundle|${HELD}|too_good`, 'wrong')).rejects.toThrow('about the estimate');
     await agent.work.settleNeedsLook(HELD, LISTING, 'wrong');
-    expect(await agent.work.scanStore.getMatch('RYOBI:PCL700B')).toMatchObject({ status: 'none', asin: null, rejectedAsins: [ASIN] });
+    // Nov 25: the app replaces it itself (core/src/scan/recheck.ts). PCL700B has no other stored listing here, so it joins the
+    // lookup queue for a fresh search instead of being asked.
+    expect(await agent.work.scanStore.getMatch('RYOBI:PCL700B')).toMatchObject({ status: 'waiting', asin: null, rejectedAsins: [ASIN] });
+    expect(await agent.work.scanStore.getRecheck!('RYOBI:PCL700B')).toMatchObject({ stage: 'lookup', withdrawn: [expect.objectContaining({ asin: ASIN, by: 'owner' })] });
     expect(view().row.needsLook).toBeUndefined();
     expect(view().row.profit).toBeNull();
   });
@@ -491,9 +494,11 @@ describe('checking the app\'s own work: a held deal is never Buy now until the o
       verifyEvidence: `Amazon's catalog lists brand DEWALT, part number DWST08017: https://www.amazon.com/dp/${asin}`,
     });
     await agent.work.refresh();
-    // The first line (the price guard, before the agent publishes) held it for the owner's Review answer: no listing counted.
-    expect(await store.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'review', asin: null });
-    expect((await store.getReview('match:DEWALT:DWST08017'))?.reason).toMatch(/^Amazon's price is 9\.7× Home Depot's price/);
+    // The first line (the price guard, before the agent publishes) withdrew it: no listing counted. Nov 25: the app tries the
+    // part's other listings before asking (core/src/scan/recheck.ts); with none stored here it joins the lookup queue.
+    expect(await store.getMatch('DEWALT:DWST08017')).toMatchObject({ status: 'waiting', asin: null });
+    expect(await store.getRecheck!('DEWALT:DWST08017')).toMatchObject({ stage: 'lookup', withdrawn: [expect.objectContaining({ asin, by: 'price_guard' })] });
+    expect((await store.getReview('match:DEWALT:DWST08017'))?.answer).toBe('resolved by a later scan');
     // So the second line has nothing to hold: no finding, no estimate, no buy.
     expect(agent.store.get('deals').sanity!.filter((f) => f.bundleId === NOV24)).toEqual([]);
     expect(view(NOV24).row).toMatchObject({ profit: null, buyNow: false });

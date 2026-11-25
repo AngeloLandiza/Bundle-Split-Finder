@@ -42,7 +42,7 @@ import { bogoTagOf, type BogoGroup } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { liveSuggestion, type StoredSuggestion } from '../core/src/assist/stored';
-import { followUpView, followUpWorking, type FollowUpState } from '../core/src/research/followUp';
+import { followUpView, followUpWorking, type FollowUpState, type ReviewFollowUp } from '../core/src/research/followUp';
 import { waitingSentence } from './reverify';
 import type { PipelineView } from '../core/src/scan/pipeline';
 import { staleBundleDays } from '../core/src/deals/freshness';
@@ -450,7 +450,11 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
   if (!found) return null;
   // The listing ladder, round 2: each counted listing no automatic rung will read says why (PartRow.confirmNote).
   const notes = data.runtime?.autoConfirm?.unconfirmable ?? {};
-  const bundle = { ...found, parts: found.parts.map((p) => (p.asin && notes[p.asin] ? { ...p, confirmNote: notes[p.asin]!.reason } : p)) };
+  // The app replaces a wrong listing itself: a part being re-checked says what was withdrawn and tried (PartRow.recheck).
+  const bundle = {
+    ...found,
+    parts: found.parts.map((p) => (p.recheck ? { ...p, confirmNote: p.recheck.sentence } : p.asin && notes[p.asin] ? { ...p, confirmNote: notes[p.asin]!.reason } : p)),
+  };
   const t = data.tracking;
   const need = bundlesNeedingAnswer([bundle], data.review.questions);
   const sources: SourceLink[] = [];
@@ -500,6 +504,19 @@ export function latestSuggestion(suggestions: readonly StoredSuggestion[], quest
   return best;
 }
 
+/**
+ * A "Which listing" question the re-check opened (core/src/scan/recheck.ts): each listing the app tried and why it was not
+ * taken, shown as what the app already did (the card's checked list), so the owner starts where the app stopped.
+ */
+export function recheckFollowUp(q: ReviewItem): ReviewFollowUp | undefined {
+  if (!q.tried || q.tried.length === 0) return undefined;
+  return {
+    state: 'gave_up',
+    tried: q.tried.map((t) => ({ what: `Tried ${t.asin}`, result: t.passed ? `passes the app's checks: ${t.reason}` : t.reason, url: amazonLink(t.asin) })),
+    roundsLeft: 0,
+  };
+}
+
 /** The question in a sentence. */
 function promptOf(q: ReviewItem): string {
   return q.kind === 'split' ? `What is inside the ${q.brand} ${q.model}?` : `Which Amazon listing is the ${q.brand} ${q.model}?`;
@@ -544,7 +561,7 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
     const waiting = live && live.suggestion.status === 'unverified' ? waitingSentence(live.waitingFor) : null;
     // Step 16: what the app is doing or did about it (the follow-up loop), and the check line that says so.
     const state = followUpStateOf(data.review, data.suggestions, q);
-    const followUp = state ? followUpView(state) : undefined;
+    const followUp = state ? followUpView(state) : recheckFollowUp(q);
     // Step 16 (round 2): when Home Depot's pages confirmed some parts and not others, the question is about those only: from the
     // scan's own part readings (rule 2), else from the follow-up loop's reads.
     const narrow = q.kind === 'split' ? (q.unsettledParts?.length ? { settled: q.settledParts ?? [], unsettled: q.unsettledParts } : state?.parts) : undefined;

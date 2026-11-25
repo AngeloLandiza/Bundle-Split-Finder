@@ -35,6 +35,7 @@ import {
 } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
 import { applyPriceGuard } from '../core/src/scan/priceGuard';
+import { rechecksWaiting, runRechecks, withdrawListing } from '../core/src/scan/recheck';
 import { partRowsFor } from '../core/src/scan/report';
 import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
 import {
@@ -63,6 +64,7 @@ import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatch
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
 import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps } from './signalsPass';
 import { averagePullsWanted, pullAverages } from './suggestPrices';
+import { dripPull, selfCorrect } from './recheck';
 import { forgetFact, markNotSold, rememberAnswer, type Remembered } from '../core/src/facts/apply';
 import type { FactField } from '../core/src/facts/fact';
 import { freshFollowUp } from '../core/src/research/followUp';
@@ -612,7 +614,9 @@ export class AgentWork {
     const repicks = repickTargets(store.get('runtime').autoConfirm, this.d.now());
     // Nov 25: parts marked "no Amazon listing" whose Home Depot barcode is now known: asked by code once (Keepa only).
     const codes = keys.keepa ? await barcodeLookupsWanted(this.scanStore) : [];
-    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0 && codes.length === 0) || !keys.keepa) {
+    // The app replaces a wrong listing itself: withdrawn listings' candidates still to read (agent/recheck.ts).
+    const rechecks = keys.keepa ? await rechecksWaiting(this.scanStore) : 0;
+    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0 && codes.length === 0 && rechecks === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
     }
@@ -627,6 +631,7 @@ export class AgentWork {
     const before = this.estimatedKeys();
     const catalog = (await knownModels(this.scanStore)).catalog;
     const done: DripDone = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0 };
+    let rechecked = false;
     // Signals round 2: every product pull keeps its Keepa trend (sales, FBA fee), as a scan's refresh does.
     const product = pullKeepingTrends(this.cache, (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }));
     // Buy safety (Nov 23): the listings a buy waits on are checked first, before the lookups.
@@ -725,6 +730,20 @@ export class AgentWork {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }
     }
+    // The app replaces a wrong listing itself: each withdrawn listing's part, its other stored candidates in order, one Keepa
+    // pull each (1 token, above the reserve; the cache first), through the ladder, the price guard and the audit.
+    if (rechecks > 0 && this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
+      try {
+        const r = await runRechecks({
+          store: this.scanStore, catalog, now: this.d.now, pull: dripPull(this.scanStore, budget, product, (t) => { done.tokens += t; }),
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        });
+        done.verified += r.replaced.length;
+        rechecked = r.changed;
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    }
     // Signals rounds 2 and 3: then the fee and sales pulls (1 token each), after the lookups and the catalog check, the
     // bundles with the highest estimate first; a listing pulled within the freshness window is not pulled again.
     if (this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
@@ -756,7 +775,7 @@ export class AgentWork {
     const perMin = status.refillRate > 0 ? status.refillRate : 1;
     this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
     if (done.looked === 0 && done.verified === 0 && done.removed === 0 && done.sales === 0) {
-      if (prices > 0 || done.tokens > 0) await this.refresh();
+      if (prices > 0 || done.tokens > 0 || rechecked) await this.refresh();
       return;
     }
     const report = await this.rebuild();
@@ -1222,6 +1241,8 @@ export class AgentWork {
     let report: ScanReport | null = null;
     try {
       report = (await postScanWork({ store: this.scanStore, settings: toScanSettings(extensionSettingsOf(settings)), cache: this.cache, now: this.d.now })).report;
+      // The app replaces a wrong listing itself: what the price guard and the audit withdrew is re-checked before it is asked.
+      report = await this.selfCorrected(report);
       await this.publish(report);
     } catch (err) {
       notes.push(`The deals could not be built: ${scrub(sentenceOf(err), keys)}`);
@@ -1917,9 +1938,24 @@ export class AgentWork {
   private async rebuild(): Promise<ScanReport> {
     // The price guard over what is stored (core/src/scan/priceGuard.ts): free, and never beside a scan, whose end runs it.
     if (this.live.busy !== 'scan') await applyPriceGuard(this.scanStore, this.d.now());
-    const report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    let report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    if (this.live.busy !== 'scan') report = await this.selfCorrected(report);
     await this.publish(report);
     return report;
+  }
+
+  /**
+   * The app replaces a wrong listing itself (agent/recheck.ts): held questions become re-checks, the audit's certain
+   * findings are withdrawn, the re-checks run as far as they can without a pull; the report is built again when anything
+   * changed. Free: no search, no Keepa token, no AI (the drip pulls).
+   */
+  private async selfCorrected(report: ScanReport): Promise<ScanReport> {
+    const done = await selfCorrect({
+      store: this.scanStore, catalog: (await knownModels(this.scanStore)).catalog, now: this.d.now, keepa: !!this.d.store.get('keys').keepa,
+      cleared: this.d.store.get('tracking').sanityCleared ?? [],
+    }, report.bundles);
+    if (!done.changed) return report;
+    return reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
   }
 
   /** Ask AI now, about one question or every open one (the app's buttons). Runs in the background. */
@@ -1987,12 +2023,16 @@ export class AgentWork {
         const m = await this.scanStore.getMatch(partKey(bundle.brand, finding.part));
         if (!m || m.asin !== finding.asin) throw new WorkRefused('The listing for this part changed since. Reload the deal.');
         const now = this.d.now();
-        const { verifiedBy: _v, ...rest } = m;
-        await this.scanStore.putMatch({
-          ...rest, status: 'none', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null,
-          rejectedAsins: [...new Set([...(m.rejectedAsins ?? []), finding.asin])],
-          verifyEvidence: `You marked it the wrong listing (Needs a look: ${finding.sentence}): https://www.amazon.com/dp/${encodeURIComponent(finding.asin)}`,
-        });
+        // The app replaces it itself (core/src/scan/recheck.ts): the part's other listings are tried before he is asked.
+        const reason = `You marked it the wrong listing (Needs a look: ${finding.sentence})`;
+        if (!(await withdrawListing(this.scanStore, { key: m.key, asin: finding.asin, reason, by: 'owner', now }))) {
+          const { verifiedBy: _v, ...rest } = m;
+          await this.scanStore.putMatch({
+            ...rest, status: 'none', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null,
+            rejectedAsins: [...new Set([...(m.rejectedAsins ?? []), finding.asin])],
+            verifyEvidence: `${reason}: https://www.amazon.com/dp/${encodeURIComponent(finding.asin)}`,
+          });
+        }
       }
       await this.refresh();
     });
