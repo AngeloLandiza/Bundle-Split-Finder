@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STATE } from '../api/mockData';
 import type { AppState, DealRow, LastScan } from '../api/types';
-import { helperProblem, isWaitingPage, scanProblem } from './scanProblem';
+import { helperProblem, isWaitingPage, scanProblem, waitingPages } from './scanProblem';
 
 const base = STATE.agent.lastScan as LastScan;
 const withScan = (last: Partial<LastScan> | null, patch: (s: AppState) => void = () => undefined): AppState => {
@@ -91,6 +91,66 @@ describe('outdated helper banner', () => {
     expect(h?.quiet).toBe(false);
     expect(h?.text).toBe('It is version 0.1.0+old0001. The app cannot tell which folder Chrome loaded the helper from.');
     expect(`${h?.text} ${h?.fallback}`).not.toMatch(/chrome:\/\/extensions|Reload/);
+  });
+});
+
+// Nov 25: "The last scan could not read 139 pages" said 139 while the between-scan reader had brought the waiting sets to 80 and was
+// still going, and it asked for a click the app no longer needed. The agent now counts them live (agent.homeDepot).
+describe('the Home Depot pages waiting, counted live', () => {
+  const NOW = Date.parse('2026-11-25T10:20:00');
+  const at = (h: number, m: number) => new Date(2026, 10, 25, h, m).toISOString();
+  const live = (patch: (s: AppState) => void = () => undefined, last: Partial<LastScan> | null = { pagesUnread: 139, canReadPagesAgain: true }): AppState =>
+    withScan(last, (s) => {
+      s.helper.paired = true;
+      s.helper.connected = true;
+      s.agent.homeDepot = { pausedUntil: null, pagesWaiting: 105, setsWaiting: 58, bundlesWaiting: 0, perHour: 20, perDay: 240, readToday: 30, nextReadAt: at(10, 54), slowed: true };
+      patch(s);
+    });
+
+  it('is a quiet line with no button while the app reads them itself: how many, the pace today, and when the next one is', () => {
+    const w = waitingPages(live(), NOW);
+    expect(w).toEqual({
+      tone: 'quiet',
+      text: '58 sets are waiting for 105 Home Depot pages. The app is reading them: about 20 an hour today; next at 10:54 AM.',
+      action: null,
+    });
+    expect(w).not.toHaveProperty('title');
+  });
+
+  it('the last scan\'s stale count asks for nothing: no "could not read" banner, no Read pages again button', () => {
+    expect(scanProblem(live())).toBeNull();
+    // Without the live count (an older agent) the last scan's figure is still said, with its button.
+    const old = withScan({ pagesUnread: 139, canReadPagesAgain: true });
+    expect(scanProblem(old)?.what).toMatch(/could not read 139 Home Depot pages/);
+    expect(scanProblem(old)?.action).toEqual({ enabled: true, reason: null });
+    // A scan that failed is still said, with no unread count in it.
+    expect(scanProblem(live(() => undefined, { result: 'failed', message: 'SerpApi did not answer.', pagesUnread: 139 }))?.what).toBe('The last scan failed. SerpApi did not answer.');
+  });
+
+  it('is nothing when no page waits (the last scan said 139; the app has read them all)', () => {
+    expect(waitingPages(live((s) => void (s.agent.homeDepot!.pagesWaiting = 0)), NOW)).toBeNull();
+    expect(waitingPages(withScan({ pagesUnread: 3 }), NOW)).toBeNull();
+  });
+
+  it('says the pause and its end while Home Depot paused reading, and the full pace without "today"', () => {
+    const paused = waitingPages(live((s) => void (s.agent.homeDepot!.pausedUntil = at(11, 5))), NOW);
+    expect(paused).toMatchObject({ tone: 'quiet', action: null });
+    expect(paused?.text).toBe('58 sets are waiting for 105 Home Depot pages. Home Depot paused reading until 11:05 AM; the app reads them then.');
+    const full = waitingPages(live((s) => Object.assign(s.agent.homeDepot!, { slowed: false, perHour: 40, setsWaiting: 1, pagesWaiting: 2, bundlesWaiting: 3 })), NOW);
+    expect(full?.text).toBe('1 set and 3 bundles are waiting for 2 Home Depot pages. The app is reading them: about 40 an hour; next at 10:54 AM.');
+    const spent = waitingPages(live((s) => void (s.agent.homeDepot!.readToday = 240)), NOW);
+    expect(spent?.text).toBe("58 sets are waiting for 105 Home Depot pages. Today's 240 pages are read; the app goes on tomorrow.");
+  });
+
+  it('is an attention banner with the button that helps only when reading cannot go on by itself: the app is paused, so Resume', () => {
+    const w = waitingPages(live((s) => void (s.agent.status = 'paused')), NOW);
+    expect(w).toEqual({ tone: 'attention', title: '58 sets are waiting for 105 Home Depot pages.', text: 'Reading is switched off while the app is paused.', action: 'resume' });
+  });
+
+  it('leaves Chrome closed or not connected to the Chrome notice, and a running scan to the scan', () => {
+    expect(waitingPages(live((s) => void (s.helper.connected = false)), NOW)).toBeNull();
+    expect(waitingPages(live((s) => void (s.helper.paired = false)), NOW)).toBeNull();
+    expect(waitingPages(live((s) => void (s.agent.status = 'scanning')), NOW)).toBeNull();
   });
 });
 

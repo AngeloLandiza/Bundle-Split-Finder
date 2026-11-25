@@ -202,6 +202,13 @@ export interface HomeDepotPaceState {
   perScan: number;
   /** Pages the slow read between scans made today. */
   readToday: number;
+  /**
+   * Nov 25: when the next page is read between scans (ISO): the pause's end while Home Depot paused reading, tomorrow once
+   * today's pages are used, else when the gap since the last read passes (a moment ago: now). Null when nothing waits.
+   */
+  nextReadAt: string | null;
+  /** Nov 25: the hourly pace is below the full one today (Home Depot refused a page earlier). */
+  slowed: boolean;
   /** The words, from these figures; null when nothing waits and reading is not paused. */
   sentence: string | null;
 }

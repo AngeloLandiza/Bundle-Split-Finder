@@ -24,6 +24,7 @@ import type {
   DealsView,
   DealSort,
   Drip,
+  HomeDepotReading,
   KeepCurrent,
   PricesChecked,
   FollowUp,
@@ -116,6 +117,7 @@ function helperOf(s: C.AgentState): AppState['helper'] {
   const h = s.helper as C.AgentState['helper'] & StateExtras;
   const outdated = bool(h.outdated);
   const version = typeof h.version === 'string' ? h.version : undefined;
+  const update = helperUpdateOf((h as { update?: unknown }).update);
   return {
     paired: h.paired,
     connected: h.connected,
@@ -123,6 +125,29 @@ function helperOf(s: C.AgentState): AppState['helper'] {
     jobsWaiting: h.jobsWaiting ?? s.counts.jobsWaiting,
     ...(outdated !== undefined ? { outdated } : {}),
     ...(version !== undefined ? { version } : {}),
+    ...(update ? { update } : {}),
+  };
+}
+
+/** What the agent does about an outdated helper's files, only in its two shapes. */
+function helperUpdateOf(v: unknown): AppState['helper']['update'] {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const u = v as Record<string, unknown>;
+  if (u.state === 'updating') return { state: 'updating' };
+  if (u.state === 'install' && typeof u.why === 'string' && u.why.trim()) return { state: 'install', why: u.why.trim() };
+  return undefined;
+}
+
+/** The agent's Home Depot reading figures, when it sends them with their types. */
+function homeDepotOf(v: unknown): HomeDepotReading | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as Record<string, unknown>;
+  const [pagesWaiting, setsWaiting, bundlesWaiting, perHour, perDay, readToday] = [num(o.pagesWaiting), num(o.setsWaiting), num(o.bundlesWaiting), num(o.perHour), num(o.perDay), num(o.readToday)];
+  if (pagesWaiting === undefined || perHour === undefined) return undefined;
+  const at = (x: unknown): string | null => (typeof x === 'string' && Number.isFinite(Date.parse(x)) ? x : null);
+  return {
+    pausedUntil: at(o.pausedUntil), pagesWaiting, setsWaiting: setsWaiting ?? 0, bundlesWaiting: bundlesWaiting ?? 0, perHour, perDay: perDay ?? 0, readToday: readToday ?? 0,
+    nextReadAt: at(o.nextReadAt), slowed: o.slowed === true,
   };
 }
 
@@ -206,6 +231,7 @@ export function mapState(s: C.AgentState): AppState {
   const a = s.agent;
   const drip = dripOf((a as { drip?: unknown }).drip);
   const keepCurrent = keepCurrentOf((a as { keepCurrent?: unknown }).keepCurrent);
+  const homeDepot = homeDepotOf((a as { homeDepot?: unknown }).homeDepot);
   const refill = num((s.budget as { keepaRefillPerMin?: unknown }).keepaRefillPerMin);
   const problems = keyProblemsOf((s as { keyProblems?: unknown }).keyProblems);
   const checks = keyChecksOf((s as { keyChecks?: unknown }).keyChecks);
@@ -219,6 +245,7 @@ export function mapState(s: C.AgentState): AppState {
       lastScan: a.lastScan ? lastScanOf(a.lastScan) : null,
       ...(drip ? { drip } : {}),
       ...(keepCurrent ? { keepCurrent } : {}),
+      ...(homeDepot ? { homeDepot } : {}),
     },
     helper: helperOf(s),
     budget: {

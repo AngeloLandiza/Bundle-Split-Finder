@@ -1,7 +1,7 @@
 // What the agent's endpoints answer, built from the store (pure functions; the contract's shapes).
 
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
-import { backlogSentence, ceilingWords, dripCeiling, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
+import { backlogSentence, ceilingWords, dripCeiling, fullPerHour, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { dayOf } from '../core/src/tracking/state';
 import { buyingView } from '../core/src/tracking/buying';
 import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
@@ -277,6 +277,17 @@ export function confirmingNote(r: DealRow, data: WithTracking<'runtime'>, now: n
   };
 }
 
+/** When the next page is read between scans, and whether the pace is below the full one (see HomeDepotPaceState). */
+function nextReadOf(s: ReturnType<typeof paceStateOf>, paused: number | null, pages: number, now: number): { nextReadAt: string | null; slowed: boolean } {
+  const ceiling = dripCeiling(s, now);
+  const slowed = ceiling < fullPerHour();
+  if (pages <= 0) return { nextReadAt: null, slowed };
+  const readToday = s.day === dayOf(now) ? s.dripPages : 0;
+  const gap = Math.max(HD_LIMITS.dripGapMs, Math.ceil((60 * 60_000) / ceiling));
+  const at = paused !== null ? paused : readToday >= HD_LIMITS.dripPagesPerDay ? new Date(new Date(now).getFullYear(), new Date(now).getMonth(), new Date(now).getDate() + 1).getTime() : Math.max(now, (s.lastEndedAt ?? 0) + gap);
+  return { nextReadAt: new Date(at).toISOString(), slowed };
+}
+
 /**
  * Home Depot's pace for the state and the waiting rows: what the agent last counted waiting (runtime.hdBacklog) and the
  * pace's own state (runtime.hdPace), in figures and in the words built from them. Null before anything was counted and
@@ -294,6 +305,7 @@ export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): Ho
     // The adaptive ceiling in force (core/src/scan/hdPace.ts dripCeiling): halved by a refusal, raised back gradually.
     perHour: dripCeiling(s, now), perDay: HD_LIMITS.dripPagesPerDay, perScan: HD_LIMITS.pagesPerScan,
     readToday: s.day === dayOf(now) ? s.dripPages : 0,
+    ...nextReadOf(s, paused, pages, now),
     sentence: backlogSentence({ pages, sets: b?.sets ?? 0, bundles: b?.bundles ?? 0, pausedUntil: paused, ceiling: ceilingWords(dripCeiling(s, now), s.lastRefusal?.at ?? null, now) }) ?? (paused !== null ? pausedSentence(paused) : null),
   };
 }

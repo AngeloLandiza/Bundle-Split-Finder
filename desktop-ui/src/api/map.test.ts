@@ -57,6 +57,21 @@ describe('the agent state', () => {
     expect(s.agent.lastScan).toMatchObject({ pagesUnread: 16, canReadPagesAgain: true });
     expect(s.helper).toMatchObject({ outdated: true, version: '0.4.1' });
   });
+  it("carries the helper's update state and the live Home Depot count in their shapes, and drops what is not", () => {
+    expect(mapState(base).agent).not.toHaveProperty('homeDepot');
+    expect(mapState(base).helper).not.toHaveProperty('update');
+    const next = structuredClone(base) as unknown as { agent: Record<string, unknown>; helper: Record<string, unknown> };
+    next.helper.update = { state: 'install', why: 'The app cannot tell which folder Chrome loaded the helper from.' };
+    next.agent.homeDepot = { pausedUntil: null, pagesWaiting: 105, setsWaiting: 58, bundlesWaiting: 0, perHour: 20, perDay: 240, readToday: 3, nextReadAt: '2026-11-25T10:54:00.000Z', slowed: true, sentence: 'x' };
+    const s = mapState(next as unknown as C.AgentState);
+    expect(s.helper.update).toEqual({ state: 'install', why: 'The app cannot tell which folder Chrome loaded the helper from.' });
+    expect(s.agent.homeDepot).toEqual({ pausedUntil: null, pagesWaiting: 105, setsWaiting: 58, bundlesWaiting: 0, perHour: 20, perDay: 240, readToday: 3, nextReadAt: '2026-11-25T10:54:00.000Z', slowed: true });
+    next.helper.update = { state: 'other' };
+    next.agent.homeDepot = { pagesWaiting: 'many' };
+    const bad = mapState(next as unknown as C.AgentState);
+    expect(bad.helper).not.toHaveProperty('update');
+    expect(bad.agent).not.toHaveProperty('homeDepot');
+  });
   it('carries a new-version notice, and drops a link the rule refuses, so it is never a button', () => {
     expect(mapState(base)).not.toHaveProperty('update');
     const good = 'https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/download/v0.1.1/setup.exe';

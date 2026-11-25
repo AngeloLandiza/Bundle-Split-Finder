@@ -86,8 +86,13 @@ describe("the slow free read between scans (Home Depot's pace)", () => {
     const { polling } = await connected();
     expect(state().agent.homeDepot).toMatchObject({ pagesWaiting: 220, setsWaiting: 139, perHour: 40, perDay: 240, perScan: 40, pausedUntil: null });
     expect(state().agent.homeDepot!.sentence).toBe('139 sets wait for 220 Home Depot pages; between scans at most 40 are read an hour (240 a day), and each scan reads up to 40.');
+    // Nov 25: the live count says when the next page is read: nothing was read yet, so now; and the pace is the full one.
+    expect(state().agent.homeDepot).toMatchObject({ nextReadAt: new Date(clock).toISOString(), slowed: false });
 
     await agent.work.drip();
+    // After a read the next one is a drip gap later (90 s at 40 an hour), from the end of that read.
+    const lastEnded = agent.work.pace.state().lastEndedAt!;
+    expect(state().agent.homeDepot!.nextReadAt).toBe(new Date(Math.max(clock, lastEnded + HD_DRIP_GAP_MS)).toISOString());
     // The set with the biggest saving (336796097, $59.94, was $99.94): its first item's page, one page in one job.
     const set = (await agent.work.scanStore.getBundle('homedepot:336796097'))!;
     const [first, second] = set.set!.items.map((i) => i.itemId);
@@ -128,6 +133,8 @@ describe("the slow free read between scans (Home Depot's pace)", () => {
     const until = clock + HD_COOLDOWN_MS;
     expect(agent.work.pace.pausedUntil()).toBe(until);
     expect(state().agent.homeDepot!.pausedUntil).toBe(new Date(until).toISOString());
+    // Nov 25: while paused the next read is the pause's end, and the pace is below the full one for the rest of the day.
+    expect(state().agent.homeDepot).toMatchObject({ nextReadAt: new Date(until).toISOString(), slowed: true });
     expect(state().agent.homeDepot!.sentence).toMatch(/^Home Depot paused reading until .+; the rest continue then\. 139 sets wait for 220 Home Depot pages;/);
     // Every look during the cool-down reads nothing.
     for (let t = 0; t < HD_COOLDOWN_MS - HD_DRIP_GAP_MS; t += HD_DRIP_GAP_MS) {

@@ -7,7 +7,7 @@ import { costNotice } from '../lib/costs';
 import { inShell, invokeShell } from '../lib/shell';
 import { chooseNotices, moreWords, rejectedKeyNotice, type NoticeKind } from '../lib/notices';
 import { words } from '../lib/platform';
-import { helperProblem, scanProblem } from '../lib/scanProblem';
+import { helperProblem, scanProblem, waitingPages } from '../lib/scanProblem';
 import { Button } from './Button';
 import { spacedCode } from './PairingNotice';
 import { Notice } from './States';
@@ -48,6 +48,7 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   const ui = useUi();
   const read = useAction(readPages);
   const reload = useAction(api.reloadHelper);
+  const resume = useAction(api.resume);
   const [reloaded, setReloaded] = useState(false);
   // "Install the helper again": where the files went, said under the notice.
   const [installedIn, setInstalledIn] = useState<string | null>(null);
@@ -224,6 +225,35 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
               </Button>
             </>
           ),
+        });
+      }
+      // Nov 25: the pages waiting, counted live: a quiet line while the app reads them itself, a banner only when it cannot.
+      const waiting = waitingPages(state);
+      if (waiting) {
+        items.push({
+          kind: 'waiting',
+          key: 'waiting-pages',
+          tone: waiting.tone,
+          ...(waiting.title ? { title: waiting.title } : {}),
+          body: (
+            <>
+              {waiting.text}
+              {resume.error ? (
+                <span className="notice-more" role="alert">
+                  {resume.error}
+                </span>
+              ) : null}
+            </>
+          ),
+          ...(waiting.action === 'resume'
+            ? {
+                action: (
+                  <Button size="sm" busy={resume.busy} busyLabel="Resuming…" onClick={() => void resume.run().then(() => refreshState())}>
+                    Resume
+                  </Button>
+                ),
+              }
+            : {}),
         });
       }
       const helper = helperProblem(state);

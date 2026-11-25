@@ -8,9 +8,9 @@ import { keyState, KEY_LABEL } from './keyStatus';
 /**
  * Every banner kind, most urgent first. The agent being offline makes everything else moot; a request to connect is a
  * question waiting for him; then the helper that is out of date, a scan that left work undone, and the setup that stops
- * a scan, then a key the service rejected, then a cost limit (nearing, expected to pass, reached or held back), then lookups waiting (a notice about a convenience), then a stale price, then the one-time note that Open at login was turned on for his schedule, and last a new version of the app (never urgent, and he can close it).
+ * a scan, then a key the service rejected, then a cost limit (nearing, expected to pass, reached or held back), then the Home Depot pages the app is reading by itself (a quiet line; when it cannot go on, the banner says so) and lookups waiting (notices about a convenience), then a stale price, then the one-time note that Open at login was turned on for his schedule, and last a new version of the app (never urgent, and he can close it).
  */
-export const NOTICE_ORDER = ['offline', 'pairing', 'helper', 'scan', 'chrome', 'key-missing', 'reserve', 'key-rejected', 'cost', 'lookups', 'stale', 'login', 'update'] as const;
+export const NOTICE_ORDER = ['offline', 'pairing', 'helper', 'scan', 'chrome', 'key-missing', 'reserve', 'key-rejected', 'cost', 'waiting', 'lookups', 'stale', 'login', 'update'] as const;
 export type NoticeKind = (typeof NOTICE_ORDER)[number];
 
 export interface Chosen<T> {

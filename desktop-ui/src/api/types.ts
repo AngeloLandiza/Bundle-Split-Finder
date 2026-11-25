@@ -121,6 +121,23 @@ export interface Drip {
   feesWaiting?: number;
 }
 
+/** Home Depot's pace as the agent counts it now: what waits for a page read and when the next one is read (agent state `homeDepot`). */
+export interface HomeDepotReading {
+  /** No page is read before this (ISO): Home Depot refused one. Null when reading is not paused. */
+  pausedUntil: string | null;
+  pagesWaiting: number;
+  setsWaiting: number;
+  bundlesWaiting: number;
+  /** Pages between scans an hour at most, now; and a day. */
+  perHour: number;
+  perDay: number;
+  readToday: number;
+  /** When the next page is read between scans (ISO), or null. */
+  nextReadAt: string | null;
+  /** The hourly pace is below the full one today. */
+  slowed: boolean;
+}
+
 export interface AgentView {
   /** 'asking': the agent is busy with the AI pass on Review questions. */
   status: 'idle' | 'scanning' | 'asking' | 'stopping' | 'paused' | 'error';
@@ -136,6 +153,8 @@ export interface AgentView {
   drip?: Drip;
   /** Keeping watched deals current between scans; absent when nothing is watched or from an older agent. */
   keepCurrent?: KeepCurrent;
+  /** The Home Depot pages waiting, counted live by the agent (not the last scan's figure); absent from an older agent or before a count. */
+  homeDepot?: HomeDepotReading;
 }
 
 export interface HelperState {
