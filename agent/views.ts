@@ -52,7 +52,7 @@ import { DEAL_SORTS, sortDealRows, type DealSortKey } from '../core/src/deals/so
 import { plainVerification } from '../core/src/assist/plain';
 import { briefForQuestion, ebayBrief } from '../core/src/brief/view';
 import { choicesOf, reviewSignature } from '../core/src/scan/answers';
-import { matchState, WAITING_PAGE, WAITING_PARTS } from '../core/src/scan/matchState';
+import { matchState, WAITING_PAGE, WAITING_PARTS, waitingForText } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
 import { estimateBasis, fulfillmentGap } from '../core/src/scan/report';
 import type { AuditBundle, StoreData, StoredKeys } from './store';
@@ -156,6 +156,8 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     // Step 15: one waiting for Home Depot's part pages carries its code the same way.
     matchState: b.waitingPage ? WAITING_PAGE : b.waitingParts ? WAITING_PARTS : matchState(b),
     ...(b.waitingPage ? { matchKind: WAITING_PAGE } : b.waitingParts ? { matchKind: WAITING_PARTS } : {}),
+    // Nov 24: what a split waiting for Home Depot's part pages waits for, named ("Waiting for Home Depot's page of DCB2460C").
+    ...(b.waitingParts && b.waitingFor?.length ? { pageWait: `${waitingForText(b.waitingFor)}.` } : {}),
     profit: b.estimate?.profit ?? null,
     ...beforeFulfillmentOf(b),
     roi: b.estimate?.roi ?? null,
@@ -486,6 +488,7 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> &
         }
       : {}),
     ...(bundle.splitEvidence && bundle.splitEvidence.length > 0 ? { splitEvidence: bundle.splitEvidence } : {}),
+    ...(bundle.otherBrands && bundle.otherBrands.length > 0 ? { setContents: bundle.otherBrands } : {}),
     ...(looks.length > 0 ? { needsLook: looks } : {}),
   };
 }

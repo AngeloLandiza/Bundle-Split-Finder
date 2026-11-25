@@ -229,6 +229,23 @@ function Detail({ d }: { d: DealDetail }) {
           <Notice title="Not everything is confirmed.">{summary}</Notice>
         ) : null}
 
+        {d.setContents?.length ? (
+          // Nov 24: a set holding other brands' items, as Home Depot lists it. Not estimated: the app prices DEWALT and RYOBI only.
+          <Fold id="set-contents" title="What Home Depot lists in this set" aside={plural(d.setContents.length, 'item', 'items')} defaultOpen>
+            <p className="detail-note">Not estimated: the app prices {d.brand} parts only, and this set holds other brands' items.</p>
+            <ul className="evidence-list">
+              {d.setContents.map((c, i) => (
+                <li key={i}>
+                  <span className="evidence-text">
+                    {c.quantity > 1 ? `${c.quantity} × ` : ''}{c.brand} <span className="code">{c.model}</span>{c.title ? `: ${c.title}` : ''}{c.priced ? '' : ' (not priced)'}
+                  </span>{' '}
+                  <SourceLink source={{ label: 'Home Depot item page', url: c.url }} />
+                </li>
+              ))}
+            </ul>
+          </Fold>
+        ) : null}
+
         {d.parts.length ? (
           <Fold id="parts" title="Parts" aside={allConfirmed ? `${d.parts.length}, all on confirmed listings` : plural(d.parts.length, 'part', 'parts')} defaultOpen={d.parts.length <= 4}>
             {d.splitEvidence?.length ? (
@@ -429,6 +446,7 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   page_quote: 'Home Depot bundle page',
   owner_fact: 'Your answer',
   hd_set: 'Home Depot set page',
+  amazon_catalog: "Amazon's catalog record",
 };
 
 function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {

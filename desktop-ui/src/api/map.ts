@@ -38,6 +38,7 @@ import type {
   Run,
   ScanResult,
   Source,
+  SetContent,
   SplitEvidence,
   WayToSell,
 } from './types';
@@ -239,7 +240,8 @@ export function mapRow(r: C.DealRow): DealRow {
     needsAnswer: r.needsAnswer && matchKind === null,
     ...(matchKind ? { matchKind } : {}),
     // Home Depot's pace: how many pages wait and when they are read, only on a row that waits for its page.
-    ...(matchKind === 'waiting_page' && typeof r.pageWait === 'string' && r.pageWait !== '' ? { pageWait: r.pageWait } : {}),
+    // Nov 24: and on a row whose split waits for Home Depot's part pages, which pages ("… page of DCB2460C.").
+    ...(matchKind !== null && typeof r.pageWait === 'string' && r.pageWait !== '' ? { pageWait: r.pageWait } : {}),
     updatedAt: r.updatedAt,
     lookup: r.lookup ?? null,
     ...(r.incomplete ? { incomplete: r.incomplete } : {}),
@@ -389,7 +391,19 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
   };
 }
 
-const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set'];
+const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set', 'amazon_catalog'];
+
+/** Nov 24: a set's items as Home Depot lists them, each only with a brand, a model and an http(s) page. */
+export function setContentsOf(v: unknown): SetContent[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: SetContent[] = [];
+  for (const e of v as Record<string, unknown>[]) {
+    if (typeof e !== 'object' || e === null || typeof e.brand !== 'string' || typeof e.model !== 'string' || typeof e.url !== 'string' || !/^https?:\/\//.test(e.url)) continue;
+    const quantity = typeof e.quantity === 'number' && Number.isFinite(e.quantity) && e.quantity > 0 ? e.quantity : 1;
+    out.push({ brand: e.brand, model: e.model, ...(typeof e.title === 'string' && e.title ? { title: e.title } : {}), quantity, url: e.url, priced: e.priced === true });
+  }
+  return out.length ? out : undefined;
+}
 
 /** How the split is known, each item only when it has a kind and a text; an address only when it is http(s). */
 export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
@@ -437,6 +451,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     fbaEstimate: d.fbaEstimate ?? null,
     needsLook: d.needsLook ?? [],
     ...(splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence) ? { splitEvidence: splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence)! } : {}),
+    ...(setContentsOf((d as { setContents?: unknown }).setContents) ? { setContents: setContentsOf((d as { setContents?: unknown }).setContents)! } : {}),
   };
 }
 

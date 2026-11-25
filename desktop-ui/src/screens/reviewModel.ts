@@ -59,9 +59,10 @@ export const SECTION_LABEL: Record<DealSection, string> = {
   inactive_listing: 'Inactive listing',
   missing_listing: 'Missing listing',
   split: 'Contents not known',
+  other_brands: 'Other brands, not estimated',
 };
 
-export const SECTION_ORDER: readonly DealSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split'];
+export const SECTION_ORDER: readonly DealSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split', 'other_brands'];
 
 
 /**

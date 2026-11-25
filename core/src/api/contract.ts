@@ -12,7 +12,7 @@ import type { ListingSample } from '../hdPage';
 import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
 import type { ReviewBrief } from '../brief/types';
-import type { SplitEvidence } from '../decompose';
+import type { SetContent, SplitEvidence } from '../decompose';
 import type { ReviewFollowUp } from '../research/followUp';
 import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
@@ -562,11 +562,16 @@ export interface DealDetail {
    * Absent when the split was read from the model number and page alone, or chosen by the owner.
    */
   splitEvidence?: SplitEvidence[];
+  /**
+   * Nov 24 (rule E): a Home Depot set holding other brands' items (section `other_brands`): every item Home Depot lists in it,
+   * with its own brand, model, title and page (`priced`: a brand the app prices). Not estimated. Absent otherwise.
+   */
+  setContents?: SetContent[];
   /** Checking the app's own work: every finding on this deal, holds first (DealRow.needsLook is the first hold). */
   needsLook?: NeedsLook[];
 }
 
-export type { SplitEvidence };
+export type { SetContent, SplitEvidence };
 
 // ---------------------------------------------------------------- tracking: watchlist, signals, BOGO
 

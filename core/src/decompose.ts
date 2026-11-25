@@ -17,6 +17,11 @@ export interface CatalogModel {
   /** Tool-type words a retailer title uses for this product. */
   kinds: string[];
   isKit?: boolean;
+  /**
+   * Nov 24 (rule D): the pack size Home Depot's own page of exactly this RYOBI model states in its title ("ONE+ 18V Lithium
+   * 2.0 Ah Battery (2-Pack)" for PBP2003), set by knownModels from the part-price reading. Absent otherwise.
+   */
+  packQty?: number;
 }
 
 export type Catalog = Map<string, CatalogModel>;
@@ -43,6 +48,22 @@ export interface Decomposition {
    */
   settledParts?: SettledPart[];
   unsettledParts?: UnsettledPart[];
+  /**
+   * Nov 24 (fewer questions, rule E): a Home Depot set holding an item of a brand the app does not price. Its contents are
+   * settled as Home Depot lists them (every item, with its own brand, model and page), but it has no estimate: "Not
+   * estimated: holds other brands' items". Never a question. Absent otherwise.
+   */
+  otherBrands?: SetContent[];
+}
+
+/** Nov 24: one item of a Home Depot set as its own page gives it. `priced`: of a brand the app prices (DEWALT, RYOBI). */
+export interface SetContent {
+  brand: string;
+  model: string;
+  title?: string;
+  quantity: number;
+  url: string;
+  priced: boolean;
 }
 
 /** A part Home Depot's own page confirms, for exactly that brand and model. */
@@ -68,8 +89,11 @@ export interface UnsettledPart {
 
 /** One piece of evidence for a settled split (step 15). `url` is the page it was read on, when there is one. */
 export interface SplitEvidence {
-  /** owner_fact (Nov 23): what the owner settled about one of the parts, in another bundle or here (core/src/facts). */
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set';
+  /**
+   * owner_fact (Nov 23): what the owner settled about one of the parts, in another bundle or here (core/src/facts).
+   * amazon_catalog (Nov 24, settle rule B): Amazon's catalog lists a product of exactly the part's brand and part number.
+   */
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set' | 'amazon_catalog';
   text: string;
   /** owner_fact only: the model the owner's fact is about, so forgetting the fact finds the splits it settled. */
   model?: string;

@@ -43,7 +43,7 @@ import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
 import {
-  keepaLookupOne, kitPagesWanted, type LookupStep, pageRead, partPricesWanted, plannedWork, readKitPagesFor, readPartPricesFor, readSetItemsFor, runScan, settleWaitingSplits, splitOne, withdrawUnreadSplitQuestions,
+  keepaLookupOne, kitPagesWanted, type LookupStep, pageRead, partPagesWanted, partPricesWanted, plannedWork, rejudgePackQuestions, readKitPagesFor, readPartPricesFor, readSetItemsFor, runScan, settleWaitingSplits, splitOne, withdrawUnreadSplitQuestions,
 } from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
@@ -767,7 +767,9 @@ export class AgentWork {
       const extra = await wantedReads(store, this.d.store.get('suggestions'));
       const parts = await partPricesWanted(store, settings, now(), true, extra);
       const wants = pagesWanted(await store.listBundles());
-      if (parts[0]?.completes || (wants.length === 0 && (await kitPagesWanted(store, true)).length === 0 && parts.length > 0)) {
+      // Nov 24 (settle rule C): a part's own page a waiting split needs is read as a kit page is.
+      const pagesToRead = (await kitPagesWanted(store, true)).length + (await partPagesWanted(store)).length;
+      if (parts[0]?.completes || (wants.length === 0 && pagesToRead === 0 && parts.length > 0)) {
         // One part's Home Depot price: its search and its page, two reads, each after the drip's gap.
         const out = await readPartPricesFor({ store, settings, readPartPrices: readers.readPartPrices, now, waiting: true, extra, cap: 1, shouldStop: stop });
         pages += out.asked > 0 ? 2 : 0;
@@ -1848,8 +1850,10 @@ export class AgentWork {
       if (b && !b.bogo && b.model.trim().toUpperCase() === p.model.trim().toUpperCase()) await this.scanStore.putBundle({ ...b, bogo: pairFacts(p) });
     }
     const ids = await withdrawUnreadSplitQuestions(this.scanStore, this.d.now());
-    if (ids.length > 0) await this.refresh();
-    return ids.length;
+    // Nov 24 (rule D): a "Which listing" question asked only for a RYOBI pack size Home Depot's own page now states.
+    const packs = await rejudgePackQuestions(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.d.now);
+    if (ids.length + packs.length > 0) await this.refresh();
+    return ids.length + packs.length;
   }
 
   /**

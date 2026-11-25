@@ -3,13 +3,19 @@
 // every bundle with it (rule 4, 2c rule 4, P5), and a reopened split question (answers.ts) reads
 // its bundle with it, so the two never differ.
 
-import { type Catalog, catalogEntry, type Decomposition, decompose, dewaltBundleForm, kindsFromTitle, PACK_WITH_NOTE } from '../decompose';
+import { type Catalog, catalogEntry, type Decomposition, decompose, dewaltBundleForm, kindsFromTitle, PACK_WITH_NOTE, type SetContent } from '../decompose';
 import { kitIndex, kitRecords } from '../kitContents';
 import { splitWithPage } from '../pageSplit';
-import { type SettleData, settleSplit } from './settle';
+import { catalogConfirmed, type SettleData, settleSplit } from './settle';
 import type { BundleRecord, ListingRecord, ScanStore, SetItem } from './types';
+import { hdPackSize } from './classify';
 
 const HOME_DEPOT = 'https://www.homedepot.com';
+
+/** Nov 24 (rule E): the brands the app prices parts of; a set item of any other brand makes the set not estimated. */
+export const PRICED_BRANDS: readonly string[] = ['DEWALT', 'RYOBI'];
+/** Nov 24 (rule E): the split note, and the start of the row's line, for a set holding other brands' items. */
+export const OTHER_BRANDS_NOTE = "Not estimated: holds other brands' items";
 
 /** A set's items whose own page has not given a model yet (fix round 3). */
 export const setItemsUnread = (bundle: Pick<BundleRecord, 'set'>): SetItem[] => (bundle.set?.items ?? []).filter((i) => !i.model);
@@ -29,9 +35,20 @@ export function setSplit(bundle: BundleRecord): Decomposition {
     return { components: [], status: 'needs_review', notes: [`waits for the pages of ${unread.length} of this set's ${items.length} items`] };
   }
   const brand = bundle.brand.trim().toUpperCase();
-  const other = items.filter((i) => (i.brand ?? '').trim().toUpperCase() !== brand);
+  const brandOf = (i: SetItem): string => (i.brand ?? '').trim().toUpperCase();
+  const other = items.filter((i) => brandOf(i) !== brand);
   if (other.length > 0) {
-    return { components: [], status: 'needs_review', notes: [`a set item's own page names another brand: ${other.map((i) => `${i.brand || 'none'} ${i.model}`).join(', ')}`] };
+    const named = other.map((i) => `${i.brand || 'none'} ${i.model}`).join(', ');
+    // Nov 24 (rule E): an item of a brand the app does not price (a named brand, not DEWALT or RYOBI) is no question for
+    // the owner: Home Depot's own item list says what is inside, each item with its own brand. The set is not estimated.
+    if (other.every((i) => brandOf(i) !== '' && !PRICED_BRANDS.includes(brandOf(i)))) {
+      const otherBrands: SetContent[] = items.map((i) => ({
+        brand: (i.brand ?? '').trim(), model: i.model!.trim(), ...(i.title ? { title: i.title } : {}), quantity: i.quantity,
+        url: `${HOME_DEPOT}/p/${i.itemId}`, priced: brandOf(i) === brand,
+      }));
+      return { components: [], status: 'needs_review', notes: [`${OTHER_BRANDS_NOTE} (${named})`], otherBrands };
+    }
+    return { components: [], status: 'needs_review', notes: [`a set item's own page names another brand: ${named}`] };
   }
   const components = items.flatMap((i) => Array.from({ length: i.quantity }, () => i.model!.trim().toUpperCase()));
   const text = `Home Depot lists this set's ${count} items.`;
@@ -58,7 +75,7 @@ export interface KnownModels {
  * a bonus tool. The one source of the catalog for the split, for the parts phase and for the
  * panel's paid actions (paid.ts).
  */
-export async function knownModels(store: ScanStore): Promise<KnownModels> {
+export async function knownModels(store: ScanStore, o: { noPacks?: boolean } = {}): Promise<KnownModels> {
   const listings = await store.listListings();
   const stored: Catalog = new Map();
   for (const c of await store.listCatalog()) stored.set(c.model, { model: c.model, brand: c.brand, kinds: c.kinds, isKit: c.isKit });
@@ -73,11 +90,23 @@ export async function knownModels(store: ScanStore): Promise<KnownModels> {
   }
   for (const [model, entry] of stored) catalog.set(model, entry);
   const catalogRecords = await store.listCatalog();
+  const partPrices = await store.listPartPrices();
+  // Nov 24 (rule D): the pack size Home Depot's own page of exactly a RYOBI model states, on that model's entry (one the
+  // catalog already has: no entry is made, as an entry is also what splits a hyphen bundle). Only wantedFor reads it.
+  if (!o.noPacks) {
+    for (const r of partPrices) {
+      const n = r.brand === 'RYOBI' && r.price !== null && r.matchedModel !== null && r.matchedModel.toUpperCase() === r.model.toUpperCase() ? hdPackSize(r.title) : null;
+      const entry = n === null ? undefined : catalog.get(r.model);
+      if (entry) catalog.set(r.model, { ...entry, packQty: n! });
+    }
+  }
   const settle: SettleData = {
-    partPrices: new Map((await store.listPartPrices()).map((r) => [r.key, r] as const)),
+    partPrices: new Map(partPrices.map((r) => [r.key, r] as const)),
     kitsOf: kitIndex(kitRecords(await store.listBundles(), catalogRecords)),
     // Answer once (Nov 23): what the owner settled about each model, when the store keeps it (core/src/facts/fact.ts).
     facts: new Map((store.listPartFacts ? await store.listPartFacts() : []).map((f) => [f.key, f] as const)),
+    // Nov 24, rule B: the parts whose listing Amazon's catalog confirmed (brand and part number), read from the stored matches.
+    amazonCatalog: catalogConfirmed(await store.listMatches()),
   };
   return { stored, catalog, listings, settle };
 }

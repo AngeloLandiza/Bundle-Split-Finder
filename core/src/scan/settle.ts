@@ -15,15 +15,15 @@
 // Nothing here guesses a part: every model comes from Home Depot's model number or its own pages. Pure: no store.
 
 import { dewaltBundleForm, type Catalog, type Decomposition, OFFERABLE_PART, PACK_WITH_NOTE, type SettledPart, type SplitEvidence, type UnsettledPart } from '../decompose';
-import { kitPageStored, splitItems, type KitRecord } from '../kitContents';
+import { type KitItem, kitPageStored, parseIncludes, splitItems, type KitRecord } from '../kitContents';
 import { sameModel } from '../match';
-import { pageReadingOf, RYOBI_TOKEN } from '../pageSplit';
+import { pageCatalog, pageReadingOf, RYOBI_TOKEN } from '../pageSplit';
 import { kitHalfCount, saysToolsOnly, titleTools, toolCounts } from '../research/verify';
 import { BOGO_JOINERS, HOME_DEPOT } from '../tracking/bogoPairs';
 import type { PartFact } from '../facts/fact';
 import { dayOf } from './suggest';
 import { twinKeys } from './twins';
-import { type BundleRecord, partKey, type PartPriceRecord } from './types';
+import { type BundleRecord, type MatchRecord, partKey, type PartPriceRecord } from './types';
 
 /** What the settle rules read besides the bundle: the stored part-price readings and the stored kit records. */
 export interface SettleData {
@@ -33,6 +33,35 @@ export interface SettleData {
   kitsOf: (brand: string, model: string) => (KitRecord & { title?: string })[];
   /** Answer once (Nov 23): what the owner settled about each model, by partKey (core/src/facts/fact.ts). Absent: none. */
   facts?: ReadonlyMap<string, PartFact>;
+  /**
+   * Nov 24, rule B: Amazon's catalog record of exactly this brand and part number, as the catalog check confirmed it on a
+   * stored match (catalogConfirmed below), by partKey. Absent: none known.
+   */
+  amazonCatalog?: ReadonlyMap<string, { text: string; url: string }>;
+  /** The Nov 24 rules turned off, for the measurement only (scripts/measure-fewer-questions.ts). Absent: all on. */
+  off?: readonly Nov24Rule[];
+}
+
+/** Nov 24's settle rules (docs/decisions.md, "Fewer questions"): A the page names the two halves, B a part Home Depot does not sell alone, C a part's own page. */
+export type Nov24Rule = 'page_halves' | 'accessory' | 'part_page';
+const on = (data: SettleData, rule: Nov24Rule): boolean => !(data.off ?? []).includes(rule);
+
+/** Nov 24, rule C: how many times Home Depot may refuse a part's own page before a split asks without it. */
+export const PART_PAGE_REFUSALS_MAX = 3;
+
+/**
+ * Nov 24, rule B: the parts whose stored match the catalog check confirmed (brand and part number of Amazon's own record are
+ * the part's, `checkIdentity`), by partKey: a matched listing verified by the catalog, with a confirmed check of that listing.
+ */
+export function catalogConfirmed(matches: readonly MatchRecord[]): Map<string, { text: string; url: string }> {
+  const out = new Map<string, { text: string; url: string }>();
+  for (const m of matches) {
+    if (m.status !== 'matched' || m.asin === null || m.verifiedBy !== 'keepa_catalog') continue;
+    const check = (m.catalogChecks ?? []).find((c) => c.asin === m.asin && c.status === 'confirmed');
+    if (!check) continue;
+    out.set(m.key, { text: check.reason, url: `https://www.amazon.com/dp/${m.asin}` });
+  }
+  return out;
 }
 
 const up = (s: string): string => s.trim().toUpperCase();
@@ -127,14 +156,21 @@ type PartCheck =
   | { kind: 'missing' }
   | { kind: 'refused'; why: string; part: UnsettledPart };
 
+/** The stored part-price records of a model, its own and its twin form's (Ruling 70). */
+const readingsOf = (brand: string, model: string, data: SettleData): PartPriceRecord[] =>
+  [partKey(brand, model), ...twinKeys(brand, model)].map((k) => data.partPrices.get(k)).filter((r): r is PartPriceRecord => r !== undefined);
+/** The found reading whose page's model is exactly this part's, or undefined. */
+const exactReading = (brand: string, model: string, data: SettleData): PartPriceRecord | undefined =>
+  readingsOf(brand, model, data).find((r) => r.price !== null && r.matchedModel !== null && norm(r.matchedModel) === norm(model));
+
 /** What Home Depot's own catalog says of one proposed part. */
 function checkPart(brand: string, model: string, catalog: Catalog, data: SettleData): PartCheck {
   const m = up(model);
   const special = /SB$/.test(m);
   const kits = data.kitsOf(brand, m);
   const kit = catalog.get(m)?.isKit === true || kits.some((k) => (k as { isKit?: boolean }).isKit === true);
-  const records = [partKey(brand, m), ...twinKeys(brand, m)].map((k) => data.partPrices.get(k)).filter((r): r is PartPriceRecord => r !== undefined);
-  const exact = records.find((r) => r.price !== null && r.matchedModel !== null && norm(r.matchedModel) === norm(m));
+  const records = readingsOf(brand, m, data);
+  const exact = exactReading(brand, m, data);
   if (exact) {
     const tools = exact.title === null ? null : titleTools(exact.title);
     // Step 16 (round 2, measured): Home Depot's own page for exactly a special buy, even one naming no other model, is not proof it
@@ -187,6 +223,69 @@ function ownerFact(brand: string, part: UnsettledPart, data: SettleData): PartCh
   return null;
 }
 
+/**
+ * Nov 24, rule B: a part Home Depot does not sell by itself ("not_sold"), which the model number spells out, confirmed as a
+ * part by one of two records that are not a seller's words: the bundle's own page lists it on an Includes bullet as an item
+ * of the box ("Includes: (1) A10FB1G 11 in. flexible shaft bit holder …"), or Amazon's catalog holds a product of exactly
+ * that brand and part number (the catalog check, `amazonCatalog`). Null otherwise: the part is asked about, as before.
+ * Its Home Depot title is unknown (it has no page of its own there); the Includes item's own words stand in for it.
+ */
+function accessoryOf(bundle: Pick<BundleRecord, 'link' | 'page'>, brand: string, part: UnsettledPart, data: SettleData): PartCheck | null {
+  if (part.why !== 'not_sold') return null;
+  const m = up(part.model);
+  const bullets = bundle.page?.bullets ?? [];
+  for (const bullet of bullets) {
+    const item = parseIncludes(brand, [bullet]).find((i) => i.model !== null && sameModel(brand, i.model, m));
+    if (item) return { kind: 'confirmed', title: item.name, evidence: { kind: 'page_quote', text: bullet.trim(), ...(bundle.link ? { url: bundle.link } : {}) } };
+  }
+  const amazon = [partKey(brand, m), ...twinKeys(brand, m)].map((k) => data.amazonCatalog?.get(k)).find((x) => x !== undefined);
+  if (amazon) return { kind: 'confirmed', title: null, evidence: { kind: 'amazon_catalog', model: m, text: `${amazon.text}; Home Depot does not sell ${m} by itself.`, url: amazon.url } };
+  return null;
+}
+
+/** Nov 24, rule C: the items a part's own Home Depot page lists (Includes), once read; [] otherwise, or when that list names the part itself. */
+function partPageItems(brand: string, model: string, data: SettleData): KitItem[] {
+  const page = exactReading(brand, model, data)?.page;
+  if (!page) return [];
+  const items = parseIncludes(brand, page.bullets);
+  return items.some((i) => i.model !== null && sameModel(brand, i.model, model)) ? [] : items;
+}
+
+/**
+ * Nov 24, rule C: the tools a kit holds by its own Home Depot page's Includes lists (its kit page, else its part page read
+ * by rule C): each item's tools by its own words (titleTools: a tool 1, a battery, charger, bag or accessory 0), times its
+ * quantity. Null when no list is stored, or any item's words do not say (an item that might be a tool is never guessed).
+ */
+export function kitPageTools(brand: string, model: string, data: SettleData): number | null {
+  const kitItems = splitItems(data.kitsOf(brand, model), brand, model);
+  const items = kitItems ?? partPageItems(brand, model, data);
+  if (items.length === 0) return null;
+  let sum = 0;
+  for (const i of items) {
+    const t = titleTools(i.name);
+    if (t === null) return null;
+    sum += t * i.qty;
+  }
+  return sum;
+}
+
+/**
+ * Nov 24, rule C: a part Home Depot confirmed whose own page is not read yet and can be (a digit item id on its reading), and
+ * was refused fewer than PART_PAGE_REFUSALS_MAX times: its Includes list may explain a model the bundle's page names, so a
+ * split waits for it before it asks. A kit whose own page is stored already gave its list (explains).
+ */
+export function partPageDue(brand: string, model: string, data: SettleData): boolean {
+  return partPageTarget(brand, model, data) !== null;
+}
+
+/** Rule C: the part-price reading whose page partPageDue waits for (its item id is the page to read), or null. */
+export function partPageTarget(brand: string, model: string, data: SettleData): PartPriceRecord | null {
+  const r = exactReading(brand, model, data);
+  if (!r || r.itemId === null || !/^\d+$/.test(r.itemId) || r.page) return null;
+  if (kitPageStored(data.kitsOf(brand, model), brand, model)) return null;
+  return (r.pageRefusals ?? 0) < PART_PAGE_REFUSALS_MAX ? r : null;
+}
+
 /** A kit the catalog knows whose own Home Depot page is not stored yet and can be read (a digit item id): the scan's kit pass reads it. */
 function kitPageDue(brand: string, model: string, catalog: Catalog, data: SettleData): boolean {
   const kits = data.kitsOf(brand, model);
@@ -194,13 +293,17 @@ function kitPageDue(brand: string, model: string, catalog: Catalog, data: Settle
   return kit && !kitPageStored(kits, brand, model) && kits.some((k) => typeof k.itemId === 'string' && /^\d+$/.test(k.itemId));
 }
 
-/** A model the page names is explained by a part: the part itself, its tool written without the kit or tool-only ending (FVC51 for FVC51K), or an item its own kit page lists. */
+/**
+ * A model the page names is explained by a part: the part itself, its tool written without the kit or tool-only ending
+ * (FVC51 for FVC51K), an item its own kit page lists, or (Nov 24, rule C) an item the part's own Home Depot page lists.
+ */
 function explains(brand: string, named: string, parts: readonly string[], bundleModel: string, data: SettleData): boolean {
   if (norm(named) === norm(bundleModel)) return true;
+  const listed = (items: readonly KitItem[]): boolean => items.some((i) => i.model !== null && sameModel(brand, i.model, named));
   return parts.some((p) => {
     if (sameModel(brand, named, p)) return true;
     if (p.startsWith(named) && /^[A-Z]{1,3}\d?$/.test(p.slice(named.length))) return true;
-    return (splitItems(data.kitsOf(brand, p), brand, p) ?? []).some((i) => i.model !== null && sameModel(brand, i.model, named));
+    return listed(splitItems(data.kitsOf(brand, p), brand, p) ?? []) || listed(partPageItems(brand, p, data));
   });
 }
 
@@ -219,7 +322,9 @@ function unexplainedModel(bundle: Pick<BundleRecord, 'brand' | 'model' | 'page'>
  * states none. A count fits when the kit half's own title states it (rule 3: "<N>-Tool Combo Kit … and <extra>" counts
  * the kit's tools) or every part's tools can be read from its title and they add up to it.
  */
-export function countMisfit(bundle: Pick<BundleRecord, 'title' | 'page'>, parts: readonly string[], titles: ReadonlyMap<string, string | null>): string | null {
+export function countMisfit(
+  bundle: Pick<BundleRecord, 'title' | 'page'>, parts: readonly string[], titles: ReadonlyMap<string, string | null>, kitPageCount: number | null = null,
+): string | null {
   const bullets = bundle.page?.bullets ?? [];
   const stated = new Set([...toolCounts(bundle.title), ...bullets.filter((b) => INCLUDES.test(b)).flatMap(toolCounts)]);
   if (stated.size > 1) return `the bundle states different tool counts (${[...stated].join(', ')})`;
@@ -229,9 +334,11 @@ export function countMisfit(bundle: Pick<BundleRecord, 'title' | 'page'>, parts:
   }
   if (stated.size === 0) return null;
   const n = [...stated][0]!;
-  // Rule 3: "<N>-Tool Combo Kit … and <extra>" counts the kit half, whose own title states the same N.
+  // Rule 3: "<N>-Tool Combo Kit … and <extra>" counts the kit half, whose own title states the same N. Nov 24, rule C: or
+  // whose own Home Depot page lists items that hold N tools (kitPageTools), when its title states no count.
   const kitTitle = titles.get(parts[0]!) ?? null;
-  const kitHalf = kitHalfCount(bundle.title) === n && kitTitle !== null && toolCounts(kitTitle)[0] === n;
+  const kitOwn = kitTitle !== null && toolCounts(kitTitle).length > 0 ? toolCounts(kitTitle)[0] : kitPageCount;
+  const kitHalf = kitHalfCount(bundle.title) === n && kitOwn === n;
   const each = parts.map((p) => {
     const t = titles.get(p);
     return t ? titleTools(t) : null;
@@ -247,11 +354,23 @@ export function homeDepotSplit(
 ): Decomposition | null {
   const reading = spelledOut(bundle, split);
   if (reading === null) return null;
+  return settleReading(bundle, split, reading, catalog, data);
+}
+
+/**
+ * Rule 2's checks on one reading the model number spells out (spelledOut, or rule A's pageHalves): every part confirmed by
+ * Home Depot (or rule B), the page contradicting nothing, the tool count fitting; a part still to read makes it wait.
+ */
+function settleReading(
+  bundle: Pick<BundleRecord, 'brand' | 'model' | 'title' | 'link' | 'page'>, split: Decomposition, reading: readonly string[], catalog: Catalog, data: SettleData,
+): Decomposition {
   const brand = up(bundle.brand);
   // Answer once (Nov 23): a part Home Depot did not confirm that the owner already settled is settled here too (ownerFact).
+  // Nov 24, rule B: a part Home Depot does not sell alone that the bundle's page or Amazon's catalog names (accessoryOf).
   const checks = reading.map((p) => {
     const c = checkPart(brand, p, catalog, data);
-    return [p, c.kind === 'refused' ? (ownerFact(brand, c.part, data) ?? c) : c] as const;
+    if (c.kind !== 'refused') return [p, c] as const;
+    return [p, ownerFact(brand, c.part, data) ?? (on(data, 'accessory') ? accessoryOf(bundle, brand, c.part, data) : null) ?? c] as const;
   });
   // A special buy he sells as its tools stands for those tools in the reading.
   const replaced = checks.flatMap(([p, c]) => (c.kind === 'confirmed' && c.parts ? c.parts : [p]));
@@ -261,7 +380,8 @@ export function homeDepotSplit(
   if (refused.length > 0 && missing.length > 0) return { ...split, waitingFor: missing };
   if (refused.length > 0) {
     // The question is about the parts Home Depot did not confirm; the ones it did are named with their pages.
-    const settledParts: SettledPart[] = checks.flatMap(([p, c]) => (c.kind === 'confirmed' ? [{ model: p, what: c.title ?? c.evidence.text, ...(c.evidence.url ? { url: c.evidence.url } : {}) }] : []));
+    // Nov 24 (rule B): a part the bundle's page names is shown with the page's whole line.
+    const settledParts: SettledPart[] = checks.flatMap(([p, c]) => (c.kind === 'confirmed' ? [{ model: p, what: c.evidence.kind === 'page_quote' ? c.evidence.text : (c.title ?? c.evidence.text), ...(c.evidence.url ? { url: c.evidence.url } : {}) }] : []));
     const unsettledParts = checks.flatMap(([, c]) => (c.kind === 'refused' ? [c.part] : []));
     return { ...split, notes: [...split.notes, ...refused], ...(settledParts.length > 0 ? { settledParts } : {}), unsettledParts };
   }
@@ -270,7 +390,8 @@ export function homeDepotSplit(
   // A model the page names may be explained by the special buy or by the tools he sells in its place.
   const named = unexplainedModel(bundle, [...new Set([...reading, ...replaced])], data);
   if (named !== null) {
-    const unread = reading.filter((p) => kitPageDue(brand, p, catalog, data));
+    // Nov 24, rule C: a part Home Depot confirmed whose own page is still to read may list the model too (partPageItems).
+    const unread = reading.filter((p) => kitPageDue(brand, p, catalog, data) || (on(data, 'part_page') && checks.some(([q, c]) => q === p && c.kind === 'confirmed' && c.evidence.kind === 'hd_part_page') && partPageDue(brand, p, data)));
     if (unread.length === 0) return { ...split, notes: [...split.notes, named] };
     return { ...split, waitingFor: [...new Set([...unread, ...missing])] };
   }
@@ -278,13 +399,58 @@ export function homeDepotSplit(
   const titles = new Map(checks.map(([p, c]) => [p, c.kind === 'confirmed' ? c.title : null] as const));
   // The tool count is the bundle's as Home Depot lists it (the special buy whole): his tools in its place do not change it.
   // A part only the owner's fact settled (no Home Depot title to count) is not counted as a tool: the count still checks
-  // every part Home Depot's pages read (docs/decisions.md, "Answer once").
-  const ownerOnly = new Set(checks.flatMap(([p, c]) => (c.kind === 'confirmed' && c.evidence.kind === 'owner_fact' && c.title === null ? [p] : [])));
-  const misfit = countMisfit(bundle, reading, titles) === null ? null : countMisfit(bundle, reading.filter((p) => !ownerOnly.has(p)), titles);
+  // every part Home Depot's pages read (docs/decisions.md, "Answer once"). Nov 24, rule B: nor is a part Home Depot does not
+  // sell alone whose Includes words say no tool count (or that only Amazon's catalog names).
+  const uncounted = new Set(checks.flatMap(([p, c]) => (c.kind === 'confirmed' && c.evidence.kind !== 'hd_part_page' && (c.title === null || titleTools(c.title) === null) ? [p] : [])));
+  const kitCount = on(data, 'part_page') ? kitPageTools(brand, reading[0]!, data) : null;
+  const misfit = countMisfit(bundle, reading, titles, kitCount) === null ? null : countMisfit(bundle, reading.filter((p) => !uncounted.has(p)), titles, kitCount);
   if (misfit !== null) return { ...split, notes: [...split.notes, misfit] };
   const evidence = checks.flatMap(([, c]) => (c.kind === 'confirmed' ? [c.evidence] : []));
   const owner = evidence.some((e) => e.kind === 'owner_fact');
-  return { components: replaced, status: 'resolved', notes: [owner ? 'Home Depot sells each part under its own model, or you said what it is' : 'Home Depot sells each part under its own model'], evidence };
+  const named2 = evidence.some((e) => e.kind === 'page_quote' || e.kind === 'amazon_catalog');
+  const note = owner ? 'Home Depot sells each part under its own model, or you said what it is'
+    : named2 ? 'Home Depot sells each part under its own model, or names the one it does not sell alone'
+    : 'Home Depot sells each part under its own model';
+  return { components: replaced, status: 'resolved', notes: [note], evidence };
+}
+
+// ---------------------------------------------------------------- rule A (Nov 24): the page names the two halves
+
+/**
+ * Rule A: a DEWALT model number in no known bundle form that is one whole model, W, and a second model without its leading
+ * D (DCF860BWCB2460C = DCF860B with CB2460C), whose page names exactly those two models and no other DEWALT model anywhere.
+ * The reading [first, second]; null when the rule does not apply. The W form is the one Home Depot writes for a kit with a
+ * bonus item (DCK…W…), where the second half drops its leading D (DCK940D2WCF891B, decompose.ts).
+ */
+export function pageHalves(bundle: Pick<BundleRecord, 'brand' | 'model' | 'page'>, split: Decomposition): string[] | null {
+  if (up(bundle.brand) !== 'DEWALT' || split.status === 'resolved' || (split.alternatives ?? []).length > 0 || !bundle.page) return null;
+  if (dewaltBundleForm(bundle.model) !== null) return null;
+  const bullets = bundle.page.bullets;
+  const leading = [...pageCatalog('DEWALT', bullets).keys()];
+  const anywhere = [...namedModels('DEWALT', bullets, false).keys()];
+  if (leading.length !== 2 || anywhere.length !== 2 || !anywhere.every((m) => leading.includes(m))) return null;
+  const model = norm(bundle.model);
+  const pairs: [string, string][] = [[leading[0]!, leading[1]!], [leading[1]!, leading[0]!]];
+  for (const [a, b] of pairs) {
+    if (WHOLE_DEWALT.test(a) && WHOLE_DEWALT.test(b) && b.startsWith('D') && model === `${a}W${b.slice(1)}`) return [a, b];
+  }
+  return null;
+}
+
+/** Rule A, then rule 2's checks on that reading; null when rule A does not apply. */
+export function pageHalvesSplit(
+  bundle: Pick<BundleRecord, 'brand' | 'model' | 'title' | 'link' | 'page'>, split: Decomposition, catalog: Catalog, data: SettleData,
+): Decomposition | null {
+  if (!on(data, 'page_halves')) return null;
+  const reading = pageHalves(bundle, split);
+  if (reading === null) return null;
+  const [a, b] = reading as [string, string];
+  const said = `the model number is ${a} with ${b.slice(1)}, and the page names exactly ${a} and ${b}`;
+  const base: Decomposition = { components: [], status: 'needs_review', notes: [said], alternatives: [[a, b]] };
+  const out = settleReading(bundle, base, reading, catalog, data);
+  if (out.status !== 'resolved') return out;
+  const quote: SplitEvidence = { kind: 'page_quote', text: `Model ${up(bundle.model)}: ${said}.`, ...(bundle.link ? { url: bundle.link } : {}) };
+  return { ...out, evidence: [quote, ...(out.evidence ?? [])] };
 }
 
 /**
@@ -293,5 +459,5 @@ export function homeDepotSplit(
  */
 export function settleSplit(bundle: BundleRecord, split: Decomposition, catalog: Catalog, data: SettleData): Decomposition {
   if (split.status === 'resolved') return split;
-  return bogoSplit(bundle, split) ?? homeDepotSplit(bundle, split, catalog, data) ?? split;
+  return bogoSplit(bundle, split) ?? homeDepotSplit(bundle, split, catalog, data) ?? pageHalvesSplit(bundle, split, catalog, data) ?? split;
 }

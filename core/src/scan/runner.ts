@@ -12,7 +12,7 @@
 
 import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
-import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked, sameModel, toolPageToRead } from '../match';
+import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isPackNotKnown, isReviewCap, maySparePart, pick, type Picked, sameModel, toolPageToRead } from '../match';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, productTokenEstimate } from '../keepa/estimates';
 import { amazonPriceDelta, partTrendFromProduct, readPartTrend } from '../keepa/trends';
 import type { Cache } from '../serpapi/client';
@@ -31,6 +31,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit, setItemsUnread } from './split';
+import { partPageTarget } from './settle';
 import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, reopenStep, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
@@ -1437,6 +1438,8 @@ const pagesLeft = (run: Run): number =>
 interface PageTarget {
   itemId: string;
   save: (page: PageReading) => Promise<void>;
+  /** Nov 24 (settle rule C): told when Home Depot refused the page or gave it without its data. */
+  refused?: () => Promise<void>;
 }
 
 /**
@@ -1491,8 +1494,53 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   if (run.shouldStop()) return none;
   if (room === 0) return nothingToRead(run, 'kitPages', 'page limit reached');
   const wanted = await kitPagesWanted(store, run.waitForPages);
-  if (wanted.length === 0) return nothingToRead(run, 'kitPages');
-  return readInto(run, 'kitPages', wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+  // Nov 24 (settle rule C): then the parts' own pages a waiting split needs, in a run that waits for pages (the agent's).
+  const partPages = run.waitForPages ? await partPagesWanted(store) : [];
+  if (wanted.length === 0 && partPages.length === 0) return nothingToRead(run, 'kitPages');
+  const targets: PageTarget[] = [
+    ...wanted.map((k) => ({ itemId: k.itemId!, save: (page: PageReading) => store.putCatalogEntry({ ...k, page }) })),
+    ...partPages.map((r) => partPageTargetOf(store, r)),
+  ];
+  const out = await readInto(run, 'kitPages', targets.slice(0, room));
+  if (partPages.length > 0) await splitWaiting(run);
+  return out;
+}
+
+/** Nov 24 (settle rule C): a part's own page as a page target: saved on its part-price record, a refusal counted there. */
+function partPageTargetOf(store: ScanStore, r: PartPriceRecord): PageTarget {
+  return {
+    itemId: r.itemId!,
+    save: async (page) => {
+      const now = (await store.getPartPrice(r.key)) ?? r;
+      await store.putPartPrice({ ...now, page });
+    },
+    refused: async () => {
+      const now = (await store.getPartPrice(r.key)) ?? r;
+      await store.putPartPrice({ ...now, pageRefusals: (now.pageRefusals ?? 0) + 1 });
+    },
+  };
+}
+
+/**
+ * Nov 24 (settle rule C): the parts' own Home Depot pages that waiting splits wait for (partPageTarget: a bundle's page
+ * names a model none of its parts explains, and this part's own Includes list may), each page once, newest bundle first.
+ * Free; read with the kit pages, in the paired Chrome.
+ */
+export async function partPagesWanted(store: ScanStore): Promise<PartPriceRecord[]> {
+  const waiting = (await store.listBundles()).filter((b) => waitingParts(b).length > 0).sort(newestFirst);
+  if (waiting.length === 0) return [];
+  const { settle } = await knownModels(store);
+  const out: PartPriceRecord[] = [];
+  const seen = new Set<string>();
+  for (const b of waiting) {
+    for (const p of waitingParts(b)) {
+      const r = partPageTarget(p.brand, p.model, settle);
+      if (r === null || seen.has(r.itemId!)) continue;
+      seen.add(r.itemId!);
+      out.push(r);
+    }
+  }
+  return out;
 }
 
 /**
@@ -1544,18 +1592,29 @@ export async function readKitPagesFor(r: {
   for (const kit of await kitPagesWanted(r.store, true)) {
     if (await itemsWanted(r.store, await r.store.getMatch(partKey(kit.brand, kit.model)))) wanted.push(kit);
   }
-  const ask = wanted.slice(0, r.max ?? DRIP_KIT_PAGES);
+  // Nov 24 (settle rule C): then the parts' own pages a waiting split needs.
+  const targets: PageTarget[] = [
+    ...wanted.map((kit) => ({ itemId: kit.itemId!, save: (page: PageReading) => r.store.putCatalogEntry({ ...kit, page }) })),
+    ...(await partPagesWanted(r.store)).map((p) => partPageTargetOf(r.store, p)),
+  ];
+  const ask = targets.slice(0, r.max ?? DRIP_KIT_PAGES);
   if (ask.length === 0 || r.shouldStop?.()) return 0;
-  const outcomes = await r.readPages(ask.map((k) => k.itemId!));
-  const byId = new Map(ask.map((k) => [k.itemId!, k] as const));
+  const outcomes = await r.readPages(ask.map((k) => k.itemId));
+  const byId = new Map(ask.map((k) => [k.itemId, k] as const));
   const readAt = r.now();
   let saved = 0;
   for (const o of outcomes) {
-    const kit = byId.get(o.itemId);
-    if (!kit || o.kind !== 'read') continue;
+    const target = byId.get(o.itemId);
+    if (!target) continue;
     byId.delete(o.itemId);
-    await r.store.putCatalogEntry({ ...kit, page: { ...o.content, readAt } });
-    saved += 1;
+    if (o.kind === 'read') {
+      await target.save({ ...o.content, readAt });
+      saved += 1;
+    } else if ((o.kind === 'refused' || o.kind === 'unreadable') && target.refused) {
+      // A part page refused counts toward PART_PAGE_REFUSALS_MAX; the waiting split is read again, as after a read.
+      await target.refused();
+      saved += 1;
+    }
   }
   return saved;
 }
@@ -1654,7 +1713,12 @@ export async function savePartPrices(store: ScanStore, asked: Pick<Part, 'brand'
       const matchedModel = textOrNull(r.matchedModel)?.toUpperCase() ?? null;
       if (price === null || matchedModel === null || !sameModel(brand, matchedModel, model)) continue;
       const itemId = typeof r.itemId === 'string' && HOME_DEPOT_ITEM_ID.test(r.itemId) ? r.itemId : null;
-      record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt };
+      // Nov 24: the part's own page read before (settle rule C) stays while the reading is of the same product.
+      const before = await store.getPartPrice(key);
+      const kept = before && itemId !== null && before.itemId === itemId
+        ? { ...(before.page ? { page: before.page } : {}), ...(before.pageRefusals ? { pageRefusals: before.pageRefusals } : {}) }
+        : {};
+      record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt, ...kept };
     } else {
       const before = await store.getPartPrice(key);
       record = before && before.price !== null
@@ -1929,9 +1993,11 @@ async function readInto(run: Run, stage: StepId, targets: PageTarget[]): Promise
         refusedNote = outcome.note;
       }
       refused = true;
+      await target.refused?.();
     } else if (outcome.kind === 'unreadable') {
       unreadable += 1;
       unreadableNote ??= outcome.note;
+      await target.refused?.();
     } else if (outcome.kind === 'skipped') {
       skipped = true;
     }
@@ -2054,6 +2120,34 @@ export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number
   return out;
 }
 
+/**
+ * Nov 24 (rule D), at the agent's start and after Home Depot's part prices: every open automatic "Which listing" question
+ * asked only because a RYOBI title says a pack (match.ts packNotKnown) is judged again on the saved listings (savedMatch,
+ * as a scan's re-judge does, Ruling 73), now that Home Depot's own pack size for the model may be known (knownModels). Only
+ * those questions: a match held by the price guard or by the owner is never touched. Never a search. Returns the part keys
+ * whose question closed.
+ */
+export async function rejudgePackQuestions(store: ScanStore, settings: ScanSettings, now: () => number): Promise<string[]> {
+  const open = (await store.listReview()).filter((r) => r.kind === 'match' && r.answer === null && isPackNotKnown(r.reason));
+  if (open.length === 0) return [];
+  const known = await knownModels(store);
+  const counts: ScanJob['counts'] = {
+    pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0, catalogPages: 0,
+    listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
+  };
+  const ctx: PartContext = { client: NO_SEARCH, store, settings, now, prefix: 'rejudge', catalog: known.catalog, job: { counts } };
+  const out: string[] = [];
+  for (const q of open) {
+    const match = await store.getMatch(q.subject);
+    if (!match || match.decidedBy !== 'auto' || match.status !== 'review') continue;
+    if (known.catalog.get(match.model.trim().toUpperCase())?.packQty === undefined) continue;
+    await savedMatch(ctx, known.listings, { key: match.key, brand: match.brand, model: match.model });
+    const after = await store.getReview(q.id);
+    if (after && after.answer !== null) out.push(match.key);
+  }
+  return out;
+}
+
 export async function splitOne(
   store: ScanStore, bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'> & Partial<Pick<KnownModels, 'settle'>>, now: number, waitForPage = false,
 ): Promise<{ split: Decomposition; opened: boolean }> {
@@ -2076,6 +2170,12 @@ export async function splitOne(
   // scan closes one), and asked again if the page, once read, still leaves the split uncertain. The
   // owner's own answer is never touched. Rule 4 is unchanged: nothing here makes a split resolved.
   if (waitForPage && owner === null && !pageRead(bundle)) {
+    if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+    return { split, opened: false };
+  }
+  // Nov 24 (rule E): a set holding other brands' items is settled as Home Depot lists it and not estimated: no question, and
+  // one a scan opened before is closed as a scan closes one. The owner's own answer is never touched.
+  if (owner === null && (split.otherBrands ?? []).length > 0) {
     if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
     return { split, opened: false };
   }

@@ -5,7 +5,7 @@
 // (tests, the command line) with an in-memory store and in the extension's service
 // worker with IndexedDB behind the same ScanStore.
 
-import type { Decomposition, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
+import type { Decomposition, SetContent, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
 import type { PartFact } from '../facts/fact';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
 import type { PageContent } from '../hdPage';
@@ -271,6 +271,13 @@ export interface PartPriceRecord {
   seenAt: number | null;
   /** When the part was last read, found or not. Freshness is measured from here. */
   checkedAt: number;
+  /**
+   * Nov 24 (fewer questions, rule C): the part's own Home Depot page (by `itemId`), read free when a bundle's page names a
+   * model none of its parts explains and this part's own Includes list may (scan/settle.ts). Absent until read.
+   */
+  page?: PageReading | null;
+  /** Nov 24: how many times Home Depot refused or could not give that page; at PART_PAGE_REFUSALS_MAX the split asks. */
+  pageRefusals?: number;
 }
 
 /**
@@ -1119,8 +1126,10 @@ export type BundleStatus = 'complete' | 'partial' | 'needs_review';
  * inactive_listing  every part has a listing, but at least one is not for sale right now, or the bundle itself has no price
  * missing_listing   at least one part has no Amazon listing
  * split             what the bundle contains is not known yet (also a resolved split that names no parts)
+ * other_brands      Nov 24: a Home Depot set whose items Home Depot lists, one or more of a brand the app does not price:
+ *                   not estimated (BundleRow.otherBrands), never a question
  */
-export type ReportSection = 'confirmed' | 'waiting' | 'inactive_listing' | 'missing_listing' | 'split';
+export type ReportSection = 'confirmed' | 'waiting' | 'inactive_listing' | 'missing_listing' | 'split' | 'other_brands';
 
 export interface BundleRow {
   key: string;
@@ -1181,6 +1190,16 @@ export interface BundleRow {
    * it: it waits for them (match state `waiting_parts`), not for the owner. Absent otherwise.
    */
   waitingParts?: boolean;
+  /**
+   * Nov 24 (fewer questions): the parts the split waits for (Decomposition.waitingFor) while `waitingParts`, named on the
+   * row's line ("Waiting for Home Depot's pages of PSBCK102K2 and A98401"). Absent otherwise.
+   */
+  waitingFor?: string[];
+  /**
+   * Nov 24 (rule E): a set holding an item of a brand the app does not price (section `other_brands`): every item Home
+   * Depot lists, with its own brand, model and page. Not estimated; never a question. Absent otherwise.
+   */
+  otherBrands?: SetContent[];
   /** Step 15: what settled the split when a settle rule did (scan/settle.ts), each with its link. Absent otherwise. */
   splitEvidence?: SplitEvidence[];
   /** Step 9: the primary option's range; all null while the split is not resolved. */

@@ -30,7 +30,18 @@ export function wantedFor(brand: string, model: string, catalog: Catalog): Wante
   if (catalog.get(m)?.isKit || (b === 'DEWALT' && m.startsWith('DCK'))) want.isKit = true;
   const pack = b === 'DEWALT' ? DEWALT_PACK.exec(m) : null;
   if (pack) want.packQty = Number(pack[1]);
+  // Nov 24 (rule D): a RYOBI model does not say its pack size, but Home Depot's own page of exactly that model may
+  // ("(2-Pack)" in its title, knownModels): a listing of that pack is then the part, not a question.
+  const hdPack = b === 'RYOBI' ? catalog.get(m)?.packQty : undefined;
+  if (hdPack !== undefined) want.packQty = hdPack;
   return want;
+}
+
+/** Nov 24 (rule D): Home Depot's title states a pack of n (2 to 12) as "(n-Pack)" or "(n Pack)"; null otherwise. */
+export function hdPackSize(title: string | null): number | null {
+  const m = /\((\d{1,2})[- ]pack\)/i.exec(title ?? '');
+  const n = m ? Number(m[1]) : NaN;
+  return n >= 2 && n <= 12 ? n : null;
 }
 
 /** ['A', 'B', 'A'] -> { A: 2, B: 1 } */

@@ -46,7 +46,7 @@ import {
   type ScanStore,
 } from './types';
 
-const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, inactive_listing: 2, missing_listing: 3, split: 4 };
+const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, inactive_listing: 2, missing_listing: 3, split: 4, other_brands: 5 };
 
 /**
  * The reference figures kept apart from splitting, read once per report and never from the catalog: a part's
@@ -543,10 +543,13 @@ async function bundleRow(
     const waitingPage = !pageRead && base.answer === null && !(question && question.answer === null);
     // Step 15: read, its split waits for Home Depot's part pages (scan/settle.ts rule 2), and no question open nor answered.
     const waitingParts = !waitingPage && pageRead && (split?.waitingFor ?? []).length > 0 && base.answer === null && !(question && question.answer === null);
+    // Nov 24 (rule E): a set holding other brands' items, settled as Home Depot lists it and not estimated, in its own group.
+    const otherBrands = base.answer === null && !(question && question.answer === null) && (split?.otherBrands ?? []).length > 0 ? split!.otherBrands! : null;
     return {
-      ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], kitReads: [], range: NO_RANGE,
+      ...base, status: 'needs_review', section: otherBrands ? 'other_brands' : 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], kitReads: [], range: NO_RANGE,
       ...(waitingPage ? { waitingPage: true } : {}),
-      ...(waitingParts ? { waitingParts: true } : {}),
+      ...(waitingParts ? { waitingParts: true, waitingFor: [...split!.waitingFor!] } : {}),
+      ...(otherBrands ? { otherBrands } : {}),
     };
   }
   const counts = componentCounts(split.components);

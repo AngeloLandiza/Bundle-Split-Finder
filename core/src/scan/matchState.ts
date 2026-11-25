@@ -1,3 +1,4 @@
+import type { SetContent } from '../decompose';
 import type { BundleRow, PartRow } from './types';
 
 const count = (n: number, tail: string): string => `${n} ${n === 1 ? 'part' : 'parts'} ${tail}`;
@@ -16,6 +17,15 @@ export const WAITING_PAGE_TEXT = 'Waiting for its Home Depot page';
  */
 export const WAITING_PARTS = 'waiting_parts';
 export const WAITING_PARTS_TEXT = "Waiting for Home Depot's part pages";
+
+const andList = (xs: readonly string[]): string => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+
+/** Nov 24: the waiting line naming what it waits for: "Waiting for Home Depot's pages of PSBCK102K2 and A98401". */
+export const waitingForText = (models: readonly string[]): string => `Waiting for Home Depot's ${models.length === 1 ? 'page' : 'pages'} of ${andList(models)}`;
+
+/** Nov 24 (rule E): "Not estimated: holds other brands' items (Husky H52MWC10MOD)", each other brand's item once. */
+export const otherBrandsText = (items: readonly Pick<SetContent, 'brand' | 'model' | 'priced'>[]): string =>
+  `Not estimated: holds other brands' items (${[...new Set(items.filter((i) => !i.priced).map((i) => `${i.brand} ${i.model}`))].join(', ')})`;
 /**
  * Step 15 (decision 4): a part looked up on Amazon with no listing found. It is the part's state (the owner can confirm
  * a price for it, or mark it not sold separately), never a question about the bundle's split.
@@ -31,7 +41,8 @@ export const partState = (p: Pick<PartRow, 'status'>): string | null => (p.statu
 /** The match-state line on a Deals row. Shared by the helper and the native app. */
 export function matchState(row: BundleRow): string | null {
   if (row.waitingPage) return WAITING_PAGE_TEXT;
-  if (row.waitingParts) return WAITING_PARTS_TEXT;
+  if (row.waitingParts) return row.waitingFor?.length ? waitingForText(row.waitingFor) : WAITING_PARTS_TEXT;
+  if (row.otherBrands?.length) return otherBrandsText(row.otherBrands);
   const parts = row.parts;
   if (parts.length === 0) return null;
   const verify = parts.filter((p) => !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;

@@ -317,7 +317,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       hideBelow: 720,
       render: (r) =>
         waitingState(r) ? (
-          <Tag title={(r.matchKind === 'waiting_page' && r.pageWait) || WAITING_WHY[r.matchKind ?? 'lookup']}>{waitingState(r)}</Tag>
+          <Tag title={(r.matchKind && r.pageWait) || WAITING_WHY[r.matchKind ?? 'lookup']}>{waitingState(r)}</Tag>
         ) : r.needsAnswer ? (
           <Tag tone="attention">Needs your answer</Tag>
         ) : (

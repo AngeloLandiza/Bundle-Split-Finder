@@ -341,6 +341,7 @@ const SECTION_WORDS: Record<ReportSection, string> = {
   inactive_listing: 'a part listing is not for sale',
   missing_listing: 'a part has no Amazon listing',
   split: 'what it holds is not known yet',
+  other_brands: "it holds other brands' items, so it is not estimated",
 };
 
 export function bundleSignals(input: SignalInput): BundleSignals {

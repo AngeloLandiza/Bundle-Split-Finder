@@ -267,8 +267,18 @@ export interface PriceLine {
   confirmed?: boolean;
 }
 
+/** Nov 24: one item of a Home Depot set, as its own page gives it; `priced` when its brand is one the app prices. */
+export interface SetContent {
+  brand: string;
+  model: string;
+  title?: string;
+  quantity: number;
+  url: string;
+  priced: boolean;
+}
+
 export interface SplitEvidence {
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set';
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set' | 'amazon_catalog';
   text: string;
   url?: string;
   /** owner_fact: the model his answer is about ("Change" forgets it). */
@@ -383,6 +393,8 @@ export interface DealDetail {
   bogoGroup: BogoGroup | null;
   /** How the split is known, each with its source: Home Depot part pages, the BOGO pair rule, a quote from the page. */
   splitEvidence?: SplitEvidence[];
+  /** Nov 24: a set holding other brands' items: every item Home Depot lists, with its brand, model and page. Not estimated. */
+  setContents?: SetContent[];
   /** The estimate with Amazon's FBA fee estimate from Keepa, beside the main one; null when no part has a Keepa fee. */
   fbaEstimate: FbaEstimate | null;
   /** Checking the app's own work: every finding on this deal, holds first, each with its links; empty when none. */

@@ -10,7 +10,7 @@ export { matchState };
 import { roi, roiSigned } from '../../lib/format';
 import type { SortKey } from './sort';
 
-export const SECTION_ORDER: readonly ReportSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split'];
+export const SECTION_ORDER: readonly ReportSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split', 'other_brands'];
 
 export const SECTION_LABEL: Record<ReportSection, string> = {
   confirmed: 'CONFIRMED',
@@ -18,6 +18,7 @@ export const SECTION_LABEL: Record<ReportSection, string> = {
   inactive_listing: 'REVIEW: INACTIVE LISTING',
   missing_listing: 'REVIEW: MISSING LISTING',
   split: 'CONTENTS NOT KNOWN',
+  other_brands: 'NOT ESTIMATED: OTHER BRANDS',
 };
 
 export { waitingOf, waitingKeys, lookupsWaiting, waitingParts } from '@core/deals/waiting';

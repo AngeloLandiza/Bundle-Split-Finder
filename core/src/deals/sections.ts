@@ -8,6 +8,7 @@ export const DEAL_SECTION_ORDER: readonly ReportSection[] = [
   'inactive_listing',
   'missing_listing',
   'split',
+  'other_brands',
 ];
 
 export const DEAL_SECTION_LABEL: Record<ReportSection, string> = {
@@ -16,6 +17,7 @@ export const DEAL_SECTION_LABEL: Record<ReportSection, string> = {
   inactive_listing: 'REVIEW: INACTIVE LISTING',
   missing_listing: 'REVIEW: MISSING LISTING',
   split: 'CONTENTS NOT KNOWN',
+  other_brands: 'NOT ESTIMATED: OTHER BRANDS',
 };
 
 export type DealListSection<T extends { section: string }> = {

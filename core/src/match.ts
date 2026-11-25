@@ -189,6 +189,8 @@ export const KIT_NOT_KNOWN = 'title says kit, and a RYOBI model number does not 
 /** A RYOBI title that says a pack of n: the part may itself be the pack. */
 export const packNotKnown = (n: number): string => `title says a pack of ${n}, and a RYOBI model number does not say the part's pack size`;
 const PACK_NOT_KNOWN = /^title says a pack of \d+, and a RYOBI model number does not say the part's pack size$/;
+/** Nov 24: whether a grade reason (or a match question's reason) is packNotKnown's. */
+export const isPackNotKnown = (reason: string): boolean => reason.split('; ').some((r) => PACK_NOT_KNOWN.test(r));
 /** For a part that is itself a kit: the title sells the kit with more (addsToKit). Caps a grade at review the same way. */
 export const KIT_WITH_EXTRAS = 'title sells the kit with more: another tool or an accessory set';
 /** Whether a grade reason is one of the four above, or KIT_WITH_EXTRAS. */
