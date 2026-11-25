@@ -1,0 +1,408 @@
+/* Costs: one calm column on the grouped ground. The answer, the chart, each service on a row of the same box, the month's total.
+   No card inside a card: rows are separated by hairlines, the controls sit in the row they change. */
+.costs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--gutter) var(--gutter) 40px;
+}
+
+.costs-stale {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+/* The answer first: one sentence at the size of a page title, with its state in words and a mark above when it is not fine. */
+.costs-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 4px 0;
+}
+
+.costs-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.costs-state-glyph {
+  color: var(--attention);
+}
+
+.costs-sentence {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+
+.costs-missing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.costs-missing-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.costs-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.costs-price-label {
+  color: var(--label-2);
+}
+
+.costs-price-unit {
+  color: var(--label-2);
+  font-size: 12px;
+}
+
+.costs-numbers {
+  padding: 4px 12px 10px;
+  border-top: 0.5px solid var(--separator);
+}
+
+.costs-table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.costs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.costs-table th,
+.costs-table td {
+  padding: 3px 8px;
+  text-align: left;
+  font-weight: 400;
+  white-space: nowrap;
+  border-bottom: 0.5px solid var(--separator);
+}
+
+.costs-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--group-bg);
+  color: var(--label-2);
+  font-weight: 600;
+}
+
+.costs-table .costs-num {
+  text-align: right;
+}
+
+.costs-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+/* What just changed, in a sentence, with its Undo: stays until the next change, never fades. */
+.costs-change {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.costs-change-error {
+  gap: 6px;
+  color: var(--label);
+}
+
+.costs-change-error .glyph {
+  color: var(--attention);
+}
+
+/* A service: a row of the services box. */
+.crow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+
+.crow-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.crow-name {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.crow-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+.crow-state .glyph {
+  align-self: center;
+}
+
+/* Anything that is not fine is in the label colour with the warning mark, so the words and the shape say it before the tint does. */
+.crow-state-approaching,
+.crow-state-expected_over,
+.crow-state-over,
+.crow-state-blocked {
+  color: var(--label);
+  font-weight: 600;
+}
+
+.crow-state-approaching .glyph,
+.crow-state-expected_over .glyph,
+.crow-state-over .glyph,
+.crow-state-blocked .glyph {
+  color: var(--attention);
+}
+
+.crow-cost {
+  margin-inline-start: auto;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.crow-cost-missing {
+  color: var(--label);
+  font-weight: 600;
+}
+
+.crow-sentence {
+  font-size: 13px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The free services are quieter: one line, no controls. */
+.crow-quiet {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 12px;
+  padding-block: 8px;
+  color: var(--label-2);
+}
+
+.crow-quiet .crow-name {
+  font-weight: 500;
+  min-width: 72px;
+}
+
+.crow-quiet .crow-sentence {
+  flex: 1;
+  font-size: 12px;
+}
+
+.cmeter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cmeter {
+  position: relative;
+  display: block;
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fill-2);
+  overflow: visible;
+}
+
+.cmeter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--label-2);
+  transition: inline-size 240ms ease-out;
+}
+
+.cmeter-hot .cmeter-fill {
+  background: var(--attention);
+}
+
+/* The warn mark: a short rule crossing the track, so where the warning starts is seen as well as said. */
+.cmeter-tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-inline-start: -1px;
+  background: var(--label);
+  border-radius: 1px;
+}
+
+.cmeter-words {
+  flex: none;
+  min-width: 96px;
+  text-align: right;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+.crow-use {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.crow-strip {
+  flex: none;
+  display: block;
+}
+
+.crow-strip-base {
+  stroke: var(--separator);
+  shape-rendering: crispEdges;
+}
+
+.crow-strip-bar {
+  fill: var(--label-2);
+}
+
+.crow-strip-none {
+  flex: none;
+  width: 150px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.crow-forecast {
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.crow-forecast-label {
+  color: var(--label-2);
+}
+
+/* What was held back, plainly: what, why, when, in text with a tinted left edge and no hidden meaning in colour. */
+.crow-blocked {
+  list-style: none;
+  margin: 0;
+  padding: 6px 10px;
+  border-inline-start: 3px solid var(--attention);
+  background: var(--attention-bg);
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.crow-when {
+  color: var(--label-2);
+}
+
+/* The limits: a label column and the control, in the row they change. */
+.crow-ctl {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  padding-top: 4px;
+}
+
+.crow-ctl-label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+.crow-ctl-note {
+  grid-column: 2;
+  margin-top: -4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label);
+}
+
+.crow-ctl-one {
+  display: flex;
+  align-items: center;
+}
+
+.limit {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.limit-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.limit-main .field {
+  flex: none;
+}
+
+.crow-total {
+  padding-block: 12px;
+}
+
+@media (max-width: 760px) {
+  .crow-use {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .limit {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .limit-main {
+    width: 100%;
+  }
+}

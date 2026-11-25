@@ -406,3 +406,23 @@
 .seg-sm .seg-option::after {
   inset: -3px 0;
 }
+
+/* A slider: the system's own range control in the accent, 24px tall to hit; the number beside it is the same value. */
+.slider {
+  flex: 1;
+  min-width: 80px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: default;
+}
+
+.slider:disabled {
+  opacity: 0.4;
+}
+
+.slider:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

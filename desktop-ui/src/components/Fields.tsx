@@ -203,3 +203,24 @@ export function Checkbox({ label, checked, onChange }: { label: ReactNode; check
     </label>
   );
 }
+
+/**
+ * A slider: a real <input type="range"> in the accent, named for a screen reader and read as `valueText` ("120 searches").
+ * It always sits beside a number field that edits the same value; the arrow keys move it by one step.
+ */
+export function Slider({ label, value, min, max, step, onChange, disabled, valueText }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; disabled?: boolean; valueText?: string }) {
+  return (
+    <input
+      type="range"
+      className="slider"
+      aria-label={label}
+      aria-valuetext={valueText}
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(Number(e.target.value))}
+    />
+  );
+}
