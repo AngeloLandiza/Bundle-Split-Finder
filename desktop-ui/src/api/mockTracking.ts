@@ -125,9 +125,9 @@ export function trackingFor(d: DealDetail, seed: TrackSeed, now: number, was: nu
   else if (way && way.leaves.length > 0) notBuyNow = `It leaves ${way.leaves.join(' and ')} unsold.`;
   else if (!meets) notBuyNow = `Below ${thresholds}: est. profit ${usd(profit)} (${pct(roiPercent)} ROI).`;
   else if (velocity.status !== 'pass') notBuyNow = velocity.reason;
-  else if (why === null) notBuyNow = `Still above ${thresholds}, but no better than the last scan (${usd(lastP ?? 0)}).`;
+  // Nov 25: Buy now is a state; a deal that stays good stays worth buying (the agent's rule, core/src/tracking/signals.ts).
   const buyNow = notBuyNow === null;
-  if (buyNow) signals.push({ kind: 'buyNow', optionId: 'w1', reason: `${why} ${velocity.reason}`, numbers });
+  if (buyNow) signals.push({ kind: 'buyNow', optionId: 'w1', reason: `${why ?? `Est. profit ${usd(profit)} (${pct(roiPercent)} ROI) clears ${thresholds}.`} ${velocity.reason}`, numbers });
 
   const option: OptionSignals = {
     optionId: 'w1',

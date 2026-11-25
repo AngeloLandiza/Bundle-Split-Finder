@@ -225,7 +225,7 @@ export function createMockClient(): ApiClient {
   }
   if (mode === 'nobuynow') {
     deals = deals.map((d) => ({ ...d, buyNow: false }));
-    for (const d of Object.values(details)) if (d.signals) d.signals = { ...d.signals, buyNow: null, signals: d.signals.signals.filter((x) => x.kind !== 'buyNow'), options: d.signals.options.map((o) => ({ ...o, buyNow: false, notBuyNow: o.notBuyNow ?? 'Still above your thresholds, but no better than the last scan.' })) };
+    for (const d of Object.values(details)) if (d.signals) d.signals = { ...d.signals, buyNow: null, signals: d.signals.signals.filter((x) => x.kind !== 'buyNow'), options: d.signals.options.map((o) => ({ ...o, buyNow: false, notBuyNow: o.notBuyNow ?? 'Est. $6.63 is below your $20.' })) };
   }
   if (mode === 'chrome-closed') state.helper = { paired: true, connected: false, lastSeenAt: new Date(Date.now() - 3 * 3600_000).toISOString(), jobsWaiting: 4 };
   if (mode === 'limit') {

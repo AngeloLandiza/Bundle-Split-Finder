@@ -106,7 +106,7 @@ export function verdictOf(s: DealSignals): Verdict {
 
   let sentence: string;
   if (buy && o) {
-    sentence = `${o.profit !== null && o.roiPercent !== null ? `An estimated ${money(o.profit)} profit (${pct(o.roiPercent)} ROI)` : 'This way to sell'}${multi ? ` selling as “${o.label}”` : ''} clears your numbers, sells fast enough and has improved.`;
+    sentence = `${o.profit !== null && o.roiPercent !== null ? `An estimated ${money(o.profit)} profit (${pct(o.roiPercent)} ROI)` : 'This way to sell'}${multi ? ` selling as “${o.label}”` : ''} clears your numbers and sells fast enough.`;
   } else if (o?.notBuyNow) {
     sentence = typo(o.notBuyNow);
   } else {
