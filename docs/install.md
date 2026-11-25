@@ -123,6 +123,28 @@ Profit and ROI come from the fee settings (referral fee, fulfillment, sales tax,
 cost), not your real Amazon fees. Change them under **Settings, Fees** to match your account.
 Every price and match links to its Home Depot or Amazon source.
 
+## Releasing a new version
+
+The app never updates itself. The PO learns of a new version from a message with a download link and runs the
+installer himself (`docs/decisions.md`, "Nov 25: a new version is a message and a link"). The developer's steps:
+
+1. **Bump the version in four files, to the same x.y.z:** `package.json` (`version`), `src-tauri/tauri.conf.json`
+   (`version`, which the app's Settings, Advanced shows), `src-tauri/Cargo.toml` (`[package] version`, which the app hands
+   to its agent as `SPLIT_FINDER_APP_VERSION`) and `src-tauri/Cargo.lock` (the `split-finder-desktop` entry; `cargo check`
+   in `src-tauri` rewrites it). The helper extension takes its version from `package.json`; its build id after the `+` is
+   not the app's version. `core/test/version-agreement.test.ts` fails if they disagree.
+2. **Build both installers:** `npm run desktop:build` (the Mac DMG) and `npm run desktop:build:windows` (the Windows
+   setup.exe).
+3. **Upload them** where the PO can reach them: a Google Drive or Google Docs share link, or a GitHub release of this
+   repository. Nothing else is accepted as the link (it must be https on `drive.google.com`, `docs.google.com`, or
+   `github.com/AngeloLandiza/Bundle-Split-Finder/`).
+4. **Write the note:** `npm run release:note -- --version 0.1.1 --url <https link> --note "What changed" [--note "..."]`
+   (1 to 5 notes of at most 120 characters; the version must be greater than the one in `docs/release.json`). It only
+   writes `docs/release.json`.
+5. **Commit and push** `docs/release.json` (and the bump) to `main`. Within a day (or when the app next starts) each app
+   running an older version tells its owner once. Until `downloadUrl` is set nothing is announced: the file starts at the
+   current version with `downloadUrl: null`.
+
 ## Using the extension alone
 
 Unpaired, the extension works as before: its own side panel, its own keys in Chrome, scans

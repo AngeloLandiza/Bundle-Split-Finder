@@ -1658,3 +1658,49 @@ price guard and `selfCorrect`, nothing spent): **13 questions → 12**, DWST0801
 from saved listings may match a part being re-checked meanwhile (the ladder then reads that match as any); the pulled
 records of B0HMV5V9L7, B0HQQZWYTX, B0CHWF4JM9 and B0DR93VQBD are not recorded, so what the owner's next drip round decides
 for DWST08017 is not known here.
+
+## Nov 25: a new version is a message and a link, never an update the app makes itself
+
+**Decided by the owner.** The PO who uses the app on Windows should learn that a new version exists through the app's own
+alert channel, with a download link, and run the installer himself. The app does not update itself: it never downloads,
+unpacks, replaces or runs anything.
+
+**Why a notice and a link, not self-update.** A self-updater needs a signed installer and an update signature key (the
+installer is unsigned today: SmartScreen asks the PO to click "Run anyway"), a place that serves update files, and code that
+replaces a running program on Windows. Each of those is a security surface of its own and a way to break the one working
+copy on his PC. A message costs one small file in the repository. Version 1 stays small; the rewrite can add signed updates
+once there is a signing certificate. Until then the PO decides when to install.
+
+**What is sent: nothing.** Once a day, and once shortly after start, the agent does a plain GET of
+`https://raw.githubusercontent.com/AngeloLandiza/Bundle-Split-Finder/main/docs/release.json`: no key, token, cookie,
+identifier, referrer or body, a generic User-Agent, and not even the app's own version (GitHub would see it in a log, and the
+comparison is done here). The setting "Tell me when a new version is ready" (Settings, General, on by default) turns it off,
+and off means no request at all. The file is `{ version, date, notes, downloadUrl }`; `npm run release:note` writes it with
+the same checks the app reads it with (`core/src/release/note.ts`): at most 5 notes of 120 characters, a version greater than
+the file's, a link that passes the rule below. A failure (offline, not found, HTML, too large, a wrong field) is silent to the
+PO and one fixed line in the developer's log; a failed look is tried again in 6 hours, a good one in 24.
+
+**The link rule.** https only; the host exactly `drive.google.com`, `docs.google.com` or `github.com` (for github.com the path
+must start with `/AngeloLandiza/Bundle-Split-Finder/`); no user information, port, control characters, spaces or backslash;
+at most 300 characters. These are the places the developer uploads installers to. A link that fails is dropped and the
+message says "Ask the developer for the download link", so a mistake in the file cannot send the PO to another site.
+`https://drive.google.com.evil.example`, `https://drive.google.com@evil.example` and `github.com/<someone else>/...` are
+tested refusals. The same rule runs in the agent (before the link is stored) and in the window (before it is a button).
+
+**When it fires.** Only when the file's version is greater than the running app's, compared as numbers (`0.1.10` is greater
+than `0.1.9`). The running version is `SPLIT_FINDER_APP_VERSION`, which the shell takes from Cargo's package version, not the
+Chrome helper's build id (`0.1.0+3c92cc7`), and a running version that is not plain x.y.z is never compared (no request).
+Once per version, ever: it is recorded before the message goes out, so a crash or a Telegram failure cannot repeat it. It
+produces an Activity entry ("New versions"), one message with the same text through the channels the owner has on (the system
+notification, held by quiet hours like the others; Telegram when set up), and a quiet notice: the lowest priority in the
+notice region, never a modal, with **Download** (opens the link in the browser), **What changed** (a disclosure) and
+**Dismiss**, remembered per version. Never shown when the running version is equal or newer, or the setting is off.
+
+**A new notification kind, `version`.** Switched off in Settings, Notifications, it stops the message on both channels. The
+other kinds leave Telegram to the digest setting; this one is not a digest, so the kind switch governs it. The notice in the
+window and the Activity entry stay (they are not interruptions).
+
+**One version, four files.** `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `Cargo.lock` held 0.1.0
+separately, and the shell shows one and gives the agent another. `core/test/version-agreement.test.ts` fails when they
+differ, and also when `docs/release.json` is ahead of the app. The release steps are in `docs/install.md`.
+

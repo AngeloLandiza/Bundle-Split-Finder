@@ -175,3 +175,28 @@ parallel.
   cannot add links or markup.
 - **Dependencies.** The sidecar is the agent plus core, bundled by esbuild into a Node 24.13.0 single executable whose
   download is pinned by SHA-256. Agent and core import nothing but `node:*` and repo code.
+
+## Addendum, Nov 25: one new host, the release note
+
+The agent now makes one more request on its own: once a day, and once shortly after start, a plain GET of
+`https://raw.githubusercontent.com/AngeloLandiza/Bundle-Split-Finder/main/docs/release.json` (`agent/versionCheck.ts`). The
+hosts the app talks to are now: serpapi.com, api.keepa.com, api.ebay.com, api.anthropic.com, the owner's OpenAI-compatible
+address, api.telegram.org, homedepot.com and amazon.com (through the paired Chrome), and this one.
+
+- **It sends nothing about the owner.** No key, token, cookie, identifier, referrer, body, or the app's own version; the
+  User-Agent is the generic `SplitFinder`; `redirect: error`, `credentials: omit`, 8 s timeout. GitHub sees an address and a
+  time. Off ("Tell me when a new version is ready", Settings, General): no request at all (tested).
+- **What it reads is strictly checked** (`core/src/release/note.ts`): at most 16 KB (also by its length header), valid JSON,
+  every field's type, an x.y.z version, a real date, 1 to 5 notes of at most 120 characters with no control characters.
+  Anything else is ignored; the owner sees nothing and a developer gets one fixed line in the log, never the error's text.
+  Text from the file is shown as React text, never as markup.
+- **The link is held to three hosts before it is shown or opened:** https only; host exactly `drive.google.com`,
+  `docs.google.com` or `github.com` (for github.com the path starts with `/AngeloLandiza/Bundle-Split-Finder/`, after dot
+  segments are resolved); no user name or password, no port, no control characters, spaces or backslash, at most 300
+  characters. A link that fails is dropped and the notice says to ask the developer. The agent checks it, the window checks
+  it again (`desktop-ui/src/api/map.ts`), and the shell's `open_external` applies `is_web_url`.
+- **Nothing is downloaded or run by the app.** A button opens the link in the browser; the PO runs the installer himself.
+  The risk that remains is the one any release channel has: whoever can push to `main` of that repository can name a
+  link on those hosts. The link rule limits where it can point, and the installer is unsigned either way (SmartScreen asks
+  him to confirm).
+

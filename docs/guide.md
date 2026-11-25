@@ -110,6 +110,12 @@ What costs money:
 
 Your keys are saved only on your computer, in the app's own folder. On Windows they are readable by your Windows account and by this PC's administrators, the same as SSH keys; on a Mac, by your account alone. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To clear the deals, Review and scan history but keep your keys and settings, open **Settings, Data** and press **Reset scan data…**. The app copies what it deletes into a backup folder first and tells you where. To remove everything, including keys, uninstall the app and delete its data folder (**Settings, Data** shows it; on Windows it is `%APPDATA%\com.bundlesplitfinder.desktop`).
 
+### New versions
+
+Once a day Split Finder looks at the project's public page on GitHub (one plain request that sends nothing about you) to see whether a new version is ready. If one is, you get one message through the channels you have on (a notification, and Telegram if it is set up), and a quiet line near the top of the window: "Split Finder 0.1.1 is ready", with **Download** and **What changed**. Download opens the link in your browser. You run the installer yourself; the app never downloads or installs anything on its own, and it tells you about each version once. **Dismiss** closes the line for that version. If the message says to ask the developer for the link, the link was missing or not allowed, so nothing is offered to open.
+
+To switch it off, open **Settings, General** and turn off "Tell me when a new version is ready" (no request is made then), or **Settings, Notifications** to stop only the message. Activity lists the versions you were told about.
+
 ## 7. When something looks wrong
 
 Banners appear near the top. One shows at a time, with "N more" if there are others.
