@@ -340,17 +340,29 @@ if ($listening -and $token) {
   }
 
   # The app is quit as its Quit menu item quits it: a second launch with --quit (src-tauri/src/lib.rs QUIT_ARG).
+  # The app's own stop may take 16 s at worst (agent.rs stop: 3 s to prove the listener, 10 s for its answer, 3 s for
+  # the port), so the check allows 30 s. If that is not enough it says what was left and whether another 30 s ended it.
   Invoke-Check 'quit leaves no agent' {
     $name = [IO.Path]::GetFileNameWithoutExtension($script:appExe)
-    [void](Start-Process -FilePath $script:appExe -ArgumentList '--quit' -PassThru)
-    $gone = Wait-Until -Seconds 20 -Test {
-      (Get-AgentProcesses).Count -eq 0 -and -not (Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($script:appExe)) -ErrorAction SilentlyContinue)
+    $describe = {
+      $apps = @(Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($script:appExe)) -ErrorAction SilentlyContinue | ForEach-Object { "$($_.Id) started $($_.StartTime.ToString('HH:mm:ss'))" }) -join ', '
+      $agents = @(Get-AgentProcesses | ForEach-Object { "$($_.Id) started $($_.StartTime.ToString('HH:mm:ss'))" }) -join ', '
+      $http = (Invoke-Agent -Method GET -Path '/api/state' -TimeoutSec 3).Status
+      "app [$apps], agent [$agents], port open: $(Test-Listening), GET /api/state without a token answered $http (0 is no answer in 3 s)"
     }
-    $closed = -not (Test-Listening)
-    if ($gone -and $closed) { return @($true, 'no app, no agent-dashboard process and the port is closed within 20 s') }
-    $left = (Get-AgentProcesses | ForEach-Object { $_.Id }) -join ', '
-    $app = @(Get-Process -Name $name -ErrorAction SilentlyContinue).Count
-    return @($false, "after 20 s: agent-dashboard process ids [$left], app processes: $app, port closed: $closed")
+    $before = & $describe
+    $sent = Get-Date
+    [void](Start-Process -FilePath $script:appExe -ArgumentList '--quit' -PassThru)
+    $isGone = {
+      (Get-AgentProcesses).Count -eq 0 -and -not (Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($script:appExe)) -ErrorAction SilentlyContinue) -and -not (Test-Listening)
+    }
+    if (Wait-Until -Seconds 30 -Test $isGone) {
+      return @($true, "no app, no agent-dashboard process and the port is closed after $([int]((Get-Date) - $sent).TotalSeconds) s")
+    }
+    $at30 = & $describe
+    $later = Wait-Until -Seconds 30 -Test $isGone
+    $end = if ($later) { "gone after $([int]((Get-Date) - $sent).TotalSeconds) s" } else { "still there after 60 s: $(& $describe)" }
+    return @($false, "--quit sent at $($sent.ToString('HH:mm:ss')). Before: $before. After 30 s: $at30. Then: $end")
   }
 }
 
