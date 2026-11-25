@@ -32,6 +32,17 @@ export const HD_DRIP_GAP_MS = 90_000;
 /** Pages the drip reads between scans in one day, at most (six hours of its pace). */
 export const HD_DRIP_PAGES_PER_DAY = 240;
 /**
+ * The adaptive ceiling between scans (Nov 25, the owner's live data: 80 pages read between 5:00 and 9:00 AM were refused
+ * four times in a row, backing off to a four-hour pause; 40 an hour sustained is too fast). Each refusal halves the
+ * hourly ceiling, never below this floor: 40, 20, 10. At 10 an hour (one page every 6 minutes) the three Buy now deals'
+ * Home Depot checks (one each every 4 hours: under 1 an hour) still fit with room for the watched deals and the backlog.
+ */
+export const HD_DRIP_PER_HOUR_FLOOR = 10;
+/** After a refusal the ceiling is not raised for the rest of that day; from the next day it rises by this much... */
+export const HD_DRIP_RAISE_STEP = 5;
+/** ...for each stretch this long with no refusal (from 10 back to 40: six stretches, 36 hours with no refusal). */
+export const HD_DRIP_RAISE_AFTER_MS = 6 * 60 * 60_000;
+/**
  * A Home Depot list (a brand's Bundle list, its keyword search, the BOGO listing) is read again only this long after it
  * was last read through: lists change slowly. 22 hours, not 24, so a scan at the same hour each day still reads it.
  */
@@ -45,11 +56,16 @@ export interface HdLimits {
   cooldownMaxMs: number;
   dripGapMs: number;
   dripPagesPerDay: number;
+  /** The adaptive ceiling's floor, step and stretch (HD_DRIP_PER_HOUR_FLOOR, HD_DRIP_RAISE_STEP, HD_DRIP_RAISE_AFTER_MS). */
+  dripFloorPerHour: number;
+  raiseStep: number;
+  raiseAfterMs: number;
 }
 
 export const HD_LIMITS: HdLimits = {
   gapMs: HD_GAP_MS, jitterMs: HD_GAP_JITTER_MS, pagesPerScan: HD_PAGES_PER_SCAN, cooldownMs: HD_COOLDOWN_MS,
   cooldownMaxMs: HD_COOLDOWN_MAX_MS, dripGapMs: HD_DRIP_GAP_MS, dripPagesPerDay: HD_DRIP_PAGES_PER_DAY,
+  dripFloorPerHour: HD_DRIP_PER_HOUR_FLOOR, raiseStep: HD_DRIP_RAISE_STEP, raiseAfterMs: HD_DRIP_RAISE_AFTER_MS,
 };
 
 /** What is kept between reads, and between runs of the app. */
@@ -66,9 +82,15 @@ export interface HdPaceState {
   day: string;
   /** Pages the drip read on `day`. */
   dripPages: number;
+  /**
+   * The hourly ceiling between scans as last set (halved by a refusal), and when; null: the full ceiling. The ceiling in
+   * force is worked out from these and the clock (dripCeiling): it is not reset at midnight.
+   */
+  perHour?: number | null;
+  perHourAt?: number | null;
 }
 
-export const NEW_PACE_STATE: HdPaceState = { lastEndedAt: null, pausedUntil: null, refusals: 0, lastRefusal: null, day: '', dripPages: 0 };
+export const NEW_PACE_STATE: HdPaceState = { lastEndedAt: null, pausedUntil: null, refusals: 0, lastRefusal: null, day: '', dripPages: 0, perHour: null, perHourAt: null };
 
 /** A stored state in its checked shape; anything else is a new state (never a guess). */
 export function paceStateOf(v: unknown): HdPaceState {
@@ -80,8 +102,50 @@ export function paceStateOf(v: unknown): HdPaceState {
     lastEndedAt: num(s.lastEndedAt), pausedUntil: num(s.pausedUntil), refusals: Math.max(0, Math.floor(num(s.refusals) ?? 0)),
     lastRefusal: r && typeof r === 'object' && num(r.at) !== null && typeof r.what === 'string' ? { at: r.at, what: r.what.slice(0, 120) } : null,
     day: typeof s.day === 'string' ? s.day : '', dripPages: Math.max(0, Math.floor(num(s.dripPages) ?? 0)),
+    perHour: num(s.perHour) !== null && num(s.perHour)! > 0 ? Math.floor(num(s.perHour)!) : null, perHourAt: num(s.perHourAt),
   };
 }
+
+/** The full ceiling between scans, from the drip's gap (3600 s / 90 s = 40 an hour). */
+export const fullPerHour = (limits: Pick<HdLimits, 'dripGapMs'> = HD_LIMITS): number => Math.floor((60 * 60_000) / limits.dripGapMs);
+
+/** Midnight (local) after `at`. */
+const nextMidnight = (at: number): number => {
+  const d = new Date(at);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+};
+
+/**
+ * The hourly ceiling between scans in force at `now`. A refusal set it (perHour, at perHourAt); for the rest of that day it
+ * stays; from the next midnight on, each full stretch of `raiseAfterMs` with no refusal raises it by `raiseStep`, up to
+ * the full ceiling. So a day starts from what the day before ended at. Pure.
+ */
+export function dripCeiling(s: Pick<HdPaceState, 'perHour' | 'perHourAt'>, now: number, limits: HdLimits = HD_LIMITS): number {
+  const full = fullPerHour(limits);
+  if (s.perHour === null || s.perHour === undefined || s.perHour >= full) return full;
+  const from = s.perHourAt === null || s.perHourAt === undefined ? now : nextMidnight(s.perHourAt);
+  const steps = now > from ? Math.floor((now - from) / limits.raiseAfterMs) : 0;
+  return Math.min(full, s.perHour + steps * limits.raiseStep);
+}
+
+/** The ceiling after a refusal at a ceiling of `current`: halved, never below the floor. */
+export const halvedCeiling = (current: number, limits: HdLimits = HD_LIMITS): number => Math.max(limits.dripFloorPerHour, Math.floor(current / 2));
+
+/**
+ * "between scans at most 40 are read an hour (240 a day)", or below the full ceiling "between scans at most 20 are read an
+ * hour today, after Home Depot refused pages this morning (240 a day)". `refusedAt`: the last refusal.
+ */
+export function ceilingWords(perHour: number, refusedAt: number | null, now: number, limits: HdLimits = HD_LIMITS): string {
+  const day = `(${limits.dripPagesPerDay} a day)`;
+  if (perHour >= fullPerHour(limits) || refusedAt === null) return `between scans at most ${perHour} are read an hour ${day}`;
+  const when = dayOf(refusedAt) === dayOf(now) ? `this ${partOfDay(refusedAt)}` : dayOf(refusedAt) === dayOf(now - 86_400_000) ? `yesterday ${partOfDay(refusedAt)}` : 'earlier';
+  return `between scans at most ${perHour} are read an hour today, after Home Depot refused pages ${when} ${day}`;
+}
+
+const partOfDay = (at: number): string => {
+  const h = new Date(at).getHours();
+  return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+};
 
 /**
  * A scan (or an owner's run: Read again, an AI question's research) reads at the scan gap within the scan cap; the drip at
@@ -174,6 +238,21 @@ export class HdPace {
     return until !== null && until > this.d.now() ? until : null;
   }
 
+  /** The hourly ceiling between scans in force now (dripCeiling). */
+  dripPerHour(): number {
+    return dripCeiling(this.d.load(), this.d.now(), this.limits);
+  }
+
+  /** The least time between two reads between scans now: an hour over the ceiling in force (90 s at 40, 6 min at 10). */
+  dripGapMs(): number {
+    return Math.max(this.limits.dripGapMs, Math.ceil((60 * 60_000) / this.dripPerHour()));
+  }
+
+  /** The words of the ceiling in force ("between scans at most 20 are read an hour today, after …"). */
+  ceilingWords(): string {
+    return ceilingWords(this.dripPerHour(), this.d.load().lastRefusal?.at ?? null, this.d.now(), this.limits);
+  }
+
   /** Why no page may be read now in `mode`, or null. */
   blocked(mode: HdMode): HdBlock | null {
     const until = this.pausedUntil();
@@ -205,7 +284,7 @@ export class HdPace {
       let block = this.blocked(mode);
       if (block) throw new HdReadBlocked(block);
       const last = this.d.load().lastEndedAt;
-      const gap = (mode === 'drip' ? this.limits.dripGapMs : this.limits.gapMs) + Math.floor((this.d.random ?? Math.random)() * this.limits.jitterMs);
+      const gap = (mode === 'drip' ? this.dripGapMs() : this.limits.gapMs) + Math.floor((this.d.random ?? Math.random)() * this.limits.jitterMs);
       const wait = last === null ? 0 : last + gap - this.d.now();
       if (wait > 0) await this.d.sleep(wait, signal);
       if (signal?.aborted) throw new Error('stopped');
@@ -240,7 +319,9 @@ export class HdPace {
     if (outcome === 'refused') {
       const refusals = s.refusals + 1;
       const pause = Math.min(this.limits.cooldownMaxMs, this.limits.cooldownMs * 2 ** (refusals - 1));
-      this.d.save({ ...s, lastEndedAt: at, refusals, pausedUntil: at + pause, lastRefusal: { at, what: what.slice(0, 120) } });
+      // The adaptive ceiling: halved from the one in force, for the rest of the day (dripCeiling).
+      const perHour = halvedCeiling(dripCeiling(s, at, this.limits), this.limits);
+      this.d.save({ ...s, lastEndedAt: at, refusals, pausedUntil: at + pause, lastRefusal: { at, what: what.slice(0, 120) }, perHour, perHourAt: at });
     } else if (outcome === 'read') {
       this.d.save({ ...s, lastEndedAt: at, refusals: 0, pausedUntil: null });
     } else this.d.save({ ...s, lastEndedAt: at });
@@ -261,7 +342,11 @@ export const dripPagesPerHour = (limits: Pick<HdLimits, 'dripGapMs'> = HD_LIMITS
  * (240 a day), and each scan reads up to 40." While paused, the pause leads. Nothing when no page waits. Every figure comes
  * from the constants and the count; no time to finish is promised.
  */
-export function backlogSentence(i: { pages: number; sets: number; bundles?: number; pausedUntil: number | null; limits?: HdLimits; clock?: ClockText; dripOn?: boolean }): string | null {
+export function backlogSentence(i: {
+  pages: number; sets: number; bundles?: number; pausedUntil: number | null; limits?: HdLimits; clock?: ClockText; dripOn?: boolean;
+  /** The ceiling in force (HdPace.ceilingWords): absent, the full one. */
+  ceiling?: string;
+}): string | null {
   if (i.pages <= 0) return null;
   const limits = i.limits ?? HD_LIMITS;
   const who = [
@@ -272,7 +357,7 @@ export function backlogSentence(i: { pages: number; sets: number; bundles?: numb
   const waiting = who.length > 0 ? `${who.join(' and ')} ${i.sets + (i.bundles ?? 0) === 1 ? 'waits' : 'wait'} for ${pages}` : `${pages} ${i.pages === 1 ? 'waits' : 'wait'}`;
   const pace = i.dripOn === false
     ? `each scan reads up to ${limits.pagesPerScan}`
-    : `between scans at most ${dripPagesPerHour(limits)} are read an hour (${limits.dripPagesPerDay} a day), and each scan reads up to ${limits.pagesPerScan}`;
+    : `${i.ceiling ?? `between scans at most ${dripPagesPerHour(limits)} are read an hour (${limits.dripPagesPerDay} a day)`}, and each scan reads up to ${limits.pagesPerScan}`;
   const head = `${waiting}; ${pace}.`;
   return i.pausedUntil !== null ? `${pausedSentence(i.pausedUntil, i.clock)} ${head}` : head;
 }

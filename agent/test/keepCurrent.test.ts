@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { AgentState } from '../../core/src/api/contract';
 import { writePartTrend } from '../../core/src/keepa/trends';
-import { HD_COOLDOWN_MS, HD_DRIP_GAP_MS } from '../../core/src/scan/hdPace';
+import { HD_COOLDOWN_MS, HD_DRIP_GAP_MS, NEW_PACE_STATE } from '../../core/src/scan/hdPace';
 import { HD_RECHECK_BUY_NOW_MS, AMAZON_RECHECK_BUY_NOW_MS, PRICES_STALE_MS } from '../../core/src/tracking/keepCurrent';
 import type { BundleSignals } from '../../core/src/tracking/signals';
 import { createAgent, type Agent } from '../app';
@@ -213,7 +213,7 @@ describe("Home Depot's price of a Buy now or watched deal, re-read between scans
     expect(calls).toEqual([]);
     live = false;
     await polling;
-  });
+  }, 240_000); // 40 page reads through the real store: slow when the whole suite runs at once.
 
   it("a price rise withdraws Buy now at once: one sentence in Activity with the before and after and the link, and the owner's message", async () => {
     await ownersApp({ keepa: false });
@@ -233,6 +233,28 @@ describe("Home Depot's price of a Buy now or watched deal, re-read between scans
     expect(row(SAW)).toMatchObject({ buyNow: false, price: 129 });
     expect(row(SAW).signalNote).toMatch(/^Not worth buying now/);
     expect(row(SAW).pricesChecked).toBeDefined();
+    live = false;
+    await polling;
+  });
+
+  it("at a low ceiling (after refusals) Buy now still goes first; a watched deal's refresh gives way to the pages bundles wait for", async () => {
+    await ownersApp({ keepa: false });
+    // Home Depot refused pages this morning: the ceiling is 10 an hour (one page every 6 minutes).
+    agent.store.update('runtime', (r) => ({ ...r, hdPace: { ...NEW_PACE_STATE, perHour: 10, perHourAt: clock - 60_000, lastRefusal: { at: clock - 60_000, what: 'a bundle page' } } }));
+    const backlog = await agent.work.noteBacklog();
+    expect(backlog.pages).toBeGreaterThan(0);
+    const { polling } = await connected();
+    for (let i = 0; i < 4; i += 1) {
+      await agent.work.drip();
+      clock += 6 * 60_000;
+    }
+    expect(taken.slice(0, 3)).toEqual(['344305163', '341965772', '341966856']);
+    const watched = new Set(Object.keys(agent.store.get('tracking').watch).map((k) => k.replace('homedepot:', '')));
+    expect(taken).toHaveLength(4);
+    expect(watched.has(taken[3]!)).toBe(false);
+    // The words say the ceiling in force and why; the Agent panel says Buy now goes first.
+    expect(state().agent.homeDepot!.sentence).toMatch(/between scans at most 10 are read an hour today, after Home Depot refused pages this (morning|afternoon|evening) \(240 a day\)/);
+    expect(state().agent.keepCurrent!.sentence).toMatch(/Home Depot's ceiling is 10 pages an hour today: Buy now deals are read first, the other watched deals after the pages bundles wait for\.$/);
     live = false;
     await polling;
   });

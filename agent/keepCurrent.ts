@@ -6,6 +6,7 @@
 
 import type { KeepCurrentState } from '../core/src/api/contract';
 import type { TokenBudget } from '../core/src/keepa/budget';
+import { dripCeiling, fullPerHour, paceStateOf } from '../core/src/scan/hdPace';
 import { savePrice } from '../core/src/scan/runner';
 import type { ScanStore } from '../core/src/scan/types';
 import { parseAmazonProduct } from '../core/src/serpapi/parsers';
@@ -62,7 +63,7 @@ export function keepCurrentView(data: Pick<StoreData, 'deals' | 'tracking' | 'ru
   return {
     buyNow: cost.buyNow, watched: cost.watched, pagesPerDay: cost.pagesPerDay, tokensPerDay: cost.tokensPerDay, pageShare: cost.pageShare,
     tokenShare: cost.tokenShare, pagesToday: usage.pages, tokensToday: usage.tokens, pagesWaiting, pullsWaiting, keepa,
-    sentence: keepSentence(cost, { pagesWaiting, pullsWaiting, keepa })!,
+    sentence: keepSentence(cost, { pagesWaiting, pullsWaiting, keepa, perHour: dripCeiling(paceStateOf(data.runtime.hdPace), now), fullPerHour: fullPerHour() })!,
   };
 }
 

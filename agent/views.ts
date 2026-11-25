@@ -1,7 +1,7 @@
 // What the agent's endpoints answer, built from the store (pure functions; the contract's shapes).
 
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
-import { backlogSentence, dripPagesPerHour, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
+import { backlogSentence, ceilingWords, dripCeiling, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { dayOf } from '../core/src/tracking/state';
 import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
 import { keepCurrentView } from './keepCurrent';
@@ -285,9 +285,10 @@ export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): Ho
   return {
     pausedUntil: paused === null ? null : new Date(paused).toISOString(),
     pagesWaiting: pages, setsWaiting: b?.sets ?? 0, bundlesWaiting: b?.bundles ?? 0,
-    perHour: dripPagesPerHour(), perDay: HD_LIMITS.dripPagesPerDay, perScan: HD_LIMITS.pagesPerScan,
+    // The adaptive ceiling in force (core/src/scan/hdPace.ts dripCeiling): halved by a refusal, raised back gradually.
+    perHour: dripCeiling(s, now), perDay: HD_LIMITS.dripPagesPerDay, perScan: HD_LIMITS.pagesPerScan,
     readToday: s.day === dayOf(now) ? s.dripPages : 0,
-    sentence: backlogSentence({ pages, sets: b?.sets ?? 0, bundles: b?.bundles ?? 0, pausedUntil: paused }) ?? (paused !== null ? pausedSentence(paused) : null),
+    sentence: backlogSentence({ pages, sets: b?.sets ?? 0, bundles: b?.bundles ?? 0, pausedUntil: paused, ceiling: ceilingWords(dripCeiling(s, now), s.lastRefusal?.at ?? null, now) }) ?? (paused !== null ? pausedSentence(paused) : null),
   };
 }
 

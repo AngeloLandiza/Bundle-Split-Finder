@@ -80,7 +80,7 @@ import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
 import { remoteReaders, type ReadGate, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
-import { backlogSentence, HD_LIST_REREAD_MS, HdPace, type HdMode, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
+import { backlogSentence, fullPerHour, HD_LIST_REREAD_MS, HdPace, type HdMode, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { backlogOf, pagesWanted } from '../core/src/scan/hdOrder';
 import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
@@ -862,7 +862,7 @@ export class AgentWork {
     if (!this.d.helperConnected() || this.d.store.get('agent').paused || this.live.busy !== null || this.answering > 0) return false;
     if (this.pace.blocked('drip') !== null) return false;
     const last = this.pace.state().lastEndedAt;
-    return last === null || this.d.now() - last >= this.pace.limits.dripGapMs;
+    return last === null || this.d.now() - last >= this.pace.dripGapMs();
   }
 
   /**
@@ -884,7 +884,10 @@ export class AgentWork {
     let prices = 0;
     // Keeping deals current: a Buy now or watched deal whose Home Depot price is due comes first (Buy now, then the oldest
     // checked), within the day's share; the pages bundles wait for come after. Only between scans: a scan stops the drip.
-    const kept = await this.keepHdOne(readers);
+    // Home Depot's adaptive ceiling: below the full one, with pages still waiting, only Buy now goes first; a watched
+    // deal's refresh gives way to the backlog and is read when no other page waits.
+    const low = this.pace.dripPerHour() < fullPerHour(this.pace.limits) && (this.d.store.get('runtime').hdBacklog?.pages ?? 0) > 0;
+    const kept = await this.keepHdOne(readers, low ? 'buyNow' : 'all');
     if (kept !== null) return kept;
     try {
       const extra = await wantedReads(store, this.d.store.get('suggestions'));
@@ -923,7 +926,7 @@ export class AgentWork {
       const s = await settleWaitingSplits(store, now());
       settled += s.resolved + s.opened + (await this.recheck());
     }
-    if (pages === 0) return 0;
+    if (pages === 0) return low && !signal.aborted ? ((await this.keepHdOne(readers, 'all')) ?? 0) : 0;
     await this.noteBacklog().catch(() => null);
     this.hdRecord(pages, settled, prices);
     // What a read settled is published, and its signals judged, as after a scan's reads; the Keepa drip looks up its parts.
@@ -937,15 +940,15 @@ export class AgentWork {
    * a refusal's cool-down). A changed price goes through the report and the signals, with the verdict's flip said; an
    * unchanged one only moves the deal's "checked" time. Null when no deal is due (the drip's other reads go on).
    */
-  private async keepHdOne(readers: RemoteReaders): Promise<number | null> {
+  private async keepHdOne(readers: RemoteReaders, only: 'buyNow' | 'all'): Promise<number | null> {
     const before = dealSnapshots({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') });
     const kept = keptNow({ deals: this.d.store.get('deals'), tracking: this.d.store.get('tracking') });
     let out;
     try {
-      out = await readOneDue({ store: this.scanStore, readPromoPages: readers.readPromoPages, now: this.d.now }, kept, this.keepUsage());
+      out = await readOneDue({ store: this.scanStore, readPromoPages: readers.readPromoPages, now: this.d.now }, only === 'buyNow' ? kept.filter((d) => d.tier === 'buyNow') : kept, this.keepUsage());
     } catch {
       // Chrome did not answer (not Home Depot): the page was asked for (the pace counted it); asked again at the next look.
-      if (hdDue(kept, this.d.now(), this.keepUsage().tried).length > 0) this.noteKeep({ pages: 1 });
+      if (hdDue(only === 'buyNow' ? kept.filter((d) => d.tier === 'buyNow') : kept, this.d.now(), this.keepUsage().tried).length > 0) this.noteKeep({ pages: 1 });
       return 1;
     }
     if (out === null) return null;
@@ -994,7 +997,7 @@ export class AgentWork {
     r.kept += kept;
     r.record.finishedAt = new Date(now).toISOString();
     const backlog = this.d.store.get('runtime').hdBacklog;
-    const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil() }) : null;
+    const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil(), ceiling: this.pace.ceilingWords() }) : null;
     r.record.summary = [
       `Read ${r.pages} Home Depot ${r.pages === 1 ? 'page' : 'pages'} between scans (free)${r.sets > 0 ? `; ${r.sets} ${r.sets === 1 ? 'bundle' : 'bundles'} settled` : ''}${r.prices > 0 ? `; ${r.prices} part ${r.prices === 1 ? 'price' : 'prices'} read` : ''}${r.kept > 0 ? `; ${r.kept} watched ${r.kept === 1 ? "deal's price" : "deals' prices"} checked` : ''}.`,
       ...(waits ? [waits] : []),
@@ -1415,7 +1418,7 @@ export class AgentWork {
     const pagesUnread = (await this.scanStore.listBundles().catch(() => [])).filter((b) => !pageRead(b)).length;
     // Home Depot's pace: how many pages wait and when they are read, from the pace's own figures (the pause first).
     const backlog = await this.noteBacklog().catch(() => null);
-    const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil() }) : null;
+    const waits = backlog ? backlogSentence({ ...backlog, pausedUntil: this.pace.pausedUntil(), ceiling: this.pace.ceilingWords() }) : null;
     const said = waits ? notes.filter((n) => !waits.includes(n)) : notes;
     run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, said, again !== undefined, job, waits)}`;
     this.record(run);

@@ -211,7 +211,7 @@ const hours = (ms: number): number => Math.round(ms / HOUR);
  * others every 12; up to 120 of the 240 read between scans) and about 148 Keepa tokens a day (every 2 and 12 hours; up
  * to 360, a quarter of the refill)." Null when nothing is watched.
  */
-export function keepSentence(c: KeepCost, w: { pagesWaiting: number; pullsWaiting: number; keepa: boolean }): string | null {
+export function keepSentence(c: KeepCost, w: { pagesWaiting: number; pullsWaiting: number; keepa: boolean; perHour?: number; fullPerHour?: number }): string | null {
   if (c.buyNow + c.watched === 0) return null;
   const who = [...(c.buyNow > 0 ? [plural(c.buyNow, 'Buy now deal', 'Buy now deals')] : []), ...(c.watched > 0 ? [plural(c.watched, c.buyNow > 0 ? 'other watched deal' : 'watched deal', c.buyNow > 0 ? 'other watched deals' : 'watched deals')] : [])].join(' and ');
   const hd = `about ${plural(c.pagesPerDay, 'Home Depot page', 'Home Depot pages')} a day (Buy now every ${hours(HD_RECHECK_BUY_NOW_MS)} hours, the others every ${hours(HD_RECHECK_WATCHED_MS)}; up to ${c.pageShare} of the ${HD_DRIP_PAGES_PER_DAY} read between scans, free)`;
@@ -229,6 +229,10 @@ export function keepSentence(c: KeepCost, w: { pagesWaiting: number; pullsWaitin
     ...(w.keepa && w.pullsWaiting > 0 ? [`${plural(w.pullsWaiting, 'Amazon price waits', 'Amazon prices wait')}`] : []),
   ];
   if (waits.length > 0) parts.push(`${waits.join(' and ')} for today's share; they go first tomorrow.`);
+  // Home Depot's adaptive ceiling (scan/hdPace.ts dripCeiling): below the full one, Buy now first, the others after the backlog.
+  if (w.perHour !== undefined && w.fullPerHour !== undefined && w.perHour < w.fullPerHour) {
+    parts.push(`Home Depot's ceiling is ${w.perHour} pages an hour today: Buy now deals are read first, the other watched deals after the pages bundles wait for.`);
+  }
   return parts.join(' ');
 }
 
