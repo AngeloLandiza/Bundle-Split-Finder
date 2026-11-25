@@ -31,6 +31,8 @@ export interface BriefCtx {
   fetchFn: typeof fetch;
   now(): number;
   signal: AbortSignal;
+  /** Step 18: the dollars the AI may spend this month given what it spent (the AI limit, lowered by the total budget); absent: the AI limit. */
+  capUsd?: (spentUsd: number) => number;
 }
 
 export interface BriefPassResult {
@@ -83,7 +85,7 @@ export async function briefPass(ctx: BriefCtx, opts: { only?: string[]; limit?: 
       break;
     }
     const spent = aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, ctx.now());
-    if (spent + estimate > capUsd) {
+    if (spent + estimate > (ctx.capUsd ? Math.min(capUsd, ctx.capUsd(spent)) : capUsd)) {
       out.problem = `This month's AI limit of $${capUsd.toFixed(2)} is reached; the plain summaries use the rules until next month or a higher limit.`;
       break;
     }

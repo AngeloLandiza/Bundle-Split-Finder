@@ -727,6 +727,8 @@ export interface LiveView {
    * the last check's own figure (a state built without the agent's ledger).
    */
   serpLeft?: number | null;
+  /** Step 18: the costs' short form (agent/costs.ts CostBook.short). */
+  costs?: AgentState['budget']['costs'];
 }
 
 /** Nov 23: the last scan, with whether Read again can start now (some page unread, Chrome connected, nothing running). */
@@ -776,6 +778,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       keepaRefillPerMin: data.runtime.keepa?.refillRate ?? null,
       aiSpentUsd: Math.round(aiSpentThisMonth({ suggestions: data.suggestions, runs: data.activity.runs }, live.now) * 100) / 100,
       aiCapUsd: data.settings.ai.monthlyCapUsd,
+      ...(live.costs ? { costs: live.costs } : {}),
     },
     counts: {
       review: openReviewCount(data.review, asksAboutEbay(data.settings)) - workingReviewCount(data.review, data.suggestions),

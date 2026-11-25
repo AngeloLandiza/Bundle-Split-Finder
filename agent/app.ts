@@ -43,6 +43,7 @@ import { AnswerRefused } from '../core/src/scan/answers';
 import { planConfirmedPrice, planRemoveConfirmedPrice } from '../core/src/scan/confirmed';
 import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
+import { costSettingsOf, patchCostSettings, syncAiLimit } from '../core/src/costs/settings';
 import { testTelegram } from './alerts';
 import { Auth, type PairError } from './auth';
 import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './dataPane';
@@ -315,6 +316,12 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
     }
     if ('reaskOnNewEvidence' in a) next.ai.reaskOnNewEvidence = flag(a.reaskOnNewEvidence, 'ai.reaskOnNewEvidence');
   }
+  if ('costs' in patch) {
+    // Step 18: prices, limits, the budget and the blocker (core/src/costs/settings.ts checks them).
+    const c = patchCostSettings(costSettingsOf(next), patch.costs);
+    if (!c.ok) throw new HttpError('bad_request', c.error);
+    next.costs = c.value;
+  }
   if ('appearance' in patch) {
     const a = obj(patch.appearance, 'appearance');
     if ('theme' in a) next.appearance.theme = oneOf(a.theme, ['system', 'light', 'dark'], 'appearance.theme');
@@ -356,7 +363,8 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
   const first = Object.entries(problems)[0];
   if (first) throw new HttpError('bad_request', `${first[0]}: ${first[1]}`);
   next.updatedAt = at;
-  return next;
+  // Step 18: the AI limit and ai.monthlyCapUsd are one value, whichever this patch wrote.
+  return syncAiLimit(cur, next);
 }
 
 function pairResult<T extends object>(r: T | PairError): T {
@@ -508,7 +516,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return {
       ...agentState(data, {
         ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
-        ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(),
+        ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), costs: work.costs.short(),
       }),
       ...(update ? { update } : {}),
     };
@@ -618,6 +626,10 @@ export function createAgent(opts: AgentOptions): Agent {
     dismissUpdate(store, b.version);
     return { ok: true };
   });
+
+  // ------------------------------------------------------------ costs
+  // Step 18: what the services cost, this month and by its end (agent/costs.ts). Read only: from the ledgers and the store.
+  r.get('/api/costs', 'ui', () => work.costs.view());
 
   // ------------------------------------------------------------ settings and keys
   r.get('/api/settings', 'any', () => settingsResponse({ settings: store.get('settings'), keys: store.get('keys') }));
@@ -748,10 +760,20 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   // Look up and Verify: the quote first (free), then the owner's click spends within the per-scan limit.
   r.get('/api/deals/:id/lookup', 'ui', (ctx) => refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paidPlan(ctx.params.id!, 'lookUp')).searches })));
-  r.post('/api/deals/:id/lookup', 'ui', (ctx) => refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paid(ctx.params.id!, 'lookUp')).searchesUsed })));
+  // Step 18: a click the cost blocker holds answers its sentence with `canForce`; the same request with { force: true } spends anyway.
+  const force = (b: Record<string, unknown>): boolean => {
+    if (b.force !== undefined && typeof b.force !== 'boolean') throw new HttpError('bad_request', 'force must be true or false.');
+    return b.force === true;
+  };
+  const paidAnswer = (r: { searchesUsed: number; held?: string }): PaidResponse => (r.held ? { searches: 0, reason: r.held, canForce: true } : { searches: r.searchesUsed });
+  r.post('/api/deals/:id/lookup', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    return refusals(async (): Promise<PaidResponse> => paidAnswer(await work.paid(ctx.params.id!, 'lookUp', undefined, force(b))));
+  });
   r.post('/api/deals/:id/verify', 'ui', async (ctx) => {
-    const model = text(obj(await ctx.body()).model, 'model', 64);
-    return refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paid(ctx.params.id!, 'verify', model)).searchesUsed }));
+    const b = obj(await ctx.body());
+    const model = text(b.model, 'model', 64);
+    return refusals(async (): Promise<PaidResponse> => paidAnswer(await work.paid(ctx.params.id!, 'verify', model, force(b))));
   });
 
   // Checking the app's own work: his verdict on a "Needs a look" finding (core/src/audit/sanity.ts).

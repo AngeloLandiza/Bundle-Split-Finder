@@ -86,6 +86,12 @@ import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from '
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
 import { aiSpentThisMonth, asksAboutEbay } from './views';
+import { CostBook, scanHistory } from './costs';
+import type { CostStep } from '../core/src/costs/decide';
+import { localDate } from '../core/src/costs/time';
+import type { CostDecision, CostService } from '../core/src/costs/types';
+import { estimatedQuestionCost } from '../core/src/assist/cost';
+import { askQueueOf } from '../core/src/assist/askAll';
 import type { WorkerJobs } from './workerJobs';
 
 /** How often the scheduler looks whether a scan is due. */
@@ -255,9 +261,14 @@ export class AgentWork {
   /** Owner answers (and Undo) being applied, one at a time through answerChain. */
   private answering = 0;
   private answerChain: Promise<void> = Promise.resolve();
+  /** Step 18: what the services cost, the cost blocker's answers and the warnings (agent/costs.ts). */
+  readonly costs: CostBook;
+  /** Step 18: the run a held step belongs to (its message goes once per service per run). */
+  private costRun = 'start';
 
   constructor(deps: WorkDeps) {
     this.d = deps;
+    this.costs = new CostBook({ store: deps.store, dataDir: deps.dataDir, now: deps.now });
     this.policy = new NotifyPolicy({ settings: () => deps.store.get('settings').notifications, now: deps.now, emit: deps.notify });
     mkdirSync(deps.dataDir, { recursive: true });
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
@@ -658,7 +669,15 @@ export class AgentWork {
       if (prices > 0) await this.refresh();
       return;
     }
-    const budget = new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: Number.POSITIVE_INFINITY });
+    // Step 18: the cost blocker. The drip (its lookups, catalog checks, re-checks, fee and sales pulls and the keep-current
+    // price pulls, all on this one budget) runs while its smallest call still fits his Keepa limit: a lookup when one
+    // waits, else a 1-token pull. It spends no more than the limit leaves.
+    const smallest = work.lookups.length > 0 || codes.length > 0 ? KEEPA_LOOKUP_TOKEN_ESTIMATE : 1;
+    if (!this.costGate('keepa', { what: 'Keepa lookups and price refreshes between scans', held: 'were not made', expected: smallest, high: smallest }, `drip:${localDate(now)}`).allow) {
+      if (prices > 0) await this.refresh();
+      return;
+    }
+    const budget = new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: this.costs.left('keepa') ?? Number.POSITIVE_INFINITY });
     const keepa = this.keepaClient(keys.keepa, budget);
     store.update('runtime', (r) => ({ ...r, drip: { checkedAt: now, lastLookupAt: r.drip?.lastLookupAt ?? null } }));
     const status = await this.keepaStatus(keepa);
@@ -1049,6 +1068,43 @@ export class AgentWork {
 
   private record(run: RunRecord): void {
     this.d.store.update('activity', (a) => ({ ...a, runs: [...a.runs.filter((r) => r.id !== run.id), run].slice(-KEEP_RUNS) }));
+    // Step 18: a finished run may have moved a service past a warning (once a month each).
+    if (run.finishedAt) void this.costWarnings().catch(() => undefined);
+  }
+
+  // ------------------------------------------------------------------ step 18: the cost blocker and its warnings
+
+  /**
+   * The cost blocker before a step that costs (core/src/costs/decide.ts). When it holds the step: the note for the run, the
+   * record in Costs and, once per service per `runKey`, the owner's message. With the blocker off it only warns (the note).
+   */
+  private costGate(service: CostService, step: CostStep, runKey: string, notes?: string[]): CostDecision {
+    const d = this.costs.decide(service, step);
+    if (d.reason) notes?.push(d.reason);
+    if (!d.allow && d.reason && this.costs.hold(service, step.what, d.reason, runKey)) {
+      const label = this.costs.view().services.find((x) => x.service === service)!.label;
+      void this.costMessage(`${label}: held back`, d.reason).catch(() => undefined);
+    }
+    return d;
+  }
+
+  /** One cost message: a notification of kind 'costs' (switched off like the others) and, when set up, Telegram. */
+  private async costMessage(title: string, body: string): Promise<void> {
+    if (this.d.store.get('settings').notifications.kinds.costs === false) return;
+    this.policy.send({ kind: 'costs', title, body, route: '/costs' });
+    await this.sendTelegram(`${title}. ${body}`);
+  }
+
+  /** The cost warnings due now (a warn percent, a forecast past a limit, a limit reached), each once a month. */
+  private async costWarnings(): Promise<void> {
+    for (const w of this.costs.due()) await this.costMessage(w.title, w.body);
+  }
+
+  /** What a scan's searches are expected to use: the owner's own scans when there are enough, else the per-scan cap. */
+  private serpScanStep(ext: ExtensionSettings, maxSearches?: number): CostStep {
+    const cap = Math.min(ext.searchesPerScan, maxSearches ?? Number.POSITIVE_INFINITY);
+    const h = scanHistory(this.d.store.get('activity').runs, (r) => r.searchesUsed, this.d.now());
+    return { what: "The scan's searches", held: 'were not made', expected: Math.min(h?.expected ?? cap, cap), high: Math.min(h?.high ?? cap, cap) };
   }
 
   private addError(sentence: string, retry: ActivityErrorRecord['retry']): void {
@@ -1096,7 +1152,7 @@ export class AgentWork {
   /** The last account check, kept for the balance (runtime.serp). The rows it already counts are dropped from memory. */
   private noteAccount(a: AccountInfo): void {
     const at = new Date(this.d.now()).toISOString();
-    this.d.store.update('runtime', (r) => ({ ...r, serp: { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at } }));
+    this.d.store.update('runtime', (r) => ({ ...r, serp: { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at, ...(a.planName ? { planName: a.planName } : {}) } }));
     const t = Date.parse(at);
     this.serpLedgerRows = this.serpRows().filter((row) => !(Date.parse(row.at) <= t));
   }
@@ -1278,6 +1334,11 @@ export class AgentWork {
     if (viaKeepa + viaSerpapi === 0) {
       return none(`Nothing can pay for a lookup now: ${lookupsSentence({ waiting: work.lookups.length, keepa: 0, serpapi: 0, blockedBy: plan.blockedBy, refillPerMin: store.get('runtime').keepa?.refillRate ?? null })}`);
     }
+    // Step 18: the cost blocker on the owner's click: the searches planned, inside his search limit (Keepa's in the scan).
+    if (viaSerpapi > 0) {
+      const held = this.costs.decide('serpapi', { what: 'These lookups', held: 'were not started', expected: viaSerpapi, high: viaSerpapi });
+      if (!held.allow) return none(held.reason!);
+    }
     try {
       this.begin('scan', () => this.scan('manual', undefined, { maxSearches, useReserve }));
     } catch (err) {
@@ -1300,6 +1361,7 @@ export class AgentWork {
       searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Scanning.', trigger, stopReason: null, error: null,
     };
     this.record(run);
+    this.costRun = run.id;
     // Nov 23: the steps after the runner; Look up all runs none of them.
     this.tail = { pipeline: newTailSteps() } as unknown as ScanJob;
     this.finishState = 'next';
@@ -1330,6 +1392,7 @@ export class AgentWork {
       const judge = pipelineOf(job).find((p) => p.id === 'judge');
       run.judgeCostUsd = judge?.costSoFar ?? 0;
       this.notedEbayKeys(job);
+      this.costs.count('ebay', (job.counts.ebaySearches ?? 0) + (job.counts.ebayItemReads ?? 0));
       const j = job;
       store.update('runtime', (r) => ({
         ...r, rates: addSamples(r.rates, samplesOf(j)),
@@ -1501,7 +1564,12 @@ export class AgentWork {
     // Nov 23: the reserve is the owner's, and only the owner's explicit say-so (Look up with "Use searches for these") spends it:
     // a manual scan keeps it like a scheduled one, and says so when the balance is already at or below it.
     this.reserveHeld = !lookups?.useReserve && account.totalSearchesLeft <= ext.reserve ? { left: account.totalSearchesLeft, reserve: ext.reserve } : null;
-    const budget = new SearchBudget(account, budgetPolicyFor(lookups ? lookupsCap(ext, lookups.maxSearches) : ext, reserveTrigger(lookups?.useReserve === true), again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
+    // Step 18: the cost blocker. The scan's searches run only when what they may use stays inside his search limit, and
+    // never get more than it leaves: a limit only lowers the per-scan cap; the reserve rules below hold as they are.
+    const serpOk = this.costGate('serpapi', this.serpScanStep(ext, lookups?.maxSearches), this.costRun, notes).allow;
+    const serpLeft = serpOk ? this.costs.left('serpapi') : 0;
+    const extHeld = serpLeft === null ? ext : lookupsCap(ext, serpLeft);
+    const budget = new SearchBudget(account, budgetPolicyFor(lookups ? lookupsCap(extHeld, lookups.maxSearches) : extHeld, reserveTrigger(lookups?.useReserve === true), again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
     const serpLedger = this.ledger(SERP_LEDGER);
     const client = new SerpApiClient({
       apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
@@ -1629,7 +1697,16 @@ export class AgentWork {
    */
   private async keepaDeps(s: ExtensionSettings, keys: StoredKeys, notes: string[]) {
     if (!keys.keepa || !s.amazonRefreshViaKeepa) return {};
-    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: s.keepaTokensPerScan > 0 ? s.keepaTokensPerScan : Number.POSITIVE_INFINITY });
+    // Step 18: the cost blocker. Keepa in this scan only when what a scan uses at the high end (his scans, else the per-scan
+    // cap, else the tokens above the reserve) stays inside his token limit; never more than the limit leaves.
+    const known = this.d.store.get('runtime').keepa?.tokensLeft;
+    const cap = s.keepaTokensPerScan > 0 ? s.keepaTokensPerScan : Math.max(KEEPA_LOOKUP_TOKEN_ESTIMATE, (known ?? 0) - s.keepaReserve);
+    const h = scanHistory(this.d.store.get('activity').runs, (r) => r.keepaTokensUsed, this.d.now());
+    const step: CostStep = { what: "The scan's Keepa lookups", held: 'were not made', expected: Math.min(h?.expected ?? cap, cap), high: Math.min(h?.high ?? cap, cap) };
+    if (!this.costGate('keepa', step, this.costRun, notes).allow) return {};
+    const keepaLeft = this.costs.left('keepa');
+    const perScan = s.keepaTokensPerScan > 0 ? s.keepaTokensPerScan : Number.POSITIVE_INFINITY;
+    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: keepaLeft === null ? perScan : Math.min(perScan, keepaLeft) });
     const keepa = this.keepaClient(keys.keepa, keepaBudget);
     const status = await this.keepaStatus(keepa);
     if (status === null) {
@@ -1679,7 +1756,9 @@ export class AgentWork {
       notes.push(`eBay listings were not checked: no price is known for ${judge.model}, so the monthly AI limit could not hold.`);
       return null;
     }
-    if (spent + estimate > app.ai.monthlyCapUsd) {
+    // Step 18: the cost blocker (the AI limit and the total budget), then the cap as it always held.
+    if (!this.costGate('ai', { what: 'eBay listing checks', held: 'were not made', expected: estimate, high: estimate }, this.costRun, notes).allow) return null;
+    if (spent + estimate > this.costs.aiCapUsd(spent)) {
       notes.push(`eBay listings were not checked: this month's AI limit of $${app.ai.monthlyCapUsd.toFixed(2)} would be passed.`);
       return null;
     }
@@ -1816,6 +1895,25 @@ export class AgentWork {
       now: this.d.now,
     }), this.scanStore);
     const model = (p: typeof pipelines.assist | typeof pipelines.research) => (p.ok ? { ok: true as const, model: p.value.model } : { ok: false as const, error: p.error });
+    const spentUsd = aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, this.d.now());
+    // Step 18: the cost blocker before the automatic Review cards (not the owner's own Ask AI, held in askQuestion): what
+    // they cost in his scans, else each question's estimate, inside the AI limit and the total budget.
+    if (!only) {
+      const open = (await this.scanStore.listReview()).filter((q) => q.answer === null);
+      const queue = askQueueOf(open, store.get('suggestions'));
+      const each = queue.map((q) => {
+        const m = q.kind === 'split' ? pipelines.research : pipelines.assist;
+        return m.ok ? estimatedQuestionCost(q.kind, m.value.model) ?? 0 : 0;
+      });
+      const sum = each.reduce((a, b) => a + b, 0);
+      const h = scanHistory(store.get('activity').runs, (r) => r.aiCostUsd - (r.judgeCostUsd ?? 0), this.d.now());
+      if (sum > 0) {
+        const d = this.costGate('ai', { what: 'Review cards', held: 'were not written', expected: Math.min(h?.expected ?? sum, sum), high: Math.min(h?.high ?? sum, sum) }, this.costRun);
+        if (!d.allow) {
+          return { asked: 0, suggested: 0, verified: 0, costUsd: 0, waitingForChrome: 0, problem: d.reason };
+        }
+      }
+    }
     const pass = await runAiPass({
       store: this.scanStore,
       suggestions: () => store.get('suggestions'),
@@ -1824,8 +1922,9 @@ export class AgentWork {
       models: { assist: model(pipelines.assist), research: model(pipelines.research) },
       askOne,
       chromeConnected: this.d.helperConnected,
-      spentUsd: aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, this.d.now()),
-      capUsd: app.ai.monthlyCapUsd,
+      spentUsd,
+      // The owner's own ask was weighed against the budget when he pressed it; the AI limit holds either way.
+      capUsd: only ? app.ai.monthlyCapUsd : this.costs.aiCapUsd(spentUsd),
       signal: this.stopCtl.signal,
       now: this.d.now,
       ...(only ? { only } : {}),
@@ -1855,7 +1954,8 @@ export class AgentWork {
         allowAsk,
         chromeConnected: this.d.helperConnected,
         spentUsd: aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, this.d.now()),
-        capUsd: app.ai.monthlyCapUsd,
+        // Step 18: the owner's own ask (`only`) was weighed when he pressed it; the automatic loop keeps to the budget too.
+        capUsd: only ? app.ai.monthlyCapUsd : this.costs.aiCapUsd(aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, this.d.now())),
         signal: this.stopCtl.signal,
         now: this.d.now,
         afterKeep: briefAfterKeep(this.briefCtx()),
@@ -1885,6 +1985,17 @@ export class AgentWork {
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
     const p = item.kind === 'split' ? pipelines.research : pipelines.assist;
+    // Step 18: the cost blocker on the owner's click. Past the AI limit it is a hard stop, as the cap always was; past the
+    // total budget it says the same sentence and asks him to confirm (`canForce`, then { force: true }).
+    const est = p.ok ? estimatedQuestionCost(item.kind, p.value.model) : null;
+    if (est !== null) {
+      const d = this.costs.decide('ai', { what: 'The AI answer', held: 'was not asked for', expected: est, high: est });
+      if (!d.allow && d.reason) {
+        const pastLimit = d.limit !== null && d.used + d.high > d.limit;
+        if (pastLimit) return { queued: false, reason: d.reason };
+        if (!force) return { queued: false, reason: `${d.reason} Ask anyway to spend it.`, canForce: true, costUsd: est };
+      }
+    }
     const plan = await askPlan({
       store: this.scanStore, suggestions: store.get('suggestions'), item, force,
       model: p.ok ? { ok: true, model: p.value.model } : { ok: false, error: p.error },
@@ -1927,7 +2038,11 @@ export class AgentWork {
 
   /** Step 16: what the plain brief above a Review question is written with (agent/brief.ts). */
   private briefCtx(): BriefCtx {
-    return { store: this.d.store, scanStore: this.scanStore, keyFor: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn, now: this.d.now, signal: this.stopCtl.signal };
+    return {
+      store: this.d.store, scanStore: this.scanStore, keyFor: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn, now: this.d.now, signal: this.stopCtl.signal,
+      // Step 18: the briefs keep to the total budget as well as the AI limit.
+      capUsd: (spentUsd) => this.costs.aiCapUsd(spentUsd),
+    };
   }
 
   /** Step 16: unverified AI answers checked again with what the scan stored since (agent/reverify.ts). No AI call. Returns how many verified. */
@@ -2068,6 +2183,7 @@ export class AgentWork {
       const startedAt = this.d.now();
       const run: RunRecord = { id: `run-${startedAt}`, kind: 'ask', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Asking the AI.', trigger: 'manual' };
       this.record(run);
+      this.costRun = run.id;
       const r = await this.aiPass(only, force);
       const applied = await this.autopilot();
       await this.refresh();
@@ -2305,6 +2421,10 @@ export class AgentWork {
     const wanted = await autoConfirmWanted(base);
     this.autoConfirmNextAt = now + AUTO_CONFIRM_EVERY_MS;
     if (wanted.length === 0) return null;
+    // Step 18: the cost blocker. The listing check's searches today (at most its daily allowance) inside his search limit.
+    const perDay = app.lookups?.verifySearchesPerDay ?? 5;
+    const high = Math.max(1, Math.min(wanted.length, perDay));
+    if (!this.costGate('serpapi', { what: 'The listing check', held: 'was not made', expected: high, high }, mode === 'scan' ? this.costRun : `drip:${localDate(now)}`).allow) return null;
     const ledger = this.ledger(SERP_LEDGER);
     const startedAt = this.d.now();
     const stop = (): boolean => (mode === 'drip' ? !this.dripAllowed() || this.dripCtl.signal.aborted : this.stopCtl.signal.aborted);
@@ -2393,16 +2513,21 @@ export class AgentWork {
   }
 
   /** Look up or Verify, the owner's click: within the per-scan limit, and like Scan now it may spend the reserve. */
-  paid(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {
+  paid(bundleKey: string, kind: 'lookUp' | 'verify', model?: string, force = false): Promise<{ searchesUsed: number; held?: string }> {
     // The slot is taken before the first await; a refusal below frees it (track).
     this.claim('paid');
-    return this.track(this.afterDrip(() => this.paidClaimed(bundleKey, kind, model)));
+    return this.track(this.afterDrip(() => this.paidClaimed(bundleKey, kind, model, force)));
   }
 
-  private async paidClaimed(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {
+  private async paidClaimed(bundleKey: string, kind: 'lookUp' | 'verify', model?: string, force = false): Promise<{ searchesUsed: number; held?: string }> {
     const keys = this.d.store.get('keys');
     if (!keys.serpapi) throw new WorkRefused('Add your SerpApi key in Settings.');
-    const { action } = await this.paidPlan(bundleKey, kind, model);
+    const { action, searches } = await this.paidPlan(bundleKey, kind, model);
+    // Step 18: the cost blocker on the owner's click says its sentence and asks him to confirm; `force` is his yes.
+    if (!force && searches > 0) {
+      const d = this.costs.decide('serpapi', { what: kind === 'verify' ? 'Verify' : 'Look up', held: 'was not started', expected: searches, high: searches });
+      if (!d.allow) return { searchesUsed: 0, held: `${d.reason} Confirm to spend anyway.` };
+    }
     const ext = extensionSettingsOf(this.d.store.get('settings'));
     let account: AccountInfo;
     try {
@@ -2492,6 +2617,7 @@ export class AgentWork {
     const pending = store.get('runtime').telegram.pending;
     if (!tg || (!text && pending.length === 0)) return null;
     const sent = await sendPending(this.d.fetchFn, tg, pending, text ? { text, at: new Date(this.d.now()).toISOString() } : null);
+    this.costs.count('telegram', sent.sent);
     const at = new Date(this.d.now()).toISOString();
     store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
     if (!sent.error) return null;
@@ -2506,6 +2632,7 @@ export class AgentWork {
     const pending = this.d.store.get('runtime').telegram.pending;
     if (!tg || pending.length === 0) return null;
     const sent = await sendPending(this.d.fetchFn, tg, pending, null);
+    this.costs.count('telegram', sent.sent);
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
     return sent.error ? `Telegram: ${sent.error} The message is sent again after the next run.` : null;
