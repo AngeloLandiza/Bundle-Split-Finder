@@ -16,6 +16,7 @@ import type { PartTrend } from '../keepa/trends';
 import { fulfillmentGap } from '../scan/report';
 import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption, VerifiedBy } from '../scan/types';
 import { DEFAULT_MIN_MONTHLY_SOLD, estimateRoiPercent, type AlertSettings } from '../settings';
+import { optionMarket, todayOnlyVerdict, usualFailWords, usualHoldsWords, type OptionMarket } from './market';
 
 /** A part's stored Keepa trend by ASIN (keepa:trend:<asin> in the cache). */
 export type TrendLookup = (asin: string) => PartTrend | undefined;
@@ -302,6 +303,11 @@ export interface OptionSignals {
    * "No sales data for DCS382B yet — Keepa is asked on the next lookup."); null when it is.
    */
   notBuyNow: string | null;
+  /**
+   * The market around each counted part's listing (core/src/tracking/market.ts), from the stored Keepa trends, and the
+   * estimate at the usual prices when a part is unusually priced. Absent when no counted part has market figures stored.
+   */
+  market?: OptionMarket;
 }
 
 export interface BundleSignals {
@@ -410,6 +416,9 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       monthlySold: velocity.slowest?.monthlySold ?? null,
     };
     const meets = profit !== null && roi !== null && profit >= alerts.minProfit && roi >= alerts.minRoiPercent;
+    // The market (Nov 25): a part counted at a price unusual for its listing is judged at its 90-day average too.
+    const market = optionMarket(o, input.trend, alerts);
+    const usual = market?.usual ?? null;
     const lastP = baseline.last?.profit ?? null;
     const lastR = baseline.last?.roiPercent ?? null;
     const thresholds = `your ${usd(alerts.minProfit)} and ${pct(alerts.minRoiPercent)} thresholds`;
@@ -461,6 +470,8 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       } else if (roi < alerts.minRoiPercent) {
         fails.push(`est. ROI ${pct(roi)} is below your ${pct(alerts.minRoiPercent)} (profit ${usd(profit)})`);
       }
+      // Rule 1 of the market: a buy clears the owner's numbers at today's prices and at the usual ones.
+      if (meets && usual !== null && !usual.meets) fails.push(usualFailWords(usual, alerts));
       // Signals round 3: an estimate missing a fulfillment fee is never a buy (a profit already below the number binds first).
       const before = beforeFulfillmentWords(o.parts, input.flatFee ?? 0, input.keepa);
       if (before !== null) fails.push(before);
@@ -508,17 +519,22 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       ...(pending ? { buyPending: { listings: pendingAsins.length, asins: pendingAsins } } : {}),
       ...(pendingAsins.length > 0 ? { unconfirmed: pendingAsins } : {}),
       notBuyNow,
+      ...(market ? { market } : {}),
     });
     const figures = () => `+${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month`;
     // The state in the present tense; how it moved since the last check is information, never the reason.
     const moved = buyNow && lastP !== null && Math.abs(profit! - lastP) >= 0.005 && (profit! < lastP || whyShort === '')
       ? `. ${profit! < lastP ? 'Down' : 'Up'} from ${usd(lastP)} at the last check`
       : '';
+    // Held back by its usual prices alone: it says so in those words, not as "not worth buying".
+    const todayOnly = !buyNow && usual !== null && !usual.meets && fails.length === 1 && fails[0] === usualFailWords(usual, alerts);
     verdicts.set(o.id, buyNow
-      ? `Worth buying now: ${figures()}${whyShort ? `, ${whyShort}` : ''}${moved}`
-      : pending && !input.held
-        ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
-        : `Not worth buying now: ${fails.join('; ')}`);
+      ? `Worth buying now: ${figures()}${whyShort ? `, ${whyShort}` : ''}${moved}${usual ? `. ${usualHoldsWords(usual)}` : ''}`
+      : todayOnly
+        ? todayOnlyVerdict(usual, alerts)
+        : pending && !input.held
+          ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
+          : `Not worth buying now: ${fails.join('; ')}`);
   }
   const best = buys.reduce<Signal | null>((a, b) => (a === null || (b.numbers.profit ?? 0) > (a.numbers.profit ?? 0) ? b : a), null);
   const held = best === null ? pendings.reduce<(typeof pendings)[number] | null>((a, b) => (a === null || b.profit > a.profit ? b : a), null) : null;
