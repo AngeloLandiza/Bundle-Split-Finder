@@ -14,6 +14,7 @@
 
 import type { PartTrend } from '../keepa/trends';
 import { fulfillmentGap } from '../scan/report';
+import { cannotBuyWords } from './buying';
 import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption, VerifiedBy } from '../scan/types';
 import { DEFAULT_MIN_MONTHLY_SOLD, estimateRoiPercent, type AlertSettings } from '../settings';
 import { optionMarket, todayOnlyVerdict, usualFailWords, usualHoldsWords, type OptionMarket } from './market';
@@ -399,6 +400,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
   }
   const firstSeen = confirmed && history.length === 0;
 
+  const cannotBuy = cannotBuyWords(row.buying, now);
   const options: OptionSignals[] = [];
   const buys: Signal[] = [];
   const pendings: { optionId: string; listings: number; asins: string[]; profit: number }[] = [];
@@ -499,6 +501,9 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     // A sanity hold binds first: the deal waits for the owner's look, whatever else holds or fails. A buy held back for its
     // listings keeps its buyPending (the catalog check still reads those listings first), but is never "looks worth buying".
     if (input.held) fails.unshift(`needs a look: ${input.held.replace(/\.$/, '')}`);
+    // Nov 25: Home Depot's own page, as last read, says it cannot be bought (not buyable, or discontinued). It comes back by
+    // itself when a later read says it can. A bundle whose page was not read since this was kept is not here: not checked yet.
+    if (cannotBuy !== null) fails.unshift(cannotBuy);
     const notBuyNow = fails.length > 0 ? `${capital(fails.join('; '))}.` : null;
     const buyNow = notBuyNow === null;
     if (buyNow) {
@@ -532,7 +537,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       ? `Worth buying now: ${figures()}${whyShort ? `, ${whyShort}` : ''}${moved}${usual ? `. ${usualHoldsWords(usual)}` : ''}`
       : todayOnly
         ? todayOnlyVerdict(usual, alerts)
-        : pending && !input.held
+        : pending && !input.held && cannotBuy === null
           ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
           : `Not worth buying now: ${fails.join('; ')}`);
   }

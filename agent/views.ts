@@ -3,6 +3,7 @@
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
 import { backlogSentence, ceilingWords, dripCeiling, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { dayOf } from '../core/src/tracking/state';
+import { buyingView } from '../core/src/tracking/buying';
 import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
 import { keepCurrentView } from './keepCurrent';
 import type { HomeDepotPaceState } from '../core/src/api/contract';
@@ -302,6 +303,8 @@ export function homeDepotView(data: Pick<StoreData, 'runtime'>, now: number): Ho
 export function keptNote(r: DealRow, data: Pick<StoreData, 'deals'> & Partial<Pick<StoreData, 'tracking'>>, now: number): DealRow {
   const b = data.tracking ? data.deals.bundles.find((x) => x.key === r.id) : undefined;
   const d = b && data.tracking ? keptDealOf(b, data.tracking) : null;
+  // Nov 25: what Home Depot's page states about buying it, on a row that has a reading or is watched ("not checked yet").
+  if (b && (b.buying !== undefined || d !== null)) r = { ...r, buying: buyingView(b.buying, { profit: b.estimate?.profit ?? null, priceSeenAt: b.seenAt, now }) };
   if (!d) return r;
   const c = pricesChecked(d);
   const stale = staleSince(d, now);

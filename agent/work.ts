@@ -27,6 +27,7 @@ import { keepCodeSample } from '../core/src/keepa/barcode';
 import { readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
 import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/scan/answers';
+import { withBuying, withoutBuying } from '../core/src/scan/buying';
 import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
 import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, NOTICE as EBAY_NOTICE } from '../core/src/scan/ebayPass';
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
@@ -41,6 +42,7 @@ import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tr
 import {
   bogoDigestLines, bogoGroups, mergeBogoPairs, pairBundleRecord, pairFacts, pairsBehindBest, readBogoPass, todayOf, type BogoBrandResult, type BogoGroup,
 } from '../core/src/tracking/bogoPairs';
+import { priceEndsMessages } from '../core/src/tracking/buying';
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { announcedAfter, dayOf, freshSignals, trackReport } from '../core/src/tracking/state';
@@ -490,6 +492,7 @@ export class AgentWork {
         this.jobFailed('The scheduler', err);
       }
       void this.flushMessages().catch((err: unknown) => this.jobFailed('Sending the held messages', err));
+      void this.announcePriceEnds().catch((err: unknown) => this.jobFailed('Telling you a price is about to end', err));
     }, TICK_MS);
     this.timer.unref?.();
   }
@@ -1047,7 +1050,7 @@ export class AgentWork {
         pages += 1;
         const b = await store.getBundle(key);
         if (got?.kind === 'read' && b) {
-          await store.putBundle({ ...b, page: { ...got.content, readAt: now() } });
+          await store.putBundle(withBuying({ ...b, page: { ...withoutBuying(got.content), readAt: now() } }, got.content.buying, now()));
           settled += await this.splitAgain([key]);
         }
       } else {
@@ -1093,11 +1096,15 @@ export class AgentWork {
     this.noteKeep({ pages: out.pages, ...(out.refused ? {} : { tried: `hd:${out.deal.key}` }) });
     await this.noteBacklog().catch(() => null);
     this.hdRecord(out.pages, 0, 0, out.checked ? 1 : 0);
-    if (out.changed) await this.refresh(undefined, before);
-    else if (out.checked) {
-      // The same price, checked now: the deal's row says so (no rebuild needed).
+    // Nov 25: a price that moved, or what the page states about buying it (can be bought now, the limit, the dates), judges again.
+    if (out.changed || out.buyingChanged) await this.refresh(undefined, before);
+    else if (out.checked || out.buying) {
+      // The same price and the same statements, read now: the deal's row says so (no rebuild needed).
       const at = this.d.now();
-      this.d.store.update('deals', (d) => ({ ...d, bundles: d.bundles.map((b) => (b.key === out.deal.key ? { ...b, seenAt: at } : b)) }));
+      this.d.store.update('deals', (d) => ({
+        ...d,
+        bundles: d.bundles.map((b) => (b.key === out.deal.key ? { ...b, ...(out.checked ? { seenAt: at } : {}), ...(out.buying ? { buying: out.buying } : {}) } : b)),
+      }));
       this.d.changed();
     } else this.d.changed();
     return out.pages;
@@ -2740,6 +2747,36 @@ export class AgentWork {
   async announceWeekly(w: WeeklySummary): Promise<void> {
     this.policy.send({ kind: 'weekly', title: 'Split Finder', body: w.short, route: '/today' });
     await this.sendTelegram(w.text);
+  }
+
+  /**
+   * Nov 25: a Buy now deal whose Home Depot price ends within PRICE_ENDS_WITHIN_DAYS days is said once (per deal and end
+   * date), through the same channels as a buy line: the notification policy (kind switch, quiet hours, the morning digest)
+   * and Telegram, when the owner has alerts on. A deal whose prices are stale is not said (it waits for its read).
+   */
+  async announcePriceEnds(): Promise<number> {
+    const { store } = this.d;
+    if (!store.get('settings').alerts.enabled) return 0;
+    const now = this.d.now();
+    const data = { deals: store.get('deals'), tracking: store.get('tracking') };
+    const stale = staleBuyKeys(data, now);
+    const buyNow = data.deals.bundles.filter((b) => data.tracking.watch[b.key]?.watched === true && (data.tracking.signals[b.key]?.buyNow ?? null) !== null && !stale.has(b.key));
+    const due = priceEndsMessages(
+      buyNow.map((b) => ({ key: b.key, model: b.model || `Set ${b.itemId}`, link: b.link, price: b.price, profit: b.estimate?.profit ?? null, buying: b.buying })),
+      now, data.tracking.notified,
+    );
+    if (due.length === 0) return 0;
+    store.update('tracking', (t) => ({ ...t, notified: [...t.notified, ...due.map((m) => m.notifiedKey)].slice(-2000) }));
+    due.forEach((m, i) => {
+      this.record({
+        id: `run-${now}-priceends-${i}`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: new Date(now).toISOString(), status: 'finished',
+        searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: m.sentence, trigger: 'scheduled',
+      });
+    });
+    const text = due.map((m) => m.sentence).join('\n');
+    const sent = this.policy.digest({ kind: 'deal', title: 'Split Finder', body: text, count: due.length, route: '/' }, text);
+    await this.sendTelegram(sent);
+    return due.length;
   }
 
   /** Quiet hours ended or the morning came: the held notifications go out, and the morning digest to Telegram. */

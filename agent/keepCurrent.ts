@@ -8,11 +8,12 @@ import type { KeepCurrentState } from '../core/src/api/contract';
 import type { TokenBudget } from '../core/src/keepa/budget';
 import { dripCeiling, fullPerHour, paceStateOf } from '../core/src/scan/hdPace';
 import { savePrice } from '../core/src/scan/runner';
-import type { ScanStore } from '../core/src/scan/types';
+import { sameBuying, withBuying } from '../core/src/scan/buying';
+import type { BundleBuying, ScanStore } from '../core/src/scan/types';
 import { parseAmazonProduct } from '../core/src/serpapi/parsers';
 import type { PromoPageOutcome } from '../core/src/tracking/bogoPairs';
 import {
-  amazonDue, HD_KEEP_CURRENT_PAGES_PER_DAY, hdDue, KEEP_CURRENT_CACHE_MS, keepCost, keepSentence, keepUsageOf, keptDeals, snapshotOf, staleSince,
+  amazonDue, endedUnread, HD_KEEP_CURRENT_PAGES_PER_DAY, hdDue, KEEP_CURRENT_CACHE_MS, keepCost, keepSentence, keepUsageOf, keptDeals, snapshotOf, staleSince,
   type AmazonDue, type DealSnapshot, type KeepTier, type KeepUsage, type KeptDeal,
 } from '../core/src/tracking/keepCurrent';
 import type { ProductPull } from './signalsPass';
@@ -25,7 +26,8 @@ export const keptNow = (data: Data): KeptDeal[] => keptDeals(data.deals.bundles,
 
 /** The Buy now deals whose prices are older than the stated limit: shown so, and never announced. */
 export function staleBuyKeys(data: Data, now: number): Set<string> {
-  return new Set(keptNow(data).filter((d) => staleSince(d, now) !== null).map((d) => d.key));
+  // Nov 25: and one whose Home Depot promotion ended since its price was last read: it waits for that read (endedUnread).
+  return new Set(keptNow(data).filter((d) => staleSince(d, now) !== null || (d.tier === 'buyNow' && endedUnread(d, now))).map((d) => d.key));
 }
 
 /** What each watched deal's verdict rests on now (before a refresh), by key. */
@@ -90,6 +92,10 @@ export interface HdKeepOutcome {
   checked: boolean;
   /** The price (or was-price) is not the stored one. */
   changed: boolean;
+  /** Nov 25: what the page stated about buying it, as now stored (read now); absent when the page stated none. */
+  buying?: BundleBuying;
+  /** What the page stated about buying it is not what was stored: the deal is judged again (it may no longer be, or be again, buyable). */
+  buyingChanged?: boolean;
   /**
    * Home Depot refused the page (the pace's cool-down pauses every read): not a try, so the deal is read first again once
    * reading goes on. A page with no price for it is a try: not asked again before its cadence.
@@ -103,8 +109,9 @@ const percentOff = (price: number | null, was: number | null): number | null =>
 /**
  * The next due deal's own Home Depot page, read once. A page of that item with a price is the deal's price now: its
  * record's price (and was-price, when the page gives one) and seenAt move; anything else (refused, unreadable, no price,
- * another item) changes nothing. Throws what Chrome throws (it did not answer). Null when no deal is due or today's
- * share is read.
+ * another item) changes nothing about the price. Nov 25: what the page states about buying it (can be bought, the limit, the
+ * promotion's dates) is kept whenever the page is the item's, with a price or without one. Throws what Chrome throws (it did
+ * not answer). Null when no deal is due or today's share is read.
  */
 export async function readOneDue(d: HdKeepDeps, kept: readonly KeptDeal[], usage: KeepUsage): Promise<HdKeepOutcome | null> {
   if (usage.pages >= HD_KEEP_CURRENT_PAGES_PER_DAY) return null;
@@ -113,15 +120,23 @@ export async function readOneDue(d: HdKeepDeps, kept: readonly KeptDeal[], usage
   const got = (await d.readPromoPages([deal.itemId])).find((o) => o.itemId === deal.itemId);
   if (!got || got.kind === 'skipped') return { deal, pages: 0, checked: false, changed: false };
   if (got.kind === 'refused') return { deal, pages: 1, checked: false, changed: false, refused: true };
-  if (got.kind !== 'read' || got.page.itemId !== deal.itemId || got.page.price === null) return { deal, pages: 1, checked: false, changed: false };
+  if (got.kind !== 'read' || got.page.itemId !== deal.itemId) return { deal, pages: 1, checked: false, changed: false };
   const rec = await d.store.getBundle(deal.key);
   if (!rec) return { deal, pages: 1, checked: false, changed: false };
+  const at = d.now();
+  const facts = got.page.buying;
+  const kept2 = withBuying(rec, facts, at);
+  const stated = facts !== undefined ? { buying: kept2.buying!, buyingChanged: !sameBuying(rec.buying, facts) } : {};
+  if (got.page.price === null) {
+    if (facts !== undefined) await d.store.putBundle(kept2);
+    return { deal, pages: 1, checked: false, changed: false, ...stated };
+  }
   const price = got.page.price;
   const regularPrice = got.page.wasPrice ?? rec.regularPrice;
   const changed = price !== rec.price || regularPrice !== rec.regularPrice;
   const off = changed ? percentOff(price, regularPrice) : rec.percentOff;
-  await d.store.putBundle({ ...rec, price, regularPrice, percentOff: off, seenAt: d.now() });
-  return { deal, pages: 1, checked: true, changed };
+  await d.store.putBundle({ ...kept2, price, regularPrice, percentOff: off, seenAt: at });
+  return { deal, pages: 1, checked: true, changed, ...stated };
 }
 
 export interface KeepaKeepDeps {

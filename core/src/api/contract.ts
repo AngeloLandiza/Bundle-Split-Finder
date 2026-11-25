@@ -441,6 +441,38 @@ export interface DealRow {
    * (PRICES_STALE_MS), since when: the row says "Prices not checked since …" and it is not announced. Never hidden by a verdict.
    */
   pricesChecked?: { homeDepotAt: string; amazonAt: string | null; staleSince?: string };
+  /**
+   * Nov 25: what Home Depot's own page last stated about buying the deal (core/src/tracking/buying.ts): can it be bought, the
+   * per-order limit, the return window, when the promotion's price ends. Never stock at a store or a delivery date: the page
+   * does not state them. Absent on a row that is not a bundle of the deals list.
+   */
+  buying?: DealBuying;
+}
+
+/**
+ * What Home Depot's page states about buying a deal, in words (rule 5: the profit allowance is an estimate). `state` is
+ * 'unchecked' when no page has been read since this was kept: the line says "not checked yet", never "cannot be bought".
+ */
+export interface DealBuying {
+  state: 'unchecked' | 'can' | 'cannot' | 'unstated';
+  /** "Home Depot's page says it can be bought online (read 10:55 AM)", "... cannot be bought right now (read ...)", "... not checked yet". */
+  line: string;
+  /** When the page was read (ISO); null while not checked yet. */
+  readAt: string | null;
+  /** The per-order limit the page states; null when it states none. */
+  limit: number | null;
+  /** "Limit 3 per order"; null without a limit. */
+  limitLine: string | null;
+  /** "Up to 3 per order: about +$107 at this estimate (an estimate ...)"; null without a limit above 1 or a profit above 0. */
+  limitProfitLine: string | null;
+  /** The promotion's last day (YYYY-MM-DD), when the page states it. */
+  priceEnds: string | null;
+  /** "Home Depot's price ends Jan 31", or after the end "Home Depot's price ended Jan 31; it has not been read since"; null otherwise. */
+  priceEndsLine: string | null;
+  /** The promotion ended and Home Depot's price has not been read since. */
+  priceEnded: boolean;
+  /** "90-Day returns, per Home Depot's page"; null when the page states none. */
+  returnsLine: string | null;
 }
 
 /** One sanity finding as the app shows it, with where to check it by eye (Home Depot first, then Amazon). */
