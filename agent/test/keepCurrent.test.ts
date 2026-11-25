@@ -198,15 +198,15 @@ describe("Home Depot's price of a Buy now or watched deal, re-read between scans
     expect(taken).toEqual(['344305163', '341965772', '341966856']);
     // Each the same price: only its checked time moved, and the row says it.
     expect(row(SAW).pricesChecked!.homeDepotAt).toBe(new Date((await agent.work.scanStore.getBundle(SAW))!.seenAt).toISOString());
-    await read(31);
-    // Then the 31 other watched deals, each once.
+    await read(32);
+    // Then the 32 other watched deals, each once (31 before Nov 25's rules F and G settled more of the owner's bundles).
     const watched = new Set(Object.keys(agent.store.get('tracking').watch).map((k) => k.replace('homedepot:', '')));
-    expect(taken).toHaveLength(34);
+    expect(taken).toHaveLength(35);
     expect(new Set(taken)).toEqual(watched);
-    expect(agent.store.get('runtime').keepCurrent).toMatchObject({ pages: 34 });
+    expect(agent.store.get('runtime').keepCurrent).toMatchObject({ pages: 35 });
     // The next reads are the pages bundles wait for, not these deals again.
     await read(2);
-    expect(taken.slice(34).every((id) => !watched.has(id))).toBe(true);
+    expect(taken.slice(35).every((id) => !watched.has(id))).toBe(true);
     // Four hours after their read, the Buy now deals come first again; no watched deal before its 12 hours.
     const first = taken.length;
     clock = T0 + HD_RECHECK_BUY_NOW_MS + 4 * HD_DRIP_GAP_MS;
@@ -350,9 +350,9 @@ describe("Amazon's price of each part of those deals, refreshed through Keepa", 
     await ownersApp({ keepa: true });
     agent.store.update('runtime', (r) => ({ ...r, keepa: { tokensLeft: 100, refillIn: 0, refillRate: 1, at: new Date(clock).toISOString() } }));
     const k = state().agent.keepCurrent!;
-    // Rebuilt from the scan store (the app's checks at start included), the watched deals hold 43 distinct listings: 146
-    // tokens. The deals as the owner's app stored them hold 44: 148 (core/test/keep-current.test.ts).
-    expect(k).toMatchObject({ buyNow: 3, watched: 31, pagesPerDay: 80, tokensPerDay: 146, pageShare: 120, tokenShare: 360, keepa: true, pagesWaiting: 0, pullsWaiting: 0 });
-    expect(k.sentence).toMatch(/^Keeping 3 Buy now deals and 31 other watched deals current: about 80 Home Depot pages a day .* and about 146 Keepa tokens a day for 43 Amazon prices /);
+    // Rebuilt from the scan store (the app's checks at start included, Nov 25's split rules among them), the watched deals
+    // hold 44 distinct listings: 148 tokens. The deals as the owner's app stored them hold 44: 148 (core/test/keep-current.test.ts).
+    expect(k).toMatchObject({ buyNow: 3, watched: 32, pagesPerDay: 82, tokensPerDay: 148, pageShare: 120, tokenShare: 360, keepa: true, pagesWaiting: 0, pullsWaiting: 0 });
+    expect(k.sentence).toMatch(/^Keeping 3 Buy now deals and 32 other watched deals current: about 82 Home Depot pages a day .* and about 148 Keepa tokens a day for 44 Amazon prices /);
   });
 });

@@ -106,6 +106,22 @@ const RULES: Rule[] = [
     match: /^Home Depot['’]s search found no (\S+) sold by itself$/i,
     say: (m) => `Home Depot does not sell ${m[1]} on its own, so its page cannot confirm what is inside.`,
   },
+  // Nov 25 (questions, round 2: core/src/scan/settle.ts rule G and the notes it leaves), word for word.
+  {
+    // '21' is DCF921B, the one model the page names that ends in 21 (DCKTS681D1P1W21)
+    match: /^'([^']+)' is (\S+), the one model the page names that ends in \1$/i,
+    say: (m) => `The model number ends in ${m[1]}, and ${m[2]} is the one model Home Depot’s page names that ends in ${m[1]}.`,
+  },
+  {
+    // page names DCD999, DCF887, DCL040, which do not fit the model number (pageSplit.ts)
+    match: /^page names (.+), which do not fit the model number$/i,
+    say: (m) => `Home Depot’s page also names ${m[1]}, which the model number does not give.`,
+  },
+  {
+    // the title does not name what Home Depot's page of DCS382B is (20V MAX Cordless Brushless Reciprocating Saw (Tool Only))
+    match: /^the title does not name what Home Depot['’]s page of (\S+) is(?: \((.+)\))?$/i,
+    say: (m) => `Home Depot sells ${m[1]}${m[2] ? ` as “${m[2]}”` : ''}, which the bundle’s title does not name.`,
+  },
 ];
 
 /** One note in plain words, or null when this file does not know it. */

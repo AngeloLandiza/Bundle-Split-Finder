@@ -458,6 +458,7 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   owner_fact: 'Your answer',
   hd_set: 'Home Depot set page',
   amazon_catalog: "Amazon's catalog record",
+  hd_same_title: 'Home Depot page of the same set',
 };
 
 function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {

@@ -5,7 +5,7 @@
 // (tests, the command line) with an in-memory store and in the extension's service
 // worker with IndexedDB behind the same ScanStore.
 
-import type { Decomposition, SetContent, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
+import type { Decomposition, PageConflict, SetContent, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
 import type { PartFact } from '../facts/fact';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
 import type { PageContent } from '../hdPage';
@@ -716,6 +716,8 @@ export interface ReviewItem {
    */
   settledParts?: SettledPart[];
   unsettledParts?: UnsettledPart[];
+  /** Nov 25, split questions: the bundle's page and its kit's own page name different models for the kit (Decomposition.conflict). */
+  conflict?: PageConflict;
   /**
    * A match question the re-check opened (scan/recheck.ts) after no candidate passed: each listing it tried and why it was
    * not taken, so the owner starts where the app stopped. Absent on every other question.

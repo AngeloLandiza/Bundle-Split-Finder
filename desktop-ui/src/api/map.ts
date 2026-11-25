@@ -426,7 +426,7 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
   };
 }
 
-const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set', 'amazon_catalog'];
+const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set', 'amazon_catalog', 'hd_same_title'];
 
 /** Nov 24: a set's items as Home Depot lists them, each only with a brand, a model and an http(s) page. */
 export function setContentsOf(v: unknown): SetContent[] | undefined {

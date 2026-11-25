@@ -37,7 +37,8 @@ describe('the 24 questions of after-scan6, judged again at the start with no sca
   it('13 stay; the 11 others are settled, wait for a named free read, or are not estimated', async () => {
     const store = await store6();
     expect((await store.listReview()).filter((r) => r.answer === null)).toHaveLength(24);
-    const ids = await withdrawUnreadSplitQuestions(store, NOW);
+    // The Nov 25 rules (F, G) off: what these rules alone left (core/test/questions-round2.test.ts goes on from here).
+    const ids = await withdrawUnreadSplitQuestions(store, NOW, ['special_buy_twin', 'page_code']);
     const packs = await rejudgePackQuestions(store, DEFAULT_SCAN_SETTINGS, () => NOW);
     expect(packs).toEqual(['RYOBI:PBP2003']);
     expect(ids.sort()).toEqual([
@@ -60,7 +61,7 @@ describe('the 24 questions of after-scan6, judged again at the start with no sca
     expect(matchState(rows.get('332343419')!)).toBe("Waiting for Home Depot's page of DCB2460C");
     expect(matchState(rows.get('334594505')!)).toBe("Waiting for Home Depot's pages of PSBCK102K2 and A98401");
     // Judged again, nothing changes: the same 13.
-    expect(await withdrawUnreadSplitQuestions(store, NOW + 1)).toEqual([]);
+    expect(await withdrawUnreadSplitQuestions(store, NOW + 1, ['special_buy_twin', 'page_code'])).toEqual([]);
   });
 });
 

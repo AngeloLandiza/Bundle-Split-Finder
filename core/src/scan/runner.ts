@@ -31,7 +31,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit, setItemsUnread } from './split';
-import { partPageTarget } from './settle';
+import { partPageTarget, type SettleRule } from './settle';
 import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, reopenStep, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
@@ -2129,7 +2129,7 @@ export const pageRead = (bundle: Pick<BundleRecord, 'page' | 'set'>): boolean =>
  * Step 15: every other open split question is read again under the settle rules, and closed when they now settle its
  * split or make it wait for Home Depot's part pages. Returns the ids withdrawn or settled.
  */
-export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number): Promise<string[]> {
+export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number, off?: readonly SettleRule[]): Promise<string[]> {
   const out: string[] = [];
   let known: KnownModels | null = null;
   for (const item of await store.listReview()) {
@@ -2144,7 +2144,11 @@ export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number
     // Step 15: the question read again under the settle rules (scan/settle.ts), as the next scan would: a split they
     // settle is saved and its question closed as a scan closes one; one that now waits for Home Depot's part pages is
     // withdrawn. The owner's answers are never touched (only open questions are read).
-    known ??= await knownModels(store);
+    // `off`: settle rules left out, for the tests that replay an earlier day's rules only (core/test/fewer-questions.test.ts).
+    if (known === null) {
+      const k = await knownModels(store);
+      known = off ? { ...k, settle: { ...k.settle, off } } : k;
+    }
     const { split } = await splitOne(store, bundle, known, now, true);
     const after = await store.getReview(item.id);
     if (split.status === 'resolved' || (after && after.answer === RESOLVED_BY_SCAN)) out.push(item.id);
@@ -2223,7 +2227,11 @@ export async function splitOne(
   const reason = split.notes.join('; ');
   const choices = splitChoices(split);
   // Step 16 (round 2): which parts Home Depot's own pages confirmed and which not, so the question is about those only.
-  const narrow = { ...(split.settledParts ? { settledParts: split.settledParts } : {}), ...(split.unsettledParts ? { unsettledParts: split.unsettledParts } : {}) };
+  // Nov 25: two Home Depot pages that disagree on the kit, with both, so the card asks it in one look.
+  const narrow = {
+    ...(split.settledParts ? { settledParts: split.settledParts } : {}), ...(split.unsettledParts ? { unsettledParts: split.unsettledParts } : {}),
+    ...(split.conflict ? { conflict: split.conflict } : {}),
+  };
   if (!item || item.answer === RESOLVED_BY_SCAN) {
     // A new question, or one a scan closed and must ask again.
     await store.putReview({
@@ -2232,10 +2240,10 @@ export async function splitOne(
     });
     return { split, opened: true };
   }
-  const sameNarrow = JSON.stringify([item.settledParts ?? null, item.unsettledParts ?? null]) === JSON.stringify([narrow.settledParts ?? null, narrow.unsettledParts ?? null]);
+  const sameNarrow = JSON.stringify([item.settledParts ?? null, item.unsettledParts ?? null, item.conflict ?? null]) === JSON.stringify([narrow.settledParts ?? null, narrow.unsettledParts ?? null, narrow.conflict ?? null]);
   if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices) || !sameNarrow)) {
     // Still open: a new reading, the same question, so openedAt stays.
-    const { settledParts: _s, unsettledParts: _u, ...rest } = item;
+    const { settledParts: _s, unsettledParts: _u, conflict: _c, ...rest } = item;
     await store.putReview({ ...rest, reason, choices, ...narrow });
   }
   return { split, opened: false };

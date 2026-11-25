@@ -4,12 +4,12 @@
 // the app is doing about it or already did (the question's follow-up loop).
 
 import type { StoredSuggestion } from '../assist/stored';
-import type { SettledPart, UnsettledPart } from '../decompose';
+import type { PageConflict, SettledPart, UnsettledPart } from '../decompose';
 import type { ReviewFollowUp } from '../research/followUp';
 import type { EbayQuestion, ReviewItem } from '../scan/types';
 import { briefInputOf, poolOfLines, type BriefSourceLink } from './input';
 import { cutText, MAX_CHECK_CHARS, MAX_REASON_CHARS, rulesBrief } from './rules';
-import type { BriefCheck, BriefState, ReviewBrief } from './types';
+import type { BriefCheck, BriefReason, BriefState, ReviewBrief } from './types';
 import { checkWho } from './who';
 
 /**
@@ -86,6 +86,31 @@ export function narrowCheck(unsettled: readonly UnsettledPart[], total: number, 
   return { text: cutText(text, MAX_CHECK_CHARS), who: 'owner', ...(url ? { url, linkLabel: 'Home Depot page' } : link ? link : {}) };
 }
 
+/**
+ * Nov 25: the brief of a split question on two Home Depot pages that disagree on the kit (PageConflict): what each page
+ * names, with each page linked, and the owner's one decision. Nothing in it is a guess: both sides are quoted, neither is
+ * preferred, and the reading the model number gives is what approving takes.
+ */
+export function conflictBrief(c: PageConflict, brief: ReviewBrief): ReviewBrief {
+  const reasons: BriefReason[] = [
+    {
+      text: cutText(`This bundle's Home Depot page names ${listOf(c.bundleNames)}, which ${c.kit}'s own page does not.`, MAX_REASON_CHARS),
+      ...(c.bundleQuote ? { quote: cutText(c.bundleQuote, 160) } : {}), sourceLabel: 'Home Depot bundle page', ...(c.bundleUrl ? { url: c.bundleUrl } : {}),
+    },
+    {
+      text: cutText(`${c.kit}'s own Home Depot page names ${listOf(c.kitNames)}.`, MAX_REASON_CHARS),
+      ...(c.kitQuote ? { quote: cutText(c.kitQuote, 160) } : {}), sourceLabel: `Home Depot page of ${c.kit}`, ...(c.kitUrl ? { url: c.kitUrl } : {}),
+    },
+  ];
+  const text = `Home Depot's two pages disagree. If the box holds ${c.kit}, approve ${c.kit} and ${c.tool}; if it holds ${listOf(c.bundleNames)}, enter the parts.`;
+  return {
+    ...brief,
+    ask: `Is ${c.kit} in this box, as the model number says, or ${listOf(c.bundleNames)}?`,
+    reasons,
+    check: { text: cutText(text, MAX_CHECK_CHARS), who: 'owner', ...(c.bundleUrl ? { url: c.bundleUrl, linkLabel: 'Home Depot bundle page' } : {}) },
+  };
+}
+
 /** The brief of a split or match question. `live` is the suggestion made for the question as it is now, or null. */
 export function briefForQuestion(
   question: ReviewItem,
@@ -96,6 +121,7 @@ export function briefForQuestion(
   narrow?: { settled: readonly SettledPart[]; unsettled: readonly UnsettledPart[] },
 ): ReviewBrief {
   const brief = live?.brief ?? rulesBrief(briefInputOf(question, live?.suggestion ?? null, poolOfLines(evidence), sources));
+  if (question.kind === 'split' && question.conflict && brief.state !== 'verified') return conflictBrief(question.conflict, brief);
   if (question.kind === 'split' && narrow && narrow.unsettled.length > 0 && brief.state !== 'verified') {
     // Step 16 (round 2): the question names only the parts Home Depot did not confirm; the confirmed ones are a reason, with a page.
     const models = narrow.unsettled.map((p) => p.model);

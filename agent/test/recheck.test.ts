@@ -41,7 +41,7 @@ const open = async (store: ScanStore) => (await store.listReview()).filter((q) =
 const rows = async (store: ScanStore): Promise<Map<string, BundleRow>> => new Map((await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles.map((b) => [b.key, b]));
 
 describe('replay on after-scan6, with Keepa (the owner\'s setup)', () => {
-  it('at start: DWST08017\'s question becomes a re-check, B0FD253MKS is withdrawn for both vacuums; 13 questions become 12', async () => {
+  it('at start: DWST08017\'s question becomes a re-check, B0FD253MKS is withdrawn for both vacuums; 8 questions become 7 (Nov 25: rules F and G settle 5 of the 13)', async () => {
     const { store, done } = await start(true);
     expect(done.held).toEqual(['DEWALT:DWST08017']);
     expect(done.withdrawn).toEqual(['RYOBI:PCL700B', 'RYOBI:PCL702B']);
@@ -49,8 +49,7 @@ describe('replay on after-scan6, with Keepa (the owner\'s setup)', () => {
     expect(done.ran.tried).toBe(1);
     expect((await store.getRecheck!('DEWALT:DWST08017'))!).toMatchObject({ stage: 'trying', waitingFor: NEXT_KEEPA_READ });
     expect(await open(store)).toEqual([
-      'DCK225D2WCS354B', 'DCK225D2WCS356B', 'DCK225D2WCS380B', 'DCK225D2WCS391B', 'DCKTS681D1P1W21', 'DCKTS681D1P1W82',
-      'PCL1600K2-A965201', 'PCL1600K2-A986501', 'PCL406416SB', 'PCL406416SB-A21701-A21C901', 'PCL406424SB', 'PCL406424SB-A21701-A25RS51',
+      'DCK225D2WCS354B', 'DCK225D2WCS356B', 'DCK225D2WCS380B', 'DCK225D2WCS391B', 'DCKTS681D1P1W21', 'PCL1600K2-A965201', 'PCL1600K2-A986501',
     ]);
     const all = await rows(store);
     for (const id of FIVE) {
@@ -80,7 +79,7 @@ describe('replay on after-scan6, with Keepa (the owner\'s setup)', () => {
     expect(tokens).toBe(0);
     expect(done).toMatchObject({ replaced: [], lookups: [], asked: [] });
     for (const k of ['DEWALT:DWST08017', 'RYOBI:PCL700B', 'RYOBI:PCL702B']) expect((await store.getRecheck!(k))!.waitingFor).toBe(KEEPA_TOKENS);
-    expect(await open(store)).toHaveLength(12);
+    expect(await open(store)).toHaveLength(7);
   });
 
   it('the drip\'s pull: one token, the price saved, Amazon\'s fields read (the recorded B0DGLWKS9S record)', async () => {
@@ -95,7 +94,7 @@ describe('replay on after-scan6, with Keepa (the owner\'s setup)', () => {
 });
 
 describe('replay on after-scan6, without Keepa (the stored rows read by rung 1)', () => {
-  it('PCL702B takes B0BH6Q31MZ by itself; PCL700B and DWST08017 join the lookup queue; still 12 questions', async () => {
+  it('PCL702B takes B0BH6Q31MZ by itself; PCL700B and DWST08017 join the lookup queue; still 7 questions', async () => {
     const { store, done } = await start(false);
     expect(done.ran.replaced.map((r) => [r.key, r.to])).toEqual([['RYOBI:PCL702B', 'B0BH6Q31MZ']]);
     expect(done.ran.lookups.sort()).toEqual(['DEWALT:DWST08017', 'RYOBI:PCL700B']);
@@ -103,7 +102,7 @@ describe('replay on after-scan6, without Keepa (the stored rows read by rung 1)'
     expect((await store.getRecheck!('DEWALT:DWST08017'))!.tried.map((t) => [t.asin, t.passed])).toEqual([
       ['B0C3TN1Z7P', false], ['B0HMV5V9L7', false], ['B0HQQZWYTX', false], ['B0CHWF4JM9', false], ['B0DR93VQBD', false],
     ]);
-    expect(await open(store)).toHaveLength(12);
+    expect(await open(store)).toHaveLength(7);
     const all = await rows(store);
     // PCL702B's bundle now has a confirmed listing with no Amazon price yet: still no estimate until its price is read.
     const pcl702b = all.get('homedepot:344284497')!.parts.find((p) => p.model === 'PCL702B')!;
@@ -132,6 +131,6 @@ describe('replay on after-scan6, without Keepa (the stored rows read by rung 1)'
     expect(q.brief!.check!.text).toContain('The app already read what it could for this (5 steps)');
     // Every listing is still the owner's to choose, the withdrawn backpack first with why.
     expect(q.choices!.map((c) => c.asin)).toEqual(['B0DGLWKS9S', 'B0C3TN1Z7P', 'B0HMV5V9L7', 'B0HQQZWYTX', 'B0CHWF4JM9', 'B0DR93VQBD']);
-    expect(await open(store)).toHaveLength(13);
+    expect(await open(store)).toHaveLength(8);
   });
 });
