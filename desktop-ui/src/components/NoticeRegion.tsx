@@ -2,7 +2,9 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type KeyName } from '../api/types';
 import { plural } from '../lib/format';
+import { offlineNotice, supervisionOf, type AgentSupervision } from '../lib/agentDown';
 import { costNotice } from '../lib/costs';
+import { inShell, invokeShell } from '../lib/shell';
 import { chooseNotices, moreWords, rejectedKeyNotice, type NoticeKind } from '../lib/notices';
 import { words } from '../lib/platform';
 import { helperProblem, scanProblem } from '../lib/scanProblem';
@@ -49,6 +51,8 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   const [reloaded, setReloaded] = useState(false);
   const update = useUpdateNotice(state?.update);
   const login = useAction(api.answerLoginNotice);
+  const supervision = useSupervision(online);
+  const relaunch = useAction(() => invokeShell('relaunch_app'));
 
   const items: NoticeItem[] = [];
   if (online && pairing.requests.length > 0) {
@@ -78,17 +82,19 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
     }
   }
   if (!online) {
+    // Nov 25, supervision: the shell says whether it is restarting the agent or gave up (lib/agentDown.ts).
+    const down = offlineNotice(supervision, inShell(), words);
     items.push({
       kind: 'offline',
       key: 'offline',
       tone: 'attention',
-      title: 'The agent is not running.',
-      body: `${offlineSentence ?? `Open Split Finder from the ${words.trayPlace} to start it.`} What is on screen is from before it stopped.`,
-      action: (
-        <Button size="sm" onClick={refreshState}>
-          Try again
+      title: down.title,
+      body: offlineSentence ? `${offlineSentence} ${down.body}` : down.body,
+      action: down.action ? (
+        <Button size="sm" busy={relaunch.busy} busyLabel="Opening again…" onClick={down.action.kind === 'relaunch' ? () => void relaunch.run() : refreshState}>
+          {down.action.label}
         </Button>
-      ),
+      ) : undefined,
     });
   } else if (state) {
     const h = state.helper;
@@ -297,6 +303,29 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
       </Notice>
     </div>
   );
+}
+
+/** While the agent does not answer, the shell's supervisor every 2 s (agent_status); null in a browser or an older shell. */
+function useSupervision(online: boolean): AgentSupervision | null {
+  const [sup, setSup] = useState<AgentSupervision | null>(null);
+  useEffect(() => {
+    if (online || !inShell()) {
+      setSup(null);
+      return;
+    }
+    let live = true;
+    const ask = () =>
+      void invokeShell<unknown>('agent_status')
+        .then((raw) => live && setSup(supervisionOf(raw)))
+        .catch(() => live && setSup(null));
+    ask();
+    const timer = setInterval(ask, 2_000);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, [online]);
+  return sup;
 }
 
 /** "1 more": a small popover under the banner with the other notices and their actions. Escape or a click outside closes it. */

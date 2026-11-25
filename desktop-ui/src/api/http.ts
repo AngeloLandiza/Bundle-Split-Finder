@@ -9,6 +9,7 @@ import type { ApiClient } from './client';
 import { mapActivity, mapDeals, mapDetail, mapEvent, mapReview, mapState, csvSort } from './map';
 import { openEventStream } from './sse';
 import { ApiError, type CostsView, type KeyName, type LookupsRun } from './types';
+import { agentDownHint } from '../lib/agentDown';
 import { words } from '../lib/platform';
 
 declare global {
@@ -17,7 +18,7 @@ declare global {
   }
 }
 
-const OFFLINE = `The agent is not running. Open Split Finder from the ${words.trayPlace} to start it.`;
+const OFFLINE = `The agent is not running. ${agentDownHint(words)}`;
 const DENIED = 'The app is not allowed to reach the agent. Restart Split Finder.';
 const DEV_TOKEN_KEY = 'splitFinder.devToken';
 

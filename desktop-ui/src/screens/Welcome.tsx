@@ -10,6 +10,7 @@ import { StatusLine } from '../components/StatusLine';
 import { CONNECT_BUTTON_LABEL } from '@core/api/labels';
 import { plural } from '../lib/format';
 import { scanSpend } from '../lib/scanSpend';
+import { agentDownHint } from '../lib/agentDown';
 import { words } from '../lib/platform';
 import { setupProgress, type SetupStepId } from '../lib/setup';
 import { InstallHelper, KeyField } from '../components/SetupParts';
@@ -128,7 +129,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
         </h2>
         {!online ? (
           <Notice tone="attention" title="The agent is not running.">
-            Open Split Finder from the {words.trayPlace}; the steps continue once it runs.
+            {agentDownHint(words)} The steps continue once it runs.
           </Notice>
         ) : null}
 
