@@ -2431,9 +2431,9 @@ are medians, the old code against the new, runs alternated on one machine (Apple
   `desktop-ui/src/components/Figure.tsx`) and the line under a headline profit carry it, in the same words.
 
 - **Quit on Windows is slow now and then right after the first launch; the cause is not pinned down** (Nov 25). The smoke
-  test asks the app to quit about 4 s after its first start and half a second after its agent was restarted. Seven runs
-  of the same code: five quit in 6 to 9 s, one in 25 s, and one was not gone at 20 s (the check's limit then; that run
-  did not wait longer, so whether it would have ended is not known). In the six that were watched to the end the app and
+  test asks the app to quit about 4 s after its first start and half a second after its agent was restarted. Six runs
+  of the same check: four quit in 6 to 9 s, one in 25 s, and one was not gone at 20 s (the check's limit then; that run
+  did not wait longer, so whether it would have ended is not known). In the five that were watched to the end the app and
   the agent did go. `stop()` in `src-tauri/src/agent.rs` can itself take 24 s when the agent accepts the request but
   keeps its port open (3 s to prove the listener, 10 s for the answer, 20 tries of up to 550 ms), which fits the 25 s
   run but is not shown to be what happened. The check allows 30 s, and on a miss it now says what was running and asks a
