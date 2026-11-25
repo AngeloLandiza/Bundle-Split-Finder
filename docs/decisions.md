@@ -2129,3 +2129,74 @@ banner told him to open the app that was already open.
   Telegram message (the "error" kind switch) go only when a scheduled scan was cut off or on the second restart in the
   window; the notification is held by the event hub until the shell's stream (`?client=shell`) reconnects.
   Held quiet-hours notifications live in memory and are lost in a crash, hence "nothing saved was lost".
+## Nov 25: questions, round 2: special buys and short codes settled by Home Depot's own records
+
+After the Nov 24 rules 13 questions stayed open on the owner's data (fixtures/e2e-2026-11-23/after-scan6). The owner asked
+that the app settle what it can by itself. Each group was traced to the records the app holds or reads free, and a rule
+adopted only where at least two independent Home Depot records agree, none disagrees, and the measurement is zero wrong
+(CLAUDE.md rule 4). Measured with `npx tsx scripts/measure-questions-round2.ts` (free, no network): (a) the validation
+set against its answer key with Nov 18's readings, each rule alone on top of every adopted rule; (b) the owner's stores
+after-scan3/5/6, every bundle read from its model number and page with his answer set aside, a resolved change scored
+against his answer or checked by hand against its pages; (c) rule F's convention on every special buy any recording holds;
+(d) rule G on every `<kit>W<two digits>` a store holds.
+
+| Rule | Validation: changed / right / wrong / open | Real stores (after-scan6): changed / right by owner / by hand / open | Wrong |
+|---|---|---|---|
+| F. A special buy Home Depot also sells as its tools | 1 / 1 / 0 / 0 (PCL500525SB → PCL500B + PCL525B, the key) | 5 / 1 / 4 / 0 (scan 5: 4 / 1 / 3 / 0; scan 3: 0) | 0 |
+| F, its convention (c) | — | 9 special buys recorded, 3 of the six-digit form, each with a same-titled row; all 3 rows spell the convention's tools, 0 disagree | 0 |
+| G. A two-digit code the page spells out | 0 / 0 / 0 / 0 | 4 / 1 / 1 / 2 (scan 5 the same; scan 3: 1 waits) | 0 |
+| G, every `<kit>W<dd>` (d) | — | W05 → DCB205 (owner's answer), W34 → DCS334B (his stored split), W82 → DCS382B, W21 → DCF921B (offered only) | 0 |
+
+- **Rule F** (`settle.ts specialBuyTools`, `specialBuySplit`; `SettleData.sameTitle` from `split.ts titleIndex`; evidence
+  kind `hd_same_title`). A RYOBI special buy whose model is a prefix and two three-digit numbers (PCL406424SB) is its two
+  tools (PCL406B, PCL424B) only when: Home Depot lists another bundle under exactly the same title (lower case, any
+  punctuation one space: "5-1/2 in." is "5 1/2 in.") whose model number is exactly those two tools joined by a hyphen
+  (PCL424B-PCL406B, item 324615781), and every same-titled bundle reads the same; Home Depot sells each tool by itself under
+  exactly that model, as one tool, "Tool Only" when the title says Tools Only, of a kind the special buy's title names; and
+  the title's tool count is two. A tool with no reading yet makes it wait (the part-price read); one read and not found, a
+  count that differs, a tool of another kind, or no twin leaves the question as it was. In a hyphen bundle
+  (PCL406424SB-A21701-A25RS51) the special buy stands for its tools, as an owner's "sell as" fact does; **the owner's own
+  fact about a special buy (sold whole, or as tools) always wins** over rule F. This does not reverse step 16's rejection:
+  a special buy's own page is still never proof it is one kit; rule F reads it as tools only when Home Depot's own other
+  listing of the same set says which tools, which is the key's convention (PCL500525SB) and the owner's answers on
+  PCL500525SB and PCL406B-PCL416B. The two-digit form decompose.ts already reads (PBLRC2501SB) is unchanged.
+- **Rule G** (`settle.ts pageCode`, `pageCodeSplit`). A DEWALT `<kit>W<two digits>` whose code the catalog cannot read
+  ("'82' matches nothing in the catalog"; decompose.ts never reads a two-character code from listings' titles), whose kit
+  the catalog knows, and whose page names exactly one whole DEWALT model other than the kit ending in those digits
+  (DCKTS681D1P1W82: DCS382B on eight lines), reads as [kit, model], then goes through rule 2's checks (Home Depot sells
+  each part, the page names nothing no part explains, the count fits) and is settled only when the model's own Home Depot
+  title is of a kind the bundle's title names ("Reciprocating Saw"). A page already contradicting the model number (W21's
+  page names DCD999, DCF887, DCL040, DCS386, DCS573: another kit's lines) settles nothing: the question now leads with
+  "'21' is DCF921B, the one model the page names that ends in 21" and offers DCKTS681D1P1 + DCF921B for one tap.
+- **DCK225D2WCS380B / WCS391B / WCS356B / WCS354B stay questions, and say why in one look** (`settle.ts kitPageConflict`,
+  `Decomposition.conflict` → `ReviewItem.conflict`, `brief/view.ts conflictBrief`). What the records show: the four
+  bundles' pages share one template ("Includes 1 DEWALT DCD708B …, 1DEWALT DCF809B …, two 20-Volt MAX lithium-ion 1.3 Ah
+  battery packs", plus DCS381 and DCS393 lines none of them holds), while their titles say "(2) 2Ah Batteries", DCK225D2's
+  own page (322138483) leads with DCD794 and DCF809 and "two 20V MAX* compact 2 Ah batteries", and the siblings WCF850B and
+  WCS369B describe DCD794. Home Depot's two pages genuinely disagree on the drill, so nothing is settled (preferring one of
+  Home Depot's pages over the other would be a guess). The card now asks "Is DCK225D2 in this box, as the model number
+  says, or DCD708B?", quotes each page with its link (the bundle page's 1.3 Ah line; the kit page's "The DCD794
+  drill/driver …"), and its check is the owner's: "Home Depot's two pages disagree. If the box holds DCK225D2, approve
+  DCK225D2 and DCS380B; if it holds DCD708B, enter the parts."
+- **A986501 and A965201: left as they are.** Their bundle pages name the accessory only in words ("65-Piece Drill and
+  Impact Drive Kit", "Diamond Grit Driving Set (52-Piece)"); no Includes line gives its model, no recorded page carries a
+  `bundleItems` list for these bundles (the recorded Bundle lists fill it only on sets), the bundles' own `upc` is null and
+  is the bundle's barcode, not the accessory's. `productsByCode` has no code to ask with and Amazon's catalog holds no
+  record of either; nothing free would settle them. A Keepa catalog check of a listing naming them (rule B) still would.
+- Plain words for the new notes (`review/words.ts`): rule G's reading, "page names …, which do not fit the model number",
+  and "the title does not name what Home Depot's page of … is".
+
+**Replayed on after-scan6** (core/test/questions-round2.test.ts; at start, no scan, nothing spent): 13 open → 8.
+Settled: PCL406416SB (PCL406B + PCL416B), PCL406424SB (PCL406B + PCL424B), PCL406416SB-A21701-A21C901 (PCL406B,
+PCL416B, A21701, A21C901), PCL406424SB-A21701-A25RS51 (PCL406B, PCL424B, A21701, A25RS51), DCKTS681D1P1W82
+(DCKTS681D1P1 + DCS382B); each checked by hand against its pages. Open: the four DCK225D2 bundles (with the two pages
+named), DCKTS681D1P1W21 (offering DCKTS681D1P1 + DCF921B), PCL1600K2-A986501, PCL1600K2-A965201, DWST08017 (price guard).
+On the scan-2 store DCKTS681D1P1W34 now waits for its parts' own pages (its page also names DCS331 "vs. DEWALT DCS331
+Jigsaw") instead of asking; the owner had already answered it DCKTS681D1P1 + DCS334B, the rule's reading.
+
+**What live needs, all free:** rule F needs Home Depot's same-titled hyphen listing in the store (a scan's Bundle lists
+held all three on Nov 23) and each tool's part-price reading (PCL406B, PCL416B, PCL424B, PCL500B, PCL525B were read);
+rule G needs the bundle's page and the code model's part-price reading (DCS382B was read). Nothing spends a search,
+a Keepa token or an AI call. Tests changed for the new counts: fewer-questions (now replays the Nov 24 rules alone),
+settle (W34 waits), settle-special-buy (rule F off for the old question, on for the new path), part-facts, recheck
+(12 → 7 and 13 → 8 open), scan-chrome-listing unchanged.
