@@ -175,7 +175,7 @@ export class HelperUpdate {
     return o.state === 'updating' ? { state: 'updating' } : o;
   }
 
-  /** The owner installed the helper again: the next report is judged fresh (and tried once more for this build). */
+  /** The owner installed the helper again: the next report is judged afresh (the build stays tried: the agent never writes it twice). */
   reset(): void {
     this.outcome = null;
   }
