@@ -64,6 +64,7 @@ import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatch
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
 import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, sanityHolds, type SignalsDeps, withoutStale } from './signalsPass';
 import { dealSnapshots, keepaKeeps, keptNow, pullDue, readOneDue, staleBuyKeys, tokenShareOf, used } from './keepCurrent';
+import { backfillMarkets, cachedMarkets, MARKET_BACKFILL } from './marketBackfill';
 import { amazonDue, failingOf, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
 import type { TrackingState } from '../core/src/tracking/state';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
@@ -376,6 +377,12 @@ export class AgentWork {
    * fetched. Only when the store held deals at start.
    */
   async signalsAtStart(): Promise<void> {
+    // The market around a listing (Nov 25): trends stored before it get its figures once from the cached Keepa answers.
+    if (!(this.d.store.get('runtime').migrations ?? []).includes(MARKET_BACKFILL)) {
+      const filled = await backfillMarkets(this.cache, cachedMarkets(join(this.d.dataDir, 'cache'))).catch(() => 0);
+      const log = filled > 0 ? [{ name: MARKET_BACKFILL, at: new Date(this.d.now()).toISOString(), sentence: `Amazon market figures (usual prices, Amazon's own offer, sellers, stock, hazards) read for ${filled} listings from Keepa answers already stored: nothing spent. Deals are judged again with them.` }] : [];
+      this.d.store.update('runtime', (r) => ({ ...r, migrations: [...(r.migrations ?? []), MARKET_BACKFILL], ...(log.length ? { migrationLog: [...(r.migrationLog ?? []), ...log] } : {}) }));
+    }
     if (!this.dealsAtStart || this.live.busy !== null) return;
     if ((await this.scanStore.listBundles()).length === 0) return;
     await this.refresh();
