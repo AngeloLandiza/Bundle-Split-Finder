@@ -22,7 +22,9 @@ export interface SellerPartCheck {
   /** The price the last fee read asked at, whether or not Amazon gave an estimate (so a missing one is not asked again at once). */
   feesAskedAt?: number;
   /** The last check that failed, in words (scrubbed); absent when the last one worked. */
-  problem?: { at: number; text: string };
+  problem?: SellerProblem;
+  /** A fee read that failed is not asked again before this (epoch ms); the estimate keeps Keepa's figures meanwhile. */
+  feesRetryAt?: number;
 }
 
 /** Amazon's fee estimate at one price (dollars per unit): referral, and everything else it counted (FBA fees and the rest). */
@@ -35,7 +37,45 @@ export interface AmazonFeeRecord {
   lines: FeeLine[];
 }
 
-export const sellerCheckCacheKey = (asin: string): string => `spapi:check:${asin}`;
+/**
+ * Why a listing could not be checked with Amazon (the client's words, scrubbed), and when it is tried again: the next
+ * pass after `retryAt` (never a loop). `untilKey`: Amazon refused the credentials; nothing is tried until he replaces them
+ * in Settings, Keys, or the daily key check finds them working again.
+ */
+export interface SellerProblem {
+  at: number;
+  text: string;
+  retryAt: number;
+  untilKey?: boolean;
+}
+
+/** After an outage, a limit or a refusal of one call, a listing is tried again after this. */
+export const SELLER_RETRY_MS = 60 * 60_000;
+/** An answer that could not be read is tried again after a day (the same call would most likely read the same). */
+export const SELLER_UNREADABLE_RETRY_MS = 24 * 3_600_000;
+
+/**
+ * When a failed check is tried again: the day's cap at the next UTC day (the limiter's day), an unreadable answer after a
+ * day, anything else after SELLER_RETRY_MS.
+ */
+export function sellerRetryAt(kind: 'cap' | 'unreadable' | 'other', now: number): number {
+  if (kind === 'cap') {
+    const d = new Date(now);
+    return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
+  }
+  return now + (kind === 'unreadable' ? SELLER_UNREADABLE_RETRY_MS : SELLER_RETRY_MS);
+}
+
+/** "in about 40 minutes", "in about 6 hours", "tomorrow", "at the next check"; or, refused credentials, how they are fixed. */
+export function retryWords(p: Pick<SellerProblem, 'retryAt' | 'untilKey'>, now: number): string {
+  if (p.untilKey) return 'tried again when you replace the seller account in Settings, Keys';
+  const ms = p.retryAt - now;
+  if (ms <= 0) return 'tried again at the next check';
+  const min = Math.ceil(ms / 60_000);
+  if (min < 90) return `tried again in about ${min} ${min === 1 ? 'minute' : 'minutes'}`;
+  const h = Math.round(ms / 3_600_000);
+  return h < 24 ? `tried again in about ${h} hours` : 'tried again tomorrow';
+}
 
 /** A check is used for this long (a week), then read again. */
 export const SELLER_CHECK_FRESH_MS = 7 * 86_400_000;
@@ -95,20 +135,27 @@ function listingWords(model: string, l: NonNullable<SellerPartCheck['listing']>)
  * The Buy now conditions a connected account adds, as the fails of one way to sell (each a clause of the verdict): every
  * part allowed to list, and every part eligible for FBA unless the owner ships it himself. A part not checked yet says so.
  */
-export function sellerFails(parts: readonly PartRow[], lookup: SellerLookup): string[] {
+export function sellerFails(parts: readonly PartRow[], lookup: SellerLookup, now = 0): string[] {
   const out: string[] = [];
   const uncheckedList: string[] = [];
   const uncheckedFba: string[] = [];
   for (const p of sellerParts(parts)) {
     const c = lookup.check(p.asin!);
-    if (!c?.listing) uncheckedList.push(p.model);
+    // A check that failed says why and when it is tried again, never a silent "not checked".
+    const failed = c?.problem && (!c.listing || (!c.fba && !lookup.selfShip(p.asin!)));
+    if (failed) out.push(`${p.model} could not be checked with Amazon (${c.problem!.text.replace(/\.$/, '')}); ${retryWords(c.problem!, now)}`);
+    if (!c?.listing) {
+      if (!failed) uncheckedList.push(p.model);
+    }
     else if (c.listing.status !== 'allowed') out.push(listingWords(p.model, c.listing));
     if (lookup.selfShip(p.asin!)) continue;
-    if (!c?.fba) uncheckedFba.push(p.model);
+    if (!c?.fba) {
+      if (!failed) uncheckedFba.push(p.model);
+    }
     else if (!c.fba.eligible) out.push(`FBA does not take ${p.model} yet: ${fbaWords(c.fba.reasons)}`);
   }
-  if (uncheckedList.length > 0) out.push(`not checked yet whether you may list ${names(uncheckedList)}`);
-  if (uncheckedFba.length > 0) out.push(`not checked yet whether FBA takes ${names(uncheckedFba)}`);
+  if (uncheckedList.length > 0) out.push(`not checked yet whether you may list ${names(uncheckedList)} (checked at the next pass)`);
+  if (uncheckedFba.length > 0) out.push(`not checked yet whether FBA takes ${names(uncheckedFba)} (checked at the next pass)`);
   return out;
 }
 
@@ -127,13 +174,13 @@ export interface SellerPartLine {
   selfShip: boolean;
 }
 
-export function sellerPartLine(p: Pick<PartRow, 'model' | 'asin'>, c: SellerPartCheck | undefined, selfShip: boolean): SellerPartLine {
+export function sellerPartLine(p: Pick<PartRow, 'model' | 'asin'>, c: SellerPartCheck | undefined, selfShip: boolean, now = 0): SellerPartLine {
   const parts: string[] = [];
   let ok = true;
   let link: string | null = null;
   const l = c?.listing ?? null;
   if (!l) {
-    parts.push(c?.problem ? `Not checked: ${c.problem.text}.` : 'Not checked yet whether you may list it.');
+    parts.push(c?.problem ? `Could not be checked with Amazon: ${c.problem.text.replace(/\.$/, '')}; ${retryWords(c.problem, now)}.` : 'Not checked yet whether you may list it.');
     ok = false;
   } else if (l.status === 'allowed') parts.push('You may list it.');
   else {
@@ -146,7 +193,7 @@ export function sellerPartLine(p: Pick<PartRow, 'model' | 'asin'>, c: SellerPart
   const f = c?.fba ?? null;
   if (selfShip) parts.push('You ship it yourself.');
   else if (!f) {
-    if (l) parts.push('FBA not checked yet.');
+    if (l) parts.push(c?.problem ? `FBA could not be checked: ${c.problem.text.replace(/\.$/, '')}; ${retryWords(c.problem, now)}.` : 'FBA not checked yet.');
     ok = false;
   } else if (f.eligible) parts.push('FBA accepts it.');
   else {
@@ -179,10 +226,13 @@ export function checksWanted(
       const r = check(p.asin!);
       const mine = r !== undefined && r.account === account;
       const at = mine && r.listing && r.fba ? Math.min(r.listing.at, r.fba.at) : null;
-      const full = at === null || now - at > fresh;
-      // Fees are read again when the price the estimate uses moved, or with a full check.
+      // A failed check waits for its retry time (the next pass after it): never a loop. Refused credentials wait for him.
+      const waiting = mine && r.problem !== undefined && (r.problem.untilKey === true || now < r.problem.retryAt);
+      const full = !waiting && (at === null || now - at > fresh);
+      // Fees are read again when the price the estimate uses moved, or with a full check; a failed read waits too.
       const asked = mine ? r.feesAskedAt ?? r.fees?.price : undefined;
-      const fees = full || asked === undefined || Math.abs(asked - p.price!) >= 0.005;
+      const feesWait = waiting || (mine && r.feesRetryAt !== undefined && now < r.feesRetryAt);
+      const fees = !feesWait && (full || asked === undefined || Math.abs(asked - p.price!) >= 0.005);
       if (!full && !fees) continue;
       const had = out.get(p.asin!);
       if (!had) out.set(p.asin!, { asin: p.asin!, model: p.model, price: p.price!, full, fees });

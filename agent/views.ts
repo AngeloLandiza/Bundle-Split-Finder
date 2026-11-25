@@ -530,7 +530,7 @@ export function dealDetail(
     ...(bundle.otherBrands && bundle.otherBrands.length > 0 ? { setContents: bundle.otherBrands } : {}),
     ...(looks.length > 0 ? { needsLook: looks } : {}),
     ...(market ? { market } : {}),
-    seller: sellerView(bundle, t, sellerAccount ?? null),
+    seller: sellerView(bundle, t, sellerAccount ?? null, now ?? Date.now()),
   };
 }
 
@@ -538,7 +538,7 @@ export function dealDetail(
  * Nov 25: the parts as the owner's seller account sees them: the primary way to sell's counted parts (else the bundle's),
  * each with its line. Not connected: no lines, and NOT_CONNECTED_LINE on a deal in Buy now.
  */
-export function sellerView(bundle: BundleRow, t: Pick<TrackingCollection, 'signals' | 'sellerChecks' | 'selfShip'> | undefined, account: string | null): DealSellerView {
+export function sellerView(bundle: BundleRow, t: Pick<TrackingCollection, 'signals' | 'sellerChecks' | 'selfShip'> | undefined, account: string | null, now = Date.now()): DealSellerView {
   if (account === null) {
     return { connected: false, note: (t?.signals[bundle.key]?.buyNow ?? null) !== null ? NOT_CONNECTED_LINE : null, parts: [] };
   }
@@ -547,7 +547,7 @@ export function sellerView(bundle: BundleRow, t: Pick<TrackingCollection, 'signa
   const parts = sellerParts(bundle.options[0]?.parts ?? bundle.parts);
   return {
     connected: true, note: null,
-    parts: parts.map((p) => sellerPartLine(p, checks[p.asin!]?.account === account ? checks[p.asin!] : undefined, self[p.asin!] !== undefined)),
+    parts: parts.map((p) => sellerPartLine(p, checks[p.asin!]?.account === account ? checks[p.asin!] : undefined, self[p.asin!] !== undefined, now)),
   };
 }
 

@@ -2294,6 +2294,12 @@ account. Everything here is built to `docs/sp-api-notes-2026-11-25.md`; nothing 
   list PCG002". An unknown reason code is shown as its code and never passes. **With no account nothing changes** but one
   quiet line on a Buy now deal: "Not checked against your Amazon account: connect it in Settings to see whether you may
   list these." (tested: the signals are identical with and without the feature).
+- **A check that failed is never silent, and never a loop**: when Amazon's API fails, limits, refuses, or the day's cap
+  is reached, the listing it stopped on and every one the pass did not reach keep the reason and a retry time
+  (`SellerProblem`): an hour after an outage or a limit, the next UTC day for the cap, a day for an unreadable answer,
+  and refused credentials until he replaces them. The deal's sentence says it: "PCG002 could not be checked with Amazon
+  (…); tried again in about 6 hours". No listing is asked again before its time; the first pass after it asks once.
+  The seller conditions come after his numbers, the usual-price rule, the listings' confirmation and the holds.
 - **Amazon's fees in the estimate** (`core/src/scan/report.ts feesOf`): only where the settings take Amazon's FBA fee
   (`fulfillmentSource 'keepa'`; a flat choice stays his), and only read at exactly the price the estimate uses. The
   `ReferralFee` line becomes the referral, everything else Amazon counted (FBA fees, closing fees, any unknown type) the

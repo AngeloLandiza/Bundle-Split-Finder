@@ -499,7 +499,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       }
       // Nov 25: what his own Amazon account says about each part (may he list it, will FBA take it). Said after his
       // numbers, the usual-price rule, the listings' confirmation and the holds (below).
-      if (input.seller) account.push(...sellerFails(o.parts, input.seller));
+      if (input.seller) account.push(...sellerFails(o.parts, input.seller, now));
     }
     // Buy safety (Nov 23): a buy never rests on a listing nobody confirmed. When the estimate meets the owner's numbers, that
     // is the binding condition and is said first; otherwise after what fails. A buy held back only for its listings stays

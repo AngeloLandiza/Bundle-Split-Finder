@@ -16,8 +16,10 @@ import {
   feesAtPrice,
   sellerAccountTag,
   sellerParts,
+  sellerRetryAt,
   type SellerLookup,
   type SellerPartCheck,
+  type SellerProblem,
 } from '../core/src/amazon/seller';
 import { SpApiClient, SpApiError } from '../core/src/amazon/spapi/client';
 import { SAMPLES_PER_OPERATION, SP_DAILY_CAPS, SP_OPERATIONS, type SellerCredentials, type SpCallRow, type SpOperation, type SpSample } from '../core/src/amazon/spapi/types';
@@ -244,7 +246,9 @@ export class SellerAccount {
     const account = this.account();
     if (!client || account === null) return out;
     this.prune(report, account);
-    const checks = this.h.store.get('tracking').sellerChecks ?? {};
+    const stored = this.h.store.get('tracking').sellerChecks ?? {};
+    // Refused credentials wait for him; a pass runs only while none is refused, so their listings are tried again now.
+    const checks = Object.fromEntries(Object.entries(stored).map(([a, c]) => [a, c.problem?.untilKey ? (({ problem: _p, ...rest }) => rest)(c) : c]));
     const wanted = checksWanted(this.candidates(report, trend, opts), (a) => checks[a], account, this.h.now()).slice(0, MAX_CHECKS_PER_PASS);
     const pending = new Map<string, SellerPartCheck>();
     const write = (asin: string, f: (c: SellerPartCheck) => SellerPartCheck) => {
@@ -266,13 +270,24 @@ export class SellerAccount {
     client: SpApiClient, wanted: ReturnType<typeof checksWanted>, write: (asin: string, f: (c: SellerPartCheck) => SellerPartCheck) => void,
     out: SellerPassOutcome, shouldStop: () => boolean,
   ): Promise<void> {
-    const problem = (asin: string, err: SpApiError) => write(asin, (c) => ({ ...c, problem: { at: this.h.now(), text: err.message } }));
-    const stopFor = (err: unknown): string | null => {
-      if (!(err instanceof SpApiError)) return 'the check went wrong inside the app';
-      if (err.kind === 'rejected') this.h.onKeyProblem?.(err.message);
-      return err.kind === 'unreadable' || (err.kind === 'denied' && err.status !== 403) ? null : err.message;
+    /** The problem a failure leaves on a listing: the client's words (scrubbed) and when it is tried again. */
+    const problemOf = (err: unknown): SellerProblem => {
+      const now = this.h.now();
+      if (!(err instanceof SpApiError)) return { at: now, text: 'the check went wrong inside the app', retryAt: sellerRetryAt('other', now) };
+      if (err.kind === 'rejected') return { at: now, text: 'Amazon did not accept your seller account', retryAt: sellerRetryAt('other', now), untilKey: true };
+      return { at: now, text: err.message, retryAt: sellerRetryAt(err.kind === 'cap' ? 'cap' : err.kind === 'unreadable' ? 'unreadable' : 'other', now) };
     };
-    for (const w of wanted.filter((x) => x.full)) {
+    // Whether a failure ends the pass: an answer that cannot be read, or a refusal of one listing (400/404), does not.
+    const stops = (err: unknown): boolean => !(err instanceof SpApiError) || !(err.kind === 'unreadable' || (err.kind === 'denied' && err.status !== 403));
+    const stopWith = (err: unknown, p: SellerProblem, rest: readonly { asin: string }[]): void => {
+      if (err instanceof SpApiError && err.kind === 'rejected') this.h.onKeyProblem?.(err.message);
+      // Every listing this pass did not reach carries the same why and when, so none is held in silence.
+      for (const w of rest) write(w.asin, (c) => ({ ...c, problem: p }));
+      out.stopped = p.text;
+    };
+    const full = wanted.filter((x) => x.full);
+    for (let i = 0; i < full.length; i += 1) {
+      const w = full[i]!;
       if (shouldStop()) break;
       try {
         const r = await client.restrictions(w.asin);
@@ -286,23 +301,30 @@ export class SellerAccount {
         if (out.checked === 0) this.h.onKeyProblem?.(null);
         out.checked += 1;
       } catch (err) {
-        if (err instanceof SpApiError) problem(w.asin, err);
-        out.stopped = stopFor(err);
-        if (out.stopped !== null) return;
+        const p = problemOf(err);
+        write(w.asin, (c) => ({ ...c, problem: p }));
+        if (stops(err)) return stopWith(err, p, full.slice(i + 1));
       }
     }
     const feeItems = wanted.filter((x) => x.fees).map((x) => ({ asin: x.asin, price: x.price }));
     if (feeItems.length > 0 && !shouldStop()) {
       try {
         for (const f of await client.fees(feeItems)) {
-          write(f.asin, (c) => ({
-            ...c, feesAskedAt: f.price,
-            fees: f.estimate ? { at: this.h.now(), price: f.price, total: f.estimate.total, referral: f.estimate.referral, other: f.estimate.other, lines: f.estimate.lines } : c.fees,
-          }));
+          write(f.asin, (c) => {
+            const { feesRetryAt: _r, ...rest } = c;
+            return {
+              ...rest, feesAskedAt: f.price,
+              fees: f.estimate ? { at: this.h.now(), price: f.price, total: f.estimate.total, referral: f.estimate.referral, other: f.estimate.other, lines: f.estimate.lines } : c.fees,
+            };
+          });
           out.feesRead += 1;
         }
       } catch (err) {
-        out.stopped = stopFor(err);
+        // A fee read that failed is tried again on the next cadence; the estimate keeps Keepa's figures meanwhile.
+        const p = problemOf(err);
+        for (const f of feeItems) write(f.asin, (c) => ({ ...c, feesRetryAt: p.retryAt }));
+        if (err instanceof SpApiError && err.kind === 'rejected') this.h.onKeyProblem?.(err.message);
+        out.stopped = p.text;
       }
     }
   }

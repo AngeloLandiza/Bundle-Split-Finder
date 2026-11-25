@@ -11,7 +11,9 @@ import { describe, expect, it } from 'vitest';
 import {
   checksWanted,
   NOT_CONNECTED_LINE,
+  retryWords,
   sellerAccountTag,
+  sellerRetryAt,
   sellerFails,
   sellerPartLine,
   type SellerLookup,
@@ -97,7 +99,30 @@ describe('Buy now with a seller account connected: every part allowed to list, e
     delete checks[ASIN.PCG002];
     const s = judge(lookupOf(checks))[VAC]!;
     expect(s.buyNow).toBeNull();
-    expect(s.verdict).toBe('Not worth buying now: not checked yet whether you may list PCG002; not checked yet whether FBA takes PCG002.');
+    expect(s.verdict).toBe('Not worth buying now: not checked yet whether you may list PCG002 (checked at the next pass); not checked yet whether FBA takes PCG002 (checked at the next pass).');
+  });
+
+  it("a check Amazon's API failed or the day's cap stopped says why and when it is tried again, never in silence", () => {
+    const checks = everyAllowed();
+    const cap = "The app's own limit of 400 Amazon restrictions calls today is reached; it starts again tomorrow";
+    checks[ASIN.PCG002] = { asin: ASIN.PCG002, account: ACCOUNT, listing: null, fba: null, fees: null, problem: { at: NOW, text: cap, retryAt: sellerRetryAt('cap', NOW) } };
+    checks[ASIN.PBP003] = allowed(ASIN.PBP003, { fba: null, problem: { at: NOW, text: 'Amazon had a problem (HTTP 503)', retryAt: sellerRetryAt('other', NOW) } });
+    const s = judge(lookupOf(checks))[VAC]!;
+    expect(s.buyNow).toBeNull();
+    const hours = Math.round((sellerRetryAt('cap', NOW) - NOW) / 3_600_000);
+    expect(s.verdict).toBe(
+      `Not worth buying now: PBP003 could not be checked with Amazon (Amazon had a problem (HTTP 503)); tried again in about 60 minutes; PCG002 could not be checked with Amazon (${cap}); tried again ${hours < 24 ? `in about ${hours} hours` : 'tomorrow'}.`,
+    );
+    // Refused credentials: tried again when he replaces them.
+    expect(retryWords({ retryAt: 0, untilKey: true }, NOW)).toBe('tried again when you replace the seller account in Settings, Keys');
+    expect(sellerPartLine(part('PCG002'), checks[ASIN.PCG002], false, NOW).text).toMatch(/^Could not be checked with Amazon: The app's own limit .*; tried again /);
+  });
+
+  it('a failed check is not asked again before its retry time (no loop), and is asked at the first pass after it', () => {
+    const failed = { asin: ASIN.PBP004, account: ACCOUNT, listing: null, fba: null, fees: null, problem: { at: NOW, text: 'Amazon is limiting calls (HTTP 429)', retryAt: NOW + 3_600_000 } };
+    const rec = (a: string) => (a === ASIN.PBP004 ? failed : { ...allowed(a), feesAskedAt: parts().find((p) => p.asin === a)!.price! });
+    expect(checksWanted([{ parts: parts(), firstAnnounce: true }], rec, ACCOUNT, NOW + 60_000).map((w) => w.model)).toEqual([]);
+    expect(checksWanted([{ parts: parts(), firstAnnounce: false }], rec, ACCOUNT, NOW + 3_600_001).map((w) => [w.model, w.full])).toEqual([['PBP004', true]]);
   });
 
   it('an unknown reason code is shown as its code and holds the deal', () => {

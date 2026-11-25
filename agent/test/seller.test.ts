@@ -240,6 +240,29 @@ describe("a deal's parts checked against the account (PSK1212SB-PCL633B, four li
     expect(existsSync(join(dataDir, SPAPI_LEDGER_FILE))).toBe(false);
   });
 
+  it("the day's cap stops a pass: the listing it stopped on and every one after say why and when, and wait until then", async () => {
+    const a = amazon();
+    const ag = await start(a.fetchFn);
+    ag.store.update('keys', (k) => ({ ...k, amazonSeller: SELLER }));
+    ag.store.update('deals', (d) => ({ ...d, at: DEALS.at, bundles: PSK }));
+    ag.store.update('tracking', (t) => ({ ...t, ...TRACKING }));
+    // The day's use as the ledger left it: one listing read short of the cap.
+    ag.store.update('runtime', (r) => ({ ...r, spapiUsage: { day: new Date(NOW).toISOString().slice(0, 10), used: { restrictions: 399 } } }));
+    const report = { bundles: PSK, review: [] };
+    const out = await ag.work.seller.refresh(report, () => undefined, { keepa: true, flatFee: 0 });
+    expect(out.checked).toBe(1);
+    expect(out.stopped).toMatch(/limit of 400 Amazon restrictions calls today/);
+    const checks = Object.values(ag.store.get('tracking').sellerChecks!);
+    const held = checks.filter((c) => c.listing === null);
+    expect(held.length).toBeGreaterThan(0);
+    for (const c of held) expect(c.problem).toMatchObject({ text: out.stopped, retryAt: Date.UTC(2026, 10, 26) });
+    // The next pass the same day asks Amazon nothing for them (the one listing read before the cap may have its fees read).
+    const reads = () => a.calls.filter((u) => u.pathname.endsWith('/restrictions') || u.pathname.endsWith('/itemPreview')).length;
+    const before = reads();
+    await ag.work.seller.refresh(report, () => undefined, { keepa: true, flatFee: 0 });
+    expect(reads()).toBe(before);
+  });
+
   it('self-ship takes an ASIN a deal holds, and nothing else', async () => {
     const ag = await start(amazon().fetchFn);
     ag.store.update('deals', (d) => ({ ...d, at: DEALS.at, bundles: PSK }));
