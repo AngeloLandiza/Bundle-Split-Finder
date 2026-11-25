@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 // @ts-expect-error a plain .mjs build tool
-import { KEEP, registeredCopies } from './mac-tidy.mjs';
+import { BUILT_APP, KEEP, STOWED_APP, registeredCopies, stowBuiltApp } from './mac-tidy.mjs';
 
 // Lines as `lsregister -dump` printed them on the owner's Mac (Nov 24), where the app showed many times over.
 const DUMP = [
@@ -23,5 +26,24 @@ describe('mac-tidy', () => {
       '/Users/someone/.Trash/Split Finder 1.04.37 PM.app',
       '/Volumes/dmg.umNJMW/Split Finder.app',
     ]);
+  });
+
+  it('renames the built bundle so the build folder holds no second app, and a new build replaces the stowed one', () => {
+    const root = mkdtempSync(join(tmpdir(), 'tidy-'));
+    expect(stowBuiltApp(root)).toBeNull();
+    const build = (mark: string) => {
+      mkdirSync(join(root, BUILT_APP, 'Contents'), { recursive: true });
+      writeFileSync(join(root, BUILT_APP, 'Contents', 'Info.plist'), mark);
+    };
+    build('first');
+    expect(stowBuiltApp(root)).toBe(join(root, STOWED_APP));
+    expect(existsSync(join(root, BUILT_APP))).toBe(false);
+    expect(STOWED_APP.endsWith('.app')).toBe(false);
+    build('second');
+    stowBuiltApp(root);
+    expect(readFileSync(join(root, STOWED_APP, 'Contents', 'Info.plist'), 'utf8')).toBe('second');
+    expect(existsSync(join(root, BUILT_APP))).toBe(false);
+    // With nothing new built, the stowed copy stays where desktop:install reads it.
+    expect(stowBuiltApp(root)).toBe(join(root, STOWED_APP));
   });
 });

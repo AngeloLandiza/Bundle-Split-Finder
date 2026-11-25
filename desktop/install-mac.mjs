@@ -2,16 +2,14 @@
 // npm run desktop:install (after npm run desktop:build). Quits the running app, syncs the bundle over the
 // installed one, tidies macOS's list of apps (mac-tidy.mjs) and opens it again in the background.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { KEEP, tidy } from './mac-tidy.mjs';
+import { KEEP, stowBuiltApp, tidy } from './mac-tidy.mjs';
 
 if (process.platform !== 'darwin') {
   console.log('desktop:install is for macOS.');
   process.exit(0);
 }
-const built = join(process.cwd(), 'src-tauri/target/release/bundle/macos/Split Finder.app');
-if (!existsSync(built)) {
+const built = stowBuiltApp();
+if (!built) {
   console.error('No built app. Run npm run desktop:build first.');
   process.exit(1);
 }
