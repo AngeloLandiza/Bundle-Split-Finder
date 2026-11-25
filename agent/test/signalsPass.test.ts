@@ -179,7 +179,8 @@ describe('buy signals between scans', () => {
     await waitingPart();
     await agent.work.drip();
     // As the owner's app had it (Nov 23): an estimate the drip made, with no signal judged and nothing sent.
-    agent.store.update('tracking', (t) => ({ ...t, signals: {}, notified: [] }));
+    // Nov 25: nothing sent means nothing announced either (tracking.announced, the event's record).
+    agent.store.update('tracking', (t) => ({ ...t, signals: {}, notified: [], announced: {} }));
     agent.store.update('runtime', (r) => ({ ...r, notifiedDeals: [] }));
     await agent.work.idle();
     agent.close();

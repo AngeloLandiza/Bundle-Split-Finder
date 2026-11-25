@@ -3,9 +3,14 @@
 // behind them, what changed. Pure: the caller passes the stored history and the stored Keepa part trends.
 //
 // Rule 4 (never guess): a way to sell is "worth buying now" only with an estimate at or above both of the owner's
-// numbers, a velocity check that passed on stored Keepa data, and a change (better than the baseline, or newly
-// confirmed). With no sales data for a part the check does not pass: it says "no sales data". Rule 5: every figure
-// is an estimate from the fee settings.
+// numbers, a velocity check that passed on stored Keepa data, every fee counted, nothing left unsold, every counted
+// listing confirmed and nothing holding it. With no sales data for a part the check does not pass: it says "no sales
+// data". Rule 5: every figure is an estimate from the fee settings.
+//
+// Buy now is a state; the announcement is an event (Nov 25, docs/decisions.md). The state needs no change: a deal stays
+// worth buying for as long as every condition holds, and its movement against the last check is information. What is
+// sent to the owner (`BundleSignals.announce`) is a deal entering the state, or one already in it rising by at least
+// ANNOUNCE_MARGIN_DOLLARS over the figure he was last told, as the baseline (last check, 7-day average) sees it too.
 
 import type { PartTrend } from '../keepa/trends';
 import { fulfillmentGap } from '../scan/report';
@@ -50,6 +55,14 @@ export const HISTORY_DAYS = 30;
 export const HISTORY_MAX = 200;
 /** A rise smaller than this (dollars of estimated profit) is noise, not an improvement. */
 export const IMPROVE_MIN_DOLLARS = 1;
+/**
+ * A deal already worth buying is announced again only when its estimated profit is at least this much above the figure
+ * the owner was last told. Measured on the first keep-current re-check (fixtures/e2e-2026-11-23/after-keepcurrent, Nov 25):
+ * of the 22 watched estimates that moved, 16 moved by less than $5 (one listing's ordinary price move, as PBP004 from
+ * $53.99 to $50.00: $3.12 on two deals; the largest of them $4.79); the 6 above it moved $5.88 to $38.26 (PCL515B from
+ * $79.99 to $53.00: -$26.46). Below it, a re-check every 2 hours would announce ordinary price noise.
+ */
+export const ANNOUNCE_MARGIN_DOLLARS = 5;
 const DAY_MS = 86_400_000;
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
@@ -299,8 +312,14 @@ export interface BundleSignals {
   options: OptionSignals[];
   /** Every signal that fired at this scan: bundle events first, then each way to sell's. */
   signals: Signal[];
-  /** The best way to sell worth buying now (highest estimated profit), or null. */
+  /** The best way to sell worth buying now (highest estimated profit), or null. The state: no change is needed for it. */
   buyNow: Signal | null;
+  /**
+   * The event: whether `buyNow` is news to send (it entered the state, or rose by ANNOUNCE_MARGIN_DOLLARS over the figure
+   * last announced, SignalInput.announced). False for a deal that stays in the state without that change; absent on a stored
+   * signal from before Nov 25, when every buy was news.
+   */
+  announce?: boolean;
   /**
    * Buy safety (Nov 23): when no way to sell is worth buying now, the best one that would be but for listings not confirmed
    * yet (OptionSignals.buyPending). Absent otherwise.
@@ -333,6 +352,11 @@ export interface SignalInput {
    * bundle is never worth buying now and never "looks worth buying" until the owner looks; nothing else changes.
    */
   held?: string;
+  /**
+   * The buy last announced for this deal while it has stayed in the state (TrackingState.announced); absent when it was
+   * never announced or has left the state since. Without it a buy is news.
+   */
+  announced?: { profit: number; at: number };
 }
 
 const SECTION_WORDS: Record<ReportSection, string> = {
@@ -373,6 +397,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
   const buys: Signal[] = [];
   const pendings: { optionId: string; listings: number; asins: string[]; profit: number }[] = [];
   const verdicts = new Map<string, string>();
+  const newsOf = new Set<string>();
   for (const o of row.options) {
     const baseline = baselineOf(history, o.id, now);
     const velocity = velocityOf(o.parts, input.trend, minMonthlySold);
@@ -425,9 +450,9 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       }
     }
 
-    // Signals round 2: every condition that fails, the binding one first, in one sentence (rule 5: estimates).
+    // Signals round 2: every condition that fails, the binding one first, in one sentence (rule 5: estimates). Nov 25: no
+    // "needs a change" among them: a deal that stays good stays worth buying (the announcement is what needs a change).
     const fails: string[] = [];
-    let needsChange = false;
     if (row.section !== 'confirmed') fails.push(`not confirmed yet: ${SECTION_WORDS[row.section]}`);
     else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
     else {
@@ -451,17 +476,11 @@ export function bundleSignals(input: SignalInput): BundleSignals {
         if (velocity.parts.length === 0) fails.push('no sales data: this way to sell has no parts yet');
         else if (missing.length > 0) fails.push(noSalesWords(missing, input.keepa));
       }
-      if (fails.length === 0 && why === null) {
-        needsChange = true;
-        fails.push(`still above ${thresholds}, but no better than ${lastP !== null ? `the last check (${usd(lastP)})` : 'before'}${rolling ? ` or the 7-day average (${usd(rolling.profit)})` : ''}: a buy needs a change`);
-      }
     }
     // Buy safety (Nov 23): a buy never rests on a listing nobody confirmed. When the estimate meets the owner's numbers, that
-    // is the binding condition and is said first; otherwise after what fails.
-    // A buy held back for its listings needs no other change: their confirmation is the change (the "listings confirmed
-    // now" reason above), so it stays pending from scan to scan.
-    const pending = pendingAsins.length > 0 && (fails.length === 0 || (needsChange && fails.length === 1));
-    if (pending) fails.length = 0;
+    // is the binding condition and is said first; otherwise after what fails. A buy held back only for its listings stays
+    // pending from scan to scan.
+    const pending = pendingAsins.length > 0 && fails.length === 0;
     if (pendingAsins.length > 0) {
       if (meets) fails.unshift(unconfirmedWords(pendingAsins.length));
       else fails.push(unconfirmedWords(pendingAsins.length));
@@ -471,7 +490,18 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     if (input.held) fails.unshift(`needs a look: ${input.held.replace(/\.$/, '')}`);
     const notBuyNow = fails.length > 0 ? `${capital(fails.join('; '))}.` : null;
     const buyNow = notBuyNow === null;
-    if (buyNow) buys.push({ kind: 'buyNow', optionId: o.id, reason: `${why} ${velocity.reason}`, numbers });
+    if (buyNow) {
+      // The event (Nov 25): news when it was not announced in the state yet, or when it rose by the margin over the figure
+      // last announced and the baseline sees a rise too (`why`: through the numbers, since the last check, its 7-day average).
+      const told = input.announced;
+      const rise = told ? profit! - told.profit : null;
+      const news = rise === null || (rise >= ANNOUNCE_MARGIN_DOLLARS && why !== null);
+      const reason = rise !== null && news
+        ? `Estimated profit is up ${usd(rise)} since you were last told (${usd(told!.profit)}), to ${usd(profit!)} (${pct(roi!)} ROI).`
+        : (why ?? `Est. profit ${usd(profit!)} (${pct(roi!)} ROI) clears ${thresholds}.`);
+      buys.push({ kind: 'buyNow', optionId: o.id, reason: `${reason} ${velocity.reason}`, numbers });
+      if (news) newsOf.add(o.id);
+    }
     if (pending) pendings.push({ optionId: o.id, listings: pendingAsins.length, asins: pendingAsins, profit: profit! });
     options.push({
       optionId: o.id, label: o.label, profit, roiPercent: roi, meetsThresholds: meets, velocity, baseline, buyNow,
@@ -480,8 +510,12 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       notBuyNow,
     });
     const figures = () => `+${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month`;
+    // The state in the present tense; how it moved since the last check is information, never the reason.
+    const moved = buyNow && lastP !== null && Math.abs(profit! - lastP) >= 0.005 && (profit! < lastP || whyShort === '')
+      ? `. ${profit! < lastP ? 'Down' : 'Up'} from ${usd(lastP)} at the last check`
+      : '';
     verdicts.set(o.id, buyNow
-      ? `Worth buying now: ${figures()}, ${whyShort || 'improved'}`
+      ? `Worth buying now: ${figures()}${whyShort ? `, ${whyShort}` : ''}${moved}`
       : pending && !input.held
         ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
         : `Not worth buying now: ${fails.join('; ')}`);
@@ -492,6 +526,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
   const verdict = focus !== null ? `${verdicts.get(focus)!}.` : 'Not worth buying now: no way to sell has an estimate yet.';
   return {
     bundleKey: row.key, brand: row.brand, model: row.model === '' && row.setItems !== undefined ? `Set ${row.itemId}` : row.model, at: now, options, signals: [...signals, ...buys], buyNow: best,
+    announce: best !== null && newsOf.has(best.optionId!),
     ...(held ? { buyPending: { optionId: held.optionId, listings: held.listings, asins: held.asins } } : {}),
     verdict,
   };

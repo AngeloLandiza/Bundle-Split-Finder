@@ -22,7 +22,7 @@ import type { Cache, SearchResult } from '../core/src/serpapi/client';
 import { parseAmazonProduct } from '../core/src/serpapi/parsers';
 import { pairsBehindBest } from '../core/src/tracking/bogoPairs';
 import type { TrendLookup } from '../core/src/tracking/signals';
-import { freshSignals, notifiedKey, retrackReport, type SignalLine, type TrackingState } from '../core/src/tracking/state';
+import { announcedAfter, freshSignals, notifiedKey, retrackReport, type SignalLine, type TrackingState } from '../core/src/tracking/state';
 import { buildDigest } from './alerts';
 import type { NotifyPolicy } from './notifyPolicy';
 import type { Store } from './store';
@@ -106,7 +106,7 @@ export async function evaluateSignals(
   store.update('tracking', (t) => {
     const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa(), ...(d.flatFee ? { flatFee: d.flatFee() } : {}), held: sanityHolds(store) });
     evaluated = r.evaluated;
-    return { ...t, watch: r.state.watch, history: r.state.history, signals: r.state.signals };
+    return { ...t, watch: r.state.watch, history: r.state.history, signals: r.state.signals, ...(r.state.announced ? { announced: r.state.announced } : {}) };
   });
   const tracking = store.get('tracking');
   const kinds = app.alerts.marginDownDigest ? (['buyNow', 'marginDown'] as const) : (['buyNow'] as const);
@@ -121,7 +121,7 @@ export async function evaluateSignals(
   });
   if (fresh.lines.length > 0) {
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals }));
-    store.update('tracking', (t) => ({ ...t, notified: fresh.notified }));
+    store.update('tracking', (t) => ({ ...t, notified: fresh.notified, announced: announcedAfter(t.announced, fresh.lines, now) }));
   }
   const lines = [extra?.text ?? null, changed?.text ?? null, digest.text].filter((x): x is string => x !== null && x !== '');
   if (lines.length === 0) return { evaluated, text: null };

@@ -1,7 +1,7 @@
 // The alert engine (step 13, Decision 6): after a run, at most one message saying what is new, the same text in the
 // app's notification (a `notify` event the shell shows) and on Telegram when the owner set a bot up. A deal is named
-// when a watched way to sell is worth buying now (core/src/tracking/signals.ts buyNow: above both numbers, selling, and
-// better than its baseline or newly confirmed), once per bundle, signal and day (the caller's freshSignals); open
+// when a watched way to sell is worth buying now and that is news (core/src/tracking/signals.ts: it entered the state, or
+// rose by the margin over what was last sent), once per bundle, signal and day (the caller's freshSignals); open
 // questions alert only when one is new since the last message. Profit and ROI are
 // estimates from the fee settings and the message says so (rule 5). No key is ever in a message.
 

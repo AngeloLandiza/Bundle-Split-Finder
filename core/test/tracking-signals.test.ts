@@ -82,12 +82,18 @@ describe('signals: today against the stored baseline', () => {
     expect(s.signals[0]!.reason).toBe('Estimated profit rose from $15.00 (5% ROI) to $81.80 (27% ROI), through your $20.00 and 20% thresholds.');
   });
 
-  it('still good but no better: not worth buying now, and says why', () => {
+  // Nov 25 (Buy now is a state): this test asserted the old conflation, "still good but no better: not worth buying now …
+  // a buy needs a change". Now the deal stays worth buying; what needs a change is the announcement.
+  it('still good but no better: still worth buying now (the state), and not news once announced (the event)', () => {
     const s = bundleSignals({ row: good(), history: [point(NOW - DAY, 81.8, 27.36)], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
-    expect(s.buyNow).toBeNull();
-    expect(s.options[0]).toMatchObject({ meetsThresholds: true, buyNow: false });
-    expect(s.options[0]!.notBuyNow).toBe('Still above your $20.00 and 20% thresholds, but no better than the last check ($81.80) or the 7-day average ($81.80): a buy needs a change.');
-    expect(s.verdict).toBe('Not worth buying now: still above your $20.00 and 20% thresholds, but no better than the last check ($81.80) or the 7-day average ($81.80): a buy needs a change.');
+    expect(s.buyNow).toMatchObject({ kind: 'buyNow', optionId: 'whole' });
+    expect(s.options[0]).toMatchObject({ meetsThresholds: true, buyNow: true, notBuyNow: null });
+    expect(s.verdict).toBe('Worth buying now: +$81.80 (27.4% ROI), sells about 600 a month.');
+    // Never announced in the state: news. Announced at this figure: not sent again.
+    expect(s.announce).toBe(true);
+    const told = bundleSignals({ row: good(), history: [point(NOW - DAY, 81.8, 27.36)], reviewOpen: false, trend: recordedTrend, alerts, now: NOW, announced: { profit: 81.8, at: NOW - DAY } });
+    expect(told.buyNow).not.toBeNull();
+    expect(told.announce).toBe(false);
   });
 
   it('a dollar above its 7-day average counts as improved even when the last scan was close', () => {

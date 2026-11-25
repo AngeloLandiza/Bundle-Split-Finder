@@ -43,7 +43,7 @@ import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import type { KeepaCodeCost, KeepaCodeSample } from '../core/src/keepa/barcode';
 import type { KeepUsage } from '../core/src/tracking/keepCurrent';
-import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
+import { emptyTracking, seedAnnounced, type TrackingState } from '../core/src/tracking/state';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
 // ---------------------------------------------------------------- collection types
@@ -557,6 +557,14 @@ export const FULFILLMENT_KEEPA_MIGRATION = 'fulfillment-fee-from-keepa';
  */
 export const COSTS_AI_LIMIT_MIGRATION = 'costs-ai-limit';
 
+/**
+ * Nov 25: Buy now is a state; the announcement is an event (core/src/tracking/signals.ts). A store from before has no record
+ * of what was announced, so each deal whose buy was sent (tracking.notified) counts as announced at the estimate its history
+ * held that day (seedAnnounced): judged again under the state rule at start (no scan, nothing spent), a deal announced
+ * before returns to Buy now without being sent as new. Once, logged in `migrationLog`.
+ */
+export const BUY_STATE_MIGRATION = 'buy-now-state';
+
 /** Applies each one-time change not made yet; returns the collections it changed. */
 export function applyMigrations(data: StoreData): CollectionName[] {
   const before = data.runtime.migrations ?? [];
@@ -598,6 +606,16 @@ export function applyMigrations(data: StoreData): CollectionName[] {
       log.push({ name: COSTS_AI_LIMIT_MIGRATION, at: new Date().toISOString(), sentence: `Costs: your monthly AI cap of $${cap.toFixed(2)} is now the AI limit in Costs, one setting. No price or budget is entered.` });
     }
     done.add(COSTS_AI_LIMIT_MIGRATION);
+  }
+  if (!done.has(BUY_STATE_MIGRATION)) {
+    if (data.tracking.announced === undefined) {
+      data.tracking = { ...data.tracking, announced: seedAnnounced(data.tracking) };
+      changed.add('tracking');
+      if (Object.keys(data.tracking.announced!).length > 0) {
+        log.push({ name: BUY_STATE_MIGRATION, at: new Date().toISOString(), sentence: 'Worth buying now is a state now: a deal stays on the list for as long as it clears your numbers, sells fast enough and rests on confirmed listings. You are told when it first gets there, when it improves by $5 or more, and when it leaves. Deals you were already told about are not sent again.' });
+      }
+    }
+    done.add(BUY_STATE_MIGRATION);
   }
   if (done.size === before.length) return [];
   data.runtime = { ...data.runtime, migrations: [...done], ...(log.length > 0 ? { migrationLog: [...(data.runtime.migrationLog ?? []), ...log] } : {}) };

@@ -5,7 +5,7 @@ import type { AlertSettings } from '../settings';
 import { partKey, type BundleRow, type ScanReport } from '../scan/types';
 import type { BogoPromotion } from './bogo';
 import type { BogoPair } from './bogoPairs';
-import { appendHistory, bundleSignals, HISTORY_DAYS, historyPoint, type BundleSignals, type HistoryPoint, type Signal, type SignalKind, type TrendLookup } from './signals';
+import { appendHistory, bundleSignals, HISTORY_DAYS, historyPoint, type BundleSignals, type HistoryPoint, type OptionPoint, type Signal, type SignalKind, type TrendLookup } from './signals';
 
 /** auto: watched because it was confirmed and discounted; owner: the owner pressed Watch or Unwatch. */
 export interface WatchEntry {
@@ -28,6 +28,19 @@ export interface TrackingState {
   bogo: Record<string, BogoPromotion>;
   /** BOGO found by the agent: the starter + free tool pairs Home Depot lists, by the pair's bundle key (bogoPairs.ts). */
   bogoPairs: Record<string, BogoPair>;
+  /**
+   * Buy now is a state; the announcement is an event (Nov 25): the buy last sent for each deal while it has stayed worth
+   * buying, by bundle key. Set when its buy line goes in a digest (announcedAfter); dropped when the deal leaves the state,
+   * so its next entry is news again. Absent on a store from before (seedAnnounced fills it once from `notified`).
+   */
+  announced?: Record<string, Announced>;
+}
+
+export interface Announced {
+  optionId: string;
+  /** The estimated profit the owner was told. */
+  profit: number;
+  at: number;
 }
 
 export const emptyTracking = (): TrackingState => ({ watch: {}, history: {}, signals: {}, notified: [], bogo: {}, bogoPairs: {} });
@@ -66,11 +79,23 @@ export interface SignalOpts {
   held?: Readonly<Record<string, string>>;
 }
 
-const signalOpts = (o: SignalOpts, key: string) => ({
-  ...(o.keepa !== undefined ? { keepa: o.keepa } : {}),
-  ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}),
-  ...(o.held?.[key] !== undefined ? { held: o.held[key] } : {}),
-});
+const signalOpts = (o: SignalOpts, key: string, state: Pick<TrackingState, 'announced'>) => {
+  const told = state.announced?.[key];
+  return {
+    ...(o.keepa !== undefined ? { keepa: o.keepa } : {}),
+    ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}),
+    ...(o.held?.[key] !== undefined ? { held: o.held[key] } : {}),
+    ...(told ? { announced: { profit: told.profit, at: told.at } } : {}),
+  };
+};
+
+/** The announced buys less those of the deals judged out of the state: leaving it ends the announcement. */
+function stillAnnounced(announced: TrackingState['announced'], judged: Readonly<Record<string, BundleSignals>>, keys: readonly string[]): TrackingState['announced'] {
+  if (!announced) return announced;
+  const out = { ...announced };
+  for (const k of keys) if (out[k] && (judged[k]?.buyNow ?? null) === null) delete out[k];
+  return out;
+}
 
 /**
  * After a scan: bundles that are now confirmed and discounted become watched (unless the owner unwatched them), every
@@ -92,7 +117,7 @@ export function trackReport(
   for (const row of report.bundles) {
     if (!watch[row.key] && autoWatch(row)) watch[row.key] = { watched: true, by: 'auto', since: now };
     const before = state.history[row.key] ?? [];
-    signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts, row.key) });
+    signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts, row.key, state) });
     history[row.key] = appendHistory(before, historyPoint(row, open.has(row.key), trend, now), now);
   }
   // Bundles this report does not hold keep their history until it is too old.
@@ -101,7 +126,8 @@ export function trackReport(
     const kept = points.filter((p) => now - p.at <= HISTORY_DAYS * 86_400_000);
     if (kept.length > 0) history[key] = kept;
   }
-  return { ...state, watch, history, signals };
+  const announced = stillAnnounced(state.announced, signals, report.bundles.map((b) => b.key));
+  return { ...state, watch, history, signals, ...(announced ? { announced } : {}) };
 }
 
 /**
@@ -162,15 +188,17 @@ export function retrackReport(
     const last = before.at(-1);
     const same = last !== undefined && sameFigures(last, point);
     const prior = same ? before.slice(0, -1) : before;
-    const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts, row.key) });
+    const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts, row.key, state) });
     const old = state.signals[row.key];
-    if (!same || !old || verdictKey(old) !== verdictKey(next) || old.verdict === undefined) {
+    // A signal stored before Nov 25 (no `announce`) is judged again once under the state rule (docs/decisions.md).
+    if (!same || !old || verdictKey(old) !== verdictKey(next) || old.verdict === undefined || old.announce === undefined) {
       signals[row.key] = next;
       evaluated.push(row.key);
     }
     history[row.key] = same ? [...prior, { ...point, at: last!.at }] : appendHistory(before, point, now);
   }
-  return { state: { ...state, watch, history, signals }, evaluated };
+  const announced = stillAnnounced(state.announced, signals, report.bundles.map((b) => b.key));
+  return { state: { ...state, watch, history, signals, ...(announced ? { announced } : {}) }, evaluated };
 }
 
 /** The owner's local calendar day, for "once a day" per bundle and signal. */
@@ -199,8 +227,9 @@ export function freshSignals(state: TrackingState, kinds: readonly SignalKind[],
     if (!isWatched(state, s.bundleKey)) continue;
     if (only && !only.has(s.bundleKey)) continue;
     for (const kind of kinds) {
-      // One line per bundle and kind: for buyNow the best way to sell, else the first that fired.
-      const sig = kind === 'buyNow' ? s.buyNow : s.signals.find((x) => x.kind === kind);
+      // One line per bundle and kind: for buyNow the best way to sell, else the first that fired. A buy is sent only when it
+      // is news (BundleSignals.announce: it entered the state or rose by the margin); a deal that stays good is not sent again.
+      const sig = kind === 'buyNow' ? (s.announce === false ? null : s.buyNow) : s.signals.find((x) => x.kind === kind);
       if (!sig || sent.has(notifiedKey(s.bundleKey, kind, now))) continue;
       lines.push({ bundleKey: s.bundleKey, brand: s.brand, model: s.model, signal: sig });
     }
@@ -208,4 +237,39 @@ export function freshSignals(state: TrackingState, kinds: readonly SignalKind[],
   lines.sort((a, b) => (b.signal.numbers.profit ?? -Infinity) - (a.signal.numbers.profit ?? -Infinity));
   const notified = [...state.notified, ...lines.map((l) => notifiedKey(l.bundleKey, l.signal.kind, now))].slice(-KEEP_NOTIFIED);
   return { lines, notified };
+}
+
+/** The announced buys with those just sent (each buy line's way to sell and estimated profit), for the next announcement's margin. */
+export function announcedAfter(announced: TrackingState['announced'], lines: readonly SignalLine[], now: number): Record<string, Announced> {
+  const out = { ...(announced ?? {}) };
+  for (const l of lines) {
+    if (l.signal.kind !== 'buyNow' || l.signal.optionId === null || l.signal.numbers.profit === null) continue;
+    out[l.bundleKey] = { optionId: l.signal.optionId, profit: l.signal.numbers.profit, at: now };
+  }
+  return out;
+}
+
+/**
+ * Once, for a store from before Nov 25 (no `announced`): every deal whose buy was sent (a `<key>|buyNow|<day>` in `notified`,
+ * the latest day) counts as announced at the best estimate its history held that day (the newest point on or before it; the
+ * oldest point when the history's days do not reach back to it). A deal no longer worth buying is dropped at its next
+ * judgement (stillAnnounced). So a deal announced before returns to Buy now without being announced as new.
+ */
+export function seedAnnounced(state: Pick<TrackingState, 'notified' | 'history' | 'announced'>): Record<string, Announced> {
+  const out = { ...(state.announced ?? {}) };
+  const days = new Map<string, string>();
+  for (const n of state.notified) {
+    const [key, kind, day] = n.split('|');
+    if (kind !== 'buyNow' || !key || !day) continue;
+    if ((days.get(key) ?? '') < day) days.set(key, day);
+  }
+  for (const [key, day] of days) {
+    if (out[key]) continue;
+    const points = (state.history[key] ?? []).filter((p) => p.options.some((o) => o.profit !== null));
+    const point = [...points].reverse().find((p) => dayOf(p.at) <= day) ?? points[0];
+    if (!point) continue;
+    const best = point.options.reduce<OptionPoint | null>((a, o) => (o.profit !== null && (a === null || o.profit > a.profit!) ? o : a), null)!;
+    out[key] = { optionId: best.id, profit: best.profit!, at: point.at };
+  }
+  return out;
 }
