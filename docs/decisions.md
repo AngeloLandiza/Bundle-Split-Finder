@@ -2253,3 +2253,58 @@ discontinued: false, status: false, buyable: true }`, `info.quantityLimit` 3 ("L
 - Tests: `core/test/buying.test.ts` (the recorded page and variations: not buyable, discontinued, no limit, no promotion, bad
   dates, disagreeing entries; the words on a fake clock; the replay on `after-keepcurrent`), `agent/test/buyingPage.test.ts` (the
   re-read, the exit and the return, the message, the ended price, through the agent with a fake Chrome).
+## Nov 25: the owner's Amazon seller account, read-only
+
+Why: the PO has a verified professional seller account. Buying a bundle and then finding a part may not be listed
+(brand or ASIN approval) or will not be taken by FBA (the lithium batteries: Keepa's record for PBP004 carries UN3480)
+is the worst loss in this trade. Amazon itself can answer both before he buys, and give its own fee estimate for his
+account. Everything here is built to `docs/sp-api-notes-2026-11-25.md`; nothing was checked against a live answer yet.
+
+- **What is read** (`core/src/amazon/spapi/client.ts`, one client, fetch injected): the token exchange
+  (`api.amazon.com/auth/o2/token`, refresh grant); Listings Restrictions (`conditionType=new_new`, `reasonLocale=en_US`);
+  FBA Inbound Eligibility (`program=INBOUND`); Product Fees, batch (up to 20, `IsAmazonFulfilled: true`, at the price the
+  estimate uses); Sales `getOrderMetrics` by ASIN and day, as a method and parser only (the owner deferred outcomes to the
+  trial: the seam is `SpApiClient.orderMetrics`, nothing calls it). US marketplace (`ATVPDKIKX0DER`) only.
+- **What is never done**: no listing, no price change, no shipment plan, no order, no report request; the client has no
+  method that writes. No restricted role (no PII), so no 30-day deletion or PII encryption duty. Roles to ask for: Product
+  Listing, Amazon Fulfillment, and Inventory and Order Tracking for sales later.
+- **Why read-only**: the app's job is to tell him before he buys; acting in his account is his. Read-only roles are also
+  the least an app can hold if its key store were ever read.
+- **The key** (`amazonSeller`: client id, client secret, refresh token, seller id) is stored like the others
+  (`keys.json`, owner-only), never returned, scrubbed from every sentence (`keySecrets`, `secretsOf`, `spSecrets`, plain and
+  URL-encoded, before any cut). It goes only to the two hosts above. Checked on save: the token exchange, then one
+  Listings Restrictions read for an ASIN the deals hold (PBP004's when none), so a wrong seller id fails at save, not at
+  the first deal. A record of another account is never used: each is tagged with a hash of the seller id
+  (`sellerAccountTag`), not the id.
+- **Pace**: one request per 1/rate seconds per operation (restrictions 5/s, eligibility 1/s, fees 0.5/s, sales 0.5/s; the
+  burst is not used), and the app's own cap a day (400 listing reads, 400 FBA reads, 40 fee batches, 100 sales reads),
+  shown under the key in Settings. A 429 or a 5xx gets one wait as Amazon's headers say (Retry-After, else
+  x-amzn-RateLimit-Limit, at most 30 s) and one more try; a 401 one new token and one more try; never a loop. Every call is
+  a row in `spapi-ledger.jsonl` (operation, status, items; never an address or a key) and counted in Costs ("Amazon seller
+  API", free, calls).
+- **Which listings, when** (`core/src/amazon/seller.ts checksWanted`, `agent/seller.ts`): the counted listings of every
+  deal that is Buy now or within reach of it (an estimate that clears his numbers, or a watched deal), before its signals
+  are judged. A record is used for a week; before a deal is first announced (judged Buy now with every seller check
+  passing, alerts on, not announced yet) it is read again unless it is under an hour old. Fees are read again when the
+  price the estimate uses moved. At most 40 listings a pass.
+- **Buy now gets two conditions when an account is connected**: every counted part allowed to list, and every part
+  eligible for FBA or one he said he ships himself ("I ship it myself", remembered by ASIN in `tracking.selfShip`). The
+  sentences name the part and the reason ("you need Amazon's approval to list PBP004"; "FBA does not take PBP004 yet:
+  Needs battery details"). A part not checked (or whose check failed) holds the deal: "not checked yet whether you may
+  list PCG002". An unknown reason code is shown as its code and never passes. **With no account nothing changes** but one
+  quiet line on a Buy now deal: "Not checked against your Amazon account: connect it in Settings to see whether you may
+  list these." (tested: the signals are identical with and without the feature).
+- **Amazon's fees in the estimate** (`core/src/scan/report.ts feesOf`): only where the settings take Amazon's FBA fee
+  (`fulfillmentSource 'keepa'`; a flat choice stays his), and only read at exactly the price the estimate uses. The
+  `ReferralFee` line becomes the referral, everything else Amazon counted (FBA fees, closing fees, any unknown type) the
+  fulfillment side, so the estimate's fees equal Amazon's total. An answer with no ReferralFee line, or whose lines do
+  not add up to its total, is not used. Keepa's FBA fee is kept beside it (`PartFees.amazon.keepaFulfillment`) so the
+  difference can be shown and measured. The basis line then says "Amazon's fee estimate for your account, read Nov 25".
+  A part he ships himself keeps Keepa's figures (Amazon's is FBA's).
+- **Samples**: the first three answers per operation (and the token's, with the token removed) are kept in
+  `runtime.spapiSamples`, every credential and every field named like a token, secret or seller id removed, cut to 6,000
+  characters; they are in the audit export so the notes can be corrected from real data.
+- **What the first live run must confirm**: where the seller id is shown; the FeeType names (is `ReferralFee` the
+  referral line, and do the top-level lines add up to `TotalFeesEstimate`?); the batch answer's shape (a bare array or a
+  `payload`); whether Listings Restrictions answers a wrong seller id with 400 or 403; the path-forward link's form (an
+  absolute sellercentral.amazon.com address, or not shown); and the Sales money field casing.

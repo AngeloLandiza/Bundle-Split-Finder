@@ -134,6 +134,34 @@ Open **Costs** (sidebar, under Activity; **⌘6** or **Ctrl+6**) to see what the
 
 Your keys are saved only on your computer, in the app's own folder. On Windows they are readable by your Windows account and by this PC's administrators, the same as SSH keys; on a Mac, by your account alone. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To clear the deals, Review and scan history but keep your keys and settings, open **Settings, Data** and press **Reset scan data…**. The app copies what it deletes into a backup folder first and tells you where. To remove everything, including keys, uninstall the app and delete its data folder (**Settings, Data** shows it; on Windows it is `%APPDATA%\com.bundlesplitfinder.desktop`).
 
+### Connecting your Amazon seller account
+
+Before you buy, the app can ask Amazon itself, from your own seller account, whether you may list each part, whether FBA
+will take it, and what Amazon's fees would be for you. It only reads: nothing is ever listed, changed or ordered. US
+marketplace only for now.
+
+1. Sign in to Seller Central as the Primary User of your professional account.
+2. Open **Apps and Services**, then **Develop Apps**, and register as a private developer. Choose private data access and
+   the roles **Product Listing** and **Amazon Fulfillment** (also **Inventory and Order Tracking**, for sales later). If
+   Amazon opens a case about it, answer within 5 days.
+3. Add an app client for yourself. Under its LWA credentials, **View** shows the **client id** and the **client secret**.
+4. Choose **Authorize app** for it. Amazon shows a **refresh token**. Each click makes a new one; earlier ones keep working.
+5. Your **seller id** is probably in Seller Central under **Account Info**, called **Merchant Token**. Amazon's developer
+   pages do not say where it is shown; if it is not there, ask Seller Support for your merchant token.
+6. In Split Finder open **Settings, Keys**, find **Amazon seller account**, paste the four, and press **Save**. The app
+   signs in and checks one listing; the line under the key says whether it worked, in Amazon's words if not.
+
+After that, each part of a deal that is worth buying (or close to it, or watched) shows one line in the deal: "You may
+list it. FBA accepts it. Amazon's fees: $12.41." A deal is worth buying now only if you may list every part and FBA takes
+every part. If Amazon says you need approval, the line says so with **Apply**, which opens Seller Central. If FBA will not
+take a part (a battery waiting for its dangerous goods review, for example) and you ship that part yourself, press **I ship
+it myself** on it. The app checks each part again after a week, and again just before it first tells you about a deal.
+Amazon's fee estimate then replaces Keepa's in the estimate, and the line under the figures says "Amazon's fee estimate for
+your account, read" and the day. It is still an estimate. These checks are free; Costs counts them.
+
+Without an account connected nothing changes, except that a deal worth buying says it was not checked against your Amazon
+account.
+
 ### New versions
 
 Once a day Split Finder looks at the project's public page on GitHub (one plain request that sends nothing about you) to see whether a new version is ready. If one is, you get one message through the channels you have on (a notification, and Telegram if it is set up), and a quiet line near the top of the window: "Split Finder 0.1.1 is ready", with **Download** and **What changed**. Download opens the link in your browser. You run the installer yourself; the app never downloads or installs anything on its own, and it tells you about each version once. **Dismiss** closes the line for that version. If the message says to ask the developer for the link, the link was missing or not allowed, so nothing is offered to open.

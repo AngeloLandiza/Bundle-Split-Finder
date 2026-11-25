@@ -81,3 +81,8 @@ and these notes corrected from them (CLAUDE.md: a recorded response beats the do
 ## Not confirmed
 Where `sellerId` is shown; refresh-token expiry; the full text of the Data Protection and Acceptable Use policies;
 the FeeType values; whether hazmat detail beyond the reason codes is readable.
+
+## Correcting these notes
+The app keeps the first three answers of each operation (scrubbed of every credential and seller id) in
+`runtime.spapiSamples`, which is in the audit export (Settings, Data). Correct the points above from those, then the
+parsers in `core/src/amazon/spapi/parse.ts`. See docs/decisions.md, "Nov 25: the owner's Amazon seller account".
