@@ -1,6 +1,7 @@
 import { checkedWords, staleWhy } from '../lib/pricesChecked';
 import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
+import type { DealBuying } from '@core/api/contract';
 import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
@@ -62,6 +63,29 @@ function NeedsLookSection({ d }: { d: DealDetail }) {
           </div>
         ))}
         {settle.error ? <p className="detail-note">{settle.error}</p> : null}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Nov 25: what Home Depot's own page last stated about buying it, in its words and no more: whether it can be bought, the
+ * per-order limit (with what the limit allows at the estimate), when its price ends and its return window. The page does not
+ * state stock at a store or a delivery date, so neither is shown. Nothing here changes the verdict except "cannot be bought".
+ */
+function BuyingSection({ b }: { b: DealBuying }) {
+  const lines = [b.line, b.limitLine, b.limitProfitLine, b.priceEndsLine, b.returnsLine].filter((x): x is string => x !== null);
+  return (
+    <section className="detail-section" aria-labelledby="buying-title">
+      <h3 className="detail-section-title" id="buying-title">
+        On Home Depot
+      </h3>
+      <div className="detail-box buying">
+        {lines.map((l, i) => (
+          <p key={l} className={i === 0 && b.state === 'cannot' ? 'detail-note attention-text' : b.priceEnded && l === b.priceEndsLine ? 'detail-note attention-text' : 'detail-note'}>
+            {l}
+          </p>
+        ))}
       </div>
     </section>
   );
@@ -154,6 +178,8 @@ function Detail({ d }: { d: DealDetail }) {
             </div>
           </section>
         ) : null}
+
+        {d.buying ? <BuyingSection b={d.buying} /> : null}
 
         <section className="detail-box" aria-label={!e && d.incomplete ? 'Incomplete estimate' : 'Estimate'}>
           {!e && d.incomplete ? (

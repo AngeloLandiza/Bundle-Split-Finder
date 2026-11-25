@@ -234,7 +234,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         setWatch(r, id === 'watch');
         return;
       case 'bought':
-        ui.openPurchase({ mode: 'new', dealId: r.id, title: r.title, model: r.model, price: r.price, estimate: r.profit });
+        ui.openPurchase({ mode: 'new', dealId: r.id, title: r.title, model: r.model, price: r.price, estimate: r.profit, limit: r.buying?.limit ?? null });
         return;
       case 'bogo':
         // The sheet needs the promotion as it stands (its eligible list), which the row does not carry.
@@ -304,6 +304,14 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
                 <span className={r.pricesChecked.staleSince ? 'attention-text' : undefined} title={r.pricesChecked.staleSince ? staleWhy(r.pricesChecked) : undefined}>
                   {checkedWords(r.pricesChecked)}
                 </span>
+              </>
+            ) : null}
+            {/* Nov 25: what Home Depot's page states about buying it, only the facts that change what he does. */}
+            {r.buying?.limitLine ? <> · {r.buying.limitLine}</> : null}
+            {r.buying?.priceEndsLine ? (
+              <>
+                {' · '}
+                <span className={r.buying.priceEnded ? 'attention-text' : undefined}>{r.buying.priceEndsLine}</span>
               </>
             ) : null}
           </span>

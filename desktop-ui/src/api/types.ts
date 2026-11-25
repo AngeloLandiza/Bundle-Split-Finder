@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
+<<<<<<< HEAD
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -246,6 +246,8 @@ export interface DealRow {
   needsLook?: NeedsLook | null;
   /** A watched deal: when its Home Depot price and its Amazon prices were last checked; a stale Buy now since when. */
   pricesChecked?: PricesChecked | null;
+  /** Nov 25: what Home Depot's page last stated about buying it (the limit per order, when its price ends, the return window). */
+  buying?: DealBuying | null;
 }
 
 /** When a watched deal's prices were last checked (ISO), and for a Buy now kept from going stale, since when they were not. */
@@ -404,6 +406,8 @@ export interface DealDetail {
   signalNote?: string | null;
   /** A watched deal: when its prices were last checked (shown beside the verdict, never hidden by it). */
   pricesChecked?: PricesChecked | null;
+  /** Nov 25: what Home Depot's page last stated about buying it. */
+  buying?: DealBuying | null;
   /** The estimate counts no fulfillment fee for `parts` of its `of` parts. */
   beforeFulfillment?: { parts: number; of: number } | null;
   /** Nov 23: in place of `estimate` while some model part has no counted price; null otherwise. */

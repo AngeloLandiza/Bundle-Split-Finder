@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { PartResult, PurchaseView } from '@core/api/contract';
-import { boughtWords, formOfPurchase, initialPurchaseForm, parseMoney, partWords, patchRequest, progressWords, purchaseRequest, resultWords, returnRequest, saleRequest } from './outcomes';
+import { boughtWords, formOfPurchase, initialPurchaseForm, limitWarning, parseMoney, partWords, patchRequest, progressWords, purchaseRequest, resultWords, returnRequest, saleRequest } from './outcomes';
 
 const NOON = new Date(2026, 10, 23, 12).getTime();
 const part = (over: Partial<PartResult>): PartResult => ({ partId: 'p0', model: 'PCL1201K2', units: 1, status: 'open', date: null, salePrice: null, netReceived: null, netFrom: null, estimatedNet: 131.27, costShare: null, profit: null, ...over });
@@ -35,6 +35,19 @@ describe('the purchase sheet', () => {
     const p = { boughtAt: '2026-11-23', pricePaid: 179, quantity: 1 } as PurchaseView;
     expect(patchRequest(formOfPurchase(p), p)).toEqual({ ok: true, patch: null });
     expect(patchRequest({ date: '2026-11-23', price: '170.00', quantity: '2' }, p)).toEqual({ ok: true, patch: { pricePaid: 170, quantity: 2 } });
+  });
+});
+
+describe('Home Depot\'s per-order limit in the purchase sheet', () => {
+  it('never starts above the limit, and warns (does not refuse) above it', () => {
+    expect(initialPurchaseForm(99, NOON, 3).quantity).toBe('1');
+    expect(initialPurchaseForm(99, NOON, 1).quantity).toBe('1');
+    expect(limitWarning('3', 3)).toBeNull();
+    expect(limitWarning('4', 3)).toBe("Home Depot's page says Limit 3 per order, and this is 4. Record it only if you bought it in more than one order.");
+    expect(limitWarning('4', null)).toBeNull();
+    expect(limitWarning('', 3)).toBeNull();
+    // Above the limit is still a request: the sheet records it.
+    expect(purchaseRequest({ date: '2026-11-25', price: '99.00', quantity: '4' }, 'homedepot:344305163')).toMatchObject({ ok: true, body: { quantity: 4 } });
   });
 });
 

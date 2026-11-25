@@ -28,7 +28,18 @@ export interface PurchaseForm {
   quantity: string;
 }
 
-export const initialPurchaseForm = (price: number | null, now?: number): PurchaseForm => ({ date: todayIso(now), price: price === null ? '' : price.toFixed(2), quantity: '1' });
+// Nov 25: Home Depot's page states a per-order limit ("Limit 3 per order"). The quantity starts at 1, which no limit is under,
+// so it never starts above the limit; one above it is warned about, not refused (he may buy in several orders).
+export const initialPurchaseForm = (price: number | null, now?: number, limit: number | null = null): PurchaseForm => ({
+  date: todayIso(now), price: price === null ? '' : price.toFixed(2), quantity: String(limit !== null && limit < 1 ? limit : 1),
+});
+
+/** The warning for a quantity above the page's per-order limit; null when it is within it, or the page states none. */
+export function limitWarning(quantity: string, limit: number | null): string | null {
+  if (limit === null || !/^\d+$/.test(quantity.trim())) return null;
+  const n = Number(quantity);
+  return n > limit ? `Home Depot's page says Limit ${limit} per order, and this is ${n}. Record it only if you bought it in more than one order.` : null;
+}
 export const formOfPurchase = (p: Pick<PurchaseView, 'boughtAt' | 'pricePaid' | 'quantity'>): PurchaseForm => ({ date: p.boughtAt, price: p.pricePaid.toFixed(2), quantity: String(p.quantity) });
 
 function checked(form: PurchaseForm): { ok: true; date: string; price: number; quantity: number } | Problem {

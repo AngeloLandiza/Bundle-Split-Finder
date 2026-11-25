@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { PartResult, PurchaseView } from '@core/api/contract';
 import { api, useAction } from '../api/hooks';
 import { money, profit } from '../lib/format';
-import { formOfPurchase, initialPurchaseForm, initialReturnForm, initialSaleForm, patchRequest, purchaseRequest, returnRequest, saleRequest, type PurchaseForm, type ReturnForm, type SaleForm } from '../lib/outcomes';
+import { formOfPurchase, initialPurchaseForm, limitWarning, initialReturnForm, initialSaleForm, patchRequest, purchaseRequest, returnRequest, saleRequest, type PurchaseForm, type ReturnForm, type SaleForm } from '../lib/outcomes';
 import { Button } from './Button';
 import { TextField } from './Fields';
 import { Sheet, SheetActions } from './Sheet';
@@ -10,12 +10,12 @@ import './OutcomeSheets.css';
 
 /** "I bought this" on a deal, or a correction of a recorded purchase. A sheet over the window, so App holds it (ui.openPurchase). */
 export type PurchaseTarget =
-  | { mode: 'new'; dealId: string; title: string; model: string; price: number | null; estimate: number | null }
+  | { mode: 'new'; dealId: string; title: string; model: string; price: number | null; estimate: number | null; limit?: number | null }
   | { mode: 'edit'; purchase: PurchaseView };
 
 export function PurchaseSheet({ target, onClose }: { target: PurchaseTarget; onClose: () => void }) {
   const edit = target.mode === 'edit' ? target.purchase : null;
-  const [form, setForm] = useState<PurchaseForm>(() => (edit ? formOfPurchase(edit) : initialPurchaseForm(target.mode === 'new' ? target.price : null)));
+  const [form, setForm] = useState<PurchaseForm>(() => (edit ? formOfPurchase(edit) : initialPurchaseForm(target.mode === 'new' ? target.price : null, undefined, target.mode === 'new' ? target.limit ?? null : null)));
   const [problem, setProblem] = useState<string | null>(null);
   const record = useAction(api.recordPurchase);
   const change = useAction(api.editPurchase);
@@ -38,6 +38,8 @@ export function PurchaseSheet({ target, onClose }: { target: PurchaseTarget; onC
     if (!r.ok) return setProblem(r.problem);
     if (await record.run(r.body)) onClose();
   };
+  const limit = target.mode === 'new' ? target.limit ?? null : null;
+  const warning = limitWarning(form.quantity, limit);
   const busy = record.busy || change.busy || remove.busy;
   const error = problem ?? record.error ?? change.error ?? remove.error;
   const title = edit ? edit.snapshot.bundle.title : target.mode === 'new' ? target.title : '';
@@ -73,7 +75,19 @@ export function PurchaseSheet({ target, onClose }: { target: PurchaseTarget; onC
       <form className="os-form" onSubmit={(e) => void submit(e)}>
         <TextField label="Date bought" type="date" value={form.date} onChange={(e) => set({ date: e.target.value })} width="sm" data-autofocus="" />
         <TextField label="Price paid for one bundle" mono type="number" step="0.01" min="0" inputMode="decimal" prefix="$" value={form.price} onChange={(e) => set({ price: e.target.value })} width="sm" help={target.mode === 'new' && target.price !== null ? `Home Depot’s price on the deal is ${money(target.price)}. Change it if you paid something else.` : undefined} />
-        <TextField label="Bundles bought" mono type="number" step="1" min="1" inputMode="numeric" value={form.quantity} onChange={(e) => set({ quantity: e.target.value })} width="xs" />
+        <TextField
+          label="Bundles bought"
+          mono
+          type="number"
+          step="1"
+          min="1"
+          inputMode="numeric"
+          value={form.quantity}
+          onChange={(e) => set({ quantity: e.target.value })}
+          width="xs"
+          help={limit !== null ? `Home Depot’s page says Limit ${limit} per order.` : undefined}
+        />
+        {warning ? <p className="os-note os-warn">{warning}</p> : null}
         {/* The estimate is frozen now and never rewritten; it is what the scorecard compares with what he makes. */}
         {edit ? (
           <p className="os-note">

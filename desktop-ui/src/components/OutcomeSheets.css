@@ -29,3 +29,8 @@
   line-height: 16px;
   color: var(--loss);
 }
+
+.os-warn {
+  color: var(--attention, var(--label));
+  font-weight: 500;
+}

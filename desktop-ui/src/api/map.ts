@@ -151,6 +151,21 @@ export function pricesCheckedOf(v: unknown): PricesChecked | null {
   return { homeDepotAt: o.homeDepotAt, amazonAt: time(o.amazonAt) ? o.amazonAt : null, ...(time(o.staleSince) ? { staleSince: o.staleSince } : {}) };
 }
 
+/** What Home Depot's page stated about buying a deal, only in its checked shape (a line that is not text drops the whole). */
+export function buyingOf(v: unknown): C.DealBuying | null {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  const text = (x: unknown): x is string => typeof x === 'string' && x !== '';
+  const orNull = (x: unknown): string | null => (text(x) ? x : null);
+  if (o.state !== 'unchecked' && o.state !== 'can' && o.state !== 'cannot' && o.state !== 'unstated') return null;
+  if (!text(o.line)) return null;
+  const limit = typeof o.limit === 'number' && Number.isInteger(o.limit) && o.limit >= 1 ? o.limit : null;
+  return {
+    state: o.state, line: o.line, readAt: orNull(o.readAt), limit, limitLine: limit === null ? null : orNull(o.limitLine), limitProfitLine: limit === null ? null : orNull(o.limitProfitLine),
+    priceEnds: orNull(o.priceEnds), priceEndsLine: orNull(o.priceEndsLine), priceEnded: o.priceEnded === true, returnsLine: orNull(o.returnsLine),
+  };
+}
+
 const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
 
 /** The sentences the agent says about keys it holds but a service did not accept: only a non-empty sentence for a key it knows. */
@@ -280,6 +295,7 @@ export function mapRow(r: C.DealRow): DealRow {
     lookup: r.lookup ?? null,
     ...(r.incomplete ? { incomplete: r.incomplete } : {}),
     ...(pricesCheckedOf(r.pricesChecked) ? { pricesChecked: pricesCheckedOf(r.pricesChecked) } : {}),
+    ...(buyingOf(r.buying) ? { buying: buyingOf(r.buying) } : {}),
   };
 }
 
@@ -471,6 +487,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     estimate: e ? { profit: e.profit, roi: e.roi, roiRange: priceRangeOf(b.range), cost: e.cost, partsSellFor: e.partsSellFor, afterFees: e.afterFees, basis: e.basis, countedAtZero: e.countedAtZero } : null,
     signalNote: d.row.signalNote ?? null,
     pricesChecked: pricesCheckedOf(d.row.pricesChecked),
+    buying: buyingOf(d.row.buying),
     beforeFulfillment: d.row.beforeFulfillment ?? null,
     ...(d.incompleteEstimate ? { incomplete: d.incompleteEstimate } : {}),
     noEstimate: e ? null : noEstimateSentence(b),
