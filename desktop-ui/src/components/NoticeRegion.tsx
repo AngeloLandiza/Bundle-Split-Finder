@@ -49,6 +49,12 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   const read = useAction(readPages);
   const reload = useAction(api.reloadHelper);
   const [reloaded, setReloaded] = useState(false);
+  // "Install the helper again": where the files went, said under the notice.
+  const [installedIn, setInstalledIn] = useState<string | null>(null);
+  const install = useAction(async () => {
+    setInstalledIn(null);
+    setInstalledIn((await api.installExtension()).extensionDir);
+  });
   const update = useUpdateNotice(state?.update);
   const login = useAction(api.answerLoginNotice);
   const supervision = useSupervision(online);
@@ -225,34 +231,45 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
         items.push({
           kind: 'helper',
           key: 'helper-outdated',
-          tone: 'attention',
+          tone: helper.quiet ? 'quiet' : 'attention',
           title: helper.title,
           body: (
             <>
               {helper.text}
-              <span className="notice-more">{reloaded ? 'Asked Chrome to reload it. This goes away when the helper reconnects.' : helper.fallback}</span>
-              {reload.error ? (
+              {helper.action === 'install' && installedIn ? (
+                <span className="notice-more">{`Installed in ${installedIn}. Chrome was asked to reload it; if it does not change, load that folder with Load unpacked.`}</span>
+              ) : helper.action === 'reload' && reloaded ? (
+                <span className="notice-more">Asked Chrome to reload it. This goes away when the helper reconnects.</span>
+              ) : helper.fallback ? (
+                <span className="notice-more">{helper.fallback}</span>
+              ) : null}
+              {(helper.action === 'install' ? install.error : reload.error) ? (
                 <span className="notice-more" role="alert">
-                  {reload.error}
+                  {helper.action === 'install' ? install.error : reload.error}
                 </span>
               ) : null}
             </>
           ),
-          action: (
-            <Button
-              size="sm"
-              busy={reload.busy}
-              busyLabel="Reloading…"
-              onClick={() =>
-                void reload.run().then((ok) => {
-                  setReloaded(ok);
-                  refreshState();
-                })
-              }
-            >
-              Reload it
-            </Button>
-          ),
+          action:
+            helper.action === 'install' ? (
+              <Button size="sm" busy={install.busy} busyLabel="Installing…" onClick={() => void install.run().then(() => refreshState())}>
+                Install the helper again
+              </Button>
+            ) : helper.action === 'reload' ? (
+              <Button
+                size="sm"
+                busy={reload.busy}
+                busyLabel="Reloading…"
+                onClick={() =>
+                  void reload.run().then((ok) => {
+                    setReloaded(ok);
+                    refreshState();
+                  })
+                }
+              >
+                Reload it
+              </Button>
+            ) : undefined,
         });
       }
     }

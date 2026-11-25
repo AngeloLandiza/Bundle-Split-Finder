@@ -68,6 +68,29 @@ describe('outdated helper banner', () => {
     expect(h?.title).toBe('The Chrome helper is older than the app.');
     expect(h?.text).toMatch(/version 0\.4\.1/);
     expect(h?.fallback).toBe('If nothing changes: open chrome://extensions and press Reload on Split Finder.');
+    expect(h?.action).toBe('reload');
+  });
+
+  // Nov 25: a reload loads the same old files, so the reload and the chrome://extensions advice are only for a helper the
+  // app has no files for. The agent says which of the three it is (helper.update).
+  it('says the app is updating the helper by itself, quietly and with no button', () => {
+    const s = structuredClone(STATE);
+    s.helper.outdated = true;
+    s.helper.update = { state: 'updating' };
+    const h = helperProblem(s);
+    expect(h).toMatchObject({ title: 'The Chrome helper is being updated.', action: 'none', quiet: true, fallback: null });
+  });
+
+  it('when the app cannot update it, says why and offers Install the helper again, not a reload or chrome://extensions', () => {
+    const s = structuredClone(STATE);
+    s.helper.outdated = true;
+    s.helper.version = '0.1.0+old0001';
+    s.helper.update = { state: 'install', why: 'The app cannot tell which folder Chrome loaded the helper from.' };
+    const h = helperProblem(s);
+    expect(h?.action).toBe('install');
+    expect(h?.quiet).toBe(false);
+    expect(h?.text).toBe('It is version 0.1.0+old0001. The app cannot tell which folder Chrome loaded the helper from.');
+    expect(`${h?.text} ${h?.fallback}`).not.toMatch(/chrome:\/\/extensions|Reload/);
   });
 });
 

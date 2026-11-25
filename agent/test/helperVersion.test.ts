@@ -55,25 +55,28 @@ async function pair(): Promise<string> {
 }
 
 describe('the helper build', () => {
-  it('a heartbeat with no build (a helper made before Nov 23) is outdated, and one reload is queued for it', async () => {
+  // Nov 25: a reload loads the same old files, so for a build that differs from the shipped one the agent queues none unless it
+  // has put the new files in the helper's folder first (test/helperUpdate.test.ts). Here no folder is known: the one button is
+  // "Install the helper again" (helper.update).
+  it('a heartbeat with no build (a helper made before Nov 23) is outdated, and no reload is queued for old files', async () => {
     const token = await pair();
     await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({}) });
-    expect(await helperState()).toMatchObject({ outdated: true });
-    expect(reloads()).toHaveLength(1);
+    expect(await helperState()).toMatchObject({ outdated: true, update: { state: 'install' } });
+    expect(reloads()).toHaveLength(0);
     // Today's helper then names the shipped build: no longer outdated.
     await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({ version: SHIPPED }) });
     expect(await helperState()).not.toHaveProperty('outdated');
   });
 
-  it('a heartbeat names the build; another build than the shipped one is outdated, and one reload is queued for it', async () => {
+  it('a heartbeat names the build; another build than the shipped one is outdated, and no reload is queued for old files', async () => {
     const token = await pair();
     expect(await helperState()).not.toHaveProperty('outdated');
     await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({ version: '0.1.0+3c92cc7' }) });
-    expect(await helperState()).toMatchObject({ outdated: true, version: '0.1.0+3c92cc7' });
-    expect(reloads()).toHaveLength(1);
+    expect(await helperState()).toMatchObject({ outdated: true, version: '0.1.0+3c92cc7', update: { state: 'install' } });
+    expect(reloads()).toHaveLength(0);
     // The same build again queues nothing more.
     await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({ version: '0.1.0+3c92cc7' }) });
-    expect(reloads()).toHaveLength(1);
+    expect(reloads()).toHaveLength(0);
     // A version that is not plain text is ignored.
     await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({ version: '<script>' }) });
     expect((await helperState()).version).toBe('0.1.0+3c92cc7');
@@ -82,6 +85,7 @@ describe('the helper build', () => {
     const h = await helperState();
     expect(h.version).toBe(SHIPPED);
     expect(h).not.toHaveProperty('outdated');
+    expect(h).not.toHaveProperty('update');
   });
 
   it('a job the helper does not know fails at once as an outdated helper, not Home Depot, and a reload is queued once', async () => {
@@ -110,14 +114,12 @@ describe('the helper build', () => {
     expect((await ext(token, '/api/helper/reload', { method: 'POST', body: '{}' })).status).toBe(403);
   });
 
-  it('a poll names the build like a heartbeat: another build is outdated with one reload, the shipped one clears it, none is unversioned', async () => {
+  it('a poll names the build like a heartbeat: another build is outdated, the shipped one clears it, none is unversioned', async () => {
     const token = await pair();
     const poll = (q: string) => ext(token, `/api/worker/next?wait=0${q}`);
-    expect((await poll('&v=0.1.0%2B3c92cc7')).status).toBe(200);
+    expect((await poll('&v=0.1.0%2B3c92cc7')).status).toBe(204);
     expect(await helperState()).toMatchObject({ outdated: true, version: '0.1.0+3c92cc7' });
-    expect(agent.store.get('jobs').filter((j) => j.kind === 'reload')).toHaveLength(1);
-    await poll('&v=0.1.0%2B3c92cc7');
-    expect(agent.store.get('jobs').filter((j) => j.kind === 'reload')).toHaveLength(1);
+    expect(agent.store.get('jobs').filter((j) => j.kind === 'reload')).toHaveLength(0);
     await poll(`&v=${encodeURIComponent(SHIPPED)}`);
     const h = await helperState();
     expect(h.version).toBe(SHIPPED);

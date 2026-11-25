@@ -2,6 +2,7 @@
 // wired together. server.ts only listens. Tests build one on a temp data dir.
 
 import { randomBytes } from 'node:crypto';
+import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import {
@@ -58,6 +59,7 @@ import { checkForOwner, checkStoredKey, forgetKeyCheck, recheckStaleKeys, type K
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
+import { fileTried, HelperUpdate, RELOAD_GRACE_MS } from './helperUpdate';
 import { COLLECTIONS, defaultAiSettings, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf, workingReviewCount } from './views';
@@ -96,6 +98,8 @@ export interface AgentOptions {
   keyCheckTimeoutMs?: number;
   /** Nov 23: the helper build this app ships; default the bundled zip's manifest (setup.ts shippedHelperVersion). Tests set it. */
   shippedHelperVersion?: string | null;
+  /** Nov 25, tests: unpacks the shipped helper zip into a folder (default: the system's unzip, agent/setup.ts). */
+  helperUnpack?: (zip: string, dest: string) => void;
   /** Nov 25: the running app's version; default the shell's SPLIT_FINDER_APP_VERSION. Null: nothing to compare, so no release check. */
   appVersion?: string | null;
   /** Nov 25: one line for a developer when the release note cannot be read; default console.warn. */
@@ -466,15 +470,25 @@ export function createAgent(opts: AgentOptions): Agent {
     jobs.enqueue('reload', {});
     return true;
   };
+  // Nov 25: a helper older than the shipped build is brought up to date in its own folder (helperUpdate.ts), which queues the
+  // reload itself once the files are new; a reload alone would load the same old files.
+  const helperUpdate = new HelperUpdate({
+    shipped, zip: () => extensionZipSource(), candidates: () => [extensionInstallDir()], now,
+    tried: fileTried(join(opts.dataDir, 'helper-update.json')),
+    queueReload: () => void queueReload(),
+    ...(opts.helperUnpack ? { unpack: opts.helperUnpack } : {}),
+    say: (text) => work.announceActivity(text),
+  });
   const reloadIfOutdated = (): void => {
     if (!helperOutdated()) return;
+    if (helper.version !== null && shipped !== null && helper.version !== shipped) return;
     const key = helper.version ?? '';
     if (helper.reloadsFor.has(key)) return;
     helper.reloadsFor.add(key);
     queueReload();
   };
   /** Nov 23: the helper's build, from a heartbeat's `version` or a poll's `v`. A new one clears what the old one reported, and may be outdated itself. */
-  const noteHelperVersion = (version: unknown): void => {
+  const noteHelperVersion = (version: unknown, extensionId: string | null = null): void => {
     if (typeof version === 'string' && HELPER_VERSION.test(version) && version !== helper.version) {
       helper.version = version;
       reloadIfOutdated();
@@ -485,6 +499,16 @@ export function createAgent(opts: AgentOptions): Agent {
       helper.version = 'unversioned';
       reloadIfOutdated();
       mark('state');
+    }
+    if (helper.version !== null) {
+      const before = JSON.stringify(helperUpdate.state());
+      helperUpdate.contact(extensionId, helper.version);
+      const after = helperUpdate.state();
+      if (JSON.stringify(after) !== before) {
+        mark('state');
+        // The update's time is up a moment later: say so then, not at the next poll.
+        if (after?.state === 'updating' && timers) setTimeout(() => mark('state'), RELOAD_GRACE_MS + 500).unref?.();
+      }
     }
   };
   jobs.onError = (err) => work.jobFailed("Handing Chrome's page reads out again", err);
@@ -501,6 +525,7 @@ export function createAgent(opts: AgentOptions): Agent {
       lastSeenAt: seen === null ? null : new Date(seen).toISOString(),
       helperVersion: helper.version,
       helperOutdated: helperOutdated(),
+      helperUpdate: helperUpdate.state(),
     };
   };
 
@@ -1091,7 +1116,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const wait = Number(ctx.url.searchParams.get('wait') ?? NaN);
     const ms = Number.isFinite(wait) ? Math.max(0, Math.min(wait * 1000, WORKER_LONG_POLL_MS)) : WORKER_LONG_POLL_MS;
     // Every poll names the helper's build, so a restarted app learns it at once, not at the next heartbeat.
-    noteHelperVersion(ctx.url.searchParams.get('v') ?? undefined);
+    noteHelperVersion(ctx.url.searchParams.get('v') ?? undefined, ctx.principal?.kind === 'extension' ? ctx.principal.extensionId : null);
     mark('state');
     const job = await jobs.next(ms, ctx.signal);
     mark('state');
@@ -1113,7 +1138,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const b = (await ctx.body()) as { jobId?: unknown; version?: unknown } | null;
     const jobId = b?.jobId;
     if (typeof jobId === 'string' && jobId !== '' && jobId.length <= 64) jobs.extendLease(jobId);
-    noteHelperVersion(b?.version);
+    noteHelperVersion(b?.version, ctx.principal?.kind === 'extension' ? ctx.principal.extensionId : null);
     return { ok: true };
   });
   // Nov 23: the app's Reload helper button: one reload job, unless one is waiting already (HelperReloadResponse).
@@ -1142,6 +1167,10 @@ export function createAgent(opts: AgentOptions): Agent {
     try {
       const dir = extensionInstallDir();
       installExtensionFromZip(zip, dir);
+      // The new files are in the folder: judge the helper's next report afresh, and ask a connected helper to load them.
+      helperUpdate.reset();
+      if (helper.version !== null) queueReload();
+      mark('state');
       return { ok: true, ...setupStatus(), extensionDir: dir };
     } catch (err) {
       throw new HttpError('bad_request', err instanceof Error ? err.message : 'Install failed.');

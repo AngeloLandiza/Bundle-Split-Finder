@@ -1230,6 +1230,13 @@ export class AgentWork {
 
   // ------------------------------------------------------------------ the run
 
+  /** One line in Activity that is not a run's summary ("The Chrome helper was updated to match the app."). Free. */
+  announceActivity(text: string): void {
+    const now = this.d.now();
+    const at = new Date(now).toISOString();
+    this.record({ id: `run-${now}-note`, kind: 'lookup', startedAt: at, finishedAt: at, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: text, trigger: 'scheduled' });
+  }
+
   private record(run: RunRecord): void {
     this.d.store.update('activity', (a) => ({ ...a, runs: [...a.runs.filter((r) => r.id !== run.id), run].slice(-KEEP_RUNS) }));
     // Step 18: a finished run may have moved a service past a warning (once a month each).

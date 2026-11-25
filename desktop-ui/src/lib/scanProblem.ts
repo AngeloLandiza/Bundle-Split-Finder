@@ -55,13 +55,44 @@ export function scanProblem(state: AppState | null): ScanProblem | null {
   return { what, consequence, action: { enabled: reason === null, reason } };
 }
 
-/** The Chrome helper is older than the app: what to say and the line for when reloading changes nothing. */
-export function helperProblem(state: AppState | null): { title: string; text: string; fallback: string } | null {
+export interface HelperProblem {
+  title: string;
+  text: string;
+  /** A second line under the text, or null. */
+  fallback: string | null;
+  /** The one button that helps: reload it (its files are the app's), install it again (they are not), or none (the app is on it). */
+  action: 'reload' | 'install' | 'none';
+  /** The app is on it: said quietly, with no button. */
+  quiet: boolean;
+}
+
+/**
+ * The Chrome helper is older than the app. When the app updates the helper's own folder by itself (agent/helperUpdate.ts)
+ * it says it is on it; when it cannot, or the helper still reports the old build after it did, the one button is "Install
+ * the helper again" (a reload would load the same old files). Only a helper the app has no files for gets the reload.
+ */
+export function helperProblem(state: AppState | null): HelperProblem | null {
   if (!state?.helper.outdated) return null;
+  const version = state.helper.version ? `It is version ${state.helper.version}. ` : '';
+  const u = state.helper.update;
+  if (u?.state === 'updating') {
+    return { title: 'The Chrome helper is being updated.', text: 'The app put its new files in the helper folder and asked Chrome to reload it. This goes away when it reconnects.', fallback: null, action: 'none', quiet: true };
+  }
+  if (u?.state === 'install') {
+    return {
+      title: 'The Chrome helper is older than the app.',
+      text: `${version}${u.why}`,
+      fallback: 'Install the helper again puts the new files in its folder; then Chrome loads them.',
+      action: 'install',
+      quiet: false,
+    };
+  }
   return {
     title: 'The Chrome helper is older than the app.',
-    text: `${state.helper.version ? `It is version ${state.helper.version}. ` : ''}It may not read Home Depot pages the way this version expects.`,
+    text: `${version}It may not read Home Depot pages the way this version expects.`,
     fallback: 'If nothing changes: open chrome://extensions and press Reload on Split Finder.',
+    action: 'reload',
+    quiet: false,
   };
 }
 

@@ -60,6 +60,11 @@ export function unzipCommand(
 export function installExtensionFromZip(zipPath: string, destDir: string): void {
   if (!existsSync(zipPath)) throw new Error('Extension zip not found.');
   rmSync(destDir, { recursive: true, force: true });
+  unpackZipInto(zipPath, destDir);
+}
+
+/** The zip's files into `destDir` (made if missing), one folder level flattened; throws when the result is not a load-ready helper. */
+export function unpackZipInto(zipPath: string, destDir: string): void {
   mkdirSync(destDir, { recursive: true });
   const [file, args] = unzipCommand(zipPath, destDir);
   execFileSync(file, args, { windowsHide: true });

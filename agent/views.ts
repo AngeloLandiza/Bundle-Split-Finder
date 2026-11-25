@@ -757,6 +757,8 @@ export interface LiveView {
   /** Nov 23: the helper's build, from its heartbeat, and whether it is not the one this app ships. */
   helperVersion?: string | null;
   helperOutdated?: boolean;
+  /** Nov 25: what the agent is doing about an outdated helper's files (agent/helperUpdate.ts). */
+  helperUpdate?: { state: 'updating' } | { state: 'install'; why: string } | null;
   /** Step 15: the drip of Keepa lookups between scans (work.ts dripState). */
   drip?: DripState;
   /** Nov 25: what the next scheduled scan needs and does not have (work.ts nextScanNote). */
@@ -808,6 +810,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting,
       ...(live.helperOutdated ? { outdated: true } : {}),
       ...(live.helperVersion ? { version: live.helperVersion } : {}),
+      ...(live.helperOutdated && live.helperUpdate ? { update: live.helperUpdate } : {}),
     },
     budget: {
       serpLeft: live.serpLeft !== undefined ? live.serpLeft : data.runtime.serp?.left ?? null,

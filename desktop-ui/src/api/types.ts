@@ -148,6 +148,8 @@ export interface HelperState {
   outdated?: boolean;
   /** The helper's own version, when it said one. */
   version?: string;
+  /** What the app does about the old helper's files (agent/helperUpdate.ts); absent: only a reload is left to try. */
+  update?: { state: 'updating' } | { state: 'install'; why: string };
 }
 
 export interface BudgetState {

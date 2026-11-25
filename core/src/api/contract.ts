@@ -299,6 +299,13 @@ export interface AgentState {
     outdated?: boolean;
     /** Nov 23: the helper's build as its heartbeat says it ("0.1.0+3c92cc7"); absent before one said it. */
     version?: string;
+    /**
+     * Nov 25: an outdated helper's files. `updating`: the agent unpacked the shipped helper into the folder Chrome loaded it
+     * from and asked it to reload; waiting for the new build. `install`: it could not (the folder is not known or not the
+     * helper's) or the helper still reports the old build after it did; `why` says which, and the one button that works is
+     * "Install the helper again" (POST /api/setup/install-extension). Absent: a reload is the right thing.
+     */
+    update?: { state: 'updating' } | { state: 'install'; why: string };
   };
   budget: {
     serpLeft: number | null;
