@@ -62,6 +62,7 @@ import { matchState, WAITING_PAGE, WAITING_PARTS, waitingForText } from '../core
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
 import { estimateBasis, fulfillmentGap } from '../core/src/scan/report';
 import { LOGIN_NOTICE } from '../core/src/selfRun/words';
+import { costsPromptSentence, profitQualifier } from '../core/src/estimateNote';
 import type { AuditBundle, StoreData, StoredKeys, TrackingCollection } from './store';
 
 const monthStartMs = (now: number): number => {
@@ -801,6 +802,14 @@ function keyChecksOf(data: StoreData): Partial<Record<KeyName, KeyCheckRecord>> 
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/** Nov 25: what estimates leave out while sales tax or inbound shipping is unanswered, and the one question (until closed). */
+function costsNotes(data: StoreData): Pick<AgentState, 'profitNote' | 'costsPrompt'> {
+  const fees = data.settings.settings.fees;
+  const note = profitQualifier(fees);
+  const sentence = data.runtime.costsPromptDismissed ? null : costsPromptSentence(fees);
+  return { ...(note ? { profitNote: note } : {}), ...(sentence ? { costsPrompt: { sentence } } : {}) };
+}
+
 export function agentState(data: StoreData, live: LiveView): AgentState {
   const status = live.stopping ? 'stopping' : live.busy ? 'scanning' : data.agent.paused ? 'paused' : 'idle';
   const view = live.pipeline;
@@ -848,5 +857,6 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
     settingsAt: data.settings.updatedAt,
     ...(data.runtime.selfRun?.loginNotice ? { loginNotice: { sentence: LOGIN_NOTICE } } : {}),
+    ...costsNotes(data),
   };
 }

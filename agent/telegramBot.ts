@@ -19,6 +19,7 @@ import { createHash, randomBytes } from 'node:crypto';
 
 import type { PurchaseResponse, ReviewQuestion } from '../core/src/api/contract';
 import { proposedAnswer } from '../core/src/assist/stored';
+import { profitQualifier } from '../core/src/estimateNote';
 import { AnswerRefused, reviewSignature } from '../core/src/scan/answers';
 import { OutcomeRefused } from '../core/src/outcomes/outcomes';
 import { setWatch } from '../core/src/tracking/state';
@@ -538,7 +539,7 @@ export class TelegramBot {
         const r: PurchaseResponse = this.d.outcomes.record({ dealId: act.deal, boughtAt: act.day, pricePaid: act.price, quantity: 1 });
         store.update('outcomes', (o) => ({ ...o, entries: o.entries.map((e) => (e.id === r.entryId ? { ...e, sentence: `${e.sentence.replace(/\.$/, '')}, from Telegram.` } : e)) }));
         const est = r.purchase.snapshot.estimate;
-        const frozen = est ? ` Its estimate is kept as it stood: est. profit ${usd(est.profit)} (an estimate from your fee settings).` : '';
+        const frozen = est ? ` Its estimate is kept as it stood: est. profit ${usd(est.profit)} (an estimate from your fee settings${this.costsNote(', ')}).` : '';
         return {
           line: `Recorded from Telegram: 1 bought at ${usd(act.price)} on ${shortDay(Date.parse(`${act.day}T12:00:00`))}.${frozen}`,
           rows: [[{ text: 'Undo', act: { do: 'buyUndo', entry: r.entryId } }]],
@@ -760,7 +761,7 @@ export class TelegramBot {
       searches,
       `This month: ${this.d.work.costs.short().sentence}`,
       this.nextScanWords(),
-      ...(rows.length ? ['Profit figures are estimates from your fee settings, not your real fees.'] : []),
+      ...(rows.length ? [`Profit figures are estimates from your fee settings, not your real fees${this.costsNote(', ')}.`] : []),
     ].join('\n');
   }
 
@@ -771,6 +772,12 @@ export class TelegramBot {
     const { store } = this.d;
     const data = { deals: store.get('deals'), review: store.get('review'), runtime: store.get('runtime'), settings: store.get('settings'), tracking: store.get('tracking') };
     return dealsResponse(data, { sort: 'profit' }, this.d.now()).rows.filter((r) => r.buyNow === true).map((r) => r.id);
+  }
+
+  /** "before sales tax and inbound shipping" after `lead`, while either is unanswered (core/src/estimateNote.ts); else nothing. */
+  private costsNote(lead: string): string {
+    const q = profitQualifier(this.d.store.get('settings').settings.fees);
+    return q ? `${lead}${q}` : '';
   }
 
   /** A deal as a message names it: its name, Home Depot's price and page, and the buy figures (estimates). */
@@ -844,7 +851,7 @@ export class TelegramBot {
         if (top) rows.push(...this.dealRows(top));
         for (const key of rest.slice(0, MAX_DEAL_FOLLOWUPS)) {
           const d = this.deal(key);
-          if (d) follow.push({ text: `Also worth buying now: ${d.name}, ${d.figures}${d.price !== null ? ` at ${usd(d.price)}` : ''}. An estimate from your fee settings.`, rows: this.dealRows(key) });
+          if (d) follow.push({ text: `Also worth buying now: ${d.name}, ${d.figures}${d.price !== null ? ` at ${usd(d.price)}` : ''}. An estimate from your fee settings${this.costsNote(', ')}.`, rows: this.dealRows(key) });
         }
       } else if (a.kind === 'questions') {
         let n = 0;

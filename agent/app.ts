@@ -738,6 +738,13 @@ export function createAgent(opts: AgentOptions): Agent {
     return { ok: true };
   });
 
+  // Nov 25: the owner closed the one question about sales tax and inbound shipping; it is not asked again on its own.
+  r.post('/api/costs-prompt/dismiss', 'ui', () => {
+    store.update('runtime', (rt) => ({ ...rt, costsPromptDismissed: true }));
+    mark('state');
+    return { ok: true };
+  });
+
   // ------------------------------------------------------------ costs
   // Step 18: what the services cost, this month and by its end (agent/costs.ts). Read only: from the ledgers and the store.
   r.get('/api/costs', 'ui', () => work.costs.view());

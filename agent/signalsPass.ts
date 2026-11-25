@@ -11,6 +11,7 @@
 
 import type { NotifyEvent } from '../core/src/api/contract';
 import type { SellerLookup } from '../core/src/amazon/seller';
+import { profitQualifier } from '../core/src/estimateNote';
 import { heldDeals, sanityFindings, type SanityFinding } from '../core/src/audit/sanity';
 import type { TokenBudget } from '../core/src/keepa/budget';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
@@ -122,7 +123,7 @@ export async function evaluateSignals(
   const buyNow = fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey));
   const digest = buildDigest({
     report: { bundles: [], review: [] }, alerts: app.alerts, notifiedDeals: store.get('runtime').notifiedDeals, notifiedQuestions: [], autopilotApplied: 0,
-    verifiedWaiting: 0, trendLines: [],
+    verifiedWaiting: 0, trendLines: [], profitNote: profitQualifier(store.get('settings').settings.fees),
     buyNow, marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
   });
   if (fresh.lines.length > 0) {

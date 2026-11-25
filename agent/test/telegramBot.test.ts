@@ -233,7 +233,7 @@ describe('a deal entering Buy now', () => {
     expect(out).toHaveLength(3);
     expect(buttons(out[0]).map((b) => b.text)).toEqual(['I bought this', 'Not for me', 'Open Home Depot', 'Pause scans', 'Scan now']);
     expect(buttons(out[0]).find((b) => b.text === 'Open Home Depot')!.url).toBe(SAW_LINK);
-    expect(out[1]!.text).toBe('Also worth buying now: RYOBI PSK1212SB-PCL633B, est. profit $38.79 (39% ROI) at $99.00. An estimate from your fee settings.');
+    expect(out[1]!.text).toBe('Also worth buying now: RYOBI PSK1212SB-PCL633B, est. profit $38.79 (39% ROI) at $99.00. An estimate from your fee settings, before sales tax and inbound shipping.');
     expect(buttons(out[2]).map((b) => b.text)).toEqual(['I bought this', 'Not for me', 'Open Home Depot']);
     // Off: the text alone.
     agent.store.update('settings', (s) => ({ ...s, notifications: { ...s.notifications, telegramActions: false } }));
@@ -262,7 +262,7 @@ describe('a deal entering Buy now', () => {
     expect(purchases).toHaveLength(1);
     expect(purchases[0]).toMatchObject({ dealId: SAW, boughtAt: '2026-11-25', pricePaid: 99, quantity: 1 });
     expect(purchases[0]!.snapshot.estimate).toMatchObject({ profit: 43.19, cost: 99 });
-    expect(lastEdit()!.text).toMatch(/Recorded from Telegram: 1 bought at \$99\.00 on Nov 25\. Its estimate is kept as it stood: est\. profit \$43\.19 \(an estimate from your fee settings\)\.$/);
+    expect(lastEdit()!.text).toMatch(/Recorded from Telegram: 1 bought at \$99\.00 on Nov 25\. Its estimate is kept as it stood: est\. profit \$43\.19 \(an estimate from your fee settings, before sales tax and inbound shipping\)\.$/);
     const entry = (await activity()).outcomes![0]!;
     expect(entry.sentence).toBe('Recorded a purchase: 1 bundle of PSK1212SB-PCL515B at $99.00 each on Nov 25, from Telegram.');
     expect(entry.undoable).toBe(true);
@@ -412,7 +412,7 @@ describe('commands', () => {
     expect(lines[2]).toBe(`Searches left: 80 (you keep ${agent.store.get('settings').settings.reserve}).`);
     expect(lines[3]).toMatch(/^This month: /);
     expect(lines[4]).toMatch(/^(Next scan: |No scan is scheduled|Scans are paused)/);
-    expect(lines[5]).toBe('Profit figures are estimates from your fee settings, not your real fees.');
+    expect(lines[5]).toBe('Profit figures are estimates from your fee settings, not your real fees, before sales tax and inbound shipping.');
   });
 
   it('/pause and /resume through the app’s own pause, in Activity with Undo; a problem the app paused for is not resumed from the phone', async () => {

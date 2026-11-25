@@ -114,7 +114,7 @@ describe('buy signals between scans', () => {
     expect(telegram).toHaveLength(1);
     expect(telegram[0]).toBe(
       'Keepa lookups between scans gave 1 new estimate (from your fee settings, not your real fees).\n' +
-        `1 deal worth buying now. Top: RYOBI PCL235B, est. profit $21.14 (235% ROI). ${s.buyNow!.reason} Estimates from your fee settings.`,
+        `1 deal worth buying now. Top: RYOBI PCL235B, est. profit $21.14 (235% ROI). ${s.buyNow!.reason} Estimates from your fee settings, before sales tax and inbound shipping.`,
     );
 
     // The row carries the verdict; the detail says what the fees rest on, and no separate FBA line (it is the estimate).

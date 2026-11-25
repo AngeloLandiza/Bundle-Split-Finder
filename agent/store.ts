@@ -302,6 +302,8 @@ export interface AgentRuntime {
   migrations?: string[];
   /** Signals round 2: what a one-time change did to the owner's settings, in plain words, with when (ISO). */
   migrationLog?: { name: string; at: string; sentence: string }[];
+  /** Nov 25: the owner closed the one question about sales tax and inbound shipping; it is not asked again on its own. */
+  costsPromptDismissed?: boolean;
   /** Step 15: the drip's last look at Keepa and its last lookup (epoch ms). */
   drip?: { checkedAt: number | null; lastLookupAt: number | null };
   /** Home Depot's pace (core/src/scan/hdPace.ts): the last read's end, the cool-down, today's drip pages. */
@@ -646,6 +648,13 @@ export const COSTS_AI_LIMIT_MIGRATION = 'costs-ai-limit';
  */
 export const BUY_STATE_MIGRATION = 'buy-now-state';
 
+/**
+ * Nov 25: the sales tax and inbound cost default to 0, and a stored 0 cannot tell "none" from "never asked" (the estimates
+ * then silently leave both out). Each is marked answered (FeeSettings.salesTaxAnswered, inboundAnswered) from what is stored:
+ * a value other than 0 is an answer; a 0 is not, until the owner enters or confirms it. Once; nothing is logged.
+ */
+export const COST_ANSWERED_MIGRATION = 'costs-answered';
+
 /** Applies each one-time change not made yet; returns the collections it changed. */
 export function applyMigrations(data: StoreData): CollectionName[] {
   const before = data.runtime.migrations ?? [];
@@ -697,6 +706,18 @@ export function applyMigrations(data: StoreData): CollectionName[] {
       }
     }
     done.add(BUY_STATE_MIGRATION);
+  }
+  if (!done.has(COST_ANSWERED_MIGRATION)) {
+    const fees = data.settings.settings.fees;
+    data.settings = {
+      ...data.settings,
+      settings: {
+        ...data.settings.settings,
+        fees: { ...fees, salesTaxAnswered: fees.salesTaxAnswered ?? fees.salesTaxRate !== 0, inboundAnswered: fees.inboundAnswered ?? fees.inboundCost !== 0 },
+      },
+    };
+    changed.add('settings');
+    done.add(COST_ANSWERED_MIGRATION);
   }
   if (done.size === before.length) return [];
   data.runtime = { ...data.runtime, migrations: [...done], ...(log.length > 0 ? { migrationLog: [...(data.runtime.migrationLog ?? []), ...log] } : {}) };

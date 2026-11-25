@@ -12,6 +12,7 @@ import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { AppSettings, AskResponse, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import { profitQualifier } from '../core/src/estimateNote';
 import { keepaTokensForScan, routeAmazonWork, type KeepaRoom, type SerpRoom } from '../core/src/keepa/route';
 import { lookupsSentence, lookupWaysSentence, type LookupWays, sumWays } from '../core/src/deals/lookupCopy';
 import { gatherEvidence } from '../core/src/assist/evidence';
@@ -2784,7 +2785,7 @@ export class AgentWork {
       report: asksAboutEbay(app) ? report : { ...report, ebayQuestions: [] }, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied,
       verifiedWaiting: await this.verifiedWaiting(), trendLines,
       buyNow: fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey)), marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
-      bogoLines: bogo.lines,
+      bogoLines: bogo.lines, profitNote: profitQualifier(app.settings.fees),
     });
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals, notifiedQuestions: digest.notifiedQuestions }));
     store.update('tracking', (t) => ({ ...t, notified: [...fresh.notified, ...bogo.keys].slice(-2000), announced: announcedAfter(t.announced, fresh.lines, now) }));

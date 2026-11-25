@@ -25,6 +25,8 @@ export interface DigestInput {
   autopilotApplied: number;
   /** Open questions whose AI suggestion the code verified and nothing has applied yet (what Approve all verified takes). */
   verifiedWaiting: number;
+  /** What the profit figures leave out while sales tax or inbound shipping is unanswered (core/src/estimateNote.ts); null or absent when both are answered. */
+  profitNote?: string | null;
   /** Trend lines already worded (core/src/keepa/alerts.ts). */
   trendLines: string[];
   /** Watched deals worth buying now and not yet sent today, best estimated profit first (core/src/tracking/state.ts). */
@@ -63,7 +65,7 @@ export function buildDigest(input: DigestInput): Digest {
     const top = fresh[0]!;
     const n = top.signal.numbers;
     lines.push(
-      `${plural(fresh.length, 'deal', 'deals')} worth buying now. Top: ${top.brand} ${top.model}, est. profit $${(n.profit ?? 0).toFixed(2)} (${Math.round(n.roiPercent ?? 0)}% ROI). ${top.signal.reason} Estimates from your fee settings.`,
+      `${plural(fresh.length, 'deal', 'deals')} worth buying now. Top: ${top.brand} ${top.model}, est. profit $${(n.profit ?? 0).toFixed(2)} (${Math.round(n.roiPercent ?? 0)}% ROI). ${top.signal.reason} Estimates from your fee settings${input.profitNote ? `, ${input.profitNote}` : ''}.`,
     );
     kind = 'deal';
     count = fresh.length;
@@ -73,7 +75,7 @@ export function buildDigest(input: DigestInput): Digest {
   if (bogo.length > 0) {
     lines.push(...bogo.slice(0, 3));
     if (bogo.length > 3) lines.push(`${bogo.length - 3} more BOGO promotions in Deals.`);
-    if (fresh.length === 0) lines.push('Estimates from your fee settings.');
+    if (fresh.length === 0) lines.push(`Estimates from your fee settings${input.profitNote ? `, ${input.profitNote}` : ''}.`);
     if (!kind) {
       kind = 'deal';
       count = bogo.length;
