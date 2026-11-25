@@ -21,27 +21,30 @@ export function Profit({ value, size = 'md' }: { value: number; size?: 'md' | 'l
  * colour (never green, never the loss red) with a neutral "before fulfillment" tag beside it: said in words, not by colour.
  */
 export function RowProfit({ value, before }: { value: number; before?: { parts: number; of: number } | null }) {
-  // While his sales tax or inbound shipping is unanswered the estimate says what it leaves out (core/src/estimateNote.ts).
-  const note = useProfitNote();
-  const noteTag = note ? <Tag title={`Estimated profit ${note}: set them in Settings, Scanning.`}>{note}</Tag> : null;
-  if (!before || before.parts <= 0) {
-    return noteTag ? (
-      <span className="figure-before">
-        <Profit value={value} />
-        {noteTag}
-      </span>
-    ) : (
-      <Profit value={value} />
-    );
-  }
+  // What the estimates leave out while sales tax or inbound shipping is unanswered is said once per screen (estimateWords
+  // under the list, ProfitQualifier under a headline profit), not as a tag on every row.
+  if (!before || before.parts <= 0) return <Profit value={value} />;
   const tip = beforeFulfillmentTip(before);
   return (
     <span className="figure-before" title={tip}>
       <span className="fig figure-profit figure-md figure-quiet">{profit(value)}</span>
       <Tag title={tip}>before fulfillment</Tag>
-      {noteTag}
     </span>
   );
+}
+
+/**
+ * The sentence under a list of estimates (rule 5). While sales tax or inbound shipping is unanswered it says what the
+ * estimates leave out, in the words every other surface uses (`note` is core's profitQualifier, from the agent's state).
+ */
+export function estimateWords(note: string | null): string {
+  return note
+    ? `Profit and ROI are estimates from your fee settings, ${note}, not your real Amazon fees.`
+    : 'Profit and ROI are estimates from your fee settings, not your real Amazon fees.';
+}
+
+export function useEstimateWords(): string {
+  return estimateWords(useProfitNote());
 }
 
 /** A line under a headline profit while sales tax or inbound shipping is unanswered; nothing once both are. */
@@ -75,5 +78,6 @@ export function RoiRangeLine({ range, bare = false }: { range: RoiRange | null |
 
 /** Says out loud that a figure is an estimate (rule 5). */
 export function EstimateNote({ children }: { children?: React.ReactNode }) {
-  return <p className="figure-estimate">{children ?? 'Profit and ROI are estimates from your fee settings, not your real Amazon fees.'}</p>;
+  const words = useEstimateWords();
+  return <p className="figure-estimate">{children ?? words}</p>;
 }

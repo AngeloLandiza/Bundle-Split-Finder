@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { isWorking, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
-import { Roi, RoiRangeLine, RowProfit } from '../components/Figure';
+import { Roi, RoiRangeLine, RowProfit, useEstimateWords } from '../components/Figure';
 import { Glyph } from '../components/Glyph';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
@@ -25,6 +25,8 @@ const TOP = 5;
 
 /** The dashboard, in the order he acts: the best deals with their one-line verdict, what needs him, then what the agent is doing. */
 export function TodayScreen() {
+  // The estimate sentence, with what it leaves out while sales tax or inbound shipping is unanswered.
+  const estimate = useEstimateWords();
   const { state, online } = useApp();
   const [deals, reloadDeals] = useResource(() => api.deals(), [], ['deals']);
   const [review, reloadReview] = useResource(() => api.review(), [], ['review']);
@@ -46,7 +48,7 @@ export function TodayScreen() {
                 actionLabel="Open the list"
                 res={deals}
                 rows={buy}
-                note="Profit and ROI are estimates from your fee settings, not your real Amazon fees. A scan judged each bundle against your numbers and Keepa’s monthly sales."
+                note={`${estimate} A scan judged each bundle against your numbers and Keepa’s monthly sales.`}
                 onRetry={reloadDeals}
               />
             ) : best.length === 0 && early.length > 0 ? (
@@ -56,7 +58,7 @@ export function TodayScreen() {
                 actionLabel={deals.data ? `All ${count(deals.data.rows.length)} deals` : 'All deals'}
                 res={deals}
                 rows={early}
-                note="No estimate counts every fee yet, so none is called best. These leave out Amazon’s fulfillment fee for some parts, which can only lower them; Keepa is asked next. Profit and ROI are estimates from your fee settings, not your real Amazon fees."
+                note={`No estimate counts every fee yet, so none is called best. These leave out Amazon’s fulfillment fee for some parts, which can only lower them; Keepa is asked next. ${estimate}`}
                 onRetry={reloadDeals}
               />
             ) : (
@@ -66,7 +68,7 @@ export function TodayScreen() {
                 actionLabel={deals.data ? `All ${count(deals.data.rows.length)} deals` : 'All deals'}
                 res={deals}
                 rows={best}
-                note="Nothing is marked Buy now yet, so these are the best estimates. Profit and ROI are estimates from your fee settings, not your real Amazon fees."
+                note={`Nothing is marked Buy now yet, so these are the best estimates. ${estimate}`}
                 onRetry={reloadDeals}
               />
             )}

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type DealRow, type DealSection, type DealSort } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
-import { Money, Roi, RoiRangeLine, RowProfit } from '../components/Figure';
+import { Money, Roi, RoiRangeLine, RowProfit, useEstimateWords } from '../components/Figure';
 import { SearchField, Select } from '../components/Fields';
 import { InspectorSplit } from '../components/Layout';
 import { Page } from '../components/Page';
@@ -84,6 +84,8 @@ function lineOf(r: DealRow, matchShown: boolean): { text: string; full: string }
 
 /** The Deals table in the content and the open bundle in the inspector; the sidebar picks the view. */
 export function DealsScreen({ openId, view }: { openId: string | null; view: DealView }) {
+  // The estimate sentence, with what it leaves out while sales tax or inbound shipping is unanswered.
+  const estimate = useEstimateWords();
   const { navigate, state } = useApp();
   const ui = useUi();
   const [res, reload] = useResource(() => api.deals(), [], ['deals']);
@@ -492,7 +494,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
               {said.text}
             </span>
           ) : (
-            <span>Profit and ROI are estimates from your fee settings, not your real Amazon fees.</span>
+            <span>{estimate}</span>
           )}
         </p>
       ) : null}

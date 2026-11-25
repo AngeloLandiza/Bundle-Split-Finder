@@ -2424,3 +2424,8 @@ are medians, the old code against the new, runs alternated on one machine (Apple
 - **Rounding beside a threshold.** A percentage or dollar figure below its own number never displays as that number: 19.9% against
   20% shows "19.9%", not "20%" (`pctVs`, `usdVs` in core/src/money.ts, used by the signal verdict and the usual-price sentence).
   Profit, ROI, thresholds and "Worth buying now" are untouched.
+
+- **The qualifier is said once per screen, not on every row** (Nov 25, after seeing it on the owner's 258 deals). The
+  first build put a "before sales tax and inbound shipping" tag beside every row's profit: 258 identical tags, wrapping
+  into the next column. A row is as it was; the sentence under a list (`estimateWords` in
+  `desktop-ui/src/components/Figure.tsx`) and the line under a headline profit carry it, in the same words.
