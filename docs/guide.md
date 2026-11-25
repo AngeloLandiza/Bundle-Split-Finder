@@ -197,8 +197,9 @@ You can also send `/status` (deals worth buying now, open questions, searches le
 
 Banners appear near the top. One shows at a time, with "N more" if there are others.
 
-- **"The last scan could not read N Home Depot pages."** Chrome could not load some pages, so those bundles have no estimate yet. Press **Read pages again** (free). Chrome must be open.
-- **"The Chrome helper is older than the app."** Press **Reload it**. If nothing changes, open `chrome://extensions` and press Reload on Split Finder.
+- **"58 sets are waiting for 105 Home Depot pages. The app is reading them: about 20 an hour today; next at 10:54 AM."** A quiet line, no button: the app reads the pages by itself, slowly, whenever Chrome is open, and the count is live. It says "Home Depot paused reading until ..." after Home Depot refused a page. Only when reading cannot go on (the app is paused) does it become a banner, with **Resume**. If Chrome is closed, the Chrome notice says so instead.
+- **"The Chrome helper is being updated."** After an app update the app puts the new helper files in the helper folder and asks Chrome to reload it. Nothing to do.
+- **"The Chrome helper is older than the app."** The app could not update it (it does not know which folder Chrome loaded it from, or the folder is not the helper's), or Chrome still runs the old one afterwards. The banner says which. Press **Install the helper again**; if the banner then says a folder, choose that folder with Load unpacked in `chrome://extensions` once.
 - **"Chrome is closed."** Open Chrome. Waiting pages are read then.
 - **"Chrome is not connected."** Press **Connect Chrome** and repeat step 1 above.
 - **"The ... key is not accepted."** The service refused the saved key. Press the button on the banner and paste a new key in Settings, Keys.

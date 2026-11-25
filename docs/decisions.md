@@ -2314,3 +2314,38 @@ account. Everything here is built to `docs/sp-api-notes-2026-11-25.md`; nothing 
   referral line, and do the top-level lines add up to `TotalFeesEstimate`?); the batch answer's shape (a bare array or a
   `payload`); whether Listings Restrictions answers a wrong seller id with 400 or 403; the path-forward link's form (an
   absolute sellercentral.amazon.com address, or not shown); and the Sales money field casing.
+=======
+### Self-healing notices, Nov 25 2026: the app does what it can do itself, and says what is true
+A read-only audit found three places where the app told the owner to do something it could do itself, or told him something untrue.
+- **A new app version updates the helper's own folder** (`agent/helperUpdate.ts`). A reload loads the same files, and only Install
+  helper wrote new ones, so every release left the old helper on every machine. The helper's id is the first 16 bytes of the SHA-256
+  of its folder's path, each nibble as a letter a to p (Chrome's `GenerateIdForPath`; the manifest has no `key`); checked against a
+  real Chrome profile on macOS (a test pins it). The paired helper's id is known from its token, so the folder is the one candidate
+  (`extensionInstallDir()`, where Install helper puts it) that hashes to that id, by its path as written or with links resolved.
+  Windows hashes the UTF-16 path; that is the same code and has not been run on a Windows PC. A folder that hashes to another id is
+  never written: the app has no other way to learn where Chrome loaded the helper from (it could read Chrome's Preferences, which
+  holds the owner's whole profile; not done). Before writing, the folder's manifest must name Split Finder (or Split Finder Helper)
+  with Home Depot's host permission and have background.js (the Nov 23 note that the installer replaces the folder whatever it holds
+  stays true of Install helper, not of this). The new files are unpacked beside it, checked (valid, and the build the zip names), then
+  copied in: a bad zip leaves the folder as it was, and files the new build no longer has are removed. The same folder keeps the same
+  id, so pairing holds. Then the existing reload is queued, once, with the Activity line "The Chrome helper was updated to match the
+  app."
+- **Once per shipped build, never a loop.** The build is recorded in `helper-update.json` in the data folder at the attempt (a restart
+  does not try it again). The helper has 90 seconds after the reload to report the shipped build; if it still reports the old one, or
+  the folder is not known or not the helper's, or there is no zip, `helper.update` is `install` with the reason in words and the
+  banner's one button is "Install the helper again" (POST /api/setup/install-extension, which now also queues a reload). The
+  `chrome://extensions` advice stays only for a helper the app has no files for (no zip, e.g. a development run). The old rule that a
+  reload is queued for any outdated build is now only for a helper that reports the shipped build and still cannot do a job: a reload
+  of old files helps no one.
+- **The waiting pages are counted live** (`state.agent.homeDepot`, now with `nextReadAt` and `slowed`; the same figures
+  `hdBacklog` and the pace already kept). `lastScan.pagesUnread`, written when a scan ends, is ignored whenever the agent sends the
+  live count (an older agent keeps the old banner). While the app is reading them itself it is a quiet line, no button, new notice
+  kind `waiting`, ranked after the cost notice (it used to be the `scan` kind, above Chrome and the keys). It is an attention banner
+  only when reading cannot go on by itself: the app is paused (button: Resume). Chrome closed or not connected is the Chrome notice's
+  to say, and a running scan reads pages itself, so neither shows this line.
+- **A page step says why it read nothing** (`noPagesWhy`, `skippedWhy` on the pipeline step). `left()` is 0 both while Home Depot's
+  pause is in force and when the scan's pages are used up; the steps said "page limit reached" for both. The short reason stays four
+  words ("Home Depot paused", "scan page limit reached"); the step's line and the run's summary read the whole one ("Home Depot
+  paused reading until 10:54 AM", "this scan's page limit of 40 was reached"). A kit step with pages left but all held for the part
+  prices says that.
+>>>>>>> 13cf7e8 (docs: the helper updates itself, the waiting pages are a live line, a step says why it read nothing)
