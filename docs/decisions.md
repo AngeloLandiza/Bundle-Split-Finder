@@ -1567,3 +1567,94 @@ answers agreeing with "same barcode" at zero wrong, the rule can be measured and
 the code was sent, the lookup is refused as before (re-routed to SerpApi when a search can pay, or waiting), the code's
 tokens recorded and its answer cached, so asking again costs it nothing. The route's planning estimate
 (`KEEPA_LOOKUP_TOKEN_ESTIMATE`, 11) is unchanged until the code's real cost is known.
+## Nov 25: the app replaces a wrong listing itself, and asks only when it cannot
+
+The owner: when the app itself finds a chosen Amazon listing wrong or doubtful, it should try to fix that and ask him only
+when it cannot. Until now it stopped and waited: after his sixth scan (fixtures/e2e-2026-11-23/after-scan6) DWST08017 sat
+in Review as "Which listing" with three other listings nobody had tried (the price guard had withdrawn B0DGLWKS9S, a $389
+backpack against Home Depot's $39.99), and B0FD253MKS ("RYOBI 18V Cordless Hand Vacuums PCL700B & PCL702B (Tools Only)")
+was counted for two parts, holding four deals as "Needs a look" until he pressed "Wrong listing".
+
+**1. What the app withdraws without asking** (`core/src/audit/withdraw.ts certainWithdrawals`, acted on in
+`agent/recheck.ts selfCorrect` each time the deals are rebuilt and at a scan's end, as "Wrong listing" is). Withdrawing
+only lowers confidence, but a listing withdrawn for a part is never chosen for it again by the app, so each rule was
+measured on every answer key first (`npx tsx scripts/measure-repick.ts`, free; `core/test/withdraw-measure.test.ts`):
+
+| population | rule | read | withdrawn | key: right | key: not the part |
+|---|---|---|---|---|---|
+| validation, the listing counted for each labelled part | title | 24 | 0 | 0 | 0 |
+| validation, every labelled search row | title | 1325 | 804 | 0 | 804 |
+| audit corpus | title | 279 | 0 | 0 | 0 |
+| validation, counted listings | two models | 24 | 0 | 0 | 0 |
+| audit corpus, every right listing as if counted | two models | 30 | 0 | 0 | 0 |
+| owner's after-scan3 / after-scan5 deals | both | 33 / 55 | 0 | 0 | 0 |
+| owner's after-scan6 deals | two models | 71 | 2 (B0FD253MKS for PCL700B and for PCL702B) | 0 | 2 |
+| Nov 24 (B0DGLWKS9S for DWST08017) | title | 1 | 1 | 0 | 1 |
+| answer keys: one listing right for two models | two models | 0 | — | — | — |
+
+- **Adopted, the title rule**: a counted listing (not one the owner chose) whose title names another model and not the
+  part's (`title_other_model`). 0 right withdrawn.
+- **Adopted, the two-models rule**: one listing counted for two models that are not the same model, neither a kit, whose
+  title does not name this part alone, and that no rung confirmed for this part. B0FD253MKS's title names both, so it is
+  neither vacuum alone (the owner's key: two tools, docs/decisions.md's several-parts-in-a-listing case). 0 right
+  withdrawn. The confirmed-use exception is from the one exposure found: if P119's right charger listing ("… P119 … charger
+  New P100 P101") were ever counted for P100 too by a title match, it would be withdrawn with it (1 of 26 right listings
+  whose title does not name its part alone; never seen in a store). Then the owner is asked with it offered first.
+- **Left as holds for the owner**: the title naming the part and another model too (P119, right), a pack of N (PBP2003's
+  B0BG5SPWVL, right: after-scan6 at start holds it, and it stays), Amazon's price against Home Depot's on its own, too good
+  to be true, and every note. "This is right" on a finding keeps it from being acted on.
+
+**2. The replacement, through the measured ladder only** (`core/src/scan/recheck.ts`). A withdrawal (by the price guard,
+the ladder's title rule, the audit, or the owner's "Wrong listing") puts the part in a re-check kept beside its match
+(`ScanStore.putRecheck`, `rechecks.json`; a lookup rewrites the match whole, so the record is not on it): the match goes
+to review with no listing, the listing joins `rejectedAsins` (the scan's matching from saved listings skips it), and the
+part's other stored candidates are queued in order: the withdrawn match's alternatives or the held question's listings,
+then the stored search rows whose models or title name the part under its brand. The questions hold.ts opened before
+(DWST08017's) are recognised by their shape (the held listing first with the question's reason, every other "another
+listing found for the part") and become re-checks the same way. Each candidate:
+- free: not counted for another model; its stored title passes the audit's title checks (names the part, no other model,
+  no pack of N for a single part);
+- the ladder: a stored catalog check of it for the part that still stands (an unknown from ladder 3 on stands: ladder 4
+  only stops confirmations, `UNKNOWN_STANDS_FROM_LADDER`), else **one Keepa pull** (1 token, the drip's `TokenBudget` above
+  the Keepa reserve, the pull's cache first; the check is kept on the part as the catalog check keeps it) read by rungs 0
+  and 1; with no Keepa key at all, rung 1 on the stored row, as round 2's re-pick reads it. Never SerpApi, never AI;
+- the price guard on its price (4× Home Depot's for the part sold alone) and the audit's title checks on the pulled title.
+
+A candidate is chosen only when **exactly one** passes (as round 2's `onlyConfirmed`): two that pass are two listings the
+ladder cannot tell apart, and "first in order" was not adopted because B0HMV5V9L7 ("DEWALT DWST08017 ToughSystem 2.0 Deep
+Compact Organizer") names the adaptor plate's model on another product. The choice is grade strong with the record
+"replaced B0DGLWKS9S (Amazon's price is 9.7× …) with B0HQQZWYTX: Amazon's catalog lists brand DEWALT, part number
+DWST08017: …", and the deals and audit run again on it. None passes: the part joins the lookup queue (match status
+`waiting`); how a lookup finds a listing is unchanged. A listing withdrawn before that a lookup chooses again is never kept.
+
+**3. What the owner sees.** While tries run or wait for tokens the part is "being re-checked", not a question: the deal row
+"1 listing being re-checked" (`matchState`), the part's line on the deal page "Being re-checked: B0DGLWKS9S was withdrawn
+(…); tried B0C3TN1Z7P (Amazon's catalog lists no part number that is DWST08017); 4 more listings to try, waiting for Keepa
+tokens." (`PartRow.recheck`, shown as its `confirmNote`). The deal has no estimate and no Buy now (the existing rule for a
+part with no confirmed listing; a lookup in the queue is "waiting"). Only when no candidate passed and the lookup found
+nothing (or two passed) does "Which listing" open: "The listing was withdrawn; the app tried 5 other listings and none could
+be confirmed", each listing with why it was not taken (the withdrawn one first: "withdrawn: …"), and the card's checked
+list "Tried B0C3TN1Z7P — Amazon's catalog lists no part number that is DWST08017" with each link (`ReviewItem.tried`, shown
+as a finished follow-up), so he starts where the app stopped. Every listing stays his to choose.
+
+**Cost.** One Keepa token per candidate the free checks leave (DWST08017: 4, after B0C3TN1Z7P settled free from its recorded
+check; PCL700B and PCL702B: 1 each), in the drip only, after its waiting lookups, never below the reserve; a fresh lookup is
+the existing queue's (about 11 tokens on Keepa). No search, no AI. The extension's store keeps no re-checks: there nothing
+is withdrawn by itself and the price guard asks at once, as before.
+
+**Replay on after-scan6** (`agent/test/recheck.test.ts`, `core/test/recheck.test.ts`; the start rules of Nov 24, then the
+price guard and `selfCorrect`, nothing spent): **13 questions → 12**, DWST08017's no longer one. The five deals:
+- the set 339422000 (DWST08017): being re-checked; B0C3TN1Z7P tried free (no part number in Amazon's record); B0HMV5V9L7,
+  B0HQQZWYTX, B0CHWF4JM9 and B0DR93VQBD wait for one pull each. No estimate, no question.
+- the sets 339349594, 339349600, 339349659 (PCL700B) and the bundle 344284497 (PCL702B): B0FD253MKS withdrawn for both;
+  each waits for one pull (B0FD55VL1Z, B0BH6Q31MZ). The audit's holds on them are gone with the listing.
+- Without Keepa (stored rows): PCL702B takes B0BH6Q31MZ ("RYOBI ONEAND … Hand Vacuum Tool ONLY PCL702B", brand RYOBI) by
+  itself, confirmed by rung 1; its estimate waits for that listing's price. PCL700B's only candidate says "Kit" ("… with
+  Powered Brush Kit": not one tool) and DWST08017's are unknown to rung 1 (no DW… pattern), so both join the lookup queue.
+- With stand-in Keepa records (not recorded; the tests say so): one carrying part number DWST08017 at $45 is chosen; two
+  carrying it are asked; one at $389 is refused by the price guard.
+
+*Known gaps:* the drip reads re-checks only once its waiting lookups are done, as the catalog check; the scan's matching
+from saved listings may match a part being re-checked meanwhile (the ladder then reads that match as any); the pulled
+records of B0HMV5V9L7, B0HQQZWYTX, B0CHWF4JM9 and B0DR93VQBD are not recorded, so what the owner's next drip round decides
+for DWST08017 is not known here.
