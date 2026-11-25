@@ -1927,3 +1927,44 @@ re-checked every two hours every good deal lost its verdict at the first re-chec
   (not a buy) and now asserts a buy that is not news once announced; `agent/test/keepCurrent.test.ts`'s two withdrawal
   sentences now name the failing condition; `signalsPass.test.ts`'s restart case clears `announced` with `notified` (it
   stands for a buy never sent).
+
+## Nov 25: a performance pass, each change measured before and after
+
+Five changes, none of which changes an answer, a byte on disk or a screen. Each has a benchmark in `scripts/perf/` that
+was committed before the change and prints a checksum of its result; the checksum is the same before and after. Figures
+are medians, the old code against the new, runs alternated on one machine (Apple M4).
+
+- **The scan store skips a write whose bytes are already on disk** (`agent/scanStore.ts`). `splitBundles` (runner.ts) puts
+  every stored bundle back on every scan, usually unchanged: at the owner's 258 bundles that was 258 rewrites of a 535 KB
+  file and 516 flushes to disk. A put is skipped when the kind's file is still the one this store last wrote (inode,
+  size, mtime, ctime, recorded only after `writeFileAtomic` returned and cleared before each write) and the record
+  serializes as the stored one did; the map still takes the new copy. The same holds for an unchanged scan job, a delete
+  of a missing key and `clearAll` of an empty kind. Never skipped: the first write of a kind after opening, a file
+  changed behind the store, a write after one that failed. The rule that a put which returned is on disk is unchanged.
+  258 unchanged puts: 2,960 ms to 16 ms, 516 flushes to 2. A replayed scan on the store after scan 6: 4.9 s to 2.4 s,
+  966 flushes to 474.
+- **`Store.write` is not changed.** About 14% of its writes were identical in four agent test files (mostly tracking and
+  jobs): too little to justify touching the store that holds the keys and the settings.
+- **The default tests do not flush to disk** (`agent/fsync.ts`, `agent/test/setup.ts`). 90% of an agent test's time was
+  the flush. Production always calls the real `fsyncSync`, in the same two places; only the default suite's setup file
+  swaps in a no-op, and a test fails if any other file does. `agent/test/fsync.test.ts` runs the real flush, in a fresh
+  process too. `npm test`: 126 s to 23 s. The tests never checked what survives a power cut, and still do not.
+- **`candidatesFor` builds each model form's whole-token test once per call** (`modelTokenTest` in `core/src/match.ts`,
+  which `hasModelToken` also uses), upper-cases each title once, and checks `includes()` on that same string before the
+  regex. A whole-token match contains the form literally, so the answers are the same. It does not use the listings'
+  `models` index: that is not provably the same answer. 300 part models against 5,000 listings: 1,161 ms to 284 ms.
+- **`buildReport` builds `kitPageTarget`'s three indexes once per report** (`kitPageTargets` in
+  `core/src/scan/kitPage.ts`), not once per bundle with a kit not read. At 2,064 bundles with the real share of such
+  bundles (1.6%): 384 ms to 325 ms. At today's 258 bundles the difference cannot be measured.
+- **The desktop UI's mock client is a dynamic import** (`desktop-ui/src/api/client.ts`: `await import('./mock')` inside
+  the `VITE_MOCK === '1'` branch). A static import kept the mock modules and their fixture deals in the production
+  bundle, because they do work at module scope. Production JS: 612 KB to 579 KB (gzip 182 KB to 172 KB). A new mock
+  import must stay behind that dynamic import.
+- **Tried and taken back: not setting the agent's state when a poll returns the same state.** It saved three of four
+  re-renders of an idle window, but the 15 s poll's re-render is the only thing that refreshes the words that read the
+  clock while rendering: "Next scan in 30 min", "Last scan N min ago", the checked and stale words in Deals, Today's
+  date, Activity's day groups. With the change an idle window still said "Next scan in 30 min" five minutes later. To
+  do it properly those labels need their own clock tick first.
+- **Not done, the owner's call:** one commit to disk per scan step in place of one per record (it changes which records
+  of a step a crash can lose; the replay covers it for listings, prices, bundles and catalog, not yet shown for matches
+  and reviews), and reading the agent's collections without copying them on every request.
