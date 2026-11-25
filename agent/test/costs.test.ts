@@ -96,7 +96,7 @@ describe('GET /api/costs', () => {
     await open(dataFolder(12));
     const view = (await (await ui('/api/costs')).json()) as CostsView;
     expect(view.month).toBe('2026-11');
-    expect(view.services.map((s) => s.service)).toEqual(['serpapi', 'keepa', 'ai', 'ebay', 'telegram']);
+    expect(view.services.map((s) => s.service)).toEqual(['serpapi', 'keepa', 'ai', 'ebay', 'telegram', 'amazon']);
     expect(view.services[0]).toMatchObject({ label: 'SerpApi', unit: 'searches', used: 12, limit: null });
     expect(view.settings.services.ai.monthlyLimit).toBe(0);
     const anon = await fetch(new URL('/api/costs', `http://127.0.0.1:${(server!.address() as { port: number }).port}`));
