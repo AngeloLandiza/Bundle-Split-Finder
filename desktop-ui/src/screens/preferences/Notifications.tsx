@@ -64,6 +64,7 @@ export function NotificationsPane() {
           <Switch label="Autopilot applied an answer" checked={n.kinds.autopilot} onChange={(on) => setKind('autopilot', on)} />
           <Switch label="A scan finished" checked={n.kinds.scan} onChange={(on) => setKind('scan', on)} />
           <Switch label="Something went wrong" checked={n.kinds.error} onChange={(on) => setKind('error', on)} />
+          <Switch label="A new version of Split Finder is ready" checked={n.kinds.version} onChange={(on) => setKind('version', on)} />
         </div>
       </Row>
       <Rule />

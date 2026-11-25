@@ -33,13 +33,14 @@ export const SETTINGS: AppSettings = {
   autopilot: false,
   appearance: { theme: 'system', accent: 'system', density: 'regular' },
   notifications: {
-    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true },
+    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true, version: true },
     sound: false,
     quietHours: { enabled: false, from: '22:00', to: '07:00' },
     digest: 'each-run',
     morningAt: '08:00',
   },
   shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
+  updates: { tellMeAboutNewVersion: true },
   ebaySettings: { judgeModel: 'claude-haiku-4-5', listingsJudgedPerScan: 20 },
   settings: {
     schedule: { mode: 'daily', at: '06:00' },
@@ -560,5 +561,6 @@ export const ACTIVITY: ActivityView = {
     { id: 'e1', at: ago(406), sentence: 'SerpApi did not answer during the scan at 4:00 PM, so 3 bundles kept their older prices. Retry the scan.', retry: { label: 'Retry scan', searches: 5, usd: 0 } },
   ],
   outcomes: [],
+  versions: [],
   month: { searches: 63, keepaTokens: 820, aiUsd: 4.12 },
 };

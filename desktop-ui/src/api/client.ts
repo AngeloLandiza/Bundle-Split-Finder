@@ -92,6 +92,8 @@ export interface ApiClient {
   runLookups(body?: { maxSearches?: number; useReserve?: boolean }): Promise<LookupsRun>;
   /** Asks Chrome to reload the helper extension when it is older than the app (POST /api/helper/reload). */
   reloadHelper(): Promise<void>;
+  /** Closes the new-version notice for this version, for good (POST /api/update/dismiss). */
+  dismissUpdate(version: string): Promise<void>;
   stop(): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;

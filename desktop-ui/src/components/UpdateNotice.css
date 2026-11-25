@@ -1,0 +1,19 @@
+/* "What changed" under the new-version notice: a native disclosure, in the notice's own type. */
+.update-changes {
+  display: block;
+  margin-block-start: 4px;
+}
+
+.update-changes summary {
+  cursor: default;
+  color: var(--label-2);
+  min-block-size: 24px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.update-changes ul {
+  margin: 4px 0 0;
+  padding-inline-start: 18px;
+  color: var(--label-2);
+}

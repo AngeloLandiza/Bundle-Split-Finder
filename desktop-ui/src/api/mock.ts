@@ -518,6 +518,11 @@ export function createMockClient(): ApiClient {
       state.helper = { ...state.helper, outdated: false };
       sync();
     },
+    async dismissUpdate() {
+      await online();
+      state.update = undefined;
+      sync();
+    },
     async stop() {
       await online();
       stopTimer();

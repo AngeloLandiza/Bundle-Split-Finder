@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, OutcomeEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
+  NeedsLook, ActivityError, OutcomeEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -12,6 +12,8 @@ import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
 export type {
   ActivityError,
+  UpdateNotice,
+  VersionEntry,
   AppSettings,
   OutcomeEntry,
   OutcomeScorecard,
@@ -165,6 +167,8 @@ export interface AppState {
   keyProblems?: KeyProblems;
   /** When each saved key last got a verdict from its own service; absent for a key not yet checked. */
   keyChecks?: KeyChecks;
+  /** A version newer than this app is ready (the agent read the project's release note); absent when none, when he turned it off, or when he closed this version's notice. */
+  update?: UpdateNotice;
 }
 
 export type KeyProblems = Partial<Record<KeyName, string>>;
@@ -595,6 +599,8 @@ export interface ActivityView {
   errors: ActivityError[];
   /** What he recorded about purchases and sales, one sentence each, newest first, with Undo while it applies. */
   outcomes: OutcomeEntry[];
+  /** The new versions the app told him about, newest first. */
+  versions: VersionEntry[];
   /** This month's spend, from the agent's own count. */
   month: { searches: number; keepaTokens: number; aiUsd: number };
 }

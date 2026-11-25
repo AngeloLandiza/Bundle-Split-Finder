@@ -8,6 +8,7 @@ import { helperProblem, scanProblem } from '../lib/scanProblem';
 import { Button } from './Button';
 import { spacedCode } from './PairingNotice';
 import { Notice } from './States';
+import { useUpdateNotice } from './UpdateNotice';
 import { useUi } from './ui';
 import './Popover.css';
 import './NoticeRegion.css';
@@ -43,6 +44,7 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
   const read = useAction(readPages);
   const reload = useAction(api.reloadHelper);
   const [reloaded, setReloaded] = useState(false);
+  const update = useUpdateNotice(state?.update);
 
   const items: NoticeItem[] = [];
   if (online && pairing.requests.length > 0) {
@@ -230,6 +232,8 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
       }
     }
   }
+  // A new version of the app: the quietest notice, shown on any screen when nothing else needs him.
+  if (online && update) items.push({ kind: 'update', key: 'update', tone: 'quiet', title: update.title, body: update.body, action: update.action });
   items.push(...extra);
 
   const scanning = state?.agent.status === 'scanning' || state?.agent.status === 'stopping';

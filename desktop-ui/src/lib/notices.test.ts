@@ -18,6 +18,13 @@ describe('one notice at a time', () => {
     expect(more.map((m) => m.kind)).toEqual(['scan', 'key-rejected', 'lookups']);
   });
 
+  it('a new version is the quietest notice: anything else comes first', () => {
+    const { first, more } = chooseNotices([item('update'), item('stale'), item('lookups')], idle);
+    expect(first?.kind).toBe('lookups');
+    expect(more.map((m) => m.kind)).toEqual(['stale', 'update']);
+    expect(chooseNotices([item('update')], idle).first?.kind).toBe('update');
+  });
+
   it('shows exactly one banner whatever the count and lists the rest behind it', () => {
     const { first, more } = chooseNotices([item('scan'), item('lookups')], idle);
     expect(first?.kind).toBe('scan');

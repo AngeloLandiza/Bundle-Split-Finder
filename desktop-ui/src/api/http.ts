@@ -177,6 +177,7 @@ export function createHttpClient(): ApiClient {
     readPagesAgain: () => call<{ started: boolean; reason?: string }>('POST', '/api/scan/read-pages', {}),
     runLookups: (body) => call<LookupsRun>('POST', '/api/lookups/run', body ?? {}),
     reloadHelper: async () => void (await call('POST', '/api/helper/reload', {})),
+    dismissUpdate: async (version) => void (await call('POST', '/api/update/dismiss', { version })),
     stop: async () => void (await call('POST', '/api/scan/stop', {})),
     pause: async () => void (await call<C.PauseResponse>('POST', '/api/agent/pause', {})),
     resume: async () => void (await call<C.PauseResponse>('POST', '/api/agent/resume', {})),

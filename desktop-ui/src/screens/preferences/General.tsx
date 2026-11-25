@@ -110,6 +110,18 @@ export function GeneralPane() {
         </div>
       </Row>
       <Rule />
+      <Row
+        label="New versions"
+        align="start"
+        help="Split Finder looks at the project’s public page on GitHub once a day and sends nothing about you. It never downloads anything: when a new version is ready it tells you, with a link, and you run the installer yourself."
+      >
+        <Switch
+          label="Tell me when a new version is ready"
+          checked={settings.updates?.tellMeAboutNewVersion ?? true}
+          onChange={(tellMeAboutNewVersion) => update({ updates: { tellMeAboutNewVersion } })}
+        />
+      </Row>
+      <Rule />
       <Row label="Sounds" help="Notifications from Split Finder play the default sound.">
         <Switch label="Play a sound with notifications" checked={settings.notifications.sound} onChange={(sound) => update({ notifications: { sound } })} />
       </Row>

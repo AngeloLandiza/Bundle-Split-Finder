@@ -57,6 +57,14 @@ describe('the agent state', () => {
     expect(s.agent.lastScan).toMatchObject({ pagesUnread: 16, canReadPagesAgain: true });
     expect(s.helper).toMatchObject({ outdated: true, version: '0.4.1' });
   });
+  it('carries a new-version notice, and drops a link the rule refuses, so it is never a button', () => {
+    expect(mapState(base)).not.toHaveProperty('update');
+    const good = 'https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/download/v0.1.1/setup.exe';
+    const note = (link: unknown) => ({ ...base, update: { version: '0.1.1', date: '2026-11-26', notes: ['Fixes the scan button.'], link } }) as unknown as C.AgentState;
+    expect(mapState(note(good)).update).toEqual({ version: '0.1.1', date: '2026-11-26', notes: ['Fixes the scan button.'], link: good });
+    for (const bad of ['http://drive.google.com/x', 'https://evil.example/x', 'javascript:alert(1)', null, 3]) expect(mapState(note(bad)).update?.link, String(bad)).toBeNull();
+    expect(mapState({ ...base, update: { version: 1 } } as unknown as C.AgentState)).not.toHaveProperty('update');
+  });
   it('tells a stop the owner asked for from one the agent made', () => {
     const stop = (stopMessage: string | null) => mapState({ ...base, agent: { ...base.agent, lastScan: { ...base.agent.lastScan!, status: 'stopped', stopMessage } } }).agent.lastScan;
     expect(stop(null)?.userStopped).toBe(true);

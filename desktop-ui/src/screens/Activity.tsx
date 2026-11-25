@@ -1,6 +1,6 @@
 import { Fragment, useEffect, type ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { ActivityError, AutopilotEntry, OutcomeEntry, OwnerAnswer, Run } from '../api/types';
+import type { ActivityError, AutopilotEntry, OutcomeEntry, OwnerAnswer, Run, VersionEntry } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { Fold } from '../components/Fold';
 import { Glyph } from '../components/Glyph';
@@ -58,6 +58,11 @@ export function ActivityScreen() {
         {d && d.outcomes.length > 0 ? (
           <Section label="Purchases and sales you recorded" count={d.outcomes.length}>
             <DayRows items={d.outcomes} at={(o) => o.at} row={(o) => <OutcomeRow key={o.id} o={o} />} />
+          </Section>
+        ) : null}
+        {d && d.versions.length > 0 ? (
+          <Section label="New versions" count={d.versions.length}>
+            <DayRows items={d.versions} at={(v) => v.at} row={(v) => <VersionRow key={v.id} v={v} />} />
           </Section>
         ) : null}
         {d ? (
@@ -142,6 +147,18 @@ function OwnerAnswerRow({ a }: { a: OwnerAnswer }) {
           Undo
         </Button>
       ) : null}
+    </li>
+  );
+}
+
+/** A new version the app told him about: the sentence it sent, without the link (the notice and the message carry that). */
+function VersionRow({ v }: { v: VersionEntry }) {
+  return (
+    <li className="arow">
+      <span className="arow-time">{clock(v.at)}</span>
+      <div className="arow-main">
+        <p className="arow-title">{v.sentence}</p>
+      </div>
     </li>
   );
 }

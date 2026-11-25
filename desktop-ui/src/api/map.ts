@@ -4,6 +4,7 @@
 // for a question that has changed since is dropped, never shown as verified.
 
 import type * as C from '@core/api/contract';
+import { safeDownloadLink } from '@core/release/note';
 import { confirmedSourceName, confirmState, ebayListingChoices } from '@core/scan/confirmed';
 import type { BundleRow, PartRow, PriceOption, PriceRange, UnnamedItem } from '@core/scan/types';
 import { money } from '../lib/format';
@@ -156,6 +157,14 @@ export function keyChecksOf(v: unknown): KeyChecks | undefined {
   return Object.keys(out).length ? out : undefined;
 }
 
+/** The agent's new-version notice, or undefined when it is not one. The link is held to the same rule the agent applied (core/src/release/note.ts), so a bad one is never a button. */
+function updateOf(v: unknown): AppState['update'] {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const u = v as Record<string, unknown>;
+  if (typeof u.version !== 'string' || typeof u.date !== 'string' || !Array.isArray(u.notes) || !u.notes.every((n) => typeof n === 'string')) return undefined;
+  return { version: u.version, date: u.date, notes: u.notes as string[], link: safeDownloadLink(u.link) };
+}
+
 export function mapState(s: C.AgentState): AppState {
   const a = s.agent;
   const drip = dripOf((a as { drip?: unknown }).drip);
@@ -193,6 +202,7 @@ export function mapState(s: C.AgentState): AppState {
     firstRun: s.firstRun ?? false,
     ...(problems ? { keyProblems: problems } : {}),
     ...(checks ? { keyChecks: checks } : {}),
+    ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),
   };
 }
 
@@ -743,6 +753,7 @@ export function mapActivity(r: C.ActivityResponse, titles: ReadonlyMap<string, {
     answers: (r.answers ?? []).map((a) => ({ id: a.id, questionId: a.questionId, title: a.title, answer: a.answer, at: a.at, undone: Boolean(a.undoneAt), undoable: !a.undoneAt && a.undoable })),
     errors: r.errors ?? [],
     outcomes: r.outcomes ?? [],
+    versions: r.versions ?? [],
     month: { searches: r.spend.serpSearches, keepaTokens: r.spend.keepaTokens, aiUsd: r.spend.aiUsd },
   };
 }
