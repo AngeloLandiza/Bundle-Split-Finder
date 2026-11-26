@@ -7,8 +7,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { costsInputOf, scanHistory } from '../agent/costs';
-import { defaultSettings, emptyCollection, type StoreData } from '../agent/store';
+import { costsInputOf, keyLabelsOf, scanHistory } from '../agent/costs';
+import { defaultSettings, emptyCollection, type StoreData, type StoredKeys } from '../agent/store';
 import { shortDay } from '../core/src/costs/time';
 import type { CostsView } from '../core/src/costs/types';
 import { parseKeepaLedger } from '../core/src/costs/usage';
@@ -62,6 +62,8 @@ export function costsReport(view: CostsView, extra: { scans: Record<string, { ex
     const scan = extra.scans[s.service];
     if (scan !== undefined) out.push(`  A scan's step, for the blocker: ${scan ? `${amount(scan.expected, s.unit)} expected, ${amount(scan.high, s.unit)} at the high end (from history)` : 'too few scans in history: its configured cap is used'}.`);
     if (s.blocked.length > 0) out.push(`  Held back this month: ${s.blocked.length} (last: ${s.blocked[s.blocked.length - 1]!.what}).`);
+    // Key stacking: a line per saved key under the totals (label, used and left this month, state). Never a key.
+    for (const k of s.keys ?? []) out.push(`  ${k.sentence}`);
   }
   const t = view.total;
   out.push('', `Total: ${t.sentence}`);
@@ -84,7 +86,9 @@ export function runCostsCli(argv: string[], io: CostsCliIo): number {
   }
   const ledgers = flag(argv, '--ledgers') ?? dir;
   const data = readCostsData(dir);
-  const input = costsInputOf(data, { serp: parseLedger(text(join(ledgers, 'serpapi-ledger.jsonl'))), keepa: parseKeepaLedger(text(join(ledgers, 'keepa-ledger.jsonl'))) }, now, flag(argv, '--tz'));
+  // Key stacking: the saved keys' ids and labels for the per-key lines; every value is dropped as the file is read.
+  const labels = keyLabelsOf(readStoreFile<StoredKeys>(dir, 'keys.json', {}));
+  const input = costsInputOf(data, { serp: parseLedger(text(join(ledgers, 'serpapi-ledger.jsonl'))), keepa: parseKeepaLedger(text(join(ledgers, 'keepa-ledger.jsonl'))) }, now, flag(argv, '--tz'), labels);
   const view = buildCostsView(input);
   const runs = data.activity.runs;
   const scans = {

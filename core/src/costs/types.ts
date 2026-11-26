@@ -94,6 +94,27 @@ export interface ServiceCost {
   /** Plain words for the state: "62 of 150 searches (41%)", "Expected to reach your limit on Nov 28". */
   sentence: string;
   blocked: CostBlocked[];
+  /**
+   * Nov 25, key stacking (SerpApi and Keepa): one line per saved key under the service's totals, in the keys' order.
+   * Absent for the other services and when no key is saved. `used` and every figure above are the totals.
+   */
+  keys?: KeyCostLine[];
+}
+
+/** One saved key's line under its service on Costs. */
+export interface KeyCostLine {
+  id: string;
+  label: string;
+  /** Used this month on this key, in the service's unit: its own ledger rows (rows with no key id are the first key's). */
+  used: number;
+  /** SerpApi: searches left this month on its account; Keepa: its tokens now. Null when not known (no check yet). */
+  left: number | null;
+  /** SerpApi: its plan's searches a month; null when not known, and for Keepa. */
+  planLimit: number | null;
+  /** `refused`: its service does not accept it; `out`: accepted, nothing left this month; `unchecked`: no answer yet. */
+  state: 'accepted' | 'refused' | 'out' | 'unchecked';
+  /** "Key 2: 107 used this month, 143 of 250 left." */
+  sentence: string;
 }
 
 export interface CostsView {

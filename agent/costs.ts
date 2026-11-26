@@ -15,8 +15,9 @@ import type { CostDecision, CostService, CostsView } from '../core/src/costs/typ
 import { parseKeepaLedger, type KeepaLedgerRow } from '../core/src/costs/usage';
 import { buildCostsView, type CostsInput } from '../core/src/costs/view';
 import { costWarnings, type CostWarning } from '../core/src/costs/warnings';
-import { parseLedger } from '../core/src/serpapi/balance';
-import type { CostRuntime, Store, StoreData } from './store';
+import { parseLedger, searchesLeftByKey, type SpendRow } from '../core/src/serpapi/balance';
+import { keyEntries } from './keyList';
+import type { CostRuntime, Store, StoreData, StoredKeys } from './store';
 
 export const SERP_LEDGER_FILE = 'serpapi-ledger.jsonl';
 export const KEEPA_LEDGER_FILE = 'keepa-ledger.jsonl';
@@ -33,10 +34,39 @@ export function aiLabel(ai: StoreData['settings']['ai']): string {
 
 const emptyRuntime = (): CostRuntime => ({ sent: [], blocked: {}, counts: {} });
 
-/** The costs' inputs from a data folder's store collections and ledger texts (also what `npm run costs` reads). */
-export function costsInputOf(data: Pick<StoreData, 'settings' | 'runtime' | 'suggestions' | 'activity'>, ledgers: { serp: { at: string }[]; keepa: KeepaLedgerRow[] }, now: number, tz?: string): CostsInput {
+/** A saved key as the costs read it: its id and label only, never its value. */
+export type KeyLabel = { id: string; label: string };
+
+/** Key stacking: the ids and labels of the saved SerpApi and Keepa keys, values dropped at once. */
+export function keyLabelsOf(keys: StoredKeys): Record<'serpapi' | 'keepa', KeyLabel[]> {
+  return {
+    serpapi: keyEntries(keys, 'serpapi').map((e) => ({ id: e.id, label: e.label })),
+    keepa: keyEntries(keys, 'keepa').map((e) => ({ id: e.id, label: e.label })),
+  };
+}
+
+/**
+ * The costs' inputs from a data folder's store collections and ledger texts (also what `npm run costs` reads). Key
+ * stacking: with the saved keys' labels, a line per key from the runtime's per-key checks and the ledger rows.
+ */
+export function costsInputOf(
+  data: Pick<StoreData, 'settings' | 'runtime' | 'suggestions' | 'activity'>,
+  ledgers: { serp: SpendRow[]; keepa: KeepaLedgerRow[] },
+  now: number,
+  tz?: string,
+  labels?: Record<'serpapi' | 'keepa', KeyLabel[]>,
+): CostsInput {
   const app = data.settings;
   const rt = data.runtime;
+  const refused = (id: string) => rt.keyEntryChecks?.[id]?.ok === false;
+  const serpIds = (labels?.serpapi ?? []).map((k) => k.id);
+  const serpLeft = rt.serpKeys ? searchesLeftByKey(rt.serpKeys, ledgers.serp, serpIds).byKey : {};
+  const serpKeys = (labels?.serpapi ?? []).map((k) => ({
+    id: k.id, label: k.label, left: serpLeft[k.id] ?? null, perMonth: rt.serpKeys?.[k.id]?.perMonth ?? null, refused: refused(k.id),
+  }));
+  const keepaKeys = (labels?.keepa ?? []).map((k) => ({
+    id: k.id, label: k.label, tokensLeft: rt.keepaKeys?.[k.id]?.tokensLeft ?? null, refillPerMin: rt.keepaKeys?.[k.id]?.refillRate ?? null, refused: refused(k.id),
+  }));
   const lookups = app.lookups;
   // The listing check's searches a day (rung 2): its own setting, or automatic (at most 5), or none when it is off.
   const verifyPerDay = lookups?.autoVerify === false ? 0 : lookups?.verifySearchesPerDay ?? 5;
@@ -46,8 +76,8 @@ export function costsInputOf(data: Pick<StoreData, 'settings' | 'runtime' | 'sug
     schedule: app.settings.schedule,
     lastScheduledRunAt: rt.lastScheduledRunAt,
     caps: { searchesPerScan: app.settings.searchesPerScan, verifySearchesPerDay: verifyPerDay },
-    serp: { rows: ledgers.serp, plan: rt.serp ? { perMonth: rt.serp.perMonth, planName: rt.serp.planName ?? null } : null },
-    keepa: { rows: ledgers.keepa, refillPerMin: rt.keepa?.refillRate ?? null },
+    serp: { rows: ledgers.serp, plan: rt.serp ? { perMonth: rt.serp.perMonth, planName: rt.serp.planName ?? null } : null, ...(serpKeys.length > 0 ? { keys: serpKeys } : {}) },
+    keepa: { rows: ledgers.keepa, refillPerMin: rt.keepa?.refillRate ?? null, ...(keepaKeys.length > 0 ? { keys: keepaKeys } : {}) },
     ai: { suggestions: data.suggestions, runs: data.activity.runs, label: aiLabel(app.ai) },
     counts: rt.costs?.counts ?? {},
     runs: data.activity.runs,
@@ -103,7 +133,7 @@ export class CostBook {
   input(): CostsInput {
     const { store } = this.d;
     const data = { settings: store.get('settings'), runtime: store.get('runtime'), suggestions: store.get('suggestions'), activity: store.get('activity') };
-    return costsInputOf(data, { serp: parseLedger(this.read(SERP_LEDGER_FILE)), keepa: parseKeepaLedger(this.read(KEEPA_LEDGER_FILE)) }, this.d.now(), this.d.tz);
+    return costsInputOf(data, { serp: parseLedger(this.read(SERP_LEDGER_FILE)), keepa: parseKeepaLedger(this.read(KEEPA_LEDGER_FILE)) }, this.d.now(), this.d.tz, keyLabelsOf(store.get('keys')));
   }
 
   view(): CostsView {

@@ -8,7 +8,7 @@
 import { nextRun, type Schedule } from '../schedule';
 import { forecastService, HISTORY_WINDOW_DAYS, reachWords, seedOf, type SettingsBound } from './forecast';
 import { addDays, datesBetween, daysInMonth, localDate, monthOf, shortDay } from './time';
-import type { BudgetedService, CostBlocked, CostService, CostSettings, CostState, CostUnit, CostsView, ServiceCost } from './types';
+import type { BudgetedService, CostBlocked, CostService, CostSettings, CostState, CostUnit, CostsView, KeyCostLine, ServiceCost } from './types';
 import { aiEvents, byDay, byMonth, countEvents, keepaEvents, type AiSpendSources, type KeepaLedgerRow, monthDays, serpEvents, type UsageEvent } from './usage';
 import { amount, figure, usd } from './words';
 
@@ -32,8 +32,8 @@ export interface CostsInput {
   lastScheduledRunAt: number | null;
   /** What his settings let a scheduled scan and a day spend (the per-scan caps, the listing check's searches a day; 0 when off). */
   caps: { searchesPerScan: number; verifySearchesPerDay: number };
-  serp: { rows: readonly { at: string }[]; plan: { perMonth: number; planName?: string | null } | null };
-  keepa: { rows: readonly KeepaLedgerRow[]; refillPerMin: number | null };
+  serp: { rows: readonly { at: string; keyId?: string }[]; plan: { perMonth: number; planName?: string | null } | null; keys?: readonly SerpKeyInput[] };
+  keepa: { rows: readonly KeepaLedgerRow[]; refillPerMin: number | null; keys?: readonly KeepaKeyInput[] };
   ai: AiSpendSources & { label: string };
   /** eBay calls and Telegram messages by local day. */
   counts: Readonly<Record<string, { ebay?: number; telegram?: number; amazon?: number }>>;
@@ -42,11 +42,72 @@ export interface CostsInput {
   blocked: Partial<Record<CostService, readonly CostBlocked[]>>;
 }
 
-/** The free SerpApi plan, from the account check: by its name, or by the free plan's 250 searches when no name was kept. */
+/**
+ * Nov 25, key stacking: each saved SerpApi key as the costs read it (never its value): its label, searches left now and
+ * its plan's month from its last account check (null before one), and whether SerpApi refused it.
+ */
+export interface SerpKeyInput {
+  id: string;
+  label: string;
+  left: number | null;
+  perMonth: number | null;
+  refused: boolean;
+}
+
+/** Each saved Keepa key: its label, its tokens now and refill a minute (null before an answer), and whether Keepa refused it. */
+export interface KeepaKeyInput {
+  id: string;
+  label: string;
+  tokensLeft: number | null;
+  refillPerMin: number | null;
+  refused: boolean;
+}
+
+/**
+ * The free SerpApi plan, from the account check: by its name, or by the free plan's 250 searches when no name was kept.
+ * Key stacking: several keys' plans are named together ("Free Plan + Developer"); they cost $0 only when every one is free.
+ */
 export function freeSerpPlan(plan: CostsInput['serp']['plan']): boolean {
   if (!plan) return false;
-  if (plan.planName) return /free/i.test(plan.planName);
+  if (plan.planName) return plan.planName.split(' + ').every((n) => /free/i.test(n));
   return plan.perMonth === 250;
+}
+
+/** The key a ledger row belongs to: its own id, or the first key's when it names none (rows from before key stacking). */
+const keyOfRow = (row: { keyId?: string }, first: string): string => row.keyId ?? first;
+
+/** Key stacking: one line per saved key, in order, under its service's totals. */
+export function keyLines(
+  unit: 'searches' | 'tokens',
+  keys: readonly { id: string; label: string; left: number | null; planLimit: number | null; refused: boolean }[],
+  usedByKey: ReadonlyMap<string, number>,
+): KeyCostLine[] {
+  return keys.map((k) => {
+    const used = Math.round(usedByKey.get(k.id) ?? 0);
+    const state: KeyCostLine['state'] = k.refused ? 'refused' : k.left === null ? 'unchecked' : k.left <= 0 ? 'out' : 'accepted';
+    const usedWords = `${figure(used)} used this month`;
+    const leftWords = k.left === null ? '' : unit === 'searches'
+      ? `, ${k.planLimit !== null ? `${figure(k.left)} of ${figure(k.planLimit)}` : figure(k.left)} left`
+      : `, ${amount(k.left, 'tokens')} now`;
+    const sentence = state === 'refused'
+      ? `${k.label}: not accepted by ${unit === 'searches' ? 'SerpApi' : 'Keepa'}; ${usedWords}.`
+      : state === 'out'
+        ? `${k.label}: ${unit === 'searches' ? 'no searches left this month' : 'no tokens now'}; ${usedWords}.`
+        : state === 'unchecked' ? `${k.label}: ${usedWords}; not checked yet.` : `${k.label}: ${usedWords}${leftWords}.`;
+    return { id: k.id, label: k.label, used, left: k.left, planLimit: k.planLimit, state, sentence };
+  });
+}
+
+/** What this month's rows used on each key (rows with no key id count as the first key's). */
+function usedByKey(rows: readonly { at: string; keyId?: string }[], amountOf: (i: number) => number, firstId: string, month: string, tz?: string): Map<string, number> {
+  const out = new Map<string, number>();
+  rows.forEach((r, i) => {
+    const t = Date.parse(r.at);
+    if (!Number.isFinite(t) || monthOf(localDate(t, tz)) !== month) return;
+    const id = keyOfRow(r, firstId);
+    out.set(id, (out.get(id) ?? 0) + amountOf(i));
+  });
+  return out;
 }
 
 /** The local dates of the scheduled scans left this month (today's still to come included), one entry a scan. */
@@ -162,7 +223,13 @@ export function buildCostsView(input: CostsInput): CostsView {
   const firstDay = starts.length > 0 ? localDate(Math.min(...starts), tz) : today;
   const runsLeft = scheduledRunsLeft(input.schedule, input.now, input.lastScheduledRunAt, tz);
   // Keepa's refill as its token status said, else as its last charged answer in the ledger said.
-  const lastRate = [...input.keepa.rows].reverse().find((r) => typeof r.refillRate === 'number' && r.refillRate > 0)?.refillRate ?? null;
+  // Key stacking: each key's own last rate, summed over the saved keys (one key, or rows with no key id: as before).
+  const keepaFirst = input.keepa.keys?.[0]?.id ?? '';
+  const rateByKey = new Map<string, number>();
+  for (const r of input.keepa.rows) if (typeof r.refillRate === 'number' && r.refillRate > 0) rateByKey.set(keyOfRow(r, keepaFirst), r.refillRate);
+  const liveKeepa = input.keepa.keys ? input.keepa.keys.filter((k) => !k.refused).map((k) => k.id) : [...rateByKey.keys()];
+  const summed = liveKeepa.reduce((n, id) => n + (rateByKey.get(id) ?? 0), 0);
+  const lastRate = summed > 0 ? summed : [...input.keepa.rows].reverse().find((r) => typeof r.refillRate === 'number' && r.refillRate > 0)?.refillRate ?? null;
   const refill = input.keepa.refillPerMin ?? lastRate;
   const keepaPlan = refill !== null && refill > 0 ? Math.round(refill * 1440 * daysInMonth(month)) : null;
   const serpPrice = svc.serpapi.monthlyPriceUsd ?? (free ? 0 : null);
@@ -199,6 +266,24 @@ export function buildCostsView(input: CostsInput): CostsView {
     { service: 'amazon', label: 'Amazon seller API', unit: 'calls', events: amazonEv, perRun: null, limit: null, warnAtPercent: 80, planLimit: null, price: 0, metered: false, bound: null },
   ];
   const services = specs.map((spec) => serviceCost(spec, { input, today, firstDay, runsLeft }));
+  // Key stacking: a line per saved key under SerpApi and Keepa; the service's own figures stay the totals. A key that ran
+  // out is named in the service's sentence, so a warning or a held step says which key it was.
+  const serpKeys = input.serp.keys ?? [];
+  const keepaKeys = input.keepa.keys ?? [];
+  for (const s of services) {
+    if (s.service === 'serpapi' && serpKeys.length > 0) {
+      s.keys = keyLines('searches', serpKeys.map((k) => ({ ...k, planLimit: k.perMonth })), usedByKey(input.serp.rows, () => 1, serpKeys[0]!.id, month, tz));
+    }
+    if (s.service === 'keepa' && keepaKeys.length > 0) {
+      s.keys = keyLines('tokens', keepaKeys.map((k) => ({ ...k, left: k.tokensLeft, planLimit: null })), usedByKey(input.keepa.rows, (i) => input.keepa.rows[i]!.tokens, keepaKeys[0]!.id, month, tz));
+    }
+    const out = (s.keys ?? []).filter((k) => k.state === 'out');
+    if (out.length > 0 && (s.keys ?? []).length > 1) {
+      const name = s.service === 'serpapi' ? 'SerpApi' : 'Keepa';
+      const what = s.service === 'serpapi' ? 'no searches left this month' : 'no tokens now';
+      s.sentence = `${s.sentence} ${name} ${out.map((k) => k.label).join(' and ')} ${out.length === 1 ? 'has' : 'have'} ${what}.`;
+    }
+  }
   const by = (k: CostService) => services.find((x) => x.service === k)!;
   const ai = by('ai');
 
