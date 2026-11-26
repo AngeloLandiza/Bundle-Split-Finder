@@ -139,6 +139,45 @@ describe('remote Home Depot readers (worker jobs)', () => {
     expect(out[1]).not.toHaveProperty('upc');
   });
 
+  // Nov 25: a picture from the helper is untrusted data: kept only as https on images.thdstatic.com, length-limited.
+  const PIC = 'https://images.thdstatic.com/productImages/1efa1410-45b1-42af-8fd5-80fa9ae69c8b/svn/ryobi-power-drills-64_145.jpg';
+  const BAD = ['http://images.thdstatic.com/x_145.jpg', 'https://evil.example/x.jpg', 'javascript:alert(1)', `https://images.thdstatic.com/${'a'.repeat(400)}.jpg`, 42];
+
+  it('Nov 25: a page’s, an item page’s, a list entry’s and a part price’s picture travel only from Home Depot’s image host', async () => {
+    const { readers, worker } = setup();
+    const pages = readers.readPages(['111111111', '222222222']);
+    await worker(() => [
+      { itemId: '111111111', kind: 'read', content: { bullets: [], description: null, image: PIC } },
+      { itemId: '222222222', kind: 'read', content: { bullets: [], description: null, image: BAD[1] } },
+    ]);
+    const [good, bad] = await pages;
+    expect(good).toMatchObject({ content: { image: PIC } });
+    expect((bad as { content: object }).content).not.toHaveProperty('image');
+
+    for (const image of [PIC, ...BAD]) {
+      const promo = readers.readPromoPages(['344305163']);
+      await worker(() => [{ itemId: '344305163', kind: 'read', page: { itemId: '344305163', brand: 'RYOBI', model: 'P', title: 't', price: 99, wasPrice: null, bullets: [], description: null, promotions: [], image } }]);
+      const [o] = await promo;
+      if (image === PIC) expect(o).toMatchObject({ page: { image: PIC } });
+      else expect((o as { page: object }).page).not.toHaveProperty('image');
+
+      const list = readers.readBundleListing('/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5');
+      await worker(() => ({ products: [{ itemId: '339857091', brand: 'RYOBI', model: '', title: 'Set', url: 'https://www.homedepot.com/p/339857091', image }] }));
+      const { products } = await list;
+      if (image === PIC) expect(products[0]!.image).toBe(PIC);
+      else expect(products[0]).not.toHaveProperty('image');
+    }
+
+    const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);
+    await worker(() => search([{ model: 'PCL206B', itemId: '315155390' }]));
+    await worker(() => reading({ image: PIC }));
+    expect((await prices)[0]).toEqual({ ...reading(), image: PIC });
+    const refused = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);
+    await worker(() => search([{ model: 'PCL206B', itemId: '315155390' }]));
+    await worker(() => reading({ image: BAD[0] }));
+    expect((await refused)[0]).toEqual(reading());
+  });
+
   it('a reading that is not a part price is a failed read, never data', async () => {
     const { readers, worker } = setup();
     const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);

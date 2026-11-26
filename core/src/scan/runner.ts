@@ -41,6 +41,7 @@ import { LIST_EMPTY, type ListingRow, type ListingSourceDeps, readBundleListings
 import { type PageWant, pagesWanted } from './hdOrder';
 import { type HdBlock, noPagesWhy } from './hdPace';
 import type { PromoPage } from '../hdPage';
+import { homeDepotPicture } from '../links/pictures';
 import { addLookupWay, type LookupWays } from '../deals/lookupCopy';
 import type { KeepaLookupAsk } from '../keepa/fetchStep';
 import { applyBarcodeFinding, lookupAsk, partBarcode } from './barcodeLookup';
@@ -1024,6 +1025,8 @@ async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['pa
         ...(known?.bogo ? { bogo: known.bogo } : {}),
         // What a page of it stated about buying it stays; a page this row carries and read later replaces it (withBuying).
         ...(known?.buying ? { buying: known.buying } : {}),
+        // Nov 25: the row's picture, else the one stored; never replaced by none.
+        ...pictureOf(row.image, known?.image),
       }, row.page?.buying, row.page?.readAt ?? at));
     }
     job.counts.bundlesSeen += 1;
@@ -1042,9 +1045,17 @@ async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['pa
       itemId: row.itemId,
       // A kit's page is read once, as a bundle's (P1): a row seen again keeps it.
       ...(page !== undefined ? { page } : {}),
+      // Nov 25: the part's own picture from the row, else the one stored.
+      ...pictureOf(row.image, known?.image),
     });
   }
   return 'catalog';
+}
+
+/** Nov 25: a row's Home Depot picture (only on Home Depot's image host), else the stored one; nothing when neither. */
+function pictureOf(fromRow: unknown, stored: string | undefined): { image?: string } {
+  const image = homeDepotPicture(fromRow) ?? stored;
+  return image ? { image } : {};
 }
 
 /**
@@ -1071,6 +1082,7 @@ async function saveSet(run: Run, row: HdListing & { set: NonNullable<ListingRow[
     ...(known?.bogo ? { bogo: known.bogo } : {}),
     ...(known?.buying ? { buying: known.buying } : {}),
     set: { items, dollarOff: row.set.dollarOff, percentageOff: row.set.percentageOff },
+    ...pictureOf(row.image, known?.image),
   });
 }
 
@@ -1142,6 +1154,7 @@ export async function readSetItemsFor(r: {
   const readings = [...pages.values()].filter((p) => p.model.trim() !== '').map((p) => ({
     brand: p.brand, model: p.model, status: 'found' as const, itemId: p.itemId, matchedModel: p.model, price: p.price, title: p.title, link: `${HOME_DEPOT_ORIGIN}/p/${p.itemId}`,
     ...(p.upc ? { upc: p.upc } : {}),
+    ...(p.image ? { image: p.image } : {}),
   }));
   if (readings.length > 0) await savePartPrices(store, readings.map((x) => ({ brand: x.brand, model: x.model })), readings, at);
   return { read: pages.size, refused, sets };
@@ -1759,7 +1772,9 @@ export async function savePartPrices(store: ScanStore, asked: Pick<Part, 'brand'
         : {};
       // Nov 25: the page's barcode; one read before from the same product is kept while this reading gives none.
       const upc = toUpc12(typeof r.upc === 'string' ? r.upc : null) ?? (before && itemId !== null && before.itemId === itemId ? before.upc : null) ?? null;
-      record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt, ...kept, ...(upc ? { upc } : {}) };
+      // Nov 25: the page's picture, the same way: one kept before from the same product stays while this reading gives none.
+      const image = homeDepotPicture(r.image) ?? (before && itemId !== null && before.itemId === itemId ? before.image : undefined);
+      record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt, ...kept, ...(upc ? { upc } : {}), ...(image ? { image } : {}) };
     } else {
       const before = await store.getPartPrice(key);
       // Nov 25: a page that is the part's (its model the part's) but has no price still states the part's barcode.

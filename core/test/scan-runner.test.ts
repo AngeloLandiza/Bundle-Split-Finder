@@ -139,6 +139,8 @@ describe('runScan: the founder\'s bundle (test A)', () => {
       key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', title: 'ONE+ HP 18V Brushless Cordless 3/8 in. Extended Reach Ratchet (Tool Only)',
       // Step 6: the row's item id, kept on every catalog entry (a kit's page is read by it).
       kinds: ['ratchet'], isKit: false, upc: null, seenAt: T0, itemId: '316631068',
+      // Nov 25: the part's own Home Depot picture, from the row's thumbnails.
+      image: 'https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_145.jpg',
     });
     // Of a model listed under two item ids, the entry keeps the last row's.
     expect((await w.store.getCatalogEntry('RYOBI:PCL280K1'))!.itemId).toBe('339375658');

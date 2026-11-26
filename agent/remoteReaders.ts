@@ -11,6 +11,7 @@ import type { CatalogEntry, CatalogLookup, HomeDepotPage, HomeDepotSearch, Resea
 import type { PageOutcome, PartPriceReading, ReadPages, ReadPartPrices, ScanStore } from '../core/src/scan/types';
 import { type BuyingFacts, cleanBuying, type ListingSample, type PageContent, type PagePromotion, type PromoPage, SAMPLE_CHARS, SAMPLE_KINDS } from '../core/src/hdPage';
 import { toUpc12 } from '../core/src/identifiers';
+import { homeDepotPicture } from '../core/src/links/pictures';
 import { isBundleListingPath } from '../core/src/scan/listingSource';
 import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
 import type { ListingPage } from '../core/src/scan/listingSource';
@@ -107,12 +108,18 @@ const buyingField = (v: unknown): { buying?: BuyingFacts } => {
   return buying ? { buying } : {};
 };
 
+/** Nov 25: a picture as the helper sent it, kept only on Home Depot's image host, https, length-limited; anything else is none. */
+const picture = (v: unknown): { image?: string } => {
+  const image = homeDepotPicture(v);
+  return image ? { image } : {};
+};
+
 function pageOutcome(v: unknown): PageOutcome | null {
   if (!isRecord(v) || !isText(v.itemId)) return null;
   if (v.kind === 'read') {
     if (!isRecord(v.content)) return null;
-    const { upc, buying, ...content } = v.content;
-    return { ...(v as unknown as PageOutcome & { kind: 'read' }), content: { ...(content as unknown as PageContent), ...barcode(upc), ...buyingField(buying) } };
+    const { upc, buying, image, ...content } = v.content;
+    return { ...(v as unknown as PageOutcome & { kind: 'read' }), content: { ...(content as unknown as PageContent), ...barcode(upc), ...buyingField(buying), ...picture(image) } };
   }
   return notReadOutcome(v as Record<string, unknown> & { itemId: string });
 }
@@ -122,8 +129,8 @@ function partPriceReading(v: unknown): PartPriceReading | null {
   if (v.status !== 'found' && v.status !== 'not_found' && v.status !== 'not_read') return null;
   if (!textOrNull(v.itemId) || !textOrNull(v.matchedModel) || !numOrNull(v.price) || !textOrNull(v.title) || !textOrNull(v.link)) return null;
   if (v.link !== null && !onHomeDepot(v.link)) return null;
-  const { upc, ...rest } = v;
-  return { ...(rest as unknown as PartPriceReading), ...barcode(upc) };
+  const { upc, image, ...rest } = v;
+  return { ...(rest as unknown as PartPriceReading), ...barcode(upc), ...picture(image) };
 }
 
 function toolError(v: unknown): ToolError | null {
@@ -173,7 +180,7 @@ function promoOutcome(v: unknown): PromoPageOutcome | null {
   const page: PromoPage = {
     itemId: v.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price as number | null, wasPrice: p.wasPrice as number | null,
     bullets: p.bullets as string[], description: p.description as string | null, promotions: promotions as PagePromotion[],
-    ...barcode(p.upc), ...buyingField(p.buying),
+    ...barcode(p.upc), ...buyingField(p.buying), ...picture(p.image),
   };
   return { itemId: v.itemId, kind: 'read', page };
 }
@@ -193,7 +200,7 @@ function listedItems(v: unknown): ListedItem[] | null {
   const out: ListedItem[] = [];
   for (const r of v.products) {
     if (!isRecord(r) || !isText(r.itemId) || !ITEM_ID.test(r.itemId) || !isText(r.brand) || !isText(r.model) || !isText(r.title) || !onHomeDepot(r.url)) return null;
-    const item: ListedItem = { itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url as string };
+    const item: ListedItem = { itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url as string, ...picture(r.image) };
     // Fix round: a listing entry's own pricing, checked as a promoPage's is; a malformed one makes the answer no answer.
     if ('price' in r || 'wasPrice' in r || 'promotions' in r) {
       if (!numOrNull(r.price) || !numOrNull(r.wasPrice ?? null) || !Array.isArray(r.promotions ?? [])) return null;

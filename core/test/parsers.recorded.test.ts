@@ -49,6 +49,8 @@ it('reads the founder\'s bundle exactly as Home Depot lists it', () => {
     percentOff: 44,
     badge: 'Special-Buy',
     link: 'https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689',
+    // Nov 25: the row's first thumbnail at 145 px (hdPage.ts hdThumbnail).
+    image: 'https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_145.jpg',
   });
 });
 

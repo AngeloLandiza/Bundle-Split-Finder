@@ -166,6 +166,12 @@ export interface BundleRecord {
    * page has been read for its brand and model. Absent on any other bundle.
    */
   set?: BundleSet;
+  /**
+   * Nov 25: the bundle's own Home Depot picture (images.thdstatic.com), from the list row it was last seen in (a SerpApi row's
+   * `thumbnails`, a Chrome list entry's `media`), else its BOGO item page's. Absent when none was given; a row without one
+   * keeps the stored one. Its page reading may hold one too (`page.image`); the report takes this first.
+   */
+  image?: string;
 }
 
 /** What a Home Depot page stated about buying a bundle (hdPage.ts BuyingFacts), and when it was read. */
@@ -260,6 +266,8 @@ export interface PartPriceReading {
    * read, gave none, or is not the part's. Kept on the part price record (PartPriceRecord.upc).
    */
   upc?: string | null;
+  /** Nov 25: the picture the product's own page gives (hdPage.ts hdPicture), when the page is the part's. Kept as `upc` is. */
+  image?: string | null;
 }
 
 /** Step 9: reads Home Depot's own price for parts sold alone, in the owner's browser. Never a search. */
@@ -301,6 +309,11 @@ export interface PartPriceRecord {
    * candidates, never proof of a listing.
    */
   upc?: string | null;
+  /**
+   * Nov 25: the picture Home Depot's page of the part sold alone gives (images.thdstatic.com), from the reading that found
+   * it; kept while later readings of the same product give none. Shown for the part when its Amazon listing has none.
+   */
+  image?: string;
 }
 
 /**
@@ -437,6 +450,8 @@ export interface CatalogRecord {
    * bundle's is (a later listing row keeps it). Undefined or null: not read yet.
    */
   page?: PageReading | null;
+  /** Nov 25: the part's own Home Depot picture from the list row it was saved from (HdListing.image); kept while a row gives none. */
+  image?: string;
 }
 
 /**

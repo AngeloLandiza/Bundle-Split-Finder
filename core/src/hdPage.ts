@@ -7,6 +7,7 @@
 // Reading the page the user is looking at costs no SerpApi searches.
 
 import { toUpc12 } from './identifiers';
+import { homeDepotPicture } from './links/pictures';
 import type { PageSections, PageSpecification } from './research/types';
 
 export interface HdProduct {
@@ -83,6 +84,11 @@ export interface PageContent {
    * read before this existed.
    */
   buying?: BuyingFacts;
+  /**
+   * Nov 25: the product's first picture (hdPicture), on images.thdstatic.com. Absent when the page's state gives none, and
+   * on a page read before this existed.
+   */
+  image?: string;
 }
 
 /**
@@ -177,6 +183,58 @@ export function barcodeOf(product: Json): string | null {
   return first !== undefined && codes.every((c) => c === first) ? first : null;
 }
 
+/**
+ * The size a Home Depot picture is kept at, in pixels: the smallest Home Depot offers that is sharp at the largest place the
+ * app draws a picture (the inspector's 72 px square, 144 px on a 2x screen). Home Depot names the sizes it serves for each
+ * picture: `sizes` ["65","100","145","300","400","600","1000"] beside a `<SIZE>` address in a list entry
+ * (fixtures/homedepot-pages/bundle-listing-sample-2026-11-23.json), and the same seven as `_65.jpg`...`_1000.jpg` addresses
+ * in SerpApi's Home Depot rows (fixtures/recorded/hd-bundles-ryobi-p1.json `thumbnails`).
+ */
+export const HD_PICTURE_SIZE = 145;
+
+/** The size to ask for among `sizes`: the smallest at or above HD_PICTURE_SIZE, else the largest; null when none is a size. */
+function pictureSize(sizes: readonly number[]): number | null {
+  const ok = sizes.filter((n) => Number.isInteger(n) && n > 0 && n <= 5000).sort((a, b) => a - b);
+  return ok.find((n) => n >= HD_PICTURE_SIZE) ?? ok[ok.length - 1] ?? null;
+}
+
+/**
+ * Nov 25: a product's first picture from its `media` (a list entry's or a product page's state): the first of
+ * `media.images[]` whose `type` is "IMAGE" (recorded: `{url, type: "IMAGE", subType: "PRIMARY", sizes}`), its `url` with
+ * the `<SIZE>` placeholder replaced by a size its own `sizes` names (pictureSize). `media` may be the object itself (as in
+ * the recorded list entry) or an Apollo reference into `state`. Only https on images.thdstatic.com is kept; an address with
+ * `<SIZE>` and no size listed, or anything else, gives null: a size is never guessed.
+ */
+export function hdPicture(media: unknown, state: Json = {}): string | null {
+  let m = asObj(media);
+  if (typeof m.__ref === 'string') m = asObj(state[m.__ref]);
+  const images = Array.isArray(m.images) ? m.images.map(asObj) : [];
+  const first = images.find((i) => i.type === 'IMAGE' && typeof i.url === 'string');
+  if (!first) return null;
+  const url = first.url as string;
+  if (!url.includes('<SIZE>')) return homeDepotPicture(url);
+  const sizes = Array.isArray(first.sizes) ? first.sizes.map((x) => (typeof x === 'string' && /^\d{1,4}$/.test(x) ? Number(x) : typeof x === 'number' ? x : NaN)) : [];
+  const size = pictureSize(sizes);
+  return size === null ? null : homeDepotPicture(url.split('<SIZE>').join(String(size)));
+}
+
+/**
+ * Nov 25: the picture of a SerpApi Home Depot row (engine=home_depot): its `thumbnails`, a list of pictures each given as
+ * one address per size (`..._65.jpg`, `..._100.jpg`, `..._145.jpg`, ... `..._1000.jpg`, recorded in
+ * fixtures/recorded/hd-bundles-ryobi-p1.json). The first picture, at the size pictureSize picks among the ones listed.
+ */
+export function hdThumbnail(thumbnails: unknown): string | null {
+  const first = Array.isArray(thumbnails) ? thumbnails[0] : null;
+  const urls = (Array.isArray(first) ? first : typeof first === 'string' ? [first] : []).filter((u): u is string => typeof u === 'string');
+  const bySize = new Map<number, string>();
+  for (const u of urls) {
+    const m = /_(\d{1,4})\.(?:jpg|jpeg|png|webp)$/i.exec(u);
+    if (m && !bySize.has(Number(m[1]))) bySize.set(Number(m[1]), u);
+  }
+  const size = pictureSize([...bySize.keys()]);
+  return size === null ? null : homeDepotPicture(bySize.get(size));
+}
+
 const STATE_MARK = 'window.__APOLLO_STATE__=';
 
 /** End index (exclusive) of the JSON object starting at `start`, matching braces outside strings; -1 if it never closes. */
@@ -197,8 +255,9 @@ function objectEnd(text: string, start: number): number {
 
 /** Null when the text has no `window.__APOLLO_STATE__=` object, it does not parse, or it has no `base-catalog-<itemId>`. */
 export function parseBundlePage(text: string, itemId: string): PageContent | null {
-  const product = productState(text, itemId);
-  return product === null ? null : contentOf(product);
+  const state = pageState(text);
+  const product = state === null ? null : productOf(state, itemId);
+  return product === null ? null : contentOf(product, state!);
 }
 
 /** The page's parsed `window.__APOLLO_STATE__=` object; null when there is none or it does not parse. */
@@ -216,15 +275,14 @@ function pageState(text: string): Json | null {
   }
 }
 
-/** The `base-catalog-<itemId>` object of the page's `window.__APOLLO_STATE__=` object; null when there is none or it does not parse. */
-function productState(text: string, itemId: string): Json | null {
-  const state = pageState(text);
-  const product = state === null ? null : state[`base-catalog-${itemId}`];
+/** The `base-catalog-<itemId>` object of a parsed page state; null when there is none. */
+function productOf(state: Json, itemId: string): Json | null {
+  const product = state[`base-catalog-${itemId}`];
   return product && typeof product === 'object' ? (product as Json) : null;
 }
 
-/** The bullets and description of a product object, as parseBundlePage gives them. */
-function contentOf(product: Json): PageContent {
+/** The bullets and description of a product object, as parseBundlePage gives them; `state` resolves a media reference. */
+function contentOf(product: Json, state: Json = {}): PageContent {
   const details = asObj(product.details);
   const attrs = Array.isArray(details.descriptiveAttributes) ? details.descriptiveAttributes : [];
   const bullets: string[] = [];
@@ -234,7 +292,11 @@ function contentOf(product: Json): PageContent {
   }
   const upc = barcodeOf(product);
   const buying = buyingOf(product);
-  return { bullets, description: typeof details.description === 'string' ? details.description : null, ...(upc !== null ? { upc } : {}), ...(buying ? { buying } : {}) };
+  const image = hdPicture(product.media, state);
+  return {
+    bullets, description: typeof details.description === 'string' ? details.description : null, ...(upc !== null ? { upc } : {}), ...(buying ? { buying } : {}),
+    ...(image !== null ? { image } : {}),
+  };
 }
 
 /** A Home Depot product page the owner has open, read from its embedded data (step 7). Never a search. */
@@ -257,6 +319,8 @@ export interface ProductPage {
   upc?: string;
   /** As parseBundlePage reads it (buyingOf); absent when the page states none of it. */
   buying?: BuyingFacts;
+  /** As parseBundlePage reads it (hdPicture); absent when the page gives none. */
+  image?: string;
 }
 
 /** A price as a pricing entry holds it: a positive number. Anything else is no price. */
@@ -287,13 +351,14 @@ const nonEmpty = (v: unknown): string | null => (typeof v === 'string' && v.trim
  * data is missing or does not parse, holds no `base-catalog-<itemId>`, or names no brand or model.
  */
 export function parseProductPage(text: string, itemId: string): ProductPage | null {
-  const product = productState(text, itemId);
+  const state = pageState(text);
+  const product = state === null ? null : productOf(state, itemId);
   if (product === null) return null;
   const ids = asObj(product.identifiers);
   const brand = nonEmpty(ids.brandName);
   const model = nonEmpty(ids.modelNumber);
   if (brand === null || model === null) return null;
-  return { itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product) };
+  return { itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product, state!) };
 }
 
 /**
@@ -350,6 +415,8 @@ export interface SearchProduct {
   price?: number | null;
   wasPrice?: number | null;
   promotions?: PagePromotion[];
+  /** Nov 25: the entry's first picture (hdPicture), when its `media` gives one. */
+  image?: string;
 }
 
 /**
@@ -372,6 +439,7 @@ export function parseSearchState(state: unknown, origin = 'https://www.homedepot
     const priced = Object.keys(entry).some((k) => k.startsWith('pricing('));
     const pricing = priced ? pricingOf(entry) : null;
     const promotions = priced ? Object.keys(entry).filter((k) => k.startsWith('pricing(')).flatMap((k) => bogoPromotionsOf(asObj(entry[k]).conditionalPromotions)) : [];
+    const image = hdPicture(entry.media, asObj(state));
     out.push({
       itemId,
       brand: nonEmpty(ids.brandName) ?? '',
@@ -379,6 +447,7 @@ export function parseSearchState(state: unknown, origin = 'https://www.homedepot
       title: nonEmpty(ids.productLabel) ?? '',
       url: `${origin}${path !== null && path.startsWith('/p/') ? path : `/p/${itemId}`}`,
       ...(pricing ? { price: pricing.price, wasPrice: pricing.wasPrice, promotions: promotions.filter((p, i) => promotions.findIndex((q) => q.promotionId === p.promotionId) === i) } : {}),
+      ...(image !== null ? { image } : {}),
     });
   }
   return out;
@@ -492,6 +561,12 @@ export interface ListingProduct {
   dollarOff?: number | null;
   percentageOff?: number | null;
   promotions?: PagePromotion[];
+  /**
+   * Nov 25: the entry's first picture (hdPicture). Recorded: a RYOBI Bundle list entry's `media` is inline,
+   * `{images: [{url: ".../ryobi-power-drills-64_<SIZE>.jpg", type: "IMAGE", subType: "PRIMARY", sizes: [...]}]}`
+   * (fixtures/homedepot-pages/bundle-listing-sample-2026-11-23.json). Absent when the entry gives none.
+   */
+  image?: string;
 }
 
 const ITEM_ID = /^\d{6,12}$/;
@@ -528,6 +603,7 @@ export function parseListingState(state: unknown, origin = 'https://www.homedepo
     const pricing = pricingKeys.length > 0 ? pricingOf(entry) : null;
     const promo = pricingKeys.length > 0 ? asObj(asObj(entry[pricingKeys[0]!]).promotion) : {};
     const promotions = pricingKeys.flatMap((k) => bogoPromotionsOf(asObj(entry[k]).conditionalPromotions));
+    const image = hdPicture(entry.media, st);
     out.push({
       itemId,
       brand: nonEmpty(ids.brandName) ?? '',
@@ -541,6 +617,7 @@ export function parseListingState(state: unknown, origin = 'https://www.homedepo
         price: pricing.price, wasPrice: pricing.wasPrice, dollarOff: numOrNull(promo.dollarOff), percentageOff: numOrNull(promo.percentageOff),
         promotions: promotions.filter((p, i) => promotions.findIndex((q) => q.promotionId === p.promotionId) === i),
       } : {}),
+      ...(image !== null ? { image } : {}),
     });
   }
   return out;
@@ -627,7 +704,7 @@ export function parsePromoState(state: unknown, itemId: string): PromoPage | nul
   const idsOf = (l: PagePromotion[]) => l.map((p) => p.promotionId).sort().join(',');
   const agree = lists.every((l) => idsOf(l) === idsOf(first));
   return {
-    itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product),
+    itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product, asObj(state)),
     promotions: agree ? first : [],
   };
 }

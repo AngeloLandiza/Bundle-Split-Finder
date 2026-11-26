@@ -3,7 +3,7 @@
 // Field names are confirmed against the responses recorded in fixtures/recorded/ on 2026-11-09.
 // Parsers are deliberately tolerant: a missing field becomes null, never a crash.
 
-import type { HdProduct } from '../hdPage';
+import { hdThumbnail, type HdProduct } from '../hdPage';
 import { toUpc12 } from '../identifiers';
 import type { Candidate } from '../match';
 
@@ -32,6 +32,11 @@ export interface HdListing {
   percentOff: number | null;
   badge: string | null;
   link: string | null;
+  /**
+   * Nov 25: the product's picture on images.thdstatic.com: a SerpApi row's `thumbnails` (hdPage.ts hdThumbnail), a Chrome
+   * list entry's `media` (hdPicture). Absent or null when the row gives none; a stored one is kept then.
+   */
+  image?: string | null;
 }
 
 export function parseHomeDepotSearch(json: unknown): { listings: HdListing[]; hasNextPage: boolean } {
@@ -52,6 +57,7 @@ export function parseHomeDepotSearch(json: unknown): { listings: HdListing[]; ha
       percentOff: num(p.percentage_off),
       badge: str(p.price_badge),
       link: str(p.link),
+      image: hdThumbnail(p.thumbnails),
     });
   }
   const next = obj(j.serpapi_pagination).next ?? obj(j.pagination).next;

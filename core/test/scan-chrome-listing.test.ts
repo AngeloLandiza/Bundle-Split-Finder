@@ -285,3 +285,46 @@ describe('fix round: what the live listing really holds', () => {
     expect((await store.listBundles()).length).toBeGreaterThan(0);
   });
 });
+
+// Nov 25: each bundle keeps the picture its list row already carries (no page read for it). SerpApi's rows give
+// `thumbnails` (one address per size); a Chrome list entry gives `media.images[]` with a `<SIZE>` address and its `sizes`
+// (the recorded shape: fixtures/homedepot-pages/bundle-listing-sample-2026-11-23.json). Both keep the 145 px picture.
+describe('a bundle’s picture from its list row', () => {
+  const SIZES = ['65', '100', '145', '300', '400', '600', '1000'];
+  /** The recorded rows as list entries carrying `media` as the recorded entry does: the row's own picture at <SIZE>. */
+  function withMedia(rows: Record<string, unknown>[]): Record<string, unknown> {
+    const state = stateOf(rows);
+    for (const p of rows) {
+      const first = ((p.thumbnails as string[][] | undefined)?.[0] ?? [])[0];
+      if (!first) continue;
+      (state[`base-searchNav-${String(p.product_id)}`] as Record<string, unknown>).media = {
+        __typename: 'Media', images: [{ __typename: 'Image', url: first.replace(/_65\.jpg$/, '_<SIZE>.jpg'), type: 'IMAGE', subType: 'PRIMARY', sizes: SIZES }],
+      };
+    }
+    return state;
+  }
+
+  it('SerpApi’s rows and the Chrome lists keep the same 145 px Home Depot picture on every bundle and catalog part', async () => {
+    const viaSerp = new MemoryScanStore();
+    await scan(viaSerp, { settings: settingsOf({ pagesPerQuery: 1 }), readPages: noPages });
+    const serpBundles = await viaSerp.listBundles();
+    expect(serpBundles.length).toBeGreaterThan(0);
+    for (const b of serpBundles) expect(b.image).toMatch(/^https:\/\/images\.thdstatic\.com\/productImages\/[0-9a-f-]+\/svn\/[a-z0-9-]+_145\.jpg$/);
+    expect((await viaSerp.listCatalog()).every((c) => c.image?.endsWith('_145.jpg'))).toBe(true);
+
+    const viaChrome = new MemoryScanStore();
+    const listed = (brand: 'RYOBI' | 'DEWALT') => parseSearchState(withMedia(SERP[brand].products), HOME_DEPOT);
+    await scan(viaChrome, { chromeListing: chrome({ RYOBI: listed('RYOBI'), DEWALT: listed('DEWALT') }, serpPrice).deps, readPages: noPages });
+    const pic = (bs: BundleRecord[]) => bs.map((b) => [b.key, b.image]).sort((x, y) => (x[0]! < y[0]! ? -1 : 1));
+    expect(pic(await viaChrome.listBundles())).toEqual(pic(serpBundles));
+  });
+
+  it('a later row without a picture keeps the stored one', async () => {
+    const store = new MemoryScanStore();
+    await scan(store, { settings: settingsOf({ pagesPerQuery: 1 }), readPages: noPages });
+    const before = new Map((await store.listBundles()).map((b) => [b.key, b.image] as const));
+    // The same lists in Chrome, their entries carrying no media (the old recordings' shape).
+    await scan(store, { chromeListing: chrome({ RYOBI: listedFromSerp('RYOBI'), DEWALT: listedFromSerp('DEWALT') }, serpPrice).deps, readPages: noPages });
+    for (const b of await store.listBundles()) if (before.has(b.key)) expect(b.image).toBe(before.get(b.key));
+  });
+});

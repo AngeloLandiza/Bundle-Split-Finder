@@ -668,8 +668,9 @@ export function createPartPriceReader(
               price: page.price,
               title: page.title === '' ? null : page.title,
               link: `${env.origin}${c.path}`,
-              // Nov 25: the barcode the part's own page states, kept on its part price record.
+              // Nov 25: the barcode the part's own page states, kept on its part price record; its picture the same way.
               ...(page.upc ? { upc: page.upc } : {}),
+              ...(page.image ? { image: page.image } : {}),
             });
           }
         }
@@ -730,6 +731,7 @@ export function createItemPriceReader(
         title: page.title === '' ? null : page.title,
         link: `${env.origin}/p/${itemId}`,
         ...(page.upc ? { upc: page.upc } : {}),
+        ...(page.image ? { image: page.image } : {}),
       };
     } finally {
       lastEnded = now();
@@ -880,7 +882,7 @@ function createListingReaderOf(
       }
       const rows = parseSearchText(read.text, HOME_DEPOT);
       if (rows === null) return { error: `${what.named} could not be read.` };
-      return { products: rows.map((r) => ({ itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url })) };
+      return { products: rows.map((r) => ({ itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url, ...(r.image ? { image: r.image } : {}) })) };
     } catch (e) {
       if (e instanceof Error && e.message === 'The Home Depot tab did not load.') return { error: e.message };
       throw e;

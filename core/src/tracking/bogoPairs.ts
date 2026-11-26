@@ -17,6 +17,7 @@
 // pipeline's. Pairs are grouped by starter and ranked by that estimate.
 
 import type { BuyingFacts, PagePromotion, PromoPage } from '../hdPage';
+import { homeDepotPicture } from '../links/pictures';
 import { withBuying } from '../scan/buying';
 import { dayOf } from './state';
 import { estimateRoiPercent, type AlertSettings } from '../settings';
@@ -60,6 +61,8 @@ export interface ListedItem {
   price?: number | null;
   wasPrice?: number | null;
   promotions?: PagePromotion[];
+  /** Nov 25: the listing entry's picture (hdPage.ts hdPicture), when it gives one. */
+  image?: string;
   /**
    * Free scan, fix round 3: a Home Depot set (hdPage.ts ListingProduct: productType CONFIGURABLE_BUNDLE or bundleFlag, with
    * its bundleItems). Its `model` is '' (the entry has none); its items are Home Depot's own list of what it holds.
@@ -92,6 +95,8 @@ export interface BogoItem {
   upc?: string;
   /** Nov 25: what the item's page states about buying it (hdPage.ts buyingOf); absent when none. */
   buying?: BuyingFacts;
+  /** Nov 25: the item page's picture (hdPage.ts hdPicture); absent when none. Checked again where it is kept (homeDepotPicture). */
+  image?: string;
 }
 
 /** What a pair carries on its deal (the contract's `bogo` tag). */
@@ -208,6 +213,7 @@ export function itemOf(page: PromoPage, listed: ListedItem | undefined, at: numb
     promotions: page.promotions, bullets: page.bullets, description: page.description, readAt: at,
     ...(page.upc ? { upc: page.upc } : {}),
     ...(page.buying ? { buying: page.buying } : {}),
+    ...(page.image ? { image: page.image } : listed?.image ? { image: listed.image } : {}),
   };
 }
 
@@ -329,6 +335,8 @@ export const pairFacts = (p: Pick<BogoPair, 'promotionId' | 'starterItemId' | 's
 export function pairBundleRecord(pair: BogoPair, item: BogoItem | undefined, known: BundleRecord | undefined, at: number): BundleRecord {
   const percentOff = pair.wasPrice !== null && pair.wasPrice > pair.price ? Math.round((1 - pair.price / pair.wasPrice) * 100) : known?.percentOff ?? null;
   const page = known?.page ?? (item ? { bullets: item.bullets, description: item.description, readAt: item.readAt } : undefined);
+  // Nov 25: the item page's picture, else the one kept before; never one that is not on Home Depot's image host.
+  const image = homeDepotPicture(item?.image) ?? known?.image;
   return withBuying({
     key: pair.key, retailer: 'homedepot', itemId: pair.itemId, title: pair.title || known?.title || pair.model, brand: pair.brand, model: pair.model,
     upc: known?.upc ?? null, price: pair.price, regularPrice: pair.wasPrice ?? known?.regularPrice ?? null, percentOff, link: pair.link, seenAt: at,
@@ -336,6 +344,7 @@ export function pairBundleRecord(pair: BogoPair, item: BogoItem | undefined, kno
     ...(page !== undefined ? { page } : {}),
     bogo: pairFacts(pair),
     ...(known?.buying ? { buying: known.buying } : {}),
+    ...(image ? { image } : {}),
   }, item?.buying, item?.readAt ?? at);
 }
 

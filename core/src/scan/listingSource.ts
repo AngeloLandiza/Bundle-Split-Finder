@@ -19,6 +19,7 @@
 // paced by the reader; a refusal is never retried: it ends the pass, what was read before it is kept, and the problem
 // says so.
 
+import { homeDepotPicture } from '../links/pictures';
 import type { Cache } from '../serpapi/client';
 import { HOME_DEPOT, itemCacheKey, itemOf, type BogoItem, type ListedItem, type ListedSet, type PromoPageOutcome } from '../tracking/bogoPairs';
 import type { HdListing } from '../serpapi/parsers';
@@ -144,6 +145,7 @@ export function listedOf(r: ListingProduct): ListedItem {
   return {
     itemId: r.itemId, brand: r.brand, model: r.model ?? '', title: r.title, url: r.url,
     ...(r.price !== undefined ? { price: r.price, wasPrice: r.wasPrice ?? null, promotions: r.promotions ?? [] } : {}),
+    ...(r.image ? { image: r.image } : {}),
     ...(r.bundleItems && (r.productType === 'CONFIGURABLE_BUNDLE' || r.bundleFlag)
       ? { set: { items: r.bundleItems, dollarOff: r.dollarOff ?? null, percentageOff: r.percentageOff ?? null } }
       : {}),
@@ -304,12 +306,16 @@ function rowOf(listed: ListedItem, item: BogoItem | null): ListingRow {
   const link = listed.url.startsWith(`${HOME_DEPOT}/p/`) ? listed.url : `${HOME_DEPOT}/p/${listed.itemId}`;
   const price = listPriced(listed) ? listed.price ?? null : item?.price ?? null;
   const was = price === null ? null : listPriced(listed) ? listed.wasPrice ?? null : item?.wasPrice ?? null;
+  const image = homeDepotPicture(listed.image) ?? homeDepotPicture(item?.image);
   return {
     itemId: listed.itemId, title: listed.title || item?.title || listed.model, brand: listed.brand || item?.brand || null, model: listed.model || item?.model || null,
     price, regularPrice: was, percentOff: percentOff(price, was), badge: null, link,
+
     page: item ? { bullets: [...item.bullets], description: item.description, readAt: item.readAt, ...(item.upc ? { upc: item.upc } : {}), ...(item.buying ? { buying: item.buying } : {}) } : null,
     bogo: (listed.promotions?.length ?? 0) > 0 || (item?.promotions.length ?? 0) > 0,
     ...(listed.set ? { set: listed.set } : {}),
+    // Nov 25: the list entry's picture, else its item page's (a cached reading is checked again: homeDepotPicture).
+    ...(image ? { image } : {}),
   };
 }
 
