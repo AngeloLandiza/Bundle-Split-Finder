@@ -7,7 +7,7 @@ import type { Purchase } from '../core/src/api/contract';
 import {
   attemptSentence, chromeWanted, connectedSentence, type ChromeAttempt, mayScanWithoutChrome, chromeSentence,
 } from '../core/src/selfRun/chrome';
-import { weekUse, weeklyDecision, weeklyOf, weeklySummary, type WeeklySummary } from '../core/src/selfRun/weekly';
+import { weekUse, weekUseByKey, weeklyDecision, weeklyOf, weeklySummary, type WeeklySummary } from '../core/src/selfRun/weekly';
 import { localDate } from '../core/src/costs/time';
 import type { CostBook } from './costs';
 import type { ChromeControl } from './openChrome';
@@ -214,6 +214,7 @@ export class SelfRun {
       openQuestions: openReviewCount(store.get('review'), asksAboutEbay(store.get('settings'))),
       costs: this.d.costs.view(),
       week: weekUse(costsInput, from, now),
+      weekByKey: weekUseByKey(costsInput, from, now),
       runs: store.get('activity').runs,
       pagesWaiting: store.get('runtime').hdBacklog?.pages ?? null,
       paused: store.get('agent').paused,

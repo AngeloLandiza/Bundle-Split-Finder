@@ -244,6 +244,8 @@ describe('searches over two keys', () => {
     expect(rows.filter((r) => r.keyId === k2)).toHaveLength(4);
     expect(readFileSync(join(w.dir, 'serpapi-ledger.jsonl'), 'utf8')).not.toContain('serp-');
     expect(agent!.work.serpLeft()).toBe(118);
+    // The run's summary says which key paid for what.
+    expect(agent!.store.get('activity').runs.at(-1)!.summary).toContain('5 searches (Key 2 4, Key 1 1).');
   });
 
   it('the reserve is on the total: 40 and 50 left under a reserve of 100 spend nothing on a scan', async () => {

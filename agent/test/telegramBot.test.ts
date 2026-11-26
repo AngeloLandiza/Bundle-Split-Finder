@@ -415,6 +415,27 @@ describe('commands', () => {
     expect(lines[5]).toBe('Profit figures are estimates from your fee settings, not your real fees, before sales tax and inbound shipping.');
   });
 
+  it('/status with two SerpApi keys: the total, then each key by its label (never a key)', async () => {
+    const at = new Date(clock).toISOString();
+    agent.store.update('keys', (k) => ({
+      ...k, serpapi: 'serp-one-for-tests-0000',
+      serpapiKeys: [
+        { id: 'serpapi-1', label: 'Key 1', addedAt: null, key: 'serp-one-for-tests-0000' },
+        { id: 'serpapi-b', label: 'Partner', addedAt: at, key: 'serp-two-for-tests-0000' },
+      ],
+    }));
+    agent.store.update('runtime', (r) => ({
+      ...r,
+      serp: { left: 203, perMonth: 500, rateLimitPerHour: 100, at },
+      serpKeys: { 'serpapi-1': { left: 60, perMonth: 250, rateLimitPerHour: 50, at }, 'serpapi-b': { left: 143, perMonth: 250, rateLimitPerHour: 50, at } },
+    }));
+    await say('/status');
+    const text = sentTexts().at(-1)!;
+    expect(text.split('\n')[2]).toBe(`Searches left: 203 across 2 keys: Key 1 60, Partner 143 (you keep ${agent.store.get('settings').settings.reserve}).`);
+    expect(text).not.toContain('serp-one');
+    expect(text).not.toContain('serp-two');
+  });
+
   it('/pause and /resume through the app’s own pause, in Activity with Undo; a problem the app paused for is not resumed from the phone', async () => {
     await say('/pause');
     expect(agent.store.get('agent').paused).toBe(true);

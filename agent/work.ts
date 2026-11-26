@@ -1305,6 +1305,17 @@ export class AgentWork {
   private serpLedgerRows: SpendRow[] | null = null;
   /** Set when a scan's account check found the balance at or below the reserve and no explicit yes: it spends no search. */
   private reserveHeld: { left: number; reserve: number } | null = null;
+  /** Key stacking: the last scan's search budget, so its summary can say which key paid for what. */
+  private scanBudget: SearchBudget | null = null;
+
+  /** Key stacking: " (Key 2 4, Key 1 1)" after a scan's searches when more than one SerpApi key is saved and any was spent. */
+  private spentByKeyWords(): string {
+    const entries = keyEntries(this.d.store.get('keys'), 'serpapi');
+    const spent = (this.scanBudget?.byKey ?? []).filter((k) => k.spent > 0);
+    if (entries.length < 2 || spent.length === 0) return '';
+    const label = (id: string) => entries.find((e) => e.id === id)?.label ?? 'a removed key';
+    return ` (${spent.sort((a, b) => b.spent - a.spent).map((k) => `${label(k.id)} ${k.spent}`).join(', ')})`;
+  }
 
   private serpRows(): SpendRow[] {
     if (!this.serpLedgerRows) {
@@ -1758,7 +1769,7 @@ export class AgentWork {
     // Nov 25: a page step that read nothing says why (Home Depot's pause or this scan's limit), not "page limit reached" for both.
     const skipped = skippedPagesSentence(job?.pipeline);
     if (skipped) parts.push(skipped);
-    if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
+    if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}${this.spentByKeyWords()}.`);
     if (run.questionsAsked) parts.push(`AI asked about ${run.questionsAsked}.`);
     if (run.autopilotApplied) parts.push(`Autopilot applied ${run.autopilotApplied}.`);
     if (run.error) parts.push(run.error);
@@ -1774,6 +1785,7 @@ export class AgentWork {
     const scanSettings = again || lookups ? { ...toScanSettings(ext), queries: [], catalogPagesPerScan: 0 } : toScanSettings(ext);
     const problems = Object.values(validateSettings(ext));
     if (problems.length > 0) throw new WorkRefused(`A setting needs fixing before a scan: ${problems[0]}`);
+    this.scanBudget = null;
     if (!keys.serpapi) throw new WorkRefused('Add your SerpApi key in Settings.');
     // Key stacking: each key's own free account check. A refused key is said beside it and the scan goes on with the
     // others; every key refused (or none answering) refuses the scan as one key did.
@@ -1792,6 +1804,7 @@ export class AgentWork {
     const extHeld = serpLeft === null ? ext : lookupsCap(ext, serpLeft);
     const budget = new SearchBudget(pool.accounts, budgetPolicyFor(lookups ? lookupsCap(extHeld, lookups.maxSearches) : extHeld, reserveTrigger(lookups?.useReserve === true), again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
     const client = this.serpClient(pool, budget);
+    this.scanBudget = budget;
     const keepa = await this.keepaDeps(ext, keys, notes);
     // Home Depot's pace: after a refusal no Home Depot page is read until the cool-down ends (lists, pages, part prices).
     const pausedUntil = lookups ? null : this.pace.pausedUntil();

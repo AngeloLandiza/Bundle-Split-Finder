@@ -11,7 +11,7 @@ import { buildCostsView } from '../src/costs/view';
 import { DEFAULT_COST_SETTINGS } from '../src/costs/types';
 import { DEFAULT_FEES } from '../src/money';
 import { applyPartOutcome, newPurchase, snapshotOf } from '../src/outcomes/outcomes';
-import { weeklySummary, weekUse } from '../src/selfRun/weekly';
+import { weeklySummary, weekUse, weekUseByKey } from '../src/selfRun/weekly';
 import type { BundleRow } from '../src/scan/types';
 import type { TrackingState } from '../src/tracking/state';
 
@@ -122,5 +122,22 @@ describe('what the week used', () => {
     expect(w.serpapi.used).toBe(2);
     expect(w.telegram.used).toBe(1);
     expect(w.ebay.used).toBe(5);
+  });
+});
+
+describe('key stacking in the weekly summary', () => {
+  it('a service with two keys says the split after its total; one key says the total only', () => {
+    const s = stores('after-scan6');
+    const rows = [
+      ...Array.from({ length: 15 }, (_, i) => ({ at: new Date(2026, 10, 23, 18, i).toISOString() })),
+      ...Array.from({ length: 2 }, (_, i) => ({ at: new Date(2026, 10, 24, 9, i).toISOString(), keyId: 'serpapi-b' })),
+    ];
+    const keys = [{ id: 'serpapi-1', label: 'Key 1', left: 60, perMonth: 250, refused: false }, { id: 'serpapi-b', label: 'Partner', left: 143, perMonth: 250, refused: false }];
+    const byKey = weekUseByKey({ serp: { rows, plan: null, keys }, keepa: { rows: [], refillPerMin: null } }, WEEK, NOW);
+    expect(byKey.serpapi).toEqual([{ label: 'Key 1', used: 15 }, { label: 'Partner', used: 2 }]);
+    const base = { now: NOW, from: WEEK, bundles: s.deals.bundles, tracking: s.tracking, purchases: [], openQuestions: 0, costs: s.costs, week: s.week, runs: s.activity.runs, pagesWaiting: null, paused: false };
+    expect(weeklySummary({ ...base, weekByKey: byKey }).text).toContain('- SerpApi 17 searches (Key 1 15, Partner 2), Keepa 29 tokens,');
+    expect(weeklySummary(base).text).toContain('- SerpApi 17 searches, Keepa 29 tokens,');
+    expect(weekUseByKey({ serp: { rows, plan: null, keys: keys.slice(0, 1) }, keepa: { rows: [], refillPerMin: null } }, WEEK, NOW).serpapi).toEqual([]);
   });
 });

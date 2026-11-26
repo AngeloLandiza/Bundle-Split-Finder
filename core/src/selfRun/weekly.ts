@@ -10,7 +10,7 @@ import { localDate } from '../costs/time';
 import type { CostService, CostsView } from '../costs/types';
 import { type AiSpendSources, aiEvents, countEvents, keepaEvents, serpEvents, type UsageEvent } from '../costs/usage';
 import type { CostsInput } from '../costs/view';
-import { amount, usd } from '../costs/words';
+import { amount, figure, usd } from '../costs/words';
 import { dayOf, purchaseResult, scorecardOf } from '../outcomes/outcomes';
 import type { BundleRow } from '../scan/types';
 import type { TrackingState } from '../tracking/state';
@@ -91,6 +91,23 @@ export function weekUse(c: Pick<CostsInput, 'serp' | 'keepa' | 'counts'> & { ai:
   };
 }
 
+/**
+ * Key stacking: what each saved SerpApi and Keepa key used between `from` and `to`, by label, in the keys' order (rows with
+ * no key id are the first key's). Only for a service with more than one key; empty otherwise.
+ */
+export function weekUseByKey(c: Pick<CostsInput, 'serp' | 'keepa'>, from: number, to: number): { serpapi: { label: string; used: number }[]; keepa: { label: string; used: number }[] } {
+  const within = (at: string) => {
+    const t = Date.parse(at);
+    return Number.isFinite(t) && t > from && t <= to;
+  };
+  const per = <R extends { at: string; keyId?: string }>(keys: readonly { id: string; label: string }[] | undefined, rows: readonly R[], amountOf: (r: R) => number) => {
+    if (!keys || keys.length < 2) return [];
+    const first = keys[0]!.id;
+    return keys.map((k) => ({ label: k.label, used: rows.filter((r) => within(r.at) && (r.keyId ?? first) === k.id).reduce((n, r) => n + amountOf(r), 0) }));
+  };
+  return { serpapi: per(c.serp.keys, c.serp.rows, () => 1), keepa: per(c.keepa.keys, c.keepa.rows, (r) => (r.tokens > 0 ? r.tokens : 0)) };
+}
+
 // ---------------------------------------------------------------- the summary
 
 export interface WeeklyInput {
@@ -104,6 +121,8 @@ export interface WeeklyInput {
   openQuestions: number;
   costs: CostsView;
   week: WeekUse;
+  /** Key stacking: the week's use per key, for a service with more than one (weekUseByKey); absent or empty: totals only. */
+  weekByKey?: ReturnType<typeof weekUseByKey>;
   /** Runs recorded in Activity; the ones in the period that stopped at a limit are counted as held back. */
   runs: readonly Pick<RunRecord, 'kind' | 'startedAt' | 'status'>[];
   /** Home Depot pages waiting to be read, when counted. */
@@ -201,7 +220,9 @@ export function weeklySummary(i: WeeklyInput): WeeklySummary {
 
   const w = i.week;
   lines.push('Costs this week (from the app\'s own records)');
-  lines.push(`- SerpApi ${amount(w.serpapi.used, 'searches')}, Keepa ${amount(w.keepa.used, 'tokens')}, AI ${usd(w.ai.usd)} (recorded), eBay ${amount(w.ebay.used, 'calls')}, Telegram ${amount(w.telegram.used, 'messages')}.`);
+  // Key stacking: a service with several keys says the split after its total ("45 searches (Key 1 43, Partner 2)").
+  const split = (xs: { label: string; used: number }[] | undefined) => (xs && xs.length > 1 ? ` (${xs.map((x) => `${x.label} ${figure(x.used)}`).join(', ')})` : '');
+  lines.push(`- SerpApi ${amount(w.serpapi.used, 'searches')}${split(i.weekByKey?.serpapi)}, Keepa ${amount(w.keepa.used, 'tokens')}${split(i.weekByKey?.keepa)}, AI ${usd(w.ai.usd)} (recorded), eBay ${amount(w.ebay.used, 'calls')}, Telegram ${amount(w.telegram.used, 'messages')}.`);
   const attention = i.costs.services.filter((s) => s.state !== 'ok');
   if (attention.length === 0 && i.costs.total.state === 'ok') lines.push('- This month is inside your limits.');
   else {

@@ -25,6 +25,7 @@ import { OutcomeRefused } from '../core/src/outcomes/outcomes';
 import { setWatch } from '../core/src/tracking/state';
 import { scrubTelegram, type InlineKeyboard, type OutgoingTelegram, type TelegramKeys } from './alerts';
 import { HttpError } from './http';
+import { keyEntries } from './keyList';
 import type { OutcomeBook } from './outcomes';
 import type { PendingMessage, Store, TelegramActionRecord, TelegramBotRuntime } from './store';
 import { dealsResponse, reviewResponse } from './views';
@@ -117,7 +118,7 @@ export interface TelegramBotDeps {
   store: Store;
   now: () => number;
   fetchFn: typeof fetch;
-  work: Pick<AgentWork, 'answerRemembering' | 'undoAnswer' | 'scanNow' | 'serpLeft' | 'nextScanAt' | 'costs'>;
+  work: Pick<AgentWork, 'answerRemembering' | 'undoAnswer' | 'scanNow' | 'serpLeft' | 'nextScanAt' | 'costs'> & Partial<Pick<AgentWork, 'serpLeftByKey'>>;
   outcomes: Pick<OutcomeBook, 'record' | 'undo'>;
   /** The app's own pause and resume (POST /api/agent/pause, /resume). */
   pause: () => void;
@@ -743,6 +744,19 @@ export class TelegramBot {
     return `Next scan: ${at}.`;
   }
 
+  /**
+   * Key stacking: with more than one SerpApi key, the split after the total: " across 2 keys: Key 1 60, Partner 143". A key
+   * SerpApi refused says so. Empty with one key.
+   */
+  private perKeyWords(): string {
+    const entries = keyEntries(this.d.store.get('keys'), 'serpapi');
+    if (entries.length < 2) return '';
+    const left = this.d.work.serpLeftByKey?.() ?? {};
+    const checks = this.d.store.get('runtime').keyEntryChecks ?? {};
+    const one = (e: { id: string; label: string }) => (checks[e.id]?.ok === false ? `${e.label} not accepted` : left[e.id] === undefined ? `${e.label} not checked yet` : `${e.label} ${left[e.id]}`);
+    return ` across ${entries.length} keys: ${entries.map(one).join(', ')}`;
+  }
+
   /** /status: Buy now with the best one, open questions, searches left, this month's costs, the next scan. */
   statusText(): string {
     const { store } = this.d;
@@ -754,7 +768,7 @@ export class TelegramBot {
     const open = reviewResponse({ review: store.get('review'), suggestions: store.get('suggestions'), deals: store.get('deals'), settings: store.get('settings') }).questions.length;
     const left = this.d.work.serpLeft();
     const reserve = store.get('settings').settings.reserve;
-    const searches = left === null ? 'Searches left: not checked yet.' : `Searches left: ${left} (you keep ${reserve}).`;
+    const searches = left === null ? 'Searches left: not checked yet.' : `Searches left: ${left}${this.perKeyWords()} (you keep ${reserve}).`;
     return [
       buy,
       `Open questions: ${open}.`,
