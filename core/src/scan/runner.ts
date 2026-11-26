@@ -30,7 +30,7 @@ import { BudgetExceededError, RateLimitedError, type SearchResult } from '../ser
 import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
-import { candidatesFor, listingFrom } from './listings';
+import { candidatesFor, keepListingPicture, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit, setItemsUnread } from './split';
 import { partPageTarget, type SettleRule } from './settle';
 import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, reopenStep, type StepId, setJudge, skipStep, startStep } from './pipeline';
@@ -613,6 +613,8 @@ async function runQueue(run: Run): Promise<void> {
       }
       // Catalog check: every Keepa product pulled is read against the title matches and questions holding it (free).
       await noteCatalog(run, job, result.keepaProduct);
+      // Nov 25: the pull's picture, on the stored listing that has none (free: it came with the pull).
+      await keepListingPicture(run.store, step.asin, result.keepaProduct.image);
     }
     if (step.kind === 'lookup') {
       const via = result.billAs === 'keepa' ? 'keepa' : 'serpapi';

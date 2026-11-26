@@ -10,6 +10,7 @@ import { identityFromKeepa, type ListingIdentity } from '../core/src/keepa/verif
 import type { Catalog } from '../core/src/decompose';
 import { amazonListingLink, applyCatalogCheck, catalogChecksWanted } from '../core/src/scan/catalogCheck';
 import { sameModel } from '../core/src/match';
+import { keepListingPicture } from '../core/src/scan/listings';
 import { bundleParts, savePrice } from '../core/src/scan/runner';
 import type { ScanStore } from '../core/src/scan/types';
 import type { SearchResult } from '../core/src/serpapi/client';
@@ -76,6 +77,8 @@ export async function verifyMatchesWithKeepa(d: VerifyDeps): Promise<VerifyDone>
     const page = parseAmazonProduct(r.data, t.asin);
     if (page && page.asin === t.asin) await savePrice({ store: d.store }, t.asin, page, r.at);
     if (!r.keepaProduct) continue;
+    // Nov 25: the pull's picture, on the stored listing that has none.
+    await keepListingPicture(d.store, t.asin, r.keepaProduct.image);
     const outcomes = await applyCatalogCheck(d, identityFromKeepa(r.keepaProduct));
     if (outcomes.some((o) => o.change === 'verified')) done.verified += 1;
     if (outcomes.some((o) => o.change === 'removed')) done.removed += 1;
@@ -179,6 +182,7 @@ export async function repickUnconfirmed(d: RepickDeps, targets: RepickTarget[]):
       if (r.source === 'network') done.tokens += r.keepaTokens ?? 1;
       const page = parseAmazonProduct(r.data, to);
       if (page && page.asin === to) await savePrice({ store: d.store }, to, page, r.at);
+      if (r.keepaProduct) await keepListingPicture(d.store, to, r.keepaProduct.image);
     }
   }
   return done;

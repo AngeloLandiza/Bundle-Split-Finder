@@ -1,5 +1,6 @@
 // Parse Keepa JSON into the fields the matcher and ROI logic need later.
 
+import { AMAZON_PICTURE_HOST, amazonPicture } from '../links/pictures';
 import type { KeepaMarket, KeepaMeta, KeepaProduct, KeepaProductResponse, KeepaSearchResponse } from './types';
 
 const num = (v: unknown, fallback = 0): number => {
@@ -110,6 +111,29 @@ function marketOf(raw: Record<string, unknown>): KeepaMarket | undefined {
   };
 }
 
+/** An Amazon image file name as Keepa gives it ("61Bf2AIwqYL.jpg", "41w-+fzrg3L.jpg"): letters, digits, + - _, then .jpg/.png. */
+const IMAGE_NAME = /^[A-Za-z0-9+_-]{4,64}\.(?:jpg|jpeg|png|gif)$/;
+
+/**
+ * The listing's main picture from Keepa's `images` (Nov 25). Keepa documents `images` as "an array of image objects, each
+ * containing up to two resolutions for the same image": `l` (large file name), `lH`, `lW`, `m` (medium file name), `mH`,
+ * `mW`, and `variant` ("MAIN", "PT01"...), with the full path `https://m.media-amazon.com/images/I/<image name>`
+ * (https://keepa.com/api-docs/product-object.html, read Nov 25, 2026). Recorded in fixtures/keepa/product-*.json and
+ * search-RYOBI-PCL235B.json: every product carries it, the first entry is MAIN in all 23, some entries have only `l` or
+ * only `m`, and `m` is about 500 px on its long side. The MAIN entry is read (else the first), its medium file (sharp at
+ * the 72 px the inspector draws, at 2x), else its large one. A name that is not a plain image file name gives none.
+ */
+export function keepaPicture(images: unknown): string | null {
+  if (!Array.isArray(images)) return null;
+  const entries = images.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x));
+  const main = entries.find((e) => e.variant === 'MAIN') ?? entries[0];
+  if (!main) return null;
+  for (const name of [main.m, main.l]) {
+    if (typeof name === 'string' && IMAGE_NAME.test(name)) return amazonPicture(`https://${AMAZON_PICTURE_HOST}/images/I/${name}`);
+  }
+  return null;
+}
+
 /** The non-empty strings of an array, or none. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : []);
 
@@ -119,8 +143,11 @@ function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
   const rank = statsCurrent(raw.stats, 3);
   const hasStats = !!raw.stats && typeof raw.stats === 'object';
   const market = marketOf(raw);
+  const image = keepaPicture(raw.images);
   return {
     ...tracking(raw),
+    // Nov 25: the listing's main picture (keepaPicture); absent when Keepa gives none.
+    ...(image ? { image } : {}),
     ...(market ? { market } : {}),
     // Present (a number or null) only when the pull carried stats, so a trend stored without them reads as "not asked".
     ...(hasStats ? { newAvg30: averageCents(raw.stats, 'avg30'), newAvg90: averageCents(raw.stats, 'avg90') } : {}),

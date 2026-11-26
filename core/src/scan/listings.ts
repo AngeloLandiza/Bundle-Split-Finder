@@ -5,8 +5,9 @@
 // the test for "same model" (titleHasModel, which adds RYOBI's tool-only B): nothing here makes a
 // match on weaker evidence.
 
+import { amazonPicture } from '../links/pictures';
 import { type Candidate, MODEL_PATTERNS, modelForms, modelTokenTest } from '../match';
-import type { ListingRecord } from './types';
+import type { ListingRecord, ScanStore } from './types';
 
 const upper = (s: string): string => s.trim().toUpperCase();
 
@@ -28,8 +29,8 @@ export function listingFrom(c: Candidate, brands: string[], now: number, old?: L
     brand,
     title: c.title,
     models: modelsInTitle(brand, c.title),
-    // A row with no picture keeps the one saved before.
-    image: c.image ?? old?.image ?? null,
+    // A row with no picture keeps the one saved before; only Amazon's image host is kept (links/pictures.ts).
+    image: amazonPicture(c.image) ?? old?.image ?? null,
     // A row with no price keeps the last price seen, and when it was seen.
     price: price ?? old?.price ?? null,
     reviews: c.reviews ?? null,
@@ -57,4 +58,18 @@ export function candidatesFor(brand: string, model: string, listings: ListingRec
       return tests.some((has) => has(title));
     })
     .map((l) => ({ asin: l.asin, title: l.title, brand: l.brand, price: l.price, reviews: l.reviews, image: l.image }));
+}
+
+/**
+ * Nov 25: a Keepa product pull's picture (keepa/parse.ts keepaPicture) kept on the stored listing of `asin` when that listing
+ * has none. A listing not stored is not created (what is stored as a listing is what the matcher reads), and a stored
+ * picture is never replaced. True when one was filled.
+ */
+export async function keepListingPicture(store: Pick<ScanStore, 'getListing' | 'putListing'>, asin: string, image: string | null | undefined): Promise<boolean> {
+  const url = amazonPicture(image);
+  if (url === null) return false;
+  const l = await store.getListing(asin);
+  if (!l || l.image) return false;
+  await store.putListing({ ...l, image: url });
+  return true;
 }

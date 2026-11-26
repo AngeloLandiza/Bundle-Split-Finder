@@ -41,6 +41,11 @@ export interface KeepaProduct {
    */
   upcList?: string[];
   eanList?: string[];
+  /**
+   * Nov 25: the listing's main picture, `https://m.media-amazon.com/images/I/<name>` from Keepa's `images` (parse.ts
+   * keepaPicture). Absent when Keepa gives none. Kept on the stored listing (ListingRecord.image), never replacing one with none.
+   */
+  image?: string;
   /** Amazon price in the marketplace's smallest currency unit (cents). */
   amazonPrice?: number | null;
   /** Where amazonPrice came from: stats.current[0] (Amazon selling) or stats.current[1] (the lowest New offer). */

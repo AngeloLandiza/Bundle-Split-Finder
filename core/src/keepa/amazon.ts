@@ -37,6 +37,8 @@ export function serpApiSearchBodyFromKeepa(products: KeepaProduct[]): Record<str
           extracted_price: price,
           price,
           reviews: null,
+          // Nov 25: the listing's picture, read by parseAmazonSearch as a SerpApi row's thumbnail is (listingFrom keeps it).
+          ...(p.image ? { thumbnail: p.image } : {}),
         };
       }),
   };
