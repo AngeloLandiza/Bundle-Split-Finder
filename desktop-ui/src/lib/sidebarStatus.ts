@@ -4,6 +4,7 @@
 
 import type { AppState } from '../api/types';
 import { count, when } from './format';
+import { perKeySplit } from './keyEntries';
 import { feeLookupWords, keepaWords, rejectedKeysWords } from './keyStatus';
 import { agentWords } from '../components/StatusLine';
 import type { Route } from './route';
@@ -54,7 +55,10 @@ export function sidebarStatus(state: AppState, now: number = Date.now()): Sideba
   // ("119 searches · 24 fee lookups") and `usageFull` (the row's tooltip) says it all: "119 searches left · 24 fee lookups
   // waiting · Keepa 57 tokens · 1 a minute".
   const fees = feeLookupWords(agent.drip);
-  const usageFull = [searches, fees, keepa ?? null].filter((x): x is string => !!x).join(' · ');
+  // Key stacking: the totals stay on the line; the tooltip adds each key's share ("SerpApi Key 1 60 · Partner 143").
+  const serpSplit = perKeySplit(state, 'serpapi');
+  const keepaSplit = perKeySplit(state, 'keepa');
+  const usageFull = [searches, fees, keepa ?? null, serpSplit ? `SerpApi ${serpSplit}` : null, keepaSplit ? `Keepa ${keepaSplit}` : null].filter((x): x is string => !!x).join(' · ');
   const usage = fees ? `${searches.replace(/ left$/, '')} · ${fees.replace(/ waiting$/, '')}` : keepaShort ? `${searches} · ${keepaShort}` : searches;
 
   let problem: SidebarStatus['problem'] = null;

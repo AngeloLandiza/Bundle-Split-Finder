@@ -355,6 +355,8 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
   const range = limitRange(service, view);
   const note = limitNote(s, cfg.monthlyLimit, settings.blockWhenOver);
   const id = useId();
+  // Key stacking: two or more keys of this service; the price stays one number, what he pays for the service in total.
+  const many = (s.keys?.length ?? 0) > 1;
   return (
     <li className="crow" id={`cost-row-${service}`} tabIndex={-1} aria-labelledby={`${id}-name`}>
       <div className="crow-head">
@@ -368,6 +370,17 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
         <span className={`crow-cost${cost.missing ? ' crow-cost-missing' : ''}`}>{cost.text}</span>
       </div>
       <p className="crow-sentence">{s.sentence}</p>
+      {/* Key stacking: the row is the totals; with more than one key, a line per key under it. */}
+      {many ? (
+        <ul className="crow-keys" aria-label={`${s.label} keys`}>
+          {s.keys!.map((k) => (
+            <li key={k.id} className={`crow-key crow-key-${k.state}`}>
+              {k.state === 'accepted' ? null : <Glyph name="warning" size={12} />}
+              {k.sentence}
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {meter ? <CostMeter {...meter} state={s.state} label={`${s.label} used this month against its ${cfg.monthlyLimit !== null ? 'limit' : 'plan limit'}`} warnPercent={cfg.warnAtPercent} unit={s.unit} /> : null}
       <div className="crow-use">
         {strip.bars.length > 0 ? (
@@ -414,10 +427,10 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
         </div>
         {service !== 'ai' ? (
           <>
-            <span className="crow-ctl-label">Monthly price</span>
+            <span className="crow-ctl-label">{many ? 'Monthly price, all keys' : 'Monthly price'}</span>
             <div className="crow-ctl-one">
               <NumberField
-                label={`${s.label} monthly price in dollars`}
+                label={many ? `${s.label} monthly price in dollars, for all keys together` : `${s.label} monthly price in dollars`}
                 value={cfg.monthlyPriceUsd ?? Number.NaN}
                 rule={{ min: 0, what: `${s.label} price`, unit: '$' }}
                 prefix="$"
@@ -427,7 +440,7 @@ function ServiceRow({ view, s, settings, edit }: { view: CostsView; s: ServiceCo
                 onCommit={(v) => edit({ kind: 'price', service }, v)}
                 onClear={() => edit({ kind: 'price', service }, null)}
               />
-              <span className="crow-ctl-unit">a month</span>
+              <span className="crow-ctl-unit">{many ? 'a month, what you pay for all keys together' : 'a month'}</span>
             </div>
           </>
         ) : null}

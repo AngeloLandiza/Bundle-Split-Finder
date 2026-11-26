@@ -43,10 +43,20 @@ export const SCREEN_KEYS = {
 } as const satisfies Record<string, readonly KeyName[]>;
 
 /** The one sentence for the saved keys this screen needs that their service rejected, or null. */
-export function rejectedKeyNotice(state: Pick<AppState, 'keys' | 'keyProblems'> | null, names: readonly KeyName[]): { title: string; text: string } | null {
+export function rejectedKeyNotice(state: (Pick<AppState, 'keys' | 'keyProblems'> & Partial<Pick<AppState, 'keyEntryProblems'>>) | null, names: readonly KeyName[]): { title: string; text: string } | null {
   const bad = names.filter((n) => keyState(state, n).state === 'rejected');
   const first = bad[0];
-  if (!first) return null;
+  if (!first) {
+    // Key stacking: one SerpApi or Keepa key refused while another of the same service works. The work goes on with the
+    // others, so the banner names the key by its label and says so.
+    const partial = (state?.keyEntryProblems ?? []).filter((p) => (names as readonly string[]).includes(p.service));
+    const one = partial[0];
+    if (!one) return null;
+    const lead = `${KEY_LABEL[one.service]} ${one.label} is not accepted.`;
+    const why = one.problem.startsWith(lead) ? one.problem.slice(lead.length).trim() : one.problem;
+    if (partial.length > 1) return { title: `${partial.length} keys are not accepted.`, text: `${partial.map((p) => `${KEY_LABEL[p.service]} ${p.label}`).join(' and ')}. Your other keys carry on.` };
+    return { title: lead, text: `${why ? `${why} ` : ''}Your other ${KEY_LABEL[one.service]} keys carry on.` };
+  }
   if (bad.length > 1) return { title: `${bad.length} keys are not accepted.`, text: `${bad.map((n) => KEY_LABEL[n]).join(' and ')} did not accept the key saved here.` };
   return { title: `The ${KEY_LABEL[first]} key is not accepted.`, text: keyState(state, first).problem ?? '' };
 }

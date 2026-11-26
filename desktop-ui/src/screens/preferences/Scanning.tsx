@@ -7,6 +7,7 @@ import { Meter } from '../../components/States';
 import { inboundAnswered, salesTaxAnswered } from '@core/estimateNote';
 import { count } from '../../lib/format';
 import { forecast } from '../../lib/forecast';
+import { acrossWords, perKeySplit } from '../../lib/keyEntries';
 import { FBA_AT_ZERO, RULES, isClock } from '../../lib/prefs';
 import { useState } from 'react';
 import { words } from '../../lib/platform';
@@ -143,6 +144,8 @@ export function ScanningPane() {
           ) : null}
           <p className="muted">{f.detail}</p>
           {budget?.serpLeft !== null && budget?.serpLeft !== undefined && budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
+          {/* Key stacking: the forecast and the meter are the totals; each key's share under them. */}
+          {perKeySplit(state, 'serpapi') ? <p className="muted">Searches left {acrossWords(state, 'serpapi')}: {perKeySplit(state, 'serpapi')}</p> : null}
         </div>
       </Row>
       <Rule />

@@ -28,11 +28,17 @@ export function rejectedKeys(state: Pick<AppState, 'keys' | 'keyProblems'> | nul
   return (Object.keys(KEY_LABEL) as KeyName[]).filter((n) => keyState(state, n).state === 'rejected');
 }
 
-/** "eBay key not accepted" for one, "2 keys not accepted" for more; the sidebar's one line. Null when none. */
-export function rejectedKeysWords(state: Pick<AppState, 'keys' | 'keyProblems'> | null): string | null {
+/**
+ * "eBay key not accepted" for one, "2 keys not accepted" for more; the sidebar's one line. Null when none. Key stacking: a
+ * SerpApi or Keepa key refused while another of its service works is named by its label ("SerpApi Key 2 not accepted").
+ */
+export function rejectedKeysWords(state: (Pick<AppState, 'keys' | 'keyProblems'> & Partial<Pick<AppState, 'keyEntryProblems'>>) | null): string | null {
   const names = rejectedKeys(state);
-  if (names.length === 0) return null;
-  return names.length === 1 ? `${KEY_LABEL[names[0]!]} key not accepted` : `${names.length} keys not accepted`;
+  const partial = (state?.keyEntryProblems ?? []).filter((p) => !names.includes(p.service));
+  const total = names.length + partial.length;
+  if (total === 0) return null;
+  if (total > 1) return `${total} keys not accepted`;
+  return names.length === 1 ? `${KEY_LABEL[names[0]!]} key not accepted` : `${KEY_LABEL[partial[0]!.service]} ${partial[0]!.label} not accepted`;
 }
 
 /** "Keepa 57 tokens · 1 a minute", only when a Keepa key is saved and the agent has said its tokens. */

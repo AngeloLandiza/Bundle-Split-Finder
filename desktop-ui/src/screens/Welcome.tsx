@@ -11,6 +11,7 @@ import { CONNECT_BUTTON_LABEL } from '@core/api/labels';
 import { plural } from '../lib/format';
 import { scanSpend } from '../lib/scanSpend';
 import { agentDownHint } from '../lib/agentDown';
+import { acrossWords, perKeySplit } from '../lib/keyEntries';
 import { words } from '../lib/platform';
 import { setupProgress, type SetupStepId } from '../lib/setup';
 import { InstallHelper, KeyField } from '../components/SetupParts';
@@ -151,7 +152,8 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
 
         {step.id === 'key' ? (
           <>
-            {done('key') ? <Done text={`Your SerpApi key is saved in the agent on this ${words.computer}.`} /> : <p>The free plan has 250 searches a month. The key stays in the agent on this {words.computer} and is sent only to SerpApi.</p>}
+            {/* Key stacking: with more than one key, how many and each one's searches left (the totals are what a scan spends). */}
+            {done('key') ? <Done text={acrossWords(state, 'serpapi') ? `Your SerpApi keys are saved in the agent on this ${words.computer}, ${acrossWords(state, 'serpapi')}${perKeySplit(state, 'serpapi') ? ` (searches left: ${perKeySplit(state, 'serpapi')})` : ''}.` : `Your SerpApi key is saved in the agent on this ${words.computer}.`} /> : <p>The free plan has 250 searches a month. The key stays in the agent on this {words.computer} and is sent only to SerpApi.</p>}
             <KeyField
               name="serpapi"
               label="SerpApi key"

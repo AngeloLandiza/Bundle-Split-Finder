@@ -10,6 +10,7 @@ import { ScorecardRows } from '../components/Scorecard';
 import { EmptyState, LoadError, LoadingState, Meter } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
+import { acrossWords, perKeySplit } from '../lib/keyEntries';
 import { feeLookupWords, keepaWords, rejectedKeys, rejectedKeysWords } from '../lib/keyStatus';
 import { count, money, percentOff, plural, usdSpend, when } from '../lib/format';
 import { isBeforeFulfillment } from '../lib/order';
@@ -311,6 +312,8 @@ function AgentBlock({ state }: { state: AppState }) {
                 )}
               </span>
               {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
+              {/* Key stacking: the totals above, each key's share under them. */}
+              {perKeySplit(state, 'serpapi') ? <span className="fact-sub">{acrossWords(state, 'serpapi')}: {perKeySplit(state, 'serpapi')}</span> : null}
               <span className="fact-sub">
                 <LinkButton onClick={() => navigate({ screen: 'costs', id: null })}>Limits and forecast in Costs</LinkButton>
               </span>
@@ -320,6 +323,7 @@ function AgentBlock({ state }: { state: AppState }) {
         {keepa ? (
           <Fact label="Keepa">
             <span>{keepa.replace(/^Keepa /, '')}</span>
+            {perKeySplit(state, 'keepa') ? <span className="fact-sub">{acrossWords(state, 'keepa')}: {perKeySplit(state, 'keepa')}</span> : null}
             {agent.drip ? (
               <span className="fact-sub">
                 {agent.drip.waiting > 0 ? (
