@@ -6,6 +6,9 @@ import { dayOf } from '../core/src/tracking/state';
 import { buyingView } from '../core/src/tracking/buying';
 import { keptDealOf, pricesChecked, staleSince } from '../core/src/tracking/keepCurrent';
 import { keepCurrentView } from './keepCurrent';
+import { partialRefusals } from './keyChecks';
+import { keyEntries, STACKED, type StackedKeyName } from './keyList';
+import type { KeyEntryView } from '../core/src/api/contract';
 import { NOT_CONNECTED_LINE, sellerPartLine, sellerParts } from '../core/src/amazon/seller';
 import type { HomeDepotPaceState } from '../core/src/api/contract';
 import type {
@@ -781,8 +784,37 @@ export interface LiveView {
    * the last check's own figure (a state built without the agent's ledger).
    */
   serpLeft?: number | null;
+  /** Key stacking: searches left now on each SerpApi key with an account check (work.ts serpLeftByKey). */
+  serpLeftByKey?: Record<string, number> | null;
   /** Step 18: the costs' short form (agent/costs.ts CostBook.short). */
   costs?: AgentState['budget']['costs'];
+}
+
+/**
+ * Nov 25, key stacking: each saved SerpApi and Keepa key as the app may see it: id, label, when it was added, its last
+ * verdict, and its own balance (SerpApi: searches left now and its plan's month; Keepa: tokens and refill). Never a value.
+ */
+export function keyEntriesView(data: Pick<StoreData, 'keys' | 'runtime'>, serpLeftByKey?: Record<string, number> | null): Partial<Record<StackedKeyName, KeyEntryView[]>> | null {
+  const out: Partial<Record<StackedKeyName, KeyEntryView[]>> = {};
+  for (const name of STACKED) {
+    const entries = keyEntries(data.keys, name);
+    if (entries.length === 0) continue;
+    out[name] = entries.map((e): KeyEntryView => {
+      const check = data.runtime.keyEntryChecks?.[e.id];
+      const view: KeyEntryView = { id: e.id, label: e.label, addedAt: e.addedAt, ...(check ? { check: { ...check } } : {}) };
+      if (name === 'serpapi') {
+        const acct = data.runtime.serpKeys?.[e.id];
+        view.searchesLeft = serpLeftByKey?.[e.id] ?? acct?.left ?? null;
+        view.searchesPerMonth = acct?.perMonth ?? null;
+      } else {
+        const k = data.runtime.keepaKeys?.[e.id];
+        view.tokensLeft = k?.tokensLeft ?? null;
+        view.refillPerMin = k?.refillRate ?? null;
+      }
+      return view;
+    });
+  }
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 /** Nov 23: the last scan, with whether Read again can start now (some page unread, Chrome connected, nothing running). */
@@ -854,6 +886,8 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
     keys: keysPresence(data.keys),
     ...(data.runtime.keyProblems && Object.keys(data.runtime.keyProblems).length > 0 ? { keyProblems: { ...data.runtime.keyProblems } } : {}),
     ...(keyChecks ? { keyChecks } : {}),
+    ...(keyEntriesView(data, live.serpLeftByKey) ? { keyEntries: keyEntriesView(data, live.serpLeftByKey)! } : {}),
+    ...(partialRefusals(data.keys, data.runtime.keyEntryChecks).length > 0 ? { keyEntryProblems: partialRefusals(data.keys, data.runtime.keyEntryChecks) } : {}),
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
     settingsAt: data.settings.updatedAt,
     ...(data.runtime.selfRun?.loginNotice ? { loginNotice: { sentence: LOGIN_NOTICE } } : {}),

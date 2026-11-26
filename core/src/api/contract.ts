@@ -131,6 +131,49 @@ export interface KeyCheckRecord {
   detail?: string;
 }
 
+/**
+ * Nov 25, key stacking: the services that may hold more than one key, each the key of its own account (SerpApi's searches
+ * and Keepa's tokens belong to an account). The AI keys stay single (the AI is capped in dollars across the account), and
+ * eBay, Telegram and the Amazon seller account are one identity each.
+ */
+export type StackedKeyName = 'serpapi' | 'keepa';
+export const STACKED_KEY_NAMES: readonly StackedKeyName[] = ['serpapi', 'keepa'];
+
+/** One saved key of a stacked service as the app sees it: never its value. */
+export interface KeyEntryView {
+  id: string;
+  /** "Key 1" by default; the owner may rename it. */
+  label: string;
+  /** When it was saved (ISO); null for a key saved before key stacking, whose date was not kept. */
+  addedAt: string | null;
+  /** Its own service's last verdict: accepted with what was found, or refused with the service's sentence. Absent before one. */
+  check?: { ok: boolean; at: string; detail?: string; problem?: string };
+  /** SerpApi: searches left now (its last account check less its own ledger rows since) and its plan's month; null before a check. */
+  searchesLeft?: number | null;
+  searchesPerMonth?: number | null;
+  /** Keepa: its tokens and refill a minute, from its last answer; null before one. */
+  tokensLeft?: number | null;
+  refillPerMin?: number | null;
+}
+
+/** POST /api/keys/:name/entries (serpapi, keepa): another key, from another account. Answered by AddKeyResponse. */
+export interface AddKeyRequest {
+  key: string;
+  label?: string;
+}
+
+/** The key is saved either way (unless refused at the door: the same key twice, or ten saved); `check` is its service's answer. */
+export interface AddKeyResponse {
+  saved: true;
+  id: string;
+  check: KeyCheck;
+}
+
+/** PATCH /api/keys/:name/entries/:id: a new label. DELETE removes that key (answers KeysPresence); POST …/check checks it. */
+export interface RenameKeyRequest {
+  label: string;
+}
+
 // ---------------------------------------------------------------- state
 
 /** 'paused' while the owner paused the agent (POST /api/agent/pause); the shell shows it in the tray. */
@@ -346,6 +389,14 @@ export interface AgentState {
   keyProblems?: Partial<Record<KeyName, string>>;
   /** Nov 23: when each saved key last got a verdict from its own service ("Checked 2 min ago · works"). Never a key. */
   keyChecks?: Partial<Record<KeyName, KeyCheckRecord>>;
+  /** Nov 25, key stacking: each saved SerpApi and Keepa key, in order (never a value). Absent for a service with none. */
+  keyEntries?: Partial<Record<StackedKeyName, KeyEntryView[]>>;
+  /**
+   * Nov 25, key stacking: keys refused by their service while another key of the same service is still accepted (the work
+   * goes on with those): "SerpApi Key 2 is not accepted". When every key of a service is refused, `keyProblems` says so
+   * as before. Absent when none.
+   */
+  keyEntryProblems?: { service: StackedKeyName; id: string; label: string; problem: string }[];
   /** W4: true until the first scan has finished (the one-time first-run flow). */
   firstRun?: boolean;
   /**

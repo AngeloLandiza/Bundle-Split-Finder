@@ -165,7 +165,7 @@ describe('agent store', () => {
     const s = openStore(dir);
     expect('appPrimaryUi' in s.get('settings')).toBe(false);
     expect(s.get('settings').settings.searchesPerScan).toBe(7);
-    expect(s.get('keys')).toEqual({ serpapi: 'legacy-serp', keepa: 'legacy-keepa', ebay: { appId: 'a', certId: 'c' } });
+    expect(s.get('keys')).toMatchObject({ serpapi: 'legacy-serp', keepa: 'legacy-keepa', ebay: { appId: 'a', certId: 'c' } });
     expect(JSON.stringify(s.get('settings'))).not.toContain('legacy-serp');
     expect(s.get('deals').bundles).toHaveLength(1);
     expect(s.get('deals').auditBundles[0]?.model).toBe('X');
@@ -190,7 +190,7 @@ describe('agent store', () => {
     writeFileSync(join(dir, 'app-settings.json'), JSON.stringify({ version: 1, serpApiKey: 'legacy-serp', anthropicKey: 'legacy-claude', settings: { searchesPerScan: 7 } }));
     writeFileSync(join(dir, 'app-secrets.json'), JSON.stringify({ keepaApiKey: 'legacy-keepa' }));
     const s = openStore(dir);
-    expect(s.get('keys')).toEqual({ serpapi: 'legacy-serp', anthropic: 'legacy-claude', keepa: 'legacy-keepa' });
+    expect(s.get('keys')).toMatchObject({ serpapi: 'legacy-serp', anthropic: 'legacy-claude', keepa: 'legacy-keepa' });
     expect(existsSync(join(dir, 'app-secrets.json'))).toBe(false);
     const left = readFileSync(join(dir, 'app-settings.json'), 'utf8');
     expect(left).not.toContain('legacy');
@@ -206,7 +206,9 @@ describe('agent store', () => {
     // An old file with a key the owner has since deleted, as a restore from backup might leave it.
     writeFileSync(join(dir, 'app-secrets.json'), JSON.stringify({ keepaApiKey: 'deleted-long-ago' }));
     const s = openStore(dir);
-    expect(s.get('keys')).toEqual({ serpapi: 'kept' });
+    expect(s.get('keys')).toMatchObject({ serpapi: 'kept' });
+    expect(s.get('keys').keepa).toBeUndefined();
+    expect(s.get('keys').keepaKeys).toBeUndefined();
     expect(existsSync(join(dir, 'store', 'meta.json'))).toBe(true);
     expect(existsSync(join(dir, 'app-secrets.json'))).toBe(false);
   });

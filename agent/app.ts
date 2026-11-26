@@ -21,6 +21,8 @@ import {
   type KeyName,
   type CheckKeyResponse,
   type PutKeyResponse,
+  type AddKeyResponse,
+  type StackedKeyName,
   type NotifyEvent,
   type PaidResponse,
   type WatchResponse,
@@ -55,7 +57,8 @@ import { measuredByDefault, modelIdentity } from './autopilot';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
 import { closeOrphanRuns, freshCrash, readCrashes, restartError, restartNotifies, restartSentence, type RestartInfo } from './crash';
-import { checkForOwner, checkStoredKey, forgetKeyCheck, recheckStaleKeys, type KeyCheckHost } from './keyChecks';
+import { checkForOwner, checkStoredEntry, checkStoredKey, forgetEntryCheck, forgetKeyCheck, recheckStaleKeys, syncServiceVerdict, type KeyCheckHost } from './keyChecks';
+import { addKeyEntry, keyEntries, MAX_KEYS, removeKeyEntry, renameKeyEntry, replaceFirstKey, withEntries } from './keyList';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
@@ -622,7 +625,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return {
       ...agentState(data, {
         ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(), nextScanNote: work.nextScanNote(),
-        ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), costs: work.costs.short(),
+        ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), serpLeftByKey: work.serpLeftByKey(), costs: work.costs.short(),
       }),
       ...(update ? { update } : {}),
       updater: selfUpdate.state(),
@@ -684,6 +687,9 @@ export function createAgent(opts: AgentOptions): Agent {
     // Nov 25: the seller account's check reads one listing the deals hold, and is counted in the seller API's ledger.
     knownAsin: () => store.get('deals').bundles.flatMap((b) => b.parts.flatMap((p) => (p.asin ? [p.asin] : [])))[0],
     spHooks: work.seller.hooks(),
+    // Key stacking: a key's own check (free) is its balance at once, beside it in Settings.
+    noteSerpAccount: (id, a) => work.noteSerpKeyAccount(id, a),
+    noteKeepaStatus: (id, s) => work.noteKeepaKeyStatus(id, s),
     ...(opts.work?.spUrls ? { spUrls: opts.work.spUrls } : {}),
   };
   // Nov 23: stored keys with no verdict in the last 24 hours are checked quietly (free requests only), at start and every hour after.
@@ -827,6 +833,19 @@ export function createAgent(opts: AgentOptions): Agent {
   r.put('/api/keys/:name', 'ui', async (ctx): Promise<PutKeyResponse> => {
     const name = keyName(ctx);
     const value = parseKey(name, obj(await ctx.body()));
+    if (name === 'serpapi' || name === 'keepa') {
+      // Key stacking: with no key this adds Key 1; with keys it replaces the first key's value (the others stay).
+      const before = keyEntries(store.get('keys'), name);
+      let id = '';
+      store.update('keys', (k) => {
+        const r = replaceFirstKey(k, name, value[name] as string, iso());
+        id = r.id;
+        return r.keys;
+      });
+      if (before[0]) forgetEntryCheck(store, name, before[0].id);
+      const check = (await checkStoredEntry(keyHost, name, id))!;
+      return { saved: true, check: checkForOwner(check, 'save') };
+    }
     store.update('keys', (k) => ({ ...k, ...value }));
     // The old value's problem and verdict were about another key.
     clearKeyProblem(name);
@@ -842,14 +861,78 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   r.delete('/api/keys/:name', 'ui', (ctx) => {
     const name = keyName(ctx);
+    // SerpApi and Keepa: every saved key of the service, as Remove did with one.
+    const gone = name === 'serpapi' || name === 'keepa' ? keyEntries(store.get('keys'), name).map((e) => e.id) : [];
     const keys = store.update('keys', (k) => {
-      const next = { ...k };
+      const next = name === 'serpapi' || name === 'keepa' ? withEntries(k, name, []) : { ...k };
       delete next[name];
       return next;
     });
     clearKeyProblem(name);
     forgetKeyCheck(store, name);
+    if (name === 'serpapi' || name === 'keepa') for (const id of gone) forgetEntryCheck(store, name, id);
     return settingsResponse({ settings: store.get('settings'), keys }).keys;
+  });
+
+  // Nov 25, key stacking: SerpApi and Keepa hold a list of keys, each its own account. A key goes in and never comes out;
+  // these answer its id, label and check only.
+  const stackedName = (ctx: Ctx): StackedKeyName => {
+    const n = ctx.params.name;
+    if (n !== 'serpapi' && n !== 'keepa') throw new HttpError('not_found', 'Only SerpApi and Keepa hold more than one key.');
+    return n;
+  };
+  const editRefused = (reason: 'full' | 'duplicate' | 'not_found' | 'label'): never => {
+    if (reason === 'not_found') throw new HttpError('not_found', 'No such key is saved.');
+    if (reason === 'full') throw new HttpError('bad_request', `At most ${MAX_KEYS} keys can be saved for one service.`);
+    if (reason === 'duplicate') throw new HttpError('bad_request', 'This key is saved already.');
+    throw new HttpError('bad_request', 'A name is needed.');
+  };
+  r.post('/api/keys/:name/entries', 'ui', async (ctx): Promise<AddKeyResponse> => {
+    const name = stackedName(ctx);
+    const b = obj(await ctx.body());
+    const value = text(b.key ?? b.value, 'key');
+    const label = b.label === undefined || b.label === null || b.label === '' ? undefined : text(b.label, 'label', 200);
+    let id = '';
+    store.update('keys', (k) => {
+      const r = addKeyEntry(k, name, value, iso(), label);
+      if (!r.ok) editRefused(r.reason);
+      id = (r as { id: string }).id;
+      return (r as { keys: StoredKeys }).keys;
+    });
+    const check = (await checkStoredEntry(keyHost, name, id))!;
+    mark('state');
+    return { saved: true, id, check: checkForOwner(check, 'save') };
+  });
+  r.patch('/api/keys/:name/entries/:id', 'ui', async (ctx) => {
+    const name = stackedName(ctx);
+    const label = text(obj(await ctx.body()).label, 'label', 200);
+    store.update('keys', (k) => {
+      const r = renameKeyEntry(k, name, ctx.params.id ?? '', label);
+      if (!r.ok) editRefused(r.reason);
+      return (r as { keys: StoredKeys }).keys;
+    });
+    syncServiceVerdict(store, name);
+    mark('state');
+    return { ok: true };
+  });
+  r.delete('/api/keys/:name/entries/:id', 'ui', (ctx) => {
+    const name = stackedName(ctx);
+    const id = ctx.params.id ?? '';
+    const keys = store.update('keys', (k) => {
+      const r = removeKeyEntry(k, name, id);
+      if (!r.ok) editRefused(r.reason);
+      return (r as { keys: StoredKeys }).keys;
+    });
+    forgetEntryCheck(store, name, id);
+    mark('state');
+    return settingsResponse({ settings: store.get('settings'), keys }).keys;
+  });
+  r.post('/api/keys/:name/entries/:id/check', 'ui', async (ctx): Promise<CheckKeyResponse> => {
+    const name = stackedName(ctx);
+    const check = await checkStoredEntry(keyHost, name, ctx.params.id ?? '');
+    if (!check) throw new HttpError('not_found', 'No such key is saved.');
+    mark('state');
+    return { check: checkForOwner(check, 'recheck') };
   });
   // Free account checks for a key typed in the app (the key is sent only to its own service).
   r.post('/api/settings/check-serp', 'ui', async (ctx) => {

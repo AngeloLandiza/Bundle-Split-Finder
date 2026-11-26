@@ -49,14 +49,35 @@ import { emptyTracking, seedAnnounced, type TrackingState } from '../core/src/tr
 import type { SellerCredentials, SpOperation, SpSample } from '../core/src/amazon/spapi/types';
 import type { SellerPartCheck } from '../core/src/amazon/seller';
 import { syncFd } from './fsync';
+import { normalizeKeyLists } from './keyList';
 import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
 // ---------------------------------------------------------------- collection types
 
+/**
+ * Nov 25, key stacking: one of several saved keys of a service (SerpApi, Keepa), each its own account. `id` is stable and
+ * goes to the ledgers; `addedAt` is null for a key saved before key stacking (its date was not kept). agent/keyList.ts.
+ */
+export interface StoredKeyEntry {
+  id: string;
+  label: string;
+  addedAt: string | null;
+  key: string;
+}
+
 /** Keys at rest (Decision 2: file 0600 now, the OS keychain later). Never sent out of the agent. */
 export interface StoredKeys {
+  /**
+   * The first SerpApi key, kept equal to `serpapiKeys[0].key` on every write so an older build (one key) still finds it.
+   * Read the keys through agent/keyList.ts keyEntries, never this field alone.
+   */
   serpapi?: string;
+  /** The first Keepa key; as `serpapi`. */
   keepa?: string;
+  /** Nov 25, key stacking: every SerpApi key, in order. */
+  serpapiKeys?: StoredKeyEntry[];
+  /** Nov 25, key stacking: every Keepa key, in order. */
+  keepaKeys?: StoredKeyEntry[];
   anthropic?: string;
   openai?: string;
   ebay?: { appId: string; certId: string };
@@ -295,6 +316,19 @@ export interface AgentRuntime {
   serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string; /** Step 18: the plan's name (a free plan costs $0). */ planName?: string } | null;
   /** Keepa's balance as its last answer said; step 15: its refill (tokens a minute) too, from any answer or the free status. */
   keepa: { tokensLeft: number; refillIn: number; refillRate?: number; at: string } | null;
+  /**
+   * Nov 25, key stacking: each SerpApi key's last account check (free), by key id. `serp` above is their sum (one key: the
+   * same figures). A key removed since is dropped from the views; its record may stay here.
+   */
+  serpKeys?: Record<string, { left: number; perMonth: number; rateLimitPerHour: number; at: string; planName?: string }>;
+  /** Nov 25, key stacking: each Keepa key's last balance (its token status or its last answer), by key id; `keepa` is their sum. */
+  keepaKeys?: Record<string, { tokensLeft: number; refillIn: number; refillRate?: number; at: string }>;
+  /**
+   * Nov 25, key stacking: each SerpApi and Keepa key's last verdict from its own service, by key id: accepted (with what
+   * the check found) or refused (with the service's sentence, never a key). `keyChecks` / `keyProblems` keep the service's
+   * own: a service's problem is set only when every one of its keys is refused.
+   */
+  keyEntryChecks?: Record<string, { ok: boolean; at: string; detail?: string; problem?: string }>;
   /**
    * Nov 25: what Keepa's product request by barcode has cost, as its responses said (core/src/keepa/barcode.ts
    * learnCodeCost); absent until the first. The next code request is held to it (KeepaClient.codeEstimate).
@@ -1103,6 +1137,7 @@ export class Store {
       // old files again would bring back keys the owner deleted since.
       if (!existsSync(join(dir, 'keys.json'))) {
         const migratedFrom = migrateLegacyFiles(dataDir, data);
+        data.keys = normalizeKeyLists(data.keys).keys;
         // A new store (or one read from the old files) takes the one-time changes now, so they never run on it again.
         applyMigrations(data);
         const store = new Store(dir, data, lockPath);
@@ -1129,12 +1164,16 @@ export class Store {
         unreadable.push(name);
       }
     }
+    // Nov 25, key stacking: the key lists as agent/keyList.ts reads them (a store written by an older build, or one from
+    // before the lists), so every reader sees one shape. Every start: an older build may have written keys.json since.
+    const lists = unreadable.includes('keys') ? { keys: data.keys, changed: false } : normalizeKeyLists(data.keys);
+    data.keys = lists.keys;
     const store = new Store(dir, data, lockPath);
     if (lockToken) store.holdLock(lockToken);
     if (lockPath) setAclReporter((sentence) => store.noteProblem(sentence));
     if (unreadable.length) store.startSafe(unreadable);
     // A read-only open (lock: false) never writes.
-    else if (lockPath) for (const name of applyMigrations(data)) store.write(name);
+    else if (lockPath) for (const name of new Set<CollectionName>([...applyMigrations(data), ...(lists.changed ? (['keys'] as const) : [])])) store.write(name);
     return store;
   }
 

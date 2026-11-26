@@ -36,7 +36,9 @@ import { TokenBudget } from '../core/src/keepa/budget';
 import { NETWORK_ERROR_PREFIX, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import { SpApiClient, SpApiError } from '../core/src/amazon/spapi/client';
 import type { SellerCredentials, SpCallRow, SpSample } from '../core/src/amazon/spapi/types';
+import type { AccountInfo } from '../core/src/serpapi/budget';
 import { telegramProblemWords } from './alerts';
+import { keyEntries, keyWords, STACKED, stackedSecrets, type StackedKeyName } from './keyList';
 import type { Store, StoredKeys } from './store';
 
 /** How long one check may take before it is called "could not reach". */
@@ -65,6 +67,8 @@ export function keySecrets(keys: StoredKeys): string[] {
   };
   add(keys.serpapi);
   add(keys.keepa);
+  // Key stacking: every saved SerpApi and Keepa key, not only the first.
+  for (const k of stackedSecrets(keys)) add(k);
   add(keys.anthropic);
   add(keys.openai);
   add(keys.ebay?.appId);
@@ -114,6 +118,10 @@ export interface KeyCheckDeps {
   spHooks?: { onCall?: (row: SpCallRow) => void; onSample?: (s: SpSample) => void };
   /** Tests: the two Amazon addresses. */
   spUrls?: { tokenUrl: string; baseUrl: string };
+  /** Key stacking: what SerpApi's account check found (free), so the key's own searches left are known at once. */
+  onSerpAccount?: (a: AccountInfo) => void;
+  /** Key stacking: what Keepa's token status found (free). */
+  onKeepaStatus?: (s: { tokensLeft: number; refillRate: number; refillIn: number }) => void;
 }
 
 /** RYOBI PBP004's listing (fixtures/e2e-2026-11-23): the ASIN the seller check reads when the deals name none yet. */
@@ -149,6 +157,7 @@ const DOWN = ', so it could not be checked just now';
 async function checkSerpApi(key: string, ctx: Ctx): Promise<KeyCheck> {
   try {
     const a = await SerpApiClient.account(key, ctx.fetchFn, ctx.serpBaseUrl);
+    ctx.onSerpAccount?.(a);
     return { ok: true, detail: `${a.totalSearchesLeft} of ${a.searchesPerMonth} searches left` };
   } catch (err) {
     const status = err instanceof SerpApiError ? err.status : undefined;
@@ -167,7 +176,8 @@ async function checkKeepa(key: string, ctx: Ctx): Promise<KeyCheck> {
   try {
     const client = new KeepaClient({ apiKey: key, budget: new TokenBudget({ reserve: 0, maxPerRun: Number.POSITIVE_INFINITY }), fetchFn: ctx.fetchFn, ...(ctx.keepaBaseUrl ? { baseUrl: ctx.keepaBaseUrl } : {}) });
     const s = await client.tokenStatus();
-    const tokens = `${s.tokensLeft} ${s.tokensLeft === 1 ? 'token' : 'tokens'}`;
+    ctx.onKeepaStatus?.(s);
+    const tokens =`${s.tokensLeft} ${s.tokensLeft === 1 ? 'token' : 'tokens'}`;
     return { ok: true, detail: s.refillRate > 0 ? `${tokens}, ${s.refillRate} a minute` : tokens };
   } catch (err) {
     const status = err instanceof KeepaError ? err.status : undefined;
@@ -356,7 +366,9 @@ const LABEL: Record<KeyName, string> = { serpapi: 'SerpApi', keepa: 'Keepa', ant
  * carry: for a stored key pass the stored keys; for a value about to be saved, the stored keys with that value in place.
  * Never throws, and never takes longer than the timeout.
  */
-export async function checkKey(name: KeyName, keys: StoredKeys, deps: KeyCheckDeps & { keepaBaseUrl?: string }): Promise<KeyCheck> {
+export async function checkKey(name: KeyName, keys: StoredKeys, deps: KeyCheckDeps & { keepaBaseUrl?: string }, only?: string): Promise<KeyCheck> {
+  // Key stacking: `only` is one saved SerpApi or Keepa key's value, checked in place of the first.
+  if (only !== undefined && (name === 'serpapi' || name === 'keepa')) keys = { ...keys, [name]: only };
   const ms = deps.timeoutMs ?? KEY_CHECK_TIMEOUT_MS;
   const signal = AbortSignal.timeout(ms);
   const ctx: Ctx = {
@@ -456,14 +468,14 @@ export interface KeyCheckHost {
   knownAsin?: () => string | undefined;
   spHooks?: KeyCheckDeps['spHooks'];
   spUrls?: KeyCheckDeps['spUrls'];
+  /** Key stacking: a SerpApi key's account as its check found it (free), kept as that key's balance. */
+  noteSerpAccount?: (id: string, a: AccountInfo) => void;
+  /** Key stacking: a Keepa key's token status as its check found it (free). */
+  noteKeepaStatus?: (id: string, s: { tokensLeft: number; refillRate: number; refillIn: number }) => void;
 }
 
-/** The stored key `name` checked with its service and recorded. Absent key: no check is made and null comes back. */
-export async function checkStoredKey(host: KeyCheckHost, name: KeyName): Promise<KeyCheck | null> {
-  const keys = host.store.get('keys');
-  const value = keys[name];
-  if (value === undefined) return null;
-  const check = await checkKey(name, keys, {
+function depsOf(host: KeyCheckHost, name: KeyName): KeyCheckDeps & { keepaBaseUrl?: string } {
+  return {
     fetchFn: host.fetchFn,
     ai: host.store.get('settings').ai,
     ...(host.serpBaseUrl ? { serpBaseUrl: host.serpBaseUrl } : {}),
@@ -472,24 +484,144 @@ export async function checkStoredKey(host: KeyCheckHost, name: KeyName): Promise
     ...(name === 'amazonSeller' && host.knownAsin?.() ? { knownAsin: host.knownAsin()! } : {}),
     ...(host.spHooks ? { spHooks: host.spHooks } : {}),
     ...(host.spUrls ? { spUrls: host.spUrls } : {}),
-  });
+  };
+}
+
+/**
+ * The stored key `name` checked with its service and recorded. Absent key: no check is made and null comes back. SerpApi and
+ * Keepa (key stacking): every saved key, each on its own; with one key the answer is that key's, with several it is accepted
+ * when any key is ("2 of 3 keys accepted"), else the first key's refusal.
+ */
+export async function checkStoredKey(host: KeyCheckHost, name: KeyName): Promise<KeyCheck | null> {
+  if (name === 'serpapi' || name === 'keepa') {
+    const entries = keyEntries(host.store.get('keys'), name);
+    if (entries.length === 0) return null;
+    const checks: KeyCheck[] = [];
+    for (const e of entries) checks.push((await checkStoredEntry(host, name, e.id))!);
+    if (checks.length === 1) return checks[0]!;
+    const accepted = checks.filter((c) => c.ok).length;
+    if (accepted > 0) return { ok: true, detail: `${accepted} of ${checks.length} keys accepted` };
+    return checks.find((c) => !c.ok && c.kind === 'rejected') ?? checks[0]!;
+  }
+  const keys = host.store.get('keys');
+  const value = keys[name];
+  if (value === undefined) return null;
+  const check = await checkKey(name, keys, depsOf(host, name));
   recordKeyCheck(host.store, name, value, check, new Date(host.now()).toISOString());
   return check;
+}
+
+/** Key stacking: one saved SerpApi or Keepa key checked with its service and recorded; null when no key has that id. */
+export async function checkStoredEntry(host: KeyCheckHost, name: StackedKeyName, id: string): Promise<KeyCheck | null> {
+  const keys = host.store.get('keys');
+  const entry = keyEntries(keys, name).find((e) => e.id === id);
+  if (!entry) return null;
+  const check = await checkKey(name, keys, {
+    ...depsOf(host, name),
+    ...(name === 'serpapi' && host.noteSerpAccount ? { onSerpAccount: (a: AccountInfo) => host.noteSerpAccount!(id, a) } : {}),
+    ...(name === 'keepa' && host.noteKeepaStatus ? { onKeepaStatus: (s: { tokensLeft: number; refillRate: number; refillIn: number }) => host.noteKeepaStatus!(id, s) } : {}),
+  }, entry.key);
+  recordEntryCheck(host.store, name, id, entry.key, check, new Date(host.now()).toISOString());
+  return check;
+}
+
+/**
+ * Key stacking: what a check of one key found, by its id, when that key is still saved with the value checked; then the
+ * service's own record (keyProblems, keyChecks) from all its keys: a problem only when every key is refused (one key: its
+ * own sentence, as before), a verdict when any key has one.
+ */
+export function recordEntryCheck(store: Store, name: StackedKeyName, id: string, checkedValue: string, check: KeyCheck, at: string): void {
+  const entry = keyEntries(store.get('keys'), name).find((e) => e.id === id);
+  if (!entry || entry.key !== checkedValue) return;
+  if (!check.ok && check.kind !== 'rejected') return;
+  store.update('runtime', (rt) => ({
+    ...rt,
+    keyEntryChecks: {
+      ...(rt.keyEntryChecks ?? {}),
+      [id]: check.ok ? { ok: true, at, ...(check.detail ? { detail: check.detail } : {}) } : { ok: false, at, problem: check.problem },
+    },
+  }));
+  syncServiceVerdict(store, name);
+}
+
+/**
+ * The service's keyProblems and keyChecks from its keys' own verdicts (key stacking). One key: exactly that key's record.
+ * Several: refused only when every key is ("Every SerpApi key was refused. Key 1: …"); the latest verdict's time.
+ */
+export function syncServiceVerdict(store: Store, name: StackedKeyName): void {
+  const entries = keyEntries(store.get('keys'), name);
+  const rt = store.get('runtime');
+  const verdicts = entries.map((e) => ({ e, v: rt.keyEntryChecks?.[e.id] }));
+  const known = verdicts.filter((x): x is { e: typeof x.e; v: NonNullable<typeof x.v> } => x.v !== undefined);
+  const problems = { ...(rt.keyProblems ?? {}) };
+  const checks = { ...(rt.keyChecks ?? {}) };
+  if (known.length === 0) {
+    delete problems[name];
+    delete checks[name];
+  } else {
+    const allRefused = entries.length > 0 && known.length === entries.length && known.every((x) => !x.v.ok);
+    const latest = known.reduce((a, b) => (Date.parse(b.v.at) > Date.parse(a.v.at) ? b : a));
+    if (allRefused) {
+      const first = known[0]!;
+      problems[name] = entries.length === 1 ? first.v.problem ?? '' : `Every ${name === 'serpapi' ? 'SerpApi' : 'Keepa'} key was refused. ${first.e.label}: ${first.v.problem ?? ''}`.trim();
+    } else delete problems[name];
+    const accepted = known.filter((x) => x.v.ok);
+    checks[name] = entries.length === 1
+      ? { ok: latest.v.ok, at: latest.v.at, ...(latest.v.detail ? { detail: latest.v.detail } : {}) }
+      : { ok: accepted.length > 0, at: latest.v.at, detail: `${accepted.length} of ${entries.length} keys accepted` };
+  }
+  const same = JSON.stringify(problems) === JSON.stringify(rt.keyProblems ?? {}) && JSON.stringify(checks) === JSON.stringify(rt.keyChecks ?? {});
+  if (!same) store.update('runtime', (r) => ({ ...r, keyProblems: problems, keyChecks: checks }));
+}
+
+/** Key stacking: a key removed or replaced has no verdict; the service's record follows the keys left. */
+export function forgetEntryCheck(store: Store, name: StackedKeyName, id: string): void {
+  if (store.get('runtime').keyEntryChecks?.[id] !== undefined) {
+    store.update('runtime', (rt) => {
+      const { [id]: _gone, ...rest } = rt.keyEntryChecks ?? {};
+      return { ...rt, keyEntryChecks: rest };
+    });
+  }
+  syncServiceVerdict(store, name);
+}
+
+/**
+ * Key stacking: the keys of each stacked service that are refused while another key of the service is not (the work goes
+ * on with those), named by label for the notice: "SerpApi Key 2 is not accepted".
+ */
+export function partialRefusals(keys: StoredKeys, entryChecks: Readonly<Record<string, { ok: boolean; problem?: string }>> | undefined): { service: StackedKeyName; id: string; label: string; problem: string }[] {
+  const out: { service: StackedKeyName; id: string; label: string; problem: string }[] = [];
+  for (const name of STACKED) {
+    const entries = keyEntries(keys, name);
+    const refused = entries.filter((e) => entryChecks?.[e.id]?.ok === false);
+    if (refused.length === 0 || refused.length === entries.length) continue;
+    for (const e of refused) out.push({ service: name, id: e.id, label: e.label, problem: `${keyWords(name, e.label)} is not accepted. ${entryChecks?.[e.id]?.problem ?? ''}`.trim() });
+  }
+  return out;
 }
 
 /**
  * At agent start and then every hour: each saved key with no verdict from the last 24 hours is checked, one after another.
  * Only the free checks above exist, so this never spends anything. A check that cannot reach its service records nothing, and
- * is tried again at the next tick.
+ * is tried again at the next tick. SerpApi and Keepa: each saved key on its own.
  */
 export async function recheckStaleKeys(host: KeyCheckHost): Promise<KeyName[]> {
   const checked: KeyName[] = [];
+  const stale = (last: string | undefined) => {
+    const age = last ? host.now() - Date.parse(last) : Number.POSITIVE_INFINITY;
+    return !(Number.isFinite(age) && age < KEY_RECHECK_MS && age >= 0);
+  };
   for (const name of KEY_NAMES) {
+    if (name === 'serpapi' || name === 'keepa') {
+      const entries = keyEntries(host.store.get('keys'), name);
+      const due = entries.filter((e) => stale(host.store.get('runtime').keyEntryChecks?.[e.id]?.at));
+      for (const e of due) await checkStoredEntry(host, name, e.id);
+      if (due.length > 0) checked.push(name);
+      continue;
+    }
     const keys = host.store.get('keys');
     if (keys[name] === undefined) continue;
-    const last = host.store.get('runtime').keyChecks?.[name]?.at;
-    const age = last ? host.now() - Date.parse(last) : Number.POSITIVE_INFINITY;
-    if (Number.isFinite(age) && age < KEY_RECHECK_MS && age >= 0) continue;
+    if (!stale(host.store.get('runtime').keyChecks?.[name]?.at)) continue;
     await checkStoredKey(host, name);
     checked.push(name);
   }
