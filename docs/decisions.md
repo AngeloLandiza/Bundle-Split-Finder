@@ -2722,3 +2722,72 @@ port 8790, so the viewer was run on its own through the preview, the dashboard l
 and by unit tests, and the View menu accelerator swap was built but not pressed. On the one Home Depot product page
 loaded, Home Depot answered with its own "Oops!! Something went wrong" page inside the viewer; Amazon's listing loaded
 normally. If Home Depot keeps refusing there, Open in browser is the way, by design.
+
+## Nov 25: pictures from what the app already reads, not from an AI
+
+The owner: only 46 of 258 deal rows had a picture; why so few, and can an agent or AI get all of them.
+
+**Decided.** No AI and no web search for pictures. A generated picture, or one an agent finds by searching, is a guess
+about which product it shows (rule 4), and a wrong photo on a deal is worse than none. The app was throwing real pictures
+away instead: Keepa's product answers and Home Depot's list entries and pages carry them, and the code never read them.
+They are now kept where the data is already in hand. No page read, search, Keepa token or AI call is added for them.
+
+- **Keepa** (`core/src/keepa/parse.ts keepaPicture`): `images` is an array of `{l, lH, lW, m, mH, mW, variant}`; `l` and `m`
+  are file names of the large and medium image, `variant` is "MAIN", "PT01"..., and the address is
+  `https://m.media-amazon.com/images/I/<name>` (https://keepa.com/api-docs/product-object.html, read Nov 25). Recorded in
+  `fixtures/keepa/product-B0BGYFTPGK-B01H9BL8EO-B09M3TL9BB.json`, `...-stats.json` and `search-RYOBI-PCL235B.json`: every
+  product carries it, the first entry is MAIN in all of them, some entries have only `l` or only `m` (handled: `m`, else
+  `l`), `m` is about 500 px. Kept: the MAIN entry's medium file, only a plain image file name. It reaches the stored listing
+  through a Keepa search row (`thumbnail`, so `listingFrom` keeps it) and, for a product pull (refresh, identify, the drip's
+  catalog check and re-pick, a paid Verify), `keepListingPicture` fills the stored listing that has none. A stored picture
+  is never replaced by none; a listing is never created for a picture (stored listings are what the matcher reads).
+  `fixtures/keepa/stats-sample-2026-11-25.json` has no `images`: its recording kept only some fields.
+- **Home Depot** (`core/src/hdPage.ts hdPicture`): a list entry's `media.images[]` is
+  `{url: ".../<name>_<SIZE>.jpg", type: "IMAGE", subType: "PRIMARY", sizes: ["65","100","145","300","400","600","1000"]}`
+  (`fixtures/homedepot-pages/bundle-listing-sample-2026-11-23.json`, the `base-searchNav-339857091` entry the installed
+  app's bundleListing job read). The first entry of type IMAGE is kept with `<SIZE>` replaced by **145**: the largest slot
+  is the inspector's 72 px, 144 px on a 2x screen, and 145 is the smallest size Home Depot names at or above it. Valid
+  because each entry lists its own sizes and only a listed one is used (none listed: no picture), and SerpApi's recorded
+  rows give the same seven sizes as addresses (`fixtures/recorded/hd-bundles-ryobi-p1.json` `thumbnails`,
+  `hd-product-328814689.json` `images`), read the same way (`hdThumbnail`). Kept on: the bundle and set record (from its list
+  row: a Chrome list entry, a SerpApi row, or a BOGO item page), the catalog part (its list row), the part price record (the
+  page of the part sold alone, read by the `partPrice` job, the extension's own part price reader, or a set item's page),
+  and every page reading (`page`, `kitPage`, `promoPage`: `PageContent.image`). The `search` job's rows only choose the item
+  whose page is read next; that page carries the picture, so the search rows are not stored with one.
+- **Untrusted.** Every stored address passes `core/src/links/pictures.ts`: https, no user, password or port, no space,
+  quote or control character, at most 300 characters, and only its own source's host (`amazonPicture`, `homeDepotPicture`).
+  The helper's answers are checked on the way into the agent (`agent/remoteReaders.ts picture`). Both CSPs name
+  `https://images.thdstatic.com` beside `https://m.media-amazon.com`, in `img-src` only (`agent/test/pictureCsp.test.ts`).
+- **What a row shows** (`rowPicture`): the bundle's own Home Depot picture, else its first part's; a part's is its Amazon
+  listing's, else its own Home Depot one (`partPicture`, `PartRow.hdImage`: part price record, else catalog entry, its own
+  key only, a twin being another product). The inspector's large picture is the row's, labelled with whose photo it is.
+- **Backfill, once, at start** (`agent/pictureBackfill.ts`, run from `signalsAtStart` and recorded in `runtime.migrations`
+  as `keepa-picture-backfill`, like the market backfill before it): a migration and not a job, because it is a one-time
+  catch-up on records written before this change, cheap (files only), and must run before the stored deals are rebuilt at
+  start. It reads `<data>/cache/keepa` (raw Keepa bodies) for listings and `<data>/cache/home_depot` (raw SerpApi Home Depot
+  list pages, the owner's first scans) for bundles and catalog parts, fills only records with no picture, makes no network
+  request (tested with a fetch that throws), does nothing when run again, and says one line in Activity ("Found pictures for
+  N parts and M deals from data already stored. Nothing was spent."), none when it found nothing.
+- **Coverage** (`pictureCoverage`, `DealsResponse.pictures`): Settings, General, under Show product pictures, "Pictures for
+  N of M deals and N of M parts."
+- **Placeholder.** The empty square keeps the fill and carries the brand's initial (D, R) in the tertiary label colour, so a
+  column of them reads as placeholders and not as broken pictures; white at low opacity on the selected row.
+
+**Measured on the recorded store** (`fixtures/e2e-2026-11-23/after-scan6`, report rebuilt with today's code,
+`agent/test/pictureBackfill.test.ts`): before, 46 of 258 deals and 46 of 153 distinct parts have a picture. After the
+backfill with the Keepa answers and SerpApi Home Depot pages that are in `fixtures/`: 62 of 258 deals and 48 of 153 parts
+(4 listings, 20 bundles and 33 catalog parts filled). The owner's own cache is not that: it holds 521 Keepa answers, among
+them the 25 chosen listings that have no picture (all 25 are in `stats-sample-2026-11-25.json`, copied from his cache with
+the pictures trimmed), and the SerpApi list pages of his first scans, so his numbers will differ, most likely upward.
+
+**Not verified.**
+- Lists: 191 of the 258 bundles (147 of them sets) came from the Chrome lists, which kept no picture before this, and the
+  helper's list readings are not cached, so they get theirs when the next scan reads the lists again (a list is read again
+  once a day). That an entry of every list carries `media` inline is shown by one recorded entry (a RYOBI Bundle list); the
+  plain keyword search lists and DEWALT's are read by the same parser but not recorded with `media`.
+- Product pages: the `base-catalog-<id>` state is recorded with a `media` key
+  (`fixtures/homedepot-pages/availability-344305163-2026-11-25.json` `productKeys`) but not its value. It is read the same
+  way as a list entry's (inline, or an Apollo reference); if the shape differs there, a page gives no picture, never a wrong one.
+- The helper must be updated (it is, with the app) for its readings to carry pictures; an older helper's readings simply have none.
+- Windows: no Windows-specific code; the CSP change was not run in WebView2.
+

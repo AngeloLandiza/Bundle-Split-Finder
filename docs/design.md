@@ -708,11 +708,14 @@ the page.
 ### Product pictures (Nov 25)
 
 A deal row and a Today row carry a 32px picture, the inspector's header a 72px one, and each part in the parts list a
-40px one. The picture is the stored Amazon listing photo: on a row, the bundle's first part's photo; in the parts list,
-each part's own. Bundles have no stored Home Depot photo. Where none is stored, the slot is a quiet neutral square, the
-fill colour with a hairline and no glyph, so the column stays aligned. A failed load turns into the same square, never a
-broken-image icon. Pictures load lazily, only on screen, and send no referrer. Settings › General › **Show product
-pictures** (on by default) turns them off, and with it every request to the image server.
+40px one. On a row and in the inspector, the picture is the bundle's own Home Depot photo; without one, its first
+part's. In the parts list, each part's own: its Amazon listing photo, else its own Home Depot photo (Nov 25). Where none
+is stored, the slot is a quiet neutral square, the fill colour with no hairline, marked with the brand's initial (R, D)
+in the tertiary label colour, so a column of them reads as placeholders, not gaps; on the selected row while the window
+is key, the square and the letter take the selection's white at low opacity. No glyph, no icon. A failed load turns into
+the same square, never a broken-image icon. Pictures load lazily, only on screen, and send no referrer. Settings › General › **Show product
+pictures** (on by default) turns them off, and with it every request to the image servers; its help line ends with how far
+they reach ("Pictures for 212 of 258 deals and 140 of 153 parts.").
 
 ### What D2, D3 and D4 build on
 

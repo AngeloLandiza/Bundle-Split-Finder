@@ -97,7 +97,7 @@ When you click a Home Depot, Amazon, Keepa or eBay link, the page opens in Split
 - **You are not signed in here.** This window is not your browser. If a page asks you to sign in or pay, the app does not show it. It says "Sign in only in your browser" and offers **Open in browser**. Do not type a password into this window. Seller Central, the key sign-up pages and downloads always open in your browser.
 - **If a page does not load**, the window says so and offers **Try again** and **Open in browser**. Sometimes Home Depot or Amazon shows its own "something went wrong" or "access denied" page here. The app shows that page as it is and does not try to get around it. Use **Open in browser**.
 - **Clear viewer browsing data** (Settings, Data) clears the cookies and history of this window. Your own browser is not touched.
-- **Pictures.** Deals, Today and a deal's details show the Amazon photo the app stored for a part. A grey square means no photo is stored. The app never guesses one. To turn the photos off, use **Settings, General, Show product pictures**.
+- **Pictures.** Deals, Today and a deal's details show the deal's own Home Depot photo, or, when it has none, its first part's photo (the part's Amazon photo, else its Home Depot one). The photos come with what the app already reads from Home Depot, Keepa and SerpApi: nothing extra is read or spent for them, and the app never guesses or makes one. A square with the brand's letter (R, D) means no photo is stored yet; most fill in after the next scan. **Settings, General** says how many deals and parts have one, and **Show product pictures** turns them off.
 
 ### Recording what you bought and what it made
 
