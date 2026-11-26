@@ -72,7 +72,9 @@ describe('parseReleaseNote', () => {
   it('reads the file in the repo', () => {
     const r = parseReleaseNote(readFileSync(join(root, 'docs', 'release.json'), 'utf8'));
     expect(r).not.toBeNull();
-    expect(r!.note.downloadUrl).toBeNull();
+    // No link (0.1.0), or the project's own release page (release:prepare's default from 0.1.1 on): never another host.
+    const link = r!.note.downloadUrl;
+    expect(link === null || link.startsWith('https://github.com/AngeloLandiza/Bundle-Split-Finder/')).toBe(true);
   });
   it('ignores a bad file: wrong types, HTML, too big, not an object', () => {
     const bad: unknown[] = [

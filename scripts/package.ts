@@ -1,5 +1,5 @@
 // Builds the production extension and writes one zip under output/. Spends no searches and reads no .env.
-import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { runTool } from './spawn-tool';
@@ -19,9 +19,10 @@ runTool('npx', ['wxt', 'zip'], {
   },
   stdio: 'inherit',
 });
-const zips = readdirSync(outDir).filter((f) => f.endsWith('-chrome.zip'));
-const zip = zips[0];
-if (zips.length !== 1 || zip === undefined) throw new Error(`Expected one zip in ${outDir}, found ${zips.length}.`);
+// This version's zip, by name: after a version change the folder still holds the last version's zip, which is left alone.
+const version = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version;
+const zip = `bundle-split-finder-${version}-chrome.zip`;
+if (!existsSync(join(outDir, zip))) throw new Error(`Expected ${zip} in ${outDir}; it holds ${readdirSync(outDir).filter((f) => f.endsWith('-chrome.zip')).join(', ') || 'no zip'}.`);
 mkdirSync('output', { recursive: true });
 copyFileSync(join(outDir, zip), join('output', zip));
 console.log(`\nPackage: output/${zip}`);
