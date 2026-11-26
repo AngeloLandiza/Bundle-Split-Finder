@@ -2439,3 +2439,21 @@ are medians, the old code against the new, runs alternated on one machine (Apple
   run but is not shown to be what happened. The check allows 30 s, and on a miss it now says what was running and asks a
   second time. Not done: a log of the shell's own steps in a release build, which is what would settle it.
 
+## Nov 25: for version 2, the agent in Rust and the store in SQLite (owner: "keep that in future plans")
+
+The owner asked whether writing parts in Rust, C, C++ or assembly would make the app faster. Not in version 1, and the
+reason matters for the rewrite:
+
+- **Nothing is slow because of the language.** Time goes to waiting: 10 to 15 s between Home Depot pages, one Keepa token
+  a minute, network calls. The computing is small (the Nov 25 performance pass: the whole report in about a third of a
+  second at 2,064 bundles; 300 part models against 5,000 listings in about 0.3 s). The one real cost was writing to disk,
+  fixed by not rewriting unchanged files.
+- *For v2:* fold the agent into the Rust shell (one process, no Node sidecar) and move the JSON files to SQLite. The gain
+  is a smaller download (the installers are 27 MB and 44 MB; how much of that is the bundled Node is not measured), less
+  memory, a faster start, and no supervision, restart or quit-timing machinery between two processes (the Windows quit
+  check of Nov 25 is that machinery). It is not speed.
+- *What it costs, so plan for it:* the matching and splitting logic in `core/` is shared with the Chrome extension, which
+  must stay JavaScript, so a Rust agent means two copies of that logic or Rust compiled to WebAssembly for the extension;
+  and about 4,600 tests pin today's behaviour, every wrong-match case included, and must be carried over.
+- C and C++ give nothing Rust does not, with more ways to crash. Assembly has no place here.
+
