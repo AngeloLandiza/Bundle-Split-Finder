@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { Segmented, Switch } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
 import { ACCENTS, type Accent, type Appearance, type Density } from '../../lib/appearance';
+import { readLinkPrefs, saveLinkPrefs, type LinkPrefs, type OpenLinksIn } from '../../lib/linkPrefs';
 import { ICON_GUARD_SENTENCE, guardIcons, isLastIcon } from '../../lib/prefs';
 import { words } from '../../lib/platform';
 import { updatesHelp, versionLine } from '../../lib/updates';
@@ -86,6 +87,42 @@ function NewVersions() {
   );
 }
 
+/**
+ * Where a source page opens (docs/design.md, Desktop app > Page viewer), and whether product pictures show (each one is
+ * a request to Amazon's image server). Kept in this computer's storage, as the look is; every window follows at once.
+ */
+function LinksAndPictures() {
+  const [prefs, setPrefs] = useState(readLinkPrefs);
+  const change = (patch: Partial<LinkPrefs>) => {
+    const next = { ...prefs, ...patch };
+    setPrefs(next);
+    saveLinkPrefs(next);
+  };
+  return (
+    <>
+      <Rule />
+      <Row
+        label="Open links"
+        align="start"
+        help="Home Depot, Amazon, Keepa and eBay pages open in Split Finder’s own window, where you are not signed in. Sign-in pages, accounts and downloads always open in your browser."
+      >
+        <Segmented<OpenLinksIn>
+          legend="Open links"
+          value={prefs.openLinksIn}
+          onChange={(openLinksIn) => change({ openLinksIn })}
+          options={[
+            { value: 'app', label: 'In Split Finder' },
+            { value: 'browser', label: 'In my browser' },
+          ]}
+        />
+      </Row>
+      <Row label="Pictures" help="The Amazon photo stored for a part. Each picture is loaded from Amazon’s image server.">
+        <Switch label="Show product pictures" checked={prefs.showPictures} onChange={(showPictures) => change({ showPictures })} />
+      </Row>
+    </>
+  );
+}
+
 export function GeneralPane() {
   const { settings, update, look, setLook } = usePrefs();
   const [refused, setRefused] = useState(false);
@@ -156,6 +193,9 @@ export function GeneralPane() {
           <Switch label={words.dockSwitch} checked={shell.dockIcon} disabled={isLastIcon(shell, 'dockIcon')} onChange={(on) => flip('dockIcon', on)} />
         </div>
       </Row>
+      {/* page viewer and pictures begin (Nov 25): two preferences of this computer, kept with the look. */}
+      <LinksAndPictures />
+      {/* page viewer and pictures end */}
       <Rule />
       <NewVersions />
       <Rule />

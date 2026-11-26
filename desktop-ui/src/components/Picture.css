@@ -1,0 +1,41 @@
+/* Product pictures (design.md, Desktop app > Product pictures): a square slot, the photo on white (Amazon's photos are
+   shot on white), or a quiet neutral square with a hairline where none is stored. No glyph, no broken-image icon. */
+.pic {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1px var(--separator);
+  border-radius: 4px;
+}
+
+.pic-has {
+  background: #fff;
+}
+
+.pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* The hairline stays drawn over the photo's own white. */
+  mix-blend-mode: multiply;
+}
+
+.pic-row {
+  width: 32px;
+  height: 32px;
+}
+
+.pic-part {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+}
+
+.pic-head {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+}

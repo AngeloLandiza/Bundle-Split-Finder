@@ -1,5 +1,6 @@
 import { checkedWords, staleWhy } from '../lib/pricesChecked';
-import { Fragment, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
+import { rowPicture } from '@core/links/pictures';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealBuying } from '@core/api/contract';
 import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine, SellerPartLine } from '../api/types';
@@ -11,7 +12,10 @@ import { Fold } from '../components/Fold';
 import { LoadError, LoadingState, Notice } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
-import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
+import { amazonSearchUrl, amazonUrl, copyText, linksOpenInViewer, openPage, pageAction } from '../lib/actions';
+import { useLinkContext } from '../lib/linkContext';
+import { dealPages, type ViewerContext } from '../lib/viewer';
+import { Picture } from '../components/Picture';
 import { money, percentOff, plural, profit, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
 import { breakEvenWords, fromAnswer, ifAcceptedLine, kitWords, pricedCount, suggestionAction, UNPRICED_ACTION, UNPRICED_STATE } from '../lib/incomplete';
@@ -125,6 +129,9 @@ function Detail({ d }: { d: DealDetail }) {
   const grades = d.parts.filter((p) => !p.unnamed).map((p) => p.grade);
   const summary = partsSummary(grades);
   const allConfirmed = grades.length > 0 && grades.every((g) => g === 'verified');
+  // The page viewer offers the deal's source pages from any link in the inspector (lib/linkContext.ts).
+  const pages = useMemo(() => dealPages(d), [d]);
+  useLinkContext(`deal:${d.id}`, pages);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(d.asins.join('\n'));
@@ -135,8 +142,10 @@ function Detail({ d }: { d: DealDetail }) {
   };
   return (
     <>
-      <div className="detail-body">
+      <div className="detail-body" data-link-context={`deal:${d.id}`}>
         <header className="detail-head">
+          {/* The bundle's first part's stored Amazon photo; Home Depot's own photo is not stored. */}
+          <Picture src={rowPicture(d.parts)} size="head" label={`${d.parts[0]?.model ?? d.model} on Amazon`} />
           <p className="detail-brand">{d.brand}</p>
           <h2 className="detail-title">{d.title}</h2>
           <p className="detail-meta">
@@ -315,7 +324,7 @@ function Detail({ d }: { d: DealDetail }) {
             ) : null}
             <ul className="detail-list">
               {d.parts.map((p) => (
-                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} seller={p.asin ? d.seller?.parts.find((l) => l.asin === p.asin) : undefined} />
+                <Part key={p.model} part={p} pages={pages} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} seller={p.asin ? d.seller?.parts.find((l) => l.asin === p.asin) : undefined} />
               ))}
             </ul>
           </Fold>
@@ -494,7 +503,7 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   hd_same_title: 'Home Depot page of the same set',
 };
 
-function Part({ part, dealId, brand, questionId, scanRunning, seller }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean; seller?: SellerPartLine | undefined }) {
+function Part({ part, pages, dealId, brand, questionId, scanRunning, seller }: { part: DealPart; pages: ViewerContext; dealId: string; brand: string; questionId: string | null; scanRunning: boolean; seller?: SellerPartLine | undefined }) {
   const verify = useAction(api.verify);
   const removePrice = useAction(api.removePrice);
   const forget = useAction(api.forgetFact);
@@ -512,11 +521,18 @@ function Part({ part, dealId, brand, questionId, scanRunning, seller }: { part: 
   const openMenu = (e: React.MouseEvent | React.KeyboardEvent) =>
     menu.openFrom(e, {
       label,
-      items: partMenu(part, { scanRunning }),
+      items: partMenu(part, { scanRunning, viewer: linksOpenInViewer() }),
       onPick: (id) => {
+        const page = part.asin ? amazonUrl(part.asin) : amazonSearchUrl(brand, part.model);
         switch (id as PartMenuId) {
           case 'open-amazon':
-            openPage(part.asin ? amazonUrl(part.asin) : amazonSearchUrl(brand, part.model));
+            openPage(page, { context: pages });
+            return;
+          case 'open-amazon-browser':
+            openPage(page, { browser: true });
+            return;
+          case 'copy-amazon-link':
+            void pageAction('copy', page).then((ok) => setSaid(ok ? 'Copied the Amazon link.' : 'Could not copy the link.'));
             return;
           case 'copy-asin':
             if (part.asin) void copyText(part.asin).then((ok) => setSaid(ok ? `Copied ${part.asin}.` : 'Could not copy. Select the ASIN by hand.'));
@@ -541,6 +557,7 @@ function Part({ part, dealId, brand, questionId, scanRunning, seller }: { part: 
       }}
     >
       <div className="part-top">
+        {part.unnamed ? null : <Picture src={part.image} size="part" label={`${part.model} on Amazon`} />}
         <div className="part-name">
           <span className={`part-model${part.unnamed ? '' : ' code'}`}>
             {part.unnamed ? part.title ?? part.model : part.model}

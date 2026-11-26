@@ -53,6 +53,14 @@
   outline-offset: -3px;
 }
 
+/* Product pictures (Nov 25): the deal's picture before its words. */
+.nav-pic-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .nav-main {
   flex: 1;
   min-width: 0;

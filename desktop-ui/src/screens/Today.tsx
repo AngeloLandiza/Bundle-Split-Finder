@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { isWorking, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
+import { Picture } from '../components/Picture';
 import { Roi, RoiRangeLine, RowProfit, useEstimateWords } from '../components/Figure';
 import { Glyph } from '../components/Glyph';
 import { Section } from '../components/Layout';
@@ -193,20 +194,23 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
             {rows.slice(0, TOP).map((r) => (
               <li key={r.id}>
                 <button type="button" className="nav-row deal-grid" onClick={() => navigate({ screen: 'deals', id: r.id })}>
-                  <span className="nav-main">
-                    <span className="nav-title" title={r.title}>
-                      {r.buyNow ? <Tag tone="buy">Buy now</Tag> : null}
-                      {r.title}
-                    </span>
-                    <span className="nav-sub">
-                      {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
-                      {percentOff(r.off) ? ` · ${percentOff(r.off)}` : ''}
-                    </span>
-                    {dealVerdict(r) ? (
-                      <span className="nav-verdict" title={dealVerdict(r)?.full}>
-                        {dealVerdict(r)?.text}
+                  <span className="nav-pic-main">
+                    <Picture src={r.image} size="row" />
+                    <span className="nav-main">
+                      <span className="nav-title" title={r.title}>
+                        {r.buyNow ? <Tag tone="buy">Buy now</Tag> : null}
+                        {r.title}
                       </span>
-                    ) : null}
+                      <span className="nav-sub">
+                        {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
+                        {percentOff(r.off) ? ` · ${percentOff(r.off)}` : ''}
+                      </span>
+                      {dealVerdict(r) ? (
+                        <span className="nav-verdict" title={dealVerdict(r)?.full}>
+                          {dealVerdict(r)?.text}
+                        </span>
+                      ) : null}
+                    </span>
                   </span>
                   <span className="fig deal-grid-fig muted">{r.price !== null ? money(r.price) : '—'}</span>
                   <span className="deal-grid-fig">

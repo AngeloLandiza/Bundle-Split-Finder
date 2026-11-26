@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AiSuggestion, DealPart, DealRow, ReviewQuestion } from '../api/types';
-import { dealMenu, detailMenu, hasTitleMatches, partMenu, questionMenu, stepMenu } from './menus';
+import { dealMenu, detailMenu, hasTitleMatches, linkMenu, partMenu, questionMenu, stepMenu } from './menus';
 
 const row = (over: Partial<DealRow> = {}): DealRow =>
   ({ id: 'hd-1', title: 'Kit', brand: 'RYOBI', model: 'PCL1600K2', itemId: '1', link: 'https://www.homedepot.com/p/1', section: 'confirmed', price: 100, off: 10, matchState: '4 parts matched', profit: 10, roi: 0.1, roiRange: null, needsAnswer: false, updatedAt: '2026-11-22T00:00:00Z', lookup: null, watched: false, ...over }) as DealRow;
@@ -8,7 +8,7 @@ const ids = (items: { id: string }[]) => items.map((i) => i.id);
 
 describe('a deal row\'s menu', () => {
   it('always opens, copies the model and the ASINs, and opens Home Depot when it has the page', () => {
-    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins', 'bought', 'watch', 'bogo']);
+    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-hd-link', 'copy-model', 'copy-asins', 'bought', 'watch', 'bogo']);
     expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins', 'bought', 'watch', 'bogo']);
   });
   it('words the BOGO item by where the promotion stands', () => {
@@ -66,7 +66,7 @@ describe('a question row\'s menu', () => {
   });
   it('offers Approve suggestion only for a verified one, and then not Ask AI', () => {
     const items = questionMenu(q({ suggestion: verified }), { hasAi: true, asking: false });
-    expect(ids(items)).toEqual(['approve', 'open-deal', 'open-hd', 'copy-question']);
+    expect(ids(items)).toEqual(['approve', 'open-deal', 'open-hd', 'copy-hd-link', 'copy-question']);
     expect(ids(questionMenu(q({ suggestion: { ...verified, status: 'unverified' } }), { hasAi: true, asking: false }))).not.toContain('approve');
   });
   it('opens the deal only when the question is tied to one', () => {
@@ -80,9 +80,9 @@ describe('a part\'s menu', () => {
 
   it('opens Amazon, copies the ASIN, and offers Confirm a price', () => {
     const items = partMenu(part(), { scanRunning: false });
-    expect(ids(items)).toEqual(['open-amazon', 'copy-asin', 'confirm']);
+    expect(ids(items)).toEqual(['open-amazon', 'copy-amazon-link', 'copy-asin', 'confirm']);
     expect(items[0]!.label).toBe('Open on Amazon');
-    expect(items[2]).toMatchObject({ label: 'Confirm a price…', separatorBefore: true });
+    expect(items[3]).toMatchObject({ label: 'Confirm a price…', separatorBefore: true });
   });
   it('searches Amazon for a part with no listing, and has no Amazon items for a kit item with no model number', () => {
     expect(partMenu(part({ asin: null }), { scanRunning: false })[0]!.label).toBe('Search Amazon');
@@ -91,9 +91,9 @@ describe('a part\'s menu', () => {
   it('offers Change and Remove once a price is confirmed, and greys Remove while a scan runs', () => {
     const own = part({ confirm: { state: 'open', ebay: [], confirmed: { price: 40, link: 'https://www.ebay.com/itm/1', note: null }, inactive: false } });
     const items = partMenu(own, { scanRunning: true });
-    expect(items.map((i) => i.label)).toEqual(['Open on Amazon', 'Copy ASIN', 'Change the confirmed price…', 'Remove confirmed price']);
-    expect(items[3]).toMatchObject({ danger: true });
-    expect(items[3]!.disabled).toBeTruthy();
+    expect(items.map((i) => i.label)).toEqual(['Open on Amazon', 'Copy Amazon link', 'Copy ASIN', 'Change the confirmed price…', 'Remove confirmed price']);
+    expect(items[4]).toMatchObject({ danger: true });
+    expect(items[4]!.disabled).toBeTruthy();
   });
 });
 
@@ -113,16 +113,31 @@ describe('moving through a menu', () => {
 describe('the inspector\'s overflow menu', () => {
   const d = (over: Partial<Parameters<typeof detailMenu>[0]> = {}) => ({ bogo: null, bogoGroup: null, link: 'https://www.homedepot.com/p/1', ...over });
   it('holds Mark as BOGO and the other secondary actions, so Watch stands alone beside it', () => {
-    expect(ids(detailMenu(d()))).toEqual(['bogo', 'open-hd', 'copy-model']);
+    expect(ids(detailMenu(d()))).toEqual(['bogo', 'open-hd', 'copy-hd-link', 'copy-model']);
     expect(detailMenu(d())[0]!.label).toBe('Mark as BOGO…');
   });
   it('holds the single-bundle lookup, with its cost, and greys it while a scan runs', () => {
-    expect(ids(detailMenu(d({ lookup: { searches: 2 } })))).toEqual(['lookup', 'bogo', 'open-hd', 'copy-model']);
+    expect(ids(detailMenu(d({ lookup: { searches: 2 } })))).toEqual(['lookup', 'bogo', 'open-hd', 'copy-hd-link', 'copy-model']);
     expect(detailMenu(d({ lookup: { searches: 2 } }))[0]!.label).toBe('Look up this bundle · 2 searches');
     expect(detailMenu(d({ lookup: { searches: 1 } }), { scanRunning: true })[0]).toMatchObject({ label: 'Look up this bundle · 1 search', disabled: expect.any(String) });
   });
   it('leaves out the promotion entry on a grouped deal or one he already marked, and Home Depot when there is no page', () => {
     expect(ids(detailMenu(d({ bogoGroup: {} as never, link: null })))).toEqual(['copy-model']);
-    expect(ids(detailMenu(d({ bogo: {} as never })))).toEqual(['open-hd', 'copy-model']);
+    expect(ids(detailMenu(d({ bogo: {} as never })))).toEqual(['open-hd', 'copy-hd-link', 'copy-model']);
+  });
+});
+
+describe('a source page in a menu (page viewer, Nov 25)', () => {
+  it('offers the browser beside the viewer, and always the address to copy', () => {
+    expect(ids(dealMenu(row(), { scanRunning: false, viewer: true })).slice(0, 4)).toEqual(['open', 'open-hd', 'open-hd-browser', 'copy-hd-link']);
+    expect(ids(detailMenu({ bogo: null, bogoGroup: null, link: 'https://www.homedepot.com/p/1' }, { scanRunning: false, viewer: true }))).toContain('open-hd-browser');
+    const p = { model: 'PCL900B', qty: 1, title: null, grade: 'verified', asin: 'B0B2KQ8T7P', image: null, price: null, net: null, prices: [], verifySearches: null, unnamed: false, confirm: { state: 'amazon-counts', ebay: [], confirmed: null, inactive: false } } as DealPart;
+    expect(partMenu(p, { scanRunning: false, viewer: true }).slice(0, 3).map((i) => i.label)).toEqual(['Open on Amazon', 'Open Amazon page in browser', 'Copy Amazon link']);
+    expect(partMenu({ ...p, asin: null }, { scanRunning: false, viewer: true })[2]!.label).toBe('Copy Amazon search link');
+  });
+
+  it('on a link itself: open, open in the browser, copy its address; just the browser when a click goes there anyway', () => {
+    expect(linkMenu({ viewer: true }).map((i) => i.label)).toEqual(['Open link', 'Open in browser', 'Copy link address']);
+    expect(linkMenu({ viewer: false }).map((i) => i.label)).toEqual(['Open in browser', 'Copy link address']);
   });
 });

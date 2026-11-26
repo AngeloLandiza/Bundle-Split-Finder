@@ -26,6 +26,9 @@ export type GlyphName =
   | 'download'
   | 'chevron-down'
   | 'chevron-right'
+  | 'chevron-left'
+  | 'reload'
+  | 'xmark'
   | 'chevrons'
   | 'check'
   | 'warning'
@@ -157,6 +160,15 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
   ),
   'chevron-down': <path d="M4.5 6.2L8 9.7l3.5-3.5" {...S} />,
   'chevron-right': <path d="M6.2 4.5L9.7 8l-3.5 3.5" {...S} />,
+  // The page viewer's Back, Reload and Stop (Safari's own toolbar glyphs, drawn the same way).
+  'chevron-left': <path d="M9.8 4.5L6.3 8l3.5 3.5" {...S} />,
+  reload: (
+    <>
+      <path d="M12.6 8.6A4.7 4.7 0 1 1 11.2 4.6" {...S} />
+      <path d="M11.8 2.2v2.8H9" {...S} />
+    </>
+  ),
+  xmark: <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" {...S} />,
   chevrons: <path d="M5.5 6L8 3.5 10.5 6M5.5 10L8 12.5 10.5 10" {...S} />,
   check: <path d="M3.5 8.4l3 3 6-6.6" {...S} strokeWidth={1.7} />,
   warning: (

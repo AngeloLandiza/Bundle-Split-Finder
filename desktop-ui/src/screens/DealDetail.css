@@ -183,6 +183,15 @@
   gap: 12px;
 }
 
+/* Product pictures (Nov 25): each part's stored photo beside its name; the first part's at the top of the inspector. */
+.part-top > .pic + .part-name {
+  flex: 1;
+}
+
+.detail-head > .pic {
+  margin-bottom: 6px;
+}
+
 .part-name {
   display: flex;
   flex-direction: column;

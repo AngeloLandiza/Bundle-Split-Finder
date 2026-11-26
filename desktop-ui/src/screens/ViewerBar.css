@@ -1,0 +1,191 @@
+/* The page viewer's toolbar (design.md, Desktop app > Page viewer). On a Mac it is the window's unified title bar: 52px,
+   the traffic lights inset at the left. On Windows it sits under the native title bar: 44px. When the page did not
+   load or asks him to sign in, this webview covers the page area and draws the state under the bar. */
+:root[data-surface='viewer'] body {
+  background: var(--content-bg);
+}
+
+.vbar-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.vbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--toolbar-h);
+  padding: 0 12px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--separator);
+}
+
+/* The traffic lights: 20pt in, three 14pt buttons 6pt apart. */
+:root[data-chrome='unified'] .vbar {
+  padding-left: 84px;
+}
+
+:root[data-platform='windows'] .vbar {
+  height: 44px;
+  padding: 0 8px;
+}
+
+.vbar-nav,
+.vbar-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.vbar-actions {
+  gap: 6px;
+}
+
+/* The page pop-up: what this page is, as a pop-up button (design.md, Controls), its native menu lists the deal's pages. */
+.vbar-pages {
+  flex: none;
+  max-width: 260px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 3px 0 9px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--control-bg);
+  box-shadow: 0 0 0 0.5px var(--separator), 0 0.5px 1px rgb(0 0 0 / 0.12);
+  color: var(--label);
+  font: inherit;
+  font-weight: 500;
+}
+
+.vbar-pages-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vbar-pages-well {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--accent-fill);
+  color: #fff;
+}
+
+.vbar-pages:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline-offset: 1px;
+}
+
+/* The address: a read-only well. The real host in the label colour, the rest quieter; a 2px bar along its foot. */
+.vbar-address {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: var(--fill);
+  overflow: hidden;
+  cursor: text;
+}
+
+.vbar-address:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline-offset: 0;
+}
+
+.vbar-address-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vbar-host {
+  color: var(--label);
+  font-weight: 600;
+}
+
+.vbar-rest {
+  color: var(--label-2);
+}
+
+.vbar-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+}
+
+.vbar-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vbar-progress > span {
+    transition: none;
+  }
+}
+
+.vbar-problem {
+  flex: none;
+  padding: 4px 12px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--attention);
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--separator);
+}
+
+/* Our own state over the page area: an empty view, centred, one title, one line, two buttons. */
+.vbar-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 32px 64px;
+  text-align: center;
+  color: var(--label-2);
+}
+
+.vbar-state h1 {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--label);
+}
+
+.vbar-state p {
+  max-width: 420px;
+}
+
+.vbar-state-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Windows puts the default button first (design.md, Windows 11 > Navigation and dialogs). */
+:root[data-platform='windows'] .vbar-state-actions {
+  flex-direction: row-reverse;
+}

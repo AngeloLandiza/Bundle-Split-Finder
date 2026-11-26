@@ -13,7 +13,7 @@ import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { money, plural } from '../lib/format';
 import { scanStrip } from '../lib/scanSteps';
-import { copyText, openPage } from '../lib/actions';
+import { copyText, linksOpenInViewer, pageAction } from '../lib/actions';
 import { AI_FOOTNOTE, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
 import { CHECKING_AGAIN, QUEUED_MS, noteOf, refusedHere, settled, type AskNote } from '../lib/askAi';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
@@ -141,7 +141,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
   const [menuError, setMenuError] = useState<string | null>(null);
   const menuOf = (q: ReviewQuestion): RowMenu => ({
     label: q.bundle.title,
-    items: questionMenu(q, { hasAi, asking: state?.agent.status === 'asking' }),
+    items: questionMenu(q, { hasAi, asking: state?.agent.status === 'asking', viewer: linksOpenInViewer() }),
     onPick: (id) => {
       setMenuError(null);
       const fail = (e: unknown) => setMenuError(e instanceof Error ? e.message : 'That did not work. Try again.');
@@ -157,7 +157,11 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
           if (q.bundle.id) navigate({ screen: 'deals', id: q.bundle.id });
           return;
         case 'open-hd':
-          if (!openPage(q.bundle.link)) setMenuError('Home Depot’s page could not be opened.');
+        case 'open-hd-browser':
+          void pageAction(id === 'open-hd' ? 'open' : 'browser', q.bundle.link).then((ok) => ok || setMenuError('Home Depot’s page could not be opened.'));
+          return;
+        case 'copy-hd-link':
+          void pageAction('copy', q.bundle.link).then((ok) => (ok ? setNotice('Copied the Home Depot link.') : setMenuError('Could not copy the link.')));
           return;
         case 'copy-question':
           void copyText(q.prompt).then((ok) => (ok ? setNotice('Copied the question.') : setMenuError('Could not copy. Select the question by hand.')));

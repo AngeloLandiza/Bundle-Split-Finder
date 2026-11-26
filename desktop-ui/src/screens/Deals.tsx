@@ -14,7 +14,9 @@ import { Table, type Column, type RowMenu, type TableHandle } from '../component
 import { WatchToggle } from '../components/WatchToggle';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
-import { copyText, openPage } from '../lib/actions';
+import { Picture } from '../components/Picture';
+import { copyText, linksOpenInViewer, pageAction } from '../lib/actions';
+import { dealPages } from '../lib/viewer';
 import { dealReason, matchColumnShown, waitingState } from '../lib/dealReason';
 import { matchWords } from '../lib/matchWords';
 import { lookupNotice, lookupsStartedWords } from '../lib/lookups';
@@ -216,7 +218,17 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         openRow(r);
         return;
       case 'open-hd':
-        if (!openPage(r.link)) setSaid({ tone: 'attention', text: 'Home Depot’s page could not be opened.' });
+      case 'open-hd-browser':
+        // The viewer offers the deal's other pages too, which the row does not carry: the agent's deal does.
+        void api
+          .deal(r.id)
+          .then((d) => dealPages(d))
+          .catch(() => undefined)
+          .then((context) => pageAction(id === 'open-hd' ? 'open' : 'browser', r.link, context))
+          .then((ok) => ok || setSaid({ tone: 'attention', text: 'Home Depot’s page could not be opened.' }));
+        return;
+      case 'copy-hd-link':
+        void pageAction('copy', r.link).then((ok) => setSaid(ok ? { tone: 'quiet', text: 'Copied the Home Depot link.' } : { tone: 'attention', text: 'Could not copy the link.' }));
         return;
       case 'copy-model':
         void copyText(r.model).then((ok) => setSaid(ok ? { tone: 'quiet', text: `Copied ${r.model}.` } : { tone: 'attention', text: 'Could not copy. Select the model by hand.' }));
@@ -256,7 +268,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         return;
     }
   };
-  const menuOf = (r: DealRow): RowMenu => ({ label: r.title, items: dealMenu(r, { scanRunning }), onPick: (id) => pick(id as DealMenuId, r) });
+  const menuOf = (r: DealRow): RowMenu => ({ label: r.title, items: dealMenu(r, { scanRunning, viewer: linksOpenInViewer() }), onPick: (id) => pick(id as DealMenuId, r) });
 
   const columns: Column<DealRow, Col>[] = [
     {
@@ -273,56 +285,60 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       natural: 'asc',
       width: 'col-title',
       render: (r) => (
-        <div className="deal-cell">
-          <span className="deal-line">
-            <span className="deal-title" title={r.title}>
-              {r.title}
+        <div className="deal-pic-cell">
+          {/* Product pictures (Nov 25): the first part's stored Amazon photo, or the neutral square. */}
+          <Picture src={r.image} size="row" />
+          <div className="deal-cell">
+            <span className="deal-line">
+              <span className="deal-title" title={r.title}>
+                {r.title}
+              </span>
+              {bought.has(r.id) ? <Tag title="You recorded buying this deal. Open Bought to see what became of it.">Bought</Tag> : null}
+              {r.needsLook ? (
+                <Tag tone="attention" title={`Needs a look: ${r.needsLook.sentence} Never Buy now until you look. Open the deal to check the listing.`}>
+                  Needs a look
+                </Tag>
+              ) : null}
+              {r.buyNow ? (
+                <Tag tone="buy" title="The last scan found this worth buying now: above your profit and ROI numbers, selling well, and better than before.">
+                  Buy now
+                </Tag>
+              ) : null}
+              {r.bogoChoices ? (
+                <Tag title={`${r.bogoChoices.label}${r.bogoPair ? ` This pair: ${r.bogoPair.starterModel} with ${r.bogoPair.freeModel} free.` : ''} Found in Home Depot’s Featured BOGO listing.`}>
+                  {r.bogoChoices.best ? 'BOGO best' : 'BOGO'}
+                </Tag>
+              ) : r.bogo ? (
+                <Tag title={r.bogo === 'choose' ? 'A BOGO promotion you entered: the free tool is not chosen yet.' : 'A BOGO promotion you entered, with its free tool chosen.'}>BOGO</Tag>
+              ) : null}
             </span>
-            {bought.has(r.id) ? <Tag title="You recorded buying this deal. Open Bought to see what became of it.">Bought</Tag> : null}
-            {r.needsLook ? (
-              <Tag tone="attention" title={`Needs a look: ${r.needsLook.sentence} Never Buy now until you look. Open the deal to check the listing.`}>
-                Needs a look
-              </Tag>
-            ) : null}
-            {r.buyNow ? (
-              <Tag tone="buy" title="The last scan found this worth buying now: above your profit and ROI numbers, selling well, and better than before.">
-                Buy now
-              </Tag>
-            ) : null}
-            {r.bogoChoices ? (
-              <Tag title={`${r.bogoChoices.label}${r.bogoPair ? ` This pair: ${r.bogoPair.starterModel} with ${r.bogoPair.freeModel} free.` : ''} Found in Home Depot’s Featured BOGO listing.`}>
-                {r.bogoChoices.best ? 'BOGO best' : 'BOGO'}
-              </Tag>
-            ) : r.bogo ? (
-              <Tag title={r.bogo === 'choose' ? 'A BOGO promotion you entered: the free tool is not chosen yet.' : 'A BOGO promotion you entered, with its free tool chosen.'}>BOGO</Tag>
-            ) : null}
-          </span>
-          <span className="deal-sub">
-            {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
-            {/* Keeping deals current: how old its prices are, beside the verdict, never hidden by it. */}
-            {r.pricesChecked ? (
-              <>
-                {' · '}
-                <span className={r.pricesChecked.staleSince ? 'attention-text' : undefined} title={r.pricesChecked.staleSince ? staleWhy(r.pricesChecked) : undefined}>
-                  {checkedWords(r.pricesChecked)}
-                </span>
-              </>
-            ) : null}
-            {/* Nov 25: what Home Depot's page states about buying it, only the facts that change what he does. */}
-            {r.buying?.limitLine ? <> · {r.buying.limitLine}</> : null}
-            {r.buying?.priceEndsLine ? (
-              <>
-                {' · '}
-                <span className={r.buying.priceEnded ? 'attention-text' : undefined}>{r.buying.priceEndsLine}</span>
-              </>
-            ) : null}
-          </span>
-          {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
-          {lineOf(r, matchShown) ? (
-            <span className="deal-reason" title={lineOf(r, matchShown)?.full}>
-              {lineOf(r, matchShown)?.text}
+            <span className="deal-sub">
+              {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
+              {/* Keeping deals current: how old its prices are, beside the verdict, never hidden by it. */}
+              {r.pricesChecked ? (
+                <>
+                  {' · '}
+                  <span className={r.pricesChecked.staleSince ? 'attention-text' : undefined} title={r.pricesChecked.staleSince ? staleWhy(r.pricesChecked) : undefined}>
+                    {checkedWords(r.pricesChecked)}
+                  </span>
+                </>
+              ) : null}
+              {/* Nov 25: what Home Depot's page states about buying it, only the facts that change what he does. */}
+              {r.buying?.limitLine ? <> · {r.buying.limitLine}</> : null}
+              {r.buying?.priceEndsLine ? (
+                <>
+                  {' · '}
+                  <span className={r.buying.priceEnded ? 'attention-text' : undefined}>{r.buying.priceEndsLine}</span>
+                </>
+              ) : null}
             </span>
-          ) : null}
+            {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
+            {lineOf(r, matchShown) ? (
+              <span className="deal-reason" title={lineOf(r, matchShown)?.full}>
+                {lineOf(r, matchShown)?.text}
+              </span>
+            ) : null}
+          </div>
         </div>
       ),
     },

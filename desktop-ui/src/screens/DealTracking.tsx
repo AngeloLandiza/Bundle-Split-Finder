@@ -14,7 +14,8 @@ import { HistoryChart } from '../components/HistoryChart';
 import { SourceLink } from '../components/Source';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
-import { amazonUrl, copyText, openPage } from '../lib/actions';
+import { amazonUrl, copyText, linksOpenInViewer, pageAction } from '../lib/actions';
+import { dealPages } from '../lib/viewer';
 import { money, plural, when } from '../lib/format';
 import { detailMenu, type DetailMenuId } from '../lib/menus';
 import { boughtWords } from '../lib/outcomes';
@@ -44,7 +45,11 @@ export function WatchBar({ d }: { d: DealDetail }) {
         ui.openBogo({ dealId: d.id, model: d.model, bogo: null });
         return;
       case 'open-hd':
-        if (!openPage(d.link)) setSaid('Home Depot’s page could not be opened.');
+      case 'open-hd-browser':
+        void pageAction(id === 'open-hd' ? 'open' : 'browser', d.link, dealPages(d)).then((ok) => ok || setSaid('Home Depot’s page could not be opened.'));
+        return;
+      case 'copy-hd-link':
+        void pageAction('copy', d.link).then((ok) => setSaid(ok ? 'Copied the Home Depot link.' : 'Could not copy the link.'));
         return;
       case 'copy-model':
         void copyText(d.model).then((ok) => setSaid(ok ? `Copied ${d.model}.` : 'Could not copy. Select the model by hand.'));
@@ -66,7 +71,7 @@ export function WatchBar({ d }: { d: DealDetail }) {
           aria-label="More actions"
           aria-haspopup="menu"
           title="More actions"
-          onClick={(e) => menu.openAt(e.currentTarget, { label: 'More actions', items: detailMenu(d, { scanRunning }), onPick: pick })}
+          onClick={(e) => menu.openAt(e.currentTarget, { label: 'More actions', items: detailMenu(d, { scanRunning, viewer: linksOpenInViewer() }), onPick: pick })}
         />
       </div>
       {said ? (

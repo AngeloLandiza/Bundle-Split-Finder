@@ -19,6 +19,39 @@ export function useAppInfo(): AppInfo | null {
   return info;
 }
 
+/** The page viewer's own cookies, storage and cache (docs/design.md, Page viewer): nothing of the app's or the agent's. */
+function ViewerData() {
+  const [cleared, setCleared] = useState(false);
+  const clear = useAction(() => invokeShell('viewer_clear_data'));
+  return (
+    <Row
+      label="Page viewer"
+      align="start"
+      help="Pages opened inside Split Finder keep their own cookies and storage, apart from your browser and from Split Finder’s data. Clearing them signs nothing out of your browser."
+    >
+      <div className="stack">
+        <Button
+          disabled={!inShell()}
+          busy={clear.busy}
+          busyLabel="Clearing…"
+          onClick={() => {
+            setCleared(false);
+            void clear.run().then((ok) => setCleared(ok));
+          }}
+        >
+          Clear viewer browsing data
+        </Button>
+        {cleared ? <p className="field-status field-status-ok">Cleared.</p> : null}
+        {clear.error ? (
+          <p className="field-status field-status-error" role="alert">
+            {clear.error}
+          </p>
+        ) : null}
+      </div>
+    </Row>
+  );
+}
+
 export function DataPane() {
   const info = useAppInfo();
   const csv = useAction(() => api.downloadDealsCsv({ sort: 'profit' }));
@@ -96,6 +129,9 @@ export function DataPane() {
           ) : null}
         </div>
       </Row>
+      {/* page viewer begin (Nov 25) */}
+      <ViewerData />
+      {/* page viewer end */}
       <Row label="Data folder" align="start" help={`Settings, keys, deals and the scan history live here, on this ${words.computer} only.`}>
         <div className="stack">
           {info?.dataDir ? <p className="code path selectable">{info.dataDir}</p> : <p className="muted">{inShell() ? 'Not known yet.' : 'Shown inside the Split Finder app.'}</p>}

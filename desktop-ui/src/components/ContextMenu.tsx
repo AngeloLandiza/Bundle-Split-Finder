@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode, type SyntheticEvent } from 'react';
 import { isMenuKey } from '../lib/keys';
-import { stepMenu, type MenuItem } from '../lib/menus';
+import { linkMenu, stepMenu, type MenuItem } from '../lib/menus';
+import { copyText, linkMenuAt, linksOpenInViewer, openPage } from '../lib/actions';
+import { linkDestination } from '@core/links/viewerPolicy';
 import './ContextMenu.css';
 
 /**
@@ -84,6 +86,31 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     if (o.items.length === 0) return;
     const r = button.getBoundingClientRect();
     setMenu({ x: r.left, y: r.bottom + 2, label: o.label, items: o.items, onPick: o.onPick, anchor: null, opener: button, first: true });
+  }, []);
+
+  // A right-click on any web link, anywhere in the window (page viewer, Nov 25): Open link, Open in browser, Copy link
+  // address. It is taken before a row's own menu, which would not say what the link is.
+  useEffect(() => {
+    const onContext = (e: MouseEvent) => {
+      const link = linkMenuAt(e.target);
+      if (!link) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setMenu({
+        x: e.clientX,
+        y: e.clientY,
+        label: 'Link',
+        items: linkMenu({ viewer: linksOpenInViewer() && linkDestination(link.href) === 'viewer' }),
+        onPick: (id) => {
+          if (id === 'copy-link') void copyText(link.href);
+          else openPage(link.href, { browser: id === 'open-link-browser', context: link.context });
+        },
+        anchor: null,
+        opener: (document.activeElement as HTMLElement | null) ?? null,
+      });
+    };
+    document.addEventListener('contextmenu', onContext, true);
+    return () => document.removeEventListener('contextmenu', onContext, true);
   }, []);
 
   const api = useMemo<MenuApi>(() => ({ openFrom, openAt, close }), [openFrom, openAt, close]);
