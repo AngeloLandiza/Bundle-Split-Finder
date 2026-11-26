@@ -239,6 +239,8 @@ export interface RoiRange {
 }
 
 export interface DealRow {
+  /** Product pictures (Nov 25): the first part's stored Amazon picture, checked (core/src/links/pictures.ts), or null. */
+  image: string | null;
   id: string;
   title: string;
   brand: string;
@@ -372,6 +374,8 @@ export interface DealPart {
   title: string | null;
   grade: Grade;
   asin: string | null;
+  /** The chosen listing's stored picture (core/src/links/pictures.ts checked it), or null. */
+  image: string | null;
   /** The counted Amazon New price, or null. */
   price: number | null;
   /** That price after fees. */

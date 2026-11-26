@@ -87,6 +87,21 @@ interface PartSeed {
   ebayLinks?: { url: string; price: number }[];
 }
 
+/**
+ * Product pictures (Nov 25): the stored pictures of the mock's ASINs, copied from the real store
+ * (fixtures/e2e-2026-11-23/after-scan6/scan/listings.json). 7 of the 19 have one, as thin as the real coverage; the
+ * others show the neutral square.
+ */
+const MOCK_PICTURES: Record<string, string> = {
+  B00ET5VMTU: 'https://m.media-amazon.com/images/I/81dmm7FomNL._AC_UL320_.jpg',
+  B01H9BL8EO: 'https://m.media-amazon.com/images/I/61EK3h1McDL._AC_UL320_.jpg',
+  B08L339D94: 'https://m.media-amazon.com/images/I/512ywemVDCL._AC_UL320_.jpg',
+  B0B11CJ52Y: 'https://m.media-amazon.com/images/I/51w007uMfeL._AC_UL320_.jpg',
+  B0B88R7HWB: 'https://m.media-amazon.com/images/I/61-Dn-VOfcL._AC_UL320_.jpg',
+  B0BGYFTPGK: 'https://m.media-amazon.com/images/I/61Bf2AIwqYL._AC_UL320_.jpg',
+  B0CHSZLJ43: 'https://m.media-amazon.com/images/I/519NqtJVSRL._AC_UL320_.jpg',
+};
+
 function part(s: PartSeed): DealPart {
   const qty = s.qty ?? 1;
   const counted = s.price !== null && (s.grade === 'verified' || s.grade === 'title_match');
@@ -117,6 +132,7 @@ function part(s: PartSeed): DealPart {
     title: s.title,
     grade: s.grade,
     asin: s.asin,
+    image: s.asin ? (MOCK_PICTURES[s.asin] ?? null) : null,
     price: counted ? s.price : null,
     net: counted && s.price !== null ? net(s.price) : null,
     prices,
@@ -228,6 +244,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
   if (seed.bogo) detail.bogo = mockBogoView(detail, { eligible: MOCK_ELIGIBLE, chosen: [], freeCount: 1, link: 'https://www.homedepot.com/b/Special-Values-Buy-One-Get-One-Free/N-5yc1vZ1z24hvk' });
   const row: DealRow = {
     id,
+    image: parts[0]?.image ?? null,
     title: seed.title,
     brand: seed.brand,
     model: seed.model,

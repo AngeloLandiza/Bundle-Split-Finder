@@ -446,6 +446,11 @@ export interface DealRow {
    * how many items Home Depot lists in it ("Set · 5 items"). `setItems` is absent on any other bundle.
    */
   bundle: { brand: string; model: string; title: string; itemId: string | null; link: string | null; setItems?: number };
+  /**
+   * Product pictures (Nov 25): the stored Amazon listing picture of the bundle's first part (core/src/links/pictures.ts
+   * rowPicture: https on m.media-amazon.com only). Absent when that part has none stored; never fetched or guessed.
+   */
+  image?: string | null;
   section: ReportSection;
   price: number | null;
   regularPrice: number | null;

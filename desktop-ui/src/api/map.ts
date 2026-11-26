@@ -3,6 +3,7 @@
 // an empty list); nothing here fills a gap with a guess (CLAUDE.md rule 4), and a suggestion made
 // for a question that has changed since is dropped, never shown as verified.
 
+import { pictureUrl } from '@core/links/pictures';
 import type * as C from '@core/api/contract';
 import { safeDownloadLink } from '@core/release/note';
 import { sellerCentralLink } from '@core/amazon/spapi/parse';
@@ -367,6 +368,7 @@ export function mapRow(r: C.DealRow): DealRow {
   const matchKind = matchKindOf(r);
   return {
     id: r.id,
+    image: pictureUrl(r.image ?? null),
     title: r.bundle.title,
     brand: r.bundle.brand,
     model: r.bundle.model,
@@ -487,6 +489,7 @@ export function unnamedPartOf(u: UnnamedItem): DealPart {
     title: u.name,
     grade: 'missing',
     asin: null,
+    image: null,
     price: u.price,
     net: null,
     prices: line,
@@ -504,6 +507,7 @@ function partOf(p: PartRow): DealPart {
     title: p.title,
     grade,
     asin: p.asin,
+    image: pictureUrl(p.image),
     price: p.price,
     // The contract holds the estimate's totals, not each part's net; nothing here works one out.
     net: null,

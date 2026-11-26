@@ -129,7 +129,7 @@ function realDetail(row: DealRow, parts: string[], evidence: NonNullable<DealDet
     estimate: null,
     noEstimate: row.needsAnswer ? 'No estimate yet: what is inside this bundle is not settled.' : `No estimate yet: ${parts.length} ${parts.length === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.`,
     ways: [], questionId: null, asins: [], lookup: row.lookup, watch: null, signals: null, history: [], bogo: null, bogoGroup: null, fbaEstimate: null,
-    parts: parts.map((m) => ({ model: m, qty: 1, title: null, grade: 'not_looked_up' as const, asin: null, price: null, net: null, prices: [], verifySearches: null, unnamed: false, confirm: { state: 'look-up-first' as const, ebay: [], confirmed: null, inactive: false } })),
+    parts: parts.map((m) => ({ model: m, qty: 1, title: null, grade: 'not_looked_up' as const, asin: null, image: null, price: null, net: null, prices: [], verifySearches: null, unnamed: false, confirm: { state: 'look-up-first' as const, ebay: [], confirmed: null, inactive: false } })),
     ...(evidence.length ? { splitEvidence: evidence } : {}),
   };
 }
