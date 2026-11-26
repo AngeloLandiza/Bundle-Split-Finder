@@ -1,6 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "date": "2026-11-25",
-  "notes": ["First version."],
-  "downloadUrl": null
+  "notes": [
+    "Split Finder now installs new versions by itself.",
+    "You can save more than one SerpApi and Keepa key; searches and tokens add up.",
+    "Profit says when sales tax and inbound shipping are not counted yet."
+  ],
+  "downloadUrl": "https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/latest"
 }
