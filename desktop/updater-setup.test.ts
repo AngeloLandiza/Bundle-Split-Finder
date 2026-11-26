@@ -10,6 +10,9 @@ import { describe, expect, it } from 'vitest';
 import { pubkeyOf } from '../core/src/release/pubkey';
 
 const root = join(import.meta.dirname, '..');
+// The config the tests copy is the real one, which holds the project's public key once the owner has run the setup: a run
+// that must change nothing leaves that key as it was (it was '' before Nov 25).
+const UNCHANGED = pubkeyOf(readFileSync(join(root, 'src-tauri', 'tauri.conf.json'), 'utf8'));
 const script = join(root, 'scripts', 'updater-setup.ts');
 
 /** A fake gh: `auth status` answers as told; `secret set` records its arguments and what it read on stdin. */
@@ -92,7 +95,7 @@ describe.skipIf(process.platform === 'win32')('npm run updater:setup', () => {
       expect(r.status).toBe(1);
       expect(r.stderr).toMatch(/gh/);
       expect(existsSync(s.key)).toBe(false);
-      expect(pubkeyOf(readFileSync(s.conf, 'utf8'))).toBe('');
+      expect(pubkeyOf(readFileSync(s.conf, 'utf8'))).toBe(UNCHANGED);
     }
   }, 60_000);
 
@@ -103,6 +106,6 @@ describe.skipIf(process.platform === 'win32')('npm run updater:setup', () => {
     expect(r.stderr).toContain('Storing the key on GitHub failed: HTTP 403');
     expect(r.stderr).toContain('run this again');
     expect(existsSync(s.key)).toBe(true);
-    expect(pubkeyOf(readFileSync(s.conf, 'utf8'))).toBe('');
+    expect(pubkeyOf(readFileSync(s.conf, 'utf8'))).toBe(UNCHANGED);
   }, 60_000);
 });
