@@ -630,7 +630,12 @@ pane and the pane re-reads what the agent holds.
   forecast, brands, the five fees with a line that they are estimates, Keepa tokens per scan and reserve.
 - **Keys**: one row each for SerpApi, Keepa, Anthropic, OpenAI-compatible, eBay and Telegram: Saved or
   Not set, Replace, Remove (with a confirmation line), a "Get a key" link. Fields are always empty; a key
-  is never read back.
+  is never read back. SerpApi and Keepa (Nov 25, key stacking) may hold keys from more than one account: with one key the row
+  is as before with a quiet **Add another key** under it; with two or more, one plain line per key (its name in semibold,
+  "Added Nov 25", its own check in the check line's colours, **Rename**, **Check again**, **Remove**), separated by
+  hairlines, no box. The add form says "a key from another account, for example your partner's or a paid plan" and that
+  he is responsible for each account's terms. Totals are shown everywhere a number is; each key's share goes on a second
+  line or in a tooltip, never in place of the total.
 - **AI**: Autopilot (off by default, with what it may apply and that Undo exists), the monthly cap with this
   month's spend, then per pipeline (Listing check, Ask AI, Research) provider, model, base URL for an
   OpenAI-compatible provider, and Trusted for Autopilot (the agent resets it when the model changes; the
