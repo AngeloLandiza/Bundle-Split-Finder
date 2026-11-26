@@ -2,6 +2,7 @@
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
 import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, type KitRecord, kitRecords, splitItems } from '../kitContents';
+import { homeDepotPicture } from '../links/pictures';
 import { isBulkPackaging } from '../match';
 import { priceForNet, type BundleResult, type FeeSettings, type ListingFees } from '../money';
 import type { PartTrend } from '../keepa/trends';
@@ -66,6 +67,11 @@ interface RefsOf {
   amazonFees: AmazonFeesLookup;
   /** Answer once (Nov 23): what the owner settled about this model (its own key only: a fact is about that model). */
   fact(brand: string, model: string): PartFact | undefined;
+  /**
+   * Nov 25: the part's own Home Depot picture: its part price record's (the page of the part sold alone, its model
+   * confirmed), else its catalog entry's (the list row whose model is the part's). Its own key only: a twin is another product.
+   */
+  hdPicture(brand: string, model: string): string | undefined;
 }
 
 /** What the estimate may take from a listing's stored Keepa trend; suggested prices (Nov 23) read its averages too. */
@@ -92,6 +98,15 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
   const ebayListed = new Map(ebayAll.filter((r) => r.listings.length > 0).map((r) => [r.key, r] as const));
   const confirmedByKey = new Map((await store.listConfirmedPrices()).map((r) => [r.key, r] as const));
   const factByKey = new Map((store.listPartFacts ? await store.listPartFacts() : []).map((r) => [r.key, r] as const));
+  const hdPictures = new Map<string, string>();
+  for (const c of await store.listCatalog()) {
+    const image = homeDepotPicture(c.image);
+    if (image) hdPictures.set(c.key, image);
+  }
+  for (const r of await store.listPartPrices()) {
+    const image = homeDepotPicture(r.image);
+    if (image) hdPictures.set(r.key, image);
+  }
   const first = <T>(by: Map<string, T>, brand: string, model: string): T | undefined => {
     for (const key of [partKey(brand, model), ...twinKeys(brand, model)]) {
       const found = by.get(key);
@@ -107,6 +122,7 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
     trend: (asin) => opts.trend?.(asin),
     amazonFees: (asin, price) => opts.amazonFees?.(asin, price),
     fact: (brand, model) => factByKey.get(partKey(brand, model)),
+    hdPicture: (brand, model) => hdPictures.get(partKey(brand, model)),
   };
 }
 
@@ -279,6 +295,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       priceSeenAt: featured ? featured.seenAt : confirmedOpt ? confirmedOpt.seenAt : (price?.seenAt ?? null),
       ...(match?.asin && price ? { priceCheckedAt: price.checkedAt } : {}),
       image: listing?.image ?? null,
+      ...(refs.hdPicture(brand, model) ? { hdImage: refs.hdPicture(brand, model)! } : {}),
       title: listing?.title ?? null,
       prices,
       // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
@@ -556,6 +573,12 @@ function primaryOf(options: Evaluated[]): number {
  * records and catalog entries marked a kit), built once per report; `refs` (steps 9 and 10) too, and `kitPageOf`
  * (kitPageTargets over the same stored bundles and catalog).
  */
+/** Nov 25: a bundle's own Home Depot picture (BundleRecord.image, else its page reading's), checked; nothing when none. */
+function bundlePicture(b: BundleRecord): { image?: string } {
+  const image = homeDepotPicture(b.image) ?? homeDepotPicture(b.page?.image);
+  return image ? { image } : {};
+}
+
 async function bundleRow(
   store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => KitRecord[], refs: RefsOf,
   kitPageOf: (brand: string, model: string) => KitPageTarget,
@@ -566,6 +589,8 @@ async function bundleRow(
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
     ...(b.buying ? { buying: b.buying } : {}),
+    // Nov 25: the bundle's own Home Depot picture: its list row's, else its page's.
+    ...bundlePicture(b),
     answer: ownerAnswer(question, b.split ?? null),
     // Fix round 3: a Home Depot set ("Set · 5 items"): it has no model number.
     ...(b.set ? { setItems: b.set.items.reduce((n, i) => n + i.quantity, 0) } : {}),

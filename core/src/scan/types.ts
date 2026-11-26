@@ -1039,6 +1039,11 @@ export interface PartRow {
   priceCheckedAt?: number;
   /** Picture of the chosen listing, when it is among the saved listings. */
   image: string | null;
+  /**
+   * Nov 25: the part's own Home Depot picture (images.thdstatic.com): its part price record's, else its catalog entry's.
+   * Shown when `image` is null. Absent when neither is stored.
+   */
+  hdImage?: string;
   /** Title of the chosen listing, when it is among the saved listings. */
   title: string | null;
   /** Step 9: every price known for the part, each labelled, highest first (report.ts priceOptions). */
@@ -1316,6 +1321,8 @@ export interface BundleRow {
   seenAt: number;
   /** Nov 25: what Home Depot's page last stated about buying it (BundleRecord.buying); absent until a page was read. */
   buying?: BundleBuying;
+  /** Nov 25: the bundle's own Home Depot picture (BundleRecord.image, else its page's); absent when none is stored. */
+  image?: string;
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];

@@ -35,4 +35,20 @@ describe('a deal row’s picture', () => {
     expect(later).toBeDefined();
     expect(rows.find((r) => r.id === later!.key)!.image).toBeUndefined();
   });
+
+  it('Nov 25: is the bundle’s own Home Depot picture first, and the list says how many deals and parts have one', () => {
+    const HD = 'https://images.thdstatic.com/productImages/b16b4743-d4cf-4c84-b731-5ccd3e2cc507/svn/ryobi-power-tool-combo-kits-pcl1600k2-64_145.jpg';
+    const deals = read('deals.json') as { bundles: { key: string; image?: string; parts: { image: string | null }[] }[] };
+    const withPart = deals.bundles.find((b) => b.parts[0]?.image)!;
+    const withNone = deals.bundles.find((b) => b.parts.every((p) => !p.image))!;
+    const changed = { ...deals, bundles: deals.bundles.map((b) => (b.key === withPart.key || b.key === withNone.key ? { ...b, image: HD } : b)) };
+    const res = dealsResponse({ ...data, deals: changed } as unknown as Parameters<typeof dealsResponse>[0], { sort: 'profit' }, new Date(2026, 10, 25, 12).getTime());
+    expect(res.rows.find((r) => r.id === withPart.key)!.image).toBe(HD);
+    expect(res.rows.find((r) => r.id === withNone.key)!.image).toBe(HD);
+    expect(res.pictures).toEqual({ deals: 47, dealsOf: 258, parts: 46, partsOf: 153 });
+    // A stored address off the image hosts is no picture: the row falls back to its first part's.
+    const bad = { ...deals, bundles: deals.bundles.map((b) => (b.key === withPart.key ? { ...b, image: 'https://evil.example/x.jpg' } : b)) };
+    const res2 = dealsResponse({ ...data, deals: bad } as unknown as Parameters<typeof dealsResponse>[0], { sort: 'profit' }, new Date(2026, 10, 25, 12).getTime());
+    expect(res2.rows.find((r) => r.id === withPart.key)!.image).toBe(withPart.parts[0]!.image);
+  });
 });

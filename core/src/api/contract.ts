@@ -16,6 +16,7 @@ import type { SetContent, SplitEvidence } from '../decompose';
 import type { ReviewFollowUp } from '../research/followUp';
 import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
+import type { PictureCoverage } from '../links/pictures';
 import type { SanityKind, SanitySeverity } from '../audit/sanity';
 import type { FeeSettings } from '../money';
 import type { Schedule } from '../schedule';
@@ -447,8 +448,9 @@ export interface DealRow {
    */
   bundle: { brand: string; model: string; title: string; itemId: string | null; link: string | null; setItems?: number };
   /**
-   * Product pictures (Nov 25): the stored Amazon listing picture of the bundle's first part (core/src/links/pictures.ts
-   * rowPicture: https on m.media-amazon.com only). Absent when that part has none stored; never fetched or guessed.
+   * Product pictures (Nov 25): the bundle's own Home Depot picture, else its first part's stored picture (its Amazon
+   * listing's, else its own Home Depot page's): core/src/links/pictures.ts rowPicture, https on m.media-amazon.com or
+   * images.thdstatic.com only. Absent when none is stored; never fetched or guessed.
    */
   image?: string | null;
   section: ReportSection;
@@ -671,6 +673,8 @@ export interface DealsResponse {
   /** Days since the oldest bundle price was seen, when the list is stale; else null. */
   staleDays: number | null;
   notices: { limit: { title: string; text: string } | null; ebay: string | null };
+  /** Nov 25: how many stored deals and distinct parts have a picture (core/src/links/pictures.ts pictureCoverage). */
+  pictures?: PictureCoverage;
 }
 
 /** W4: the estimate's figures, from the fee settings (CLAUDE.md rule 5: an estimate, never the seller's real fees). */

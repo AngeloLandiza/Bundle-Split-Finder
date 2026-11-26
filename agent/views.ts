@@ -1,6 +1,6 @@
 // What the agent's endpoints answer, built from the store (pure functions; the contract's shapes).
 
-import { rowPicture } from '../core/src/links/pictures';
+import { pictureCoverage, rowPicture } from '../core/src/links/pictures';
 import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
 import { backlogSentence, ceilingWords, dripCeiling, fullPerHour, HD_LIMITS, paceStateOf, pausedSentence } from '../core/src/scan/hdPace';
 import { dayOf } from '../core/src/tracking/state';
@@ -162,7 +162,7 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
       brand: b.brand, model: setModel(b), title: b.title, itemId: b.itemId || null, link: b.link,
       ...(b.setItems !== undefined ? { setItems: b.setItems } : {}),
     },
-    ...(rowPicture(null, b.parts) ? { image: rowPicture(null, b.parts) } : {}),
+    ...(rowPicture(b.image, b.parts) ? { image: rowPicture(b.image, b.parts) } : {}),
     section: b.section,
     price: b.price,
     regularPrice: b.regularPrice,
@@ -368,6 +368,8 @@ export function dealsResponse(
     rows: ordered,
     staleDays: bundles.length ? staleBundleDays(bundles, now, DEFAULT_SCAN_SETTINGS.freshnessMs) : null,
     notices: { limit: limit ? { title: limit.title, text: limit.text } : null, ebay: lastJob?.ebayNotice ?? null },
+    // Nov 25: how far pictures reach on the stored deals (Settings > General), so the owner sees it fill in.
+    pictures: pictureCoverage(bundles),
   };
 }
 
