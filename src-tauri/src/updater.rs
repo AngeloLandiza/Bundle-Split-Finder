@@ -137,9 +137,11 @@ pub fn spawn(app: AppHandle) {
           g.take();
         }
       }
-      if now_ms() >= next_check {
+      // Until the settings have been read (0) the look waits for them, tick by tick; off (2) skips this turn.
+      let looking = LOOKING.load(Ordering::Relaxed);
+      if now_ms() >= next_check && looking != 0 {
         next_check = now_ms() + CHECK_EVERY.as_millis() as u64;
-        if LOOKING.load(Ordering::Relaxed) == 1 {
+        if looking == 1 {
           look(&app);
         }
       }
