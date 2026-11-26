@@ -12,6 +12,8 @@
 pub mod model;
 pub mod native;
 pub mod policy;
+#[cfg(debug_assertions)]
+pub mod preview;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -146,6 +148,17 @@ fn page_builder(app: &AppHandle, first: Url) -> Result<WebviewBuilder<Wry>, Stri
   Ok(page)
 }
 
+/// The toolbar's one init script: the platform and the window chrome, on its own origin only. Unlike the dashboard's
+/// (shell.rs init_script) it carries no token.
+fn bar_script(home: &Url) -> String {
+  let origin = serde_json::to_string(&home.origin().ascii_serialization()).unwrap_or_else(|_| "\"\"".into());
+  let chrome = if cfg!(target_os = "macos") { "unified" } else { "standard" };
+  format!(
+    "(function(){{ if (location.origin !== {origin}) return; window.__SPLIT_FINDER_SHELL__ = {{ platform: '{platform}', chrome: '{chrome}' }}; }})();",
+    platform = std::env::consts::OS,
+  )
+}
+
 fn build(app: &AppHandle, first: Url) -> Result<(), String> {
   let generation = GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
   let window = window_builder(app)?.build().map_err(|e| e.to_string())?;
@@ -154,8 +167,8 @@ fn build(app: &AppHandle, first: Url) -> Result<(), String> {
   let bar_origin = Url::parse(&bar_url()).map_err(|e| e.to_string())?;
   let bar_home = bar_origin.clone();
   let bar = WebviewBuilder::new(BAR, WebviewUrl::External(bar_origin))
-    // The toolbar knows the platform; it gets no agent token (None) and needs none.
-    .initialization_script(crate::shell::init_script(None, false))
+    // The toolbar is told the platform and the chrome, and nothing else: no agent token, which it does not need.
+    .initialization_script(bar_script(&bar_home))
     // The toolbar never leaves its own page.
     .on_navigation(move |url| url.origin() == bar_home.origin())
     .on_new_window(|_, _| NewWindowResponse::Deny)
@@ -442,12 +455,25 @@ pub fn menu_action(app: &AppHandle, id: &str) {
   }
 }
 
+/// Text as a native menu item shows it: a menu reads a single `&` as a mnemonic marker and drops it ("Battery &
+/// Charger" would read "Battery  Charger"), so each is doubled; a long title is cut at a word with an ellipsis.
+fn menu_text(text: &str, max: usize) -> String {
+  let cut = if text.chars().count() > max {
+    let head: String = text.chars().take(max).collect();
+    let at = head.rfind(' ').filter(|i| *i > max / 2).unwrap_or(head.len());
+    format!("{}…", head[..at].trim_end_matches([' ', ',', '&', '/', '(', '-']))
+  } else {
+    text.to_string()
+  };
+  cut.replace('&', "&&")
+}
+
 /// The page pop-up's native menu: the deal's title, then its pages, grouped by site, the one on screen checked.
 fn pages_menu(app: &AppHandle) -> tauri::Result<Option<Menu<Wry>>> {
   let (ctx, current) = with_model(|m| (m.context.clone(), m.current()));
   let Some(ctx) = ctx else { return Ok(None) };
   let mut items: Vec<Box<dyn IsMenuItem<Wry>>> = Vec::new();
-  items.push(Box::new(MenuItem::with_id(app, "viewer:title", &ctx.title, false, None::<&str>)?));
+  items.push(Box::new(MenuItem::with_id(app, "viewer:title", menu_text(&ctx.title, 64), false, None::<&str>)?));
   let mut last_site: Option<String> = None;
   for (i, p) in ctx.pages.iter().enumerate() {
     let site = p.label.split(" · ").next().unwrap_or("").to_string();
@@ -455,7 +481,7 @@ fn pages_menu(app: &AppHandle) -> tauri::Result<Option<Menu<Wry>>> {
       items.push(Box::new(PredefinedMenuItem::separator(app)?));
       last_site = Some(site);
     }
-    items.push(Box::new(CheckMenuItem::with_id(app, format!("viewer:page:{i}"), &p.label, true, current == Some(i), None::<&str>)?));
+    items.push(Box::new(CheckMenuItem::with_id(app, format!("viewer:page:{i}"), menu_text(&p.label, 80), true, current == Some(i), None::<&str>)?));
   }
   let refs: Vec<&dyn IsMenuItem<Wry>> = items.iter().map(|b| b.as_ref()).collect();
   Ok(Some(Menu::with_items(app, &refs)?))
@@ -616,6 +642,17 @@ mod tests {
         "core:window:allow-start-dragging",
       ]
     );
+  }
+
+  #[test]
+  fn a_menu_shows_an_ampersand_and_cuts_a_long_title_at_a_word() {
+    // The real title of homedepot:344305163 (fixtures/e2e-2026-11-23/after-scan6).
+    let title = "ONE+ 18V Lithium Starter Kit w/ (1) 2.0 Ah Battery, (1) 4.0 Ah Battery & Charger w/ ONE+ 18V Hybrid LED Work Light";
+    let shown = menu_text(title, 64);
+    assert!(shown.ends_with('…'));
+    assert!(shown.chars().count() <= 65);
+    assert_eq!(menu_text("Battery & Charger", 64), "Battery && Charger");
+    assert_eq!(menu_text("Amazon · PCG002", 80), "Amazon · PCG002");
   }
 
   #[test]
