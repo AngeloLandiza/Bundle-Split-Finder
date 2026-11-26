@@ -9,7 +9,9 @@
   background: var(--toolbar-bg);
   border-bottom: 1px solid var(--separator);
   position: relative;
-  z-index: 10;
+  /* Above the notices under it (Page.css .notices, 20): a toolbar popover (View options, the costs summary) opens
+     downward over the banner, and it stacks inside the toolbar, so the toolbar itself must be the higher layer. */
+  z-index: 30;
 }
 
 .toolbar-title {
