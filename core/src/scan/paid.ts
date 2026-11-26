@@ -18,7 +18,7 @@ import { amazonListingLink } from './catalogCheck';
 import { applyBarcodeFinding, lookupAsk } from './barcodeLookup';
 import type { KeepaLookupAsk } from '../keepa/fetchStep';
 import { wantedFor } from './classify';
-import { listingFrom } from './listings';
+import { keepListingPicture, listingFrom } from './listings';
 import {
   applyIdentify, applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings, notePageDue,
   NOT_CONFIRMED, openMatchReview, pageEvidence, type Part, type PartContext, pickFromListings, pullMatchedPrice, savePrice, sendLookup, sharedMatch,
@@ -325,6 +325,8 @@ async function verify(
   if (page.asin !== asin) throw new PaidProblem(OTHER_LISTING);
   await savePrice(ctx, asin, page, at);
   await saveBuyBox(ctx, page, parseBuyBox(data), at);
+  // Nov 25: a Keepa pull's picture, on the stored listing that has none.
+  if (result.keepaProduct) await keepListingPicture(ctx.store, asin, result.keepaProduct.image);
   // As after a lookup: the owner may have decided the part while the page loaded.
   const match = await ctx.store.getMatch(part.key);
   if (!match || verifyRefusal(match, asin) !== null) return;
