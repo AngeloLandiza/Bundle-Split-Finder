@@ -224,7 +224,26 @@ function updateOf(v: unknown): AppState['update'] {
   if (typeof v !== 'object' || v === null) return undefined;
   const u = v as Record<string, unknown>;
   if (typeof u.version !== 'string' || typeof u.date !== 'string' || !Array.isArray(u.notes) || !u.notes.every((n) => typeof n === 'string')) return undefined;
-  return { version: u.version, date: u.date, notes: u.notes as string[], link: safeDownloadLink(u.link) };
+  // Nov 25, self-update: `ready` (Install now) and `updated` (it happened); anything else is the old download notice.
+  const kind = u.kind === 'ready' || u.kind === 'updated' ? u.kind : 'download';
+  const waiting = typeof u.waiting === 'string' && u.waiting ? { waiting: u.waiting } : {};
+  return { kind, version: u.version, date: u.date, notes: u.notes as string[], link: kind === 'download' ? safeDownloadLink(u.link) : null, ...waiting };
+}
+
+/** Nov 25, self-update: what Settings, General says about this copy's updates; undefined from an older agent. */
+function updaterOf(v: unknown): AppState['updater'] {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const u = v as Record<string, unknown>;
+  if (typeof u.can !== 'boolean') return undefined;
+  const outcome = u.outcome === 'current' || u.outcome === 'found' || u.outcome === 'failed' ? u.outcome : null;
+  return {
+    can: u.can,
+    ...(typeof u.why === 'string' && u.why ? { why: u.why } : {}),
+    version: typeof u.version === 'string' ? u.version : null,
+    checkedAt: typeof u.checkedAt === 'string' && Number.isFinite(Date.parse(u.checkedAt)) ? u.checkedAt : null,
+    outcome,
+    ...(typeof u.ready === 'string' && u.ready ? { ready: u.ready } : {}),
+  };
 }
 
 export function mapState(s: C.AgentState): AppState {
@@ -272,6 +291,7 @@ export function mapState(s: C.AgentState): AppState {
     ...(typeof s.profitNote === 'string' && s.profitNote ? { profitNote: s.profitNote } : {}),
     ...(s.costsPrompt && typeof s.costsPrompt.sentence === 'string' ? { costsPrompt: { sentence: s.costsPrompt.sentence } } : {}),
     ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),
+    ...(updaterOf((s as { updater?: unknown }).updater) ? { updater: updaterOf((s as { updater?: unknown }).updater)! } : {}),
     ...(s.loginNotice && typeof s.loginNotice.sentence === 'string' ? { loginNotice: { sentence: s.loginNotice.sentence } } : {}),
     ...(sellerUsageOf((s as { seller?: unknown }).seller) ? { seller: sellerUsageOf((s as { seller?: unknown }).seller)! } : {}),
   };

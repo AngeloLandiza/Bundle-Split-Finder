@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
+  NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, UpdaterState, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -14,6 +14,7 @@ export type {
   ActivityError,
   TelegramActionEntry,
   UpdateNotice,
+  UpdaterState,
   VersionEntry,
   AppSettings,
   OutcomeEntry,
@@ -197,8 +198,13 @@ export interface AppState {
   keyProblems?: KeyProblems;
   /** When each saved key last got a verdict from its own service; absent for a key not yet checked. */
   keyChecks?: KeyChecks;
-  /** A version newer than this app is ready (the agent read the project's release note); absent when none, when he turned it off, or when he closed this version's notice. */
+  /**
+   * The new-version notice: `download` (a copy that cannot update itself: the release note's link), `ready` (a verified
+   * update waits for Install now) or `updated` (it was updated). Absent when none, when he turned it off, or closed it.
+   */
   update?: UpdateNotice;
+  /** Nov 25, self-update: whether this copy updates itself, its version and the last look; absent from an older agent. */
+  updater?: UpdaterState;
   /** The app turned "Open at login" on itself because a schedule was set; a quiet notice with Turn off, until he closes it. */
   loginNotice?: { sentence: string };
   /** What the profit estimates leave out while his sales tax or inbound shipping is unanswered ("before sales tax and inbound shipping"); absent when both are answered. */

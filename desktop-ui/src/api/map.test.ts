@@ -76,7 +76,7 @@ describe('the agent state', () => {
     expect(mapState(base)).not.toHaveProperty('update');
     const good = 'https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/download/v0.1.1/setup.exe';
     const note = (link: unknown) => ({ ...base, update: { version: '0.1.1', date: '2026-11-26', notes: ['Fixes the scan button.'], link } }) as unknown as C.AgentState;
-    expect(mapState(note(good)).update).toEqual({ version: '0.1.1', date: '2026-11-26', notes: ['Fixes the scan button.'], link: good });
+    expect(mapState(note(good)).update).toEqual({ kind: 'download', version: '0.1.1', date: '2026-11-26', notes: ['Fixes the scan button.'], link: good });
     for (const bad of ['http://drive.google.com/x', 'https://evil.example/x', 'javascript:alert(1)', null, 3]) expect(mapState(note(bad)).update?.link, String(bad)).toBeNull();
     expect(mapState({ ...base, update: { version: 1 } } as unknown as C.AgentState)).not.toHaveProperty('update');
   });

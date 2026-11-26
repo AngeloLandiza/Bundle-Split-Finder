@@ -95,6 +95,8 @@ export interface ApiClient {
   reloadHelper(): Promise<void>;
   /** Closes the new-version notice for this version, for good (POST /api/update/dismiss). */
   dismissUpdate(version: string): Promise<void>;
+  /** Installs the downloaded, verified version once nothing is running; Split Finder then opens again (POST /api/update/install-now). */
+  installUpdate(version: string): Promise<void>;
   /** Closes the notice that Open at login was turned on for the schedule; `turnOff` also turns it off (POST /api/self-run/login-notice). */
   answerLoginNotice(turnOff: boolean): Promise<void>;
   /** Closes the question about sales tax and inbound shipping; it is not asked again (POST /api/costs-prompt/dismiss). */

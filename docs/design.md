@@ -619,7 +619,13 @@ pane and the pane re-reads what the agent holds.
 
 - **General**: Appearance (System, Light, Dark, each a small window preview; System is both halves),
   Accent colour (swatches and its name), Density; Open at login; Show menu bar icon and Show Dock icon
-  (the last one that is on is disabled and says why: with both off there is no way back in); Sounds.
+  (the last one that is on is disabled and says why: with both off there is no way back in); New versions (Look for
+  new versions; Install new versions automatically, only in a copy that updates itself; one muted line with the
+  version and the last look; "Install X now" when a downloaded version waits); Sounds.
+- **The new-version notice** is the lowest in the notice region, quiet tone, never a modal: "Split Finder was updated
+  to X." (What changed, Dismiss), "Version X is ready." (Install now as the one primary button, What changed,
+  Dismiss; after pressing, why it has not installed yet if something runs), or in a copy that cannot update itself
+  "Split Finder X is ready." with Download.
 - **Scanning**: schedule (Off, Every N hours, Daily at a time), searches per scan, reserve, the month's
   forecast, brands, the five fees with a line that they are estimates, Keepa tokens per scan and reserve.
 - **Keys**: one row each for SerpApi, Keepa, Anthropic, OpenAI-compatible, eBay and Telegram: Saved or

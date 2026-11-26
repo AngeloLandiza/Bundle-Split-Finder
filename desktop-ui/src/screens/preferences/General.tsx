@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { api, useAction, useApp } from '../../api/hooks';
+import { Button } from '../../components/Button';
 import { Segmented, Switch } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
 import { ACCENTS, type Accent, type Appearance, type Density } from '../../lib/appearance';
 import { ICON_GUARD_SENTENCE, guardIcons, isLastIcon } from '../../lib/prefs';
 import { words } from '../../lib/platform';
+import { updatesHelp, versionLine } from '../../lib/updates';
 import { Pane, Row, Rule, usePrefs } from './form';
 
 const ACCENT_NAME: Record<Accent, string> = {
@@ -36,6 +39,50 @@ function Mini({ scheme }: { scheme: 'light' | 'dark' }) {
         <span className="mini-line mini-line-short" />
       </span>
     </span>
+  );
+}
+
+/**
+ * New versions (Nov 25, self-update): look for them, install them by themselves, the running version and the last look.
+ * A copy that cannot update itself (built without the update key, or a development run) says so and keeps the old
+ * behaviour: a message with a download link.
+ */
+function NewVersions() {
+  const { settings, update } = usePrefs();
+  const { state, refreshState } = useApp();
+  const install = useAction(api.installUpdate);
+  const updater = state?.updater;
+  const looking = settings.updates?.tellMeAboutNewVersion ?? true;
+  const automatic = settings.updates?.installAutomatically ?? true;
+  const can = updater?.can ?? false;
+  const line = versionLine(updater);
+  return (
+    <Row label="New versions" align="start" help={updatesHelp(updater)}>
+      <div className="stack">
+        <Switch label="Look for new versions" checked={looking} onChange={(tellMeAboutNewVersion) => update({ updates: { tellMeAboutNewVersion } })} />
+        {can ? (
+          <Switch
+            label="Install new versions automatically"
+            checked={automatic}
+            disabled={!looking}
+            onChange={(installAutomatically) => update({ updates: { installAutomatically } })}
+          />
+        ) : null}
+        {line ? <p className="muted">{line}</p> : null}
+        {can && looking && updater?.ready ? (
+          <div>
+            <Button size="sm" busy={install.busy} busyLabel="Installing…" onClick={() => void install.run(updater.ready!).then(() => refreshState())}>
+              Install {updater.ready} now
+            </Button>
+            {install.error ? (
+              <p className="frow-help" role="alert">
+                {install.error}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </Row>
   );
 }
 
@@ -110,17 +157,7 @@ export function GeneralPane() {
         </div>
       </Row>
       <Rule />
-      <Row
-        label="New versions"
-        align="start"
-        help="Split Finder looks at the project’s public page on GitHub once a day and sends nothing about you. It never downloads anything: when a new version is ready it tells you, with a link, and you run the installer yourself."
-      >
-        <Switch
-          label="Tell me when a new version is ready"
-          checked={settings.updates?.tellMeAboutNewVersion ?? true}
-          onChange={(tellMeAboutNewVersion) => update({ updates: { tellMeAboutNewVersion } })}
-        />
-      </Row>
+      <NewVersions />
       <Rule />
       <Row label="Sounds" help="Notifications from Split Finder play the default sound.">
         <Switch label="Play a sound with notifications" checked={settings.notifications.sound} onChange={(sound) => update({ notifications: { sound } })} />

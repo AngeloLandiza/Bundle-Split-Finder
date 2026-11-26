@@ -533,6 +533,12 @@ export function createMockClient(): ApiClient {
       state.update = undefined;
       sync();
     },
+    async installUpdate() {
+      await online(400);
+      // The mock has no shell to install with: it says what the real app would wait for.
+      if (state.update?.kind === 'ready') state.update = { ...state.update, waiting: 'It installs when nothing is running; a scan is running.' };
+      sync();
+    },
     async dismissCostsPrompt() {
       await online();
       state.costsPrompt = undefined;

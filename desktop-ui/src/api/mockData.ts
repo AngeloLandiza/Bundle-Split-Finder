@@ -40,7 +40,7 @@ export const SETTINGS: AppSettings = {
     morningAt: '08:00',
   },
   shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
-  updates: { tellMeAboutNewVersion: true },
+  updates: { tellMeAboutNewVersion: true, installAutomatically: true },
   ebaySettings: { judgeModel: 'claude-haiku-4-5', listingsJudgedPerScan: 20 },
   settings: {
     schedule: { mode: 'daily', at: '06:00' },
@@ -538,6 +538,7 @@ export const STATE: AppState = {
   counts: { review: QUESTIONS.length, autopilotApplied: 3, newDeals: 3 },
   keys: { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false, amazonSeller: false },
   firstRun: false,
+  updater: { can: true, version: '0.2.0', checkedAt: ago(95), outcome: 'current' },
 };
 
 const run = (r: Omit<Run, 'error' | 'steps'> & { error?: string; steps?: Run['steps'] }): Run => ({ error: null, steps: [], ...r });
