@@ -2457,3 +2457,116 @@ reason matters for the rewrite:
   and about 4,600 tests pin today's behaviour, every wrong-match case included, and must be carried over.
 - C and C++ give nothing Rust does not, with more ways to crash. Assembly has no place here.
 
+## Nov 25: the app updates itself from GitHub releases
+
+**Decided by the owner**, replacing "a new version is a message and a link" (above) for every copy that can: Alex, on
+Windows and not technical, should never have to download an installer again. That entry still describes what 0.1.0 and a
+build without the update key do.
+
+**What happens.** The shell (`src-tauri/src/updater.rs`, tauri-plugin-updater 2.14.1) looks at
+`https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/latest/download/latest.json` a minute after launch and then
+every 6 hours (wall clock, so a Mac that slept still looks), downloads a newer version at once and verifies it. The
+verified bytes wait in memory; every 20 s the shell offers them to the agent (`POST /api/update/pending`), which answers
+with `installDecision` (`core/src/release/update.ts`): never a version that is not newer; nothing while "Look for new
+versions" is off; with "Install new versions automatically" off only after Install now; never while a scan, the AI, a paid
+lookup or another write runs (`work.writing()`); never from 15 minutes before a scheduled scan until 5 minutes after its
+time (later than that the scan is waiting for something else, a pause or Chrome, and does not hold the update back).
+To install: `agent::stop` exactly as Quit, then the plugin installs, then the app starts again. A failure starts the agent
+again on the old version; nothing is retried before the next look.
+
+**Why these choices.**
+- *The logic is in Rust, the decision in core.* The shell runs with no window, and only it can replace the app; but what
+  "idle" means is the agent's knowledge, and a pure function in core is tested like the rest. The agent writes down
+  "installing X" before it says yes, so the next start can tell "updated to X" from "did not finish" without the shell
+  having to report anything after a restart.
+- *The shell offers every 20 s and keeps the bytes in memory.* An agent that restarts loses nothing it needs (the next
+  offer tells it again), a notice for a download the shell no longer holds disappears within 2 minutes, and Install now
+  takes effect within 20 s.
+- *An agent that gave up after repeated crashes* answers nothing. Then an automatic update goes ahead (nothing runs, and
+  the new version may be the fix); with automatic installs off it waits for the owner as always.
+- *Failures are calm.* One line in Activity's "New versions" (not an error banner: the owner can do nothing about GitHub
+  being unreachable), scrubbed of every stored key, not repeated while it is the last line.
+- *What stays from the release note.* `docs/release.json`, `npm run release:note`, `core/src/release/note.ts` and the link
+  allow-list stay, for copies that cannot update themselves: 0.1.0 (no updater; it reads the file from `main`) and a build
+  without the public key or a debug build (the shell tells the agent `SPLIT_FINDER_UPDATER=no-key|dev`). A copy that
+  updates itself does not read the file at all: it would announce the same version twice, once with a link to an
+  installer it is about to install itself. The "ready" and "updated" notices carry no link. `release:prepare` writes the
+  file with the link `releases/latest/download/Split-Finder-Windows-x64-setup.exe` (`LEGACY_DOWNLOAD_URL`): 0.1.0 is the
+  version on the PO's PC, and that link downloads the right file in one click. The owner's Mac 0.1.0 gets the same link;
+  he can take the DMG from the release page. `--url` overrides it.
+- *Tag first, `main` after.* 0.1.0 reads `docs/release.json` from `main`; if `main` were pushed with the tag it would
+  announce a version whose release the workflow may still be building, or may never publish. release:prepare prints the
+  commands in that order.
+- *The key.* `npm run updater:setup` makes it with `tauri signer generate --ci` (no password) into
+  `~/.tauri/split-finder-updater.key` (0600), passes it to `gh secret set` on standard input (never on a command line,
+  where `ps` shows it), and writes the public key into `tauri.conf.json`. No password: it would be one more secret that,
+  lost, ends updates exactly as losing the key does, and both would sit in the same two places (his Mac and GitHub's
+  secrets). An existing key is reused, never overwritten without `--force`.
+- *The public key in `tauri.conf.json`, `createUpdaterArtifacts` only in `tauri.release.conf.json`.* The runtime reads
+  `plugins.updater.pubkey` and the CLI checks the signing key against it. With `createUpdaterArtifacts` on, the CLI
+  refuses to build without the private key ("A public key has been found, but no private key"), which would break
+  `npm run desktop:build` and `desktop:build:windows` on the owner's Mac; so it is on only in the release workflow
+  (`--config src-tauri/tauri.release.conf.json`).
+- *The CLI only warns when the key does not match the public key* (crates/tauri-cli/src/bundle.rs `sign_updaters`). So
+  `scripts/release-latest-json.ts` checks every `.sig` itself, as the app will (key id, Ed25519 signature over the
+  BLAKE2b-512 of the file, the trusted comment's own signature, its `version:`), and a mismatch publishes nothing.
+- *Tauri CLI 2.4.1 to 2.12.6.* `requireSignedVersion` needs signatures that carry the version, which the CLI writes from
+  2.12.0. 2.12 also writes the key 0600 and refuses to overwrite one. The tauri crate was already 2.12.7.
+- *windows-smoke.yml no longer runs on tags*: release.yml runs the same smoke test on the installer it publishes.
+- *Release file names.* The Windows installer is also the Windows update file (Tauri v2 runs the `-setup.exe`), so it is
+  published once, as `Split-Finder-Windows-x64-setup.exe`; latest.json points at each file under its tag
+  (`releases/download/vX/...`), so an older latest.json never names a newer file.
+
+**The facts relied on** (read Nov 25 2026):
+- https://v2.tauri.app/plugin/updater/ : `bundle.createUpdaterArtifacts: true` (v2 format; `"v1Compatible"` only for apps
+  coming from v1); `plugins.updater.pubkey` is the key's content, not a path; `plugins.updater.endpoints`, TLS enforced in
+  production; `plugins.updater.windows.installMode` `passive` (default, a small progress window, no interaction),
+  `basicUi`, `quiet`; `TAURI_SIGNING_PRIVATE_KEY` (content or path for `build`) and
+  `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, not read from `.env`; artifacts: macOS `myapp.app.tar.gz` + `.sig`, Windows
+  `myapp-setup.exe` + `.sig`; static JSON: `version`, `notes`, `pub_date` (RFC 3339), `platforms` keyed `darwin-aarch64`,
+  `windows-x86_64`, each with `url` and `signature` (the `.sig` file's content, not a path or URL); the whole file is
+  validated before the version; on Windows the app exits when the installer starts; `updater:default` allows check,
+  download and install (granted to no window here).
+- tauri-plugin-updater 2.14.1 source (crates.io; https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/updater):
+  `requireSignedVersion` (the signed version must equal the announced one) and `allowDowngrades` (default false); the
+  default comparator installs only a greater version; `install()` verifies the bytes again; NSIS is run with `/P`
+  (passive), `/UPDATE` and `/R` (start the app again); the manifest key is `{os}-{arch}-{bundle_type}`, then `{os}-{arch}`;
+  macOS swaps the bundle atomically and keeps the old app on a failed install (2.13.2); its user agent is the plugin's
+  name and version, replaced here by "SplitFinder".
+- https://github.com/tauri-apps/tauri/blob/dev/crates/tauri-cli/CHANGELOG.md : 2.12.0 records the app version in the
+  signature's trusted comment and adds `signer sign --app-version`; `signer generate --write-keys` writes 0600 and refuses
+  to overwrite without `--force`; keys made with an empty password by CLIs 2.9.3 to 2.10.0 were broken. The `signer
+  generate` options were checked with `npx tauri signer generate --help` (2.12.6): `-p`, `-w`, `-f`, `--ci` (also from
+  `CI`); with `-w` it prints only the two paths.
+- Tauri's NSIS template (crates/tauri-bundler/src/bundle/windows/nsis/installer.nsi at tauri-cli-v2.12.6): in update
+  mode it never deletes `%APPDATA%\<identifier>` or `%LOCALAPPDATA%\<identifier>`, keeps the Run key (launch at login)
+  and skips WebView2; passive mode creates the desktop shortcut again.
+- https://v2.tauri.app/distribute/sign/macos/ : ad-hoc signing (`-`) is for Apple silicon, where code must be signed, and
+  does not spare the user the Privacy & Security approval. It says nothing about updating such an app.
+- GitHub (a HEAD request on the 0.1.0 DMG): `releases/latest/download/<name>` redirects to `releases/download/v0.1.0/<name>`
+  on github.com, then to `release-assets.githubusercontent.com`. The shell follows redirects only to github.com,
+  objects.githubusercontent.com and release-assets.githubusercontent.com, over https.
+- Checked here: a release build of the Mac app with `tauri.release.conf.json` and a throwaway key (CLI 2.12.6) wrote
+  `Split Finder.app.tar.gz` and its `.sig`, whose trusted comment ends `version:0.1.0`; `verifyUpdaterSignature` accepts it
+  for 0.1.0 and refuses it for 0.2.0. `fixtures/updater/` holds another throwaway key's public key, a file and its
+  signature; that private key was not kept.
+
+**The trust model.** Whoever can sign with the private key can put code on every installed copy. The key is in two
+places: `~/.tauri/split-finder-updater.key` on the owner's Mac, and the repository secret, which any workflow run in the
+repository can use. In practice: the owner, and anyone who controls his GitHub account or can push a tag or a workflow
+to the repository. The signature protects against everything else: a changed file on GitHub's storage or on the way, a
+latest.json pointing at another file or another host (refused before the download), an older genuine release offered as
+a newer one (requireSignedVersion, newer only), and a release built with another key (the workflow's own check). It does
+not protect against a compromised GitHub account, a malicious commit that the workflow then builds and signs, a
+compromised npm or Cargo dependency in the build, or a compromised machine. Not done, and worth considering: putting the
+secret in a GitHub environment with the owner as required reviewer, so that a pushed tag alone cannot sign.
+
+**Not verified.** An update from one released version to the next, on Windows or macOS: the first release after 0.1.0 is
+the first time the updater runs for real, and the one after it the first real update. The Windows side of the shell is
+compiled only on GitHub's Windows runner. The Mac build on GitHub's macOS runner (the DMG step in particular). Whether
+Windows SmartScreen says anything about the unsigned installer when the app starts it itself (a file the app downloads has
+no mark-of-the-web, so it is expected not to). Whether macOS keeps permissions tied to the app's signature after an update
+of an ad-hoc-signed app (its identity is its code hash, which changes with every build). Whether the passive installer
+window on Windows ever needs a click (per the docs it does not). The smoke test runs the real updater: if latest.json ever
+named a newer version than the build under test, that copy could update itself during the test.
+

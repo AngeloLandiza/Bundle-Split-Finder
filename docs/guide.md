@@ -164,11 +164,23 @@ your account, read" and the day. It is still an estimate. These checks are free;
 Without an account connected nothing changes, except that a deal worth buying says it was not checked against your Amazon
 account.
 
-### New versions
+### Updates
 
-Once a day Split Finder looks at the project's public page on GitHub (one plain request that sends nothing about you) to see whether a new version is ready. If one is, you get one message through the channels you have on (a notification, and Telegram if it is set up), and a quiet line near the top of the window: "Split Finder 0.1.1 is ready", with **Download** and **What changed**. Download opens the link in your browser. You run the installer yourself; the app never downloads or installs anything on its own, and it tells you about each version once. **Dismiss** closes the line for that version. If the message says to ask the developer for the link, the link was missing or not allowed, so nothing is offered to open.
+Split Finder keeps itself up to date. You do not need to download anything.
 
-To switch it off, open **Settings, General** and turn off "Tell me when a new version is ready" (no request is made then), or **Settings, Notifications** to stop only the message. Activity lists the versions you were told about.
+- A minute after it opens, and then every 6 hours, it looks at the project's page on GitHub for a new version. The look sends nothing about you.
+- When there is one, it downloads it in the background and checks that it really comes from the developer (every version carries his signature; one that does not is thrown away).
+- It installs only when nothing is running: never during a scan, and not in the 15 minutes before a scheduled scan. Split Finder closes for about a minute and opens again by itself. On Windows a small progress window may show while it installs.
+- Afterwards a quiet line near the top of the window says "Split Finder was updated to 0.2.1", with **What changed**. **Dismiss** closes it.
+- Your deals, answers, keys and settings stay exactly as they were. An update never touches them.
+
+If you would rather choose the moment yourself, open **Settings, General** and turn off "Install new versions automatically". Then you get one message (a notification, and Telegram if it is set up) and a quiet line: "Version 0.2.1 is ready", with **Install now**. Press it when you like; it still waits until nothing is running. Settings, General also shows which version you have and when it last looked.
+
+Turning off "Look for new versions" stops the looking altogether: no request is made and nothing is installed.
+
+If an update cannot be downloaded or does not install, Split Finder keeps running the version you have, writes one line in **Activity**, and tries again 6 hours later. You do not need to do anything.
+
+**If you have version 0.1.0.** That first version cannot update itself. It shows a quiet line "Split Finder 0.2.0 is ready" with **Download**. Download the installer, open it and let it install over the old one, as you did the first time. If it offers to remove the old version first, that is fine; if a box says "Delete the application data", leave it unticked. Your data and keys are kept. From then on updates come by themselves.
 
 ### Setting up Telegram when you are away from the computer
 

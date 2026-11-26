@@ -58,9 +58,12 @@ Three things to know before you rely on it:
 
 Honest status: a Mac `.dmg` and a Windows `.exe` installer are both built and attached to each release.
 The Windows installer is installed, started, checked and uninstalled on a Windows machine by an automated
-check (`.github/workflows/windows-smoke.yml`) before a release; it has not yet been used day to day on a real
-PC. Neither installer is signed. Keys are in a file only the owner can read (not the keychain), and the store
-is JSON files (not SQLite). Details in `docs/desktop-app.md`.
+check before a release; it has not yet been used day to day on a real PC. Neither installer is signed with a
+paid certificate. From the first release made by `.github/workflows/release.yml`, installed copies update
+themselves: each update is signed with the project's own key and checked before it is installed. That path
+is built and unit-tested, but an update from one released version to the next has not yet been seen on a real
+Windows PC or Mac; 0.1.0 cannot update itself and shows a download link instead. Keys are in a file only the
+owner can read (not the keychain), and the store is JSON files (not SQLite). Details in `docs/desktop-app.md`.
 
 ## Start here
 

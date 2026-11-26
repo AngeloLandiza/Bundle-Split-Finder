@@ -132,25 +132,41 @@ Every price and match links to its Home Depot or Amazon source.
 
 ## Releasing a new version
 
-The app never updates itself. The PO learns of a new version from a message with a download link and runs the
-installer himself (`docs/decisions.md`, "Nov 25: a new version is a message and a link"). The developer's steps:
+Installed copies update themselves from the project's GitHub releases (`docs/decisions.md`, "The app updates itself from
+GitHub releases"). A release is made by GitHub Actions (`.github/workflows/release.yml`), never on this Mac.
 
-1. **Bump the version in four files, to the same x.y.z:** `package.json` (`version`), `src-tauri/tauri.conf.json`
-   (`version`, which the app's Settings, Advanced shows), `src-tauri/Cargo.toml` (`[package] version`, which the app hands
-   to its agent as `SPLIT_FINDER_APP_VERSION`) and `src-tauri/Cargo.lock` (the `split-finder-desktop` entry; `cargo check`
-   in `src-tauri` rewrites it). The helper extension takes its version from `package.json`; its build id after the `+` is
-   not the app's version. `core/test/version-agreement.test.ts` fails if they disagree.
-2. **Build both installers:** `npm run desktop:build` (the Mac DMG) and `npm run desktop:build:windows` (the Windows
-   setup.exe).
-3. **Upload them** where the PO can reach them: a Google Drive or Google Docs share link, or a GitHub release of this
-   repository. Nothing else is accepted as the link (it must be https on `drive.google.com`, `docs.google.com`, or
-   `github.com/AngeloLandiza/Bundle-Split-Finder/`).
-4. **Write the note:** `npm run release:note -- --version 0.1.1 --url <https link> --note "What changed" [--note "..."]`
-   (1 to 5 notes of at most 120 characters; the version must be greater than the one in `docs/release.json`). It only
-   writes `docs/release.json`.
-5. **Commit and push** `docs/release.json` (and the bump) to `main`. Within a day (or when the app next starts) each app
-   running an older version tells its owner once. Until `downloadUrl` is set nothing is announced: the file starts at the
-   current version with `downloadUrl: null`.
+**Once, before the first release** (the owner, in his own terminal, with `gh` signed in):
+
+```
+npm run updater:setup
+git add src-tauri/tauri.conf.json && git commit -m "updater: the public key"
+```
+
+It makes the signing key at `~/.tauri/split-finder-updater.key` (only he can read it), stores it as the repository secret
+`TAURI_SIGNING_PRIVATE_KEY`, and writes the public key into `src-tauri/tauri.conf.json`. Keep a copy of the key file in a
+password manager: without it no installed copy can be updated again, only reinstalled by hand. Run it again any time: it
+keeps an existing key (`-- --force` makes a new one, which installed copies will not trust).
+
+**Each release:**
+
+1. `npm run release:prepare -- 0.2.0 --note "What changed, in one plain line" [--note "..."]` changes the version in
+   `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `src-tauri/Cargo.lock`, and
+   writes `docs/release.json` (the notes are the release's "What changed"; its link is the newest Windows installer, for
+   copies of 0.1.0, which cannot update themselves). It prints the commands for the next steps and does nothing else.
+2. `npm run typecheck && npm test`, then commit, tag and push **the tag only**: `git push origin v0.2.0`.
+3. The workflow runs (Actions, "release", about 30 minutes): tests, the Windows build with the smoke test, the Mac build,
+   both update files signed, every signature checked against the public key, then release v0.2.0 with
+   `Split-Finder-Windows-x64-setup.exe`, `Split-Finder-Mac-Apple-silicon.dmg`, `Split-Finder-Mac-Apple-silicon.app.tar.gz`,
+   the two `.sig` files and `latest.json`. If any step fails nothing is published; fix it, delete the tag
+   (`git push origin :v0.2.0`, `git tag -d v0.2.0`) and tag again.
+4. When the release is on GitHub: `git push origin main`. Copies of 0.1.0 read `docs/release.json` from `main`, so they
+   hear of the version only once its release exists. Newer copies find it within 6 hours (or a minute after they start).
+
+To try the workflow without publishing: Actions, "release", Run workflow, with "dry run" ticked (the default). It builds,
+tests and signs everything and keeps the files as the run's artifacts.
+
+`npm run release:note` still writes `docs/release.json` alone, for a copy that cannot update itself (a build without the
+key). Its link must be https on `drive.google.com`, `docs.google.com` or `github.com/AngeloLandiza/Bundle-Split-Finder/`.
 
 ## Using the extension alone
 

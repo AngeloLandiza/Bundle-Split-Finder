@@ -92,6 +92,24 @@ webview; the flyout's position, focus and hide-on-blur; Chrome opening `chrome:/
 the Helper menu; `icacls` on a real profile; toast sound; launch at login; quit leaving no agent
 behind.
 
+## Updates
+
+The shell updates the app from the project's GitHub releases (`src-tauri/src/updater.rs`, tauri-plugin-updater 2.14),
+from Rust, so it works with no window open. No page has an updater permission.
+
+| Piece | Detail |
+| --- | --- |
+| Where | `https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/latest/download/latest.json` only, HTTPS only; redirects only to `github.com`, `objects.githubusercontent.com`, `release-assets.githubusercontent.com`; the update file must be under `github.com/AngeloLandiza/Bundle-Split-Finder/releases/download/`. |
+| When | A look a minute after launch, then every 6 hours (wall clock). A newer version is downloaded at once and verified. Every 20 s the shell offers it to the agent (`POST /api/update/pending`), which answers with core's `installDecision`: the owner's setting (Install new versions automatically, default on) or Install now, nothing running (a scan, the AI, a lookup), and not from 15 minutes before a scheduled scan to 5 minutes after its time. |
+| Trust | `plugins.updater.pubkey` in `tauri.conf.json` (written by `npm run updater:setup`). `requireSignedVersion`: the signature must name the version latest.json announces. Never a version that is not newer. |
+| Install | `agent::stop` as Quit, then the plugin installs: Windows runs the NSIS installer passive with `/UPDATE` (per user, no admin prompt; the data folder and the Run key are left alone) and it starts the app again; macOS swaps the `.app` bundle and the shell restarts. A failure starts the agent again on the old version. |
+| Told | `POST /api/update/report` (last checked; a failure is one Activity line). Before installing the agent writes `runtime.selfUpdate.installing`; the next start turns it into "Split Finder was updated to X" (a calm notice) or "The update to X did not finish". With automatic installs off: "Version X is ready" once (notice, Activity, the new-version message) and Install now (`POST /api/update/install-now`). |
+| Without a key | A debug build, or a build whose `pubkey` is empty, never updates; `SPLIT_FINDER_UPDATER` tells the agent why, Settings says so, and the agent reads `docs/release.json` as before (a message and a link). |
+| Releases | `.github/workflows/release.yml` (tag `v*`): steps in `docs/install.md`, "Releasing a new version". |
+
+Unverified: an update from one released version to the next on a real PC or Mac (the first one will be the first
+check); the Windows side of the shell compiles only on GitHub's Windows runner; the Mac build on GitHub's runner.
+
 ## What is not done
 
 - **Windows on real hardware.** The installer is built on a Mac (below) but has not been run
@@ -99,7 +117,8 @@ behind.
   `docs/windows-vm.md` is superseded.
 - **Keychain.** Keys sit in a file readable only by the owner. The OS keychain is the next step.
 - **SQLite.** The store rewrites a whole JSON file per collection. Fine at this size.
-- **Signing.** The app is unsigned, so macOS asks you to approve it. A signed app would also
+- **Signing.** The app is not signed with an Apple or Microsoft certificate (updates are signed with the project's own
+  key, which is another thing: see Updates), so macOS asks you to approve it. A signed app would also
   allow a real notification-click callback; today the click is inferred from the app being
   activated within two minutes.
 - **Extension install.** The zip ships inside the app. The app has an **Install the Chrome helper**
