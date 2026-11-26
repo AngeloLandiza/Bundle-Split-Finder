@@ -650,6 +650,70 @@ pane and the pane re-reads what the agent holds.
 Not in the window because the agent has no endpoint for it: a Telegram test message, Reset scan data,
 Export audit file, Restart agent, and the agent's own version and Node version.
 
+### Page viewer (Nov 25)
+
+**Purpose.** He checks a deal against its source pages: the bundle on Home Depot, each part's Amazon listing. The
+viewer shows those pages inside the app so he can check them without leaving it. It is not a browser. It is one window (`src-tauri/src/viewer/`), reused for every link,
+made of two stacked webviews: our toolbar on top, the site's page under it.
+
+**Anatomy.** On a Mac the toolbar is the window's 52px unified title bar, with the traffic lights inset as in the main
+window. On Windows the native title bar sits above it ("Amazon · PCG002 - Split Finder") and the toolbar is 44px. From the start:
+- **Back, Forward**: toolbar items with chevrons, greyed when there is no history.
+- **Reload**, which is **Stop** while the page loads.
+- **The page pop-up**, only when the viewer was opened from a deal. It says what this page is, "Home Depot ·
+  PSK1212SB-PCL633B" or "Amazon · PCG002", with the pop-up button's double chevron. Its native menu lists the deal's
+  source pages: the bundle's Home Depot page, then each part's Amazon listing ("Amazon search · PCL633B" for a part with
+  no listing), separated by group. The current page has a check. With one part the menu has two items. With six it has
+  seven, in the order the inspector lists the parts. There is no strip of tabs, because it would not fit six.
+- **The address field**: read-only, a rounded well that fills the rest of the bar. The real host is in the label colour
+  and semibold ("www.amazon.com"). The rest of the address is tertiary and cut with an ellipsis. Both come from the
+  webview's own URL, never from the page's text. A 2px accent bar along the field's bottom edge shows loading.
+- **Copy link** and **Open in browser**: small secondary push buttons with words, no glyphs. Copy link reads "Copied"
+  for 1.5 s.
+
+**States.**
+- *Loading*: the bar in the field (determinate on a Mac), Stop in place of Reload, and the previous page still on screen.
+- *Did not load* (offline, no answer): our own state over the page area, centred as an empty view. "This page did not
+  load", one line saying to check the connection, then **Try again** (default) and **Open in browser**. Never a blank
+  window.
+- *Sign in*: a page that asks him to sign in or pay is not shown. The state reads "Sign in only in your browser", with
+  one line that he is not signed in here and a password belongs in his browser, then **Open in browser** (default) and
+  **Go back**.
+- *The site refused*: a site's own "access denied" or bot-check page is the site's own, left as it is. Open in browser
+  is always one click away.
+
+**Behaviour.** A plain click on a source link opens the viewer. Cmd-click (Ctrl-click on Windows) opens the default
+browser, and so does every link the policy sends there. A right-click on any link offers **Open**, **Open in browser**
+and **Copy link address**. Opening another link while the viewer is open replaces the page and its context and brings
+the window forward. The first time, the window opens beside the main window, on the side with more room, or over it,
+40pt in, when neither side has room. After that it opens where he left it and at the size he left it. It never moves the
+main window. Closing destroys the page, so nothing keeps playing or loading. A link that asks for a new window opens in
+the same viewer. Downloads are refused, and so are camera, microphone, location and notification requests.
+Settings › General › **Open links** chooses "In Split Finder" (the default) or "In my browser".
+
+**Which links.** One pure function (`core/src/links/viewerPolicy.ts`) decides. Home Depot product, search and browse
+pages, Amazon product and search pages, Keepa product pages and eBay listing pages go to the viewer. Everything else
+goes to the browser: Seller Central, a key's sign-up or account page, a GitHub download, Telegram, `chrome://`. Only
+`https` qualifies, and only the exact hosts on the list.
+
+**Keyboard.** Cmd+W or Esc closes the viewer. Cmd+R reloads. Cmd+[ and Cmd+] go back and forward. Cmd+Shift+C copies the link. On Windows each key is Ctrl.
+On a Mac these keys work wherever the focus is, because they are menu items (View) active only while the viewer is the key window. Cmd+R is
+Scan now in any other window. On Windows they work while the toolbar has focus. In the page, WebView2's own keys apply:
+F5, and Alt+Left and Alt+Right.
+
+**What it deliberately does not do.** No typing an address, no search box, no tabs, no bookmarks, no history list, no
+zoom controls, no sign-in, no downloads, no pop-up windows. It does not change the user agent, add headers or script
+the page.
+
+### Product pictures (Nov 25)
+
+A deal row and a Today row carry a 32px picture, the inspector's header a 72px one, and each part in the parts list a
+40px one. The picture is the stored Amazon listing photo: on a row, the bundle's first part's photo; in the parts list,
+each part's own. Bundles have no stored Home Depot photo. Where none is stored, the slot is a quiet neutral square, the
+fill colour with a hairline and no glyph, so the column stays aligned. A failed load turns into the same square, never a
+broken-image icon. Pictures load lazily, only on screen, and send no referrer. Settings › General › **Show product
+pictures** (on by default) turns them off, and with it every request to the image server.
+
 ### What D2, D3 and D4 build on
 
 - **D2 Preferences window**: a second Tauri window created in `shell.rs` the same way
