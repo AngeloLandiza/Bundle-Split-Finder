@@ -2491,9 +2491,9 @@ again on the old version; nothing is retried before the next look.
   without the public key or a debug build (the shell tells the agent `SPLIT_FINDER_UPDATER=no-key|dev`). A copy that
   updates itself does not read the file at all: it would announce the same version twice, once with a link to an
   installer it is about to install itself. The "ready" and "updated" notices carry no link. `release:prepare` writes the
-  file with the link `releases/latest/download/Split-Finder-Windows-x64-setup.exe` (`LEGACY_DOWNLOAD_URL`): 0.1.0 is the
-  version on the PO's PC, and that link downloads the right file in one click. The owner's Mac 0.1.0 gets the same link;
-  he can take the DMG from the release page. `--url` overrides it.
+  file with the link to the newest release's page, `releases/latest` (`LEGACY_DOWNLOAD_URL`). The builder first pointed
+  it at the Windows installer itself (one click for the PO); the controller changed it, because 0.1.0 is installed on the
+  owner's Mac too and would have been handed an `.exe`. The page lists both files. `--url` overrides it.
 - *Tag first, `main` after.* 0.1.0 reads `docs/release.json` from `main`; if `main` were pushed with the tag it would
   announce a version whose release the workflow may still be building, or may never publish. release:prepare prints the
   commands in that order.

@@ -21,10 +21,10 @@ export const ASSETS = {
 
 /**
  * docs/release.json's download link (release:prepare's default): what an install of 0.1.0, which cannot update itself,
- * offers behind its Download button. The Windows installer of the newest release: 0.1.0 is the version on the PO's
- * Windows PC, and this link downloads the right file in one click. The owner's Mac builds its own.
+ * offers behind its Download button. The newest release's page, which lists the Windows and the Mac installer: 0.1.0 is
+ * installed on both, and a link to one platform's file would hand the other the wrong one.
  */
-export const LEGACY_DOWNLOAD_URL = `https://github.com/${REPO}/releases/latest/download/${ASSETS.windowsInstaller}`;
+export const LEGACY_DOWNLOAD_URL = `https://github.com/${REPO}/releases/latest`;
 
 /** The two platforms a release serves, and the file each one updates from. */
 export const PLATFORM_ASSET = {
