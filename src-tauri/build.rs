@@ -13,6 +13,12 @@ fn main() {
         "app_info",
         "reveal_data_folder",
         "open_external",
+        // page viewer (src/viewer/mod.rs)
+        "viewer_open",
+        "viewer_state",
+        "viewer_do",
+        "viewer_pages",
+        "viewer_clear_data",
       ]),
     ),
   )

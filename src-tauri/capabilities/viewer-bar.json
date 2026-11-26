@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "viewer-bar",
+  "description": "The page viewer's toolbar (the dashboard's #/viewer, served by the local agent) may read the viewer's state and work its own buttons (back, forward, reload, stop, try again, copy link, open in browser, close, the deal's page pop-up), and move or zoom its window from the title bar. Named by webview label only: a capability naming the viewer window would also reach the site's page (viewer-page), which must have none (src/viewer/mod.rs tests).",
+  "webviews": ["viewer-bar"],
+  "remote": {
+    "urls": ["http://127.0.0.1:8790/*"]
+  },
+  "permissions": [
+    "allow-viewer-state",
+    "allow-viewer-do",
+    "allow-viewer-pages",
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize"
+  ]
+}

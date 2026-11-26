@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "viewer-open",
+  "description": "The dashboard, the menu bar popover and the Preferences window may open a source page in the page viewer (the shell checks the address again: https, a listed site) and clear the viewer's browsing data. Nothing else.",
+  "windows": ["main", "popover", "preferences"],
+  "remote": {
+    "urls": ["http://127.0.0.1:8790/*"]
+  },
+  "permissions": ["allow-viewer-open", "allow-viewer-clear-data"]
+}

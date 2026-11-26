@@ -576,7 +576,7 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
   )?;
 
   // View: the inspector beside Deals and Review (the page listens for split-finder:inspector).
-  let view_sub = SubmenuBuilder::new(app, "View")
+  let mut view_builder = SubmenuBuilder::new(app, "View")
     .item(&MenuItem::with_id(
       app,
       "inspector",
@@ -584,9 +584,12 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
       true,
       Some("Alt+CmdOrCtrl+I"),
     )?)
-    .separator()
-    .fullscreen()
-    .build()?;
+    .separator();
+  // page viewer: Back, Forward, Reload page, Copy link, Close page; active only while the viewer is the key window.
+  for item in crate::viewer::menu_items(app, &a_scan)? {
+    view_builder = view_builder.item(&item);
+  }
+  let view_sub = view_builder.separator().fullscreen().build()?;
 
   let window_sub = SubmenuBuilder::new(app, "Window")
     .minimize()
@@ -682,6 +685,8 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
     "quit" => app.exit(0),
     "open_extensions" => open_chrome_extensions(app),
     "reveal_zip" => reveal_zip(app),
+    // page viewer: its View menu items and its page pop-up.
+    id if id.starts_with("viewer:") => crate::viewer::menu_action(app, id),
     _ => {}
   }
 }

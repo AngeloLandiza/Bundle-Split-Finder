@@ -4,6 +4,9 @@ mod popover;
 mod prefs;
 mod shell;
 mod updater;
+// page viewer (docs/design.md, Desktop app > Page viewer). Public only for examples/viewer_preview.rs.
+#[doc(hidden)]
+pub mod viewer;
 
 use std::sync::Mutex;
 
@@ -95,6 +98,10 @@ pub fn run() {
     })
     // Close to tray: the window hides, the agent keeps running. Quit lives in the menus.
     .on_window_event(|window, event| {
+      // page viewer: it closes for good, so nothing of a site keeps running (viewer/mod.rs).
+      if window.label() == viewer::WINDOW {
+        return;
+      }
       if let WindowEvent::CloseRequested { api, .. } = event {
         api.prevent_close();
         let _ = window.hide();
@@ -110,7 +117,13 @@ pub fn run() {
       prefs::set_preferences_height,
       prefs::app_info,
       prefs::reveal_data_folder,
-      prefs::open_external
+      prefs::open_external,
+      // page viewer
+      viewer::viewer_open,
+      viewer::viewer_state,
+      viewer::viewer_do,
+      viewer::viewer_pages,
+      viewer::viewer_clear_data
     ])
     .build(tauri::generate_context!())
     .expect("error while running tauri application")

@@ -21,7 +21,8 @@ tauri-build = { version = "2.1.1", features = [] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.4.1", features = ["tray-icon", "image-png", "macos-private-api"] }
+# "unstable": the page viewer's two webviews in one window (Window::add_child; src/viewer/mod.rs, docs/decisions.md).
+tauri = { version = "2.4.1", features = ["tray-icon", "image-png", "macos-private-api", "unstable"] }
 tauri-plugin-log = "2.0.0-rc"
 tauri-plugin-opener = "2.2"
 tauri-plugin-shell = "2.2"
@@ -39,3 +40,13 @@ tauri-plugin-window-state = "2.4.1"
 tauri-plugin-updater = "2.14"
 # Only to name the updater's redirect policy (https, GitHub's hosts only); the same major version the plugin uses.
 reqwest = { version = "0.13", default-features = false }
+
+# --- page viewer begin (src/viewer/native.rs): back, forward, stop and the loading state from the platform's own web
+# view. Both are already in Cargo.lock through wry; no new crate is downloaded.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+webview2-com = "0.39"
+windows = { version = "0.62", features = ["Win32_Foundation"] }
+# --- page viewer end
