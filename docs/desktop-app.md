@@ -108,7 +108,8 @@ from Rust, so it works with no window open. No page has an updater permission.
 | Releases | `.github/workflows/release.yml` (tag `v*`): steps in `docs/install.md`, "Releasing a new version". |
 
 Unverified: an update from one released version to the next on a real PC or Mac (the first one will be the first
-check); the Windows side of the shell compiles only on GitHub's Windows runner; the Mac build on GitHub's runner.
+check); the Windows side of the shell (type-checked on the Mac with cargo xwin, not linked or run); the Mac build on
+GitHub's runner.
 
 ## What is not done
 

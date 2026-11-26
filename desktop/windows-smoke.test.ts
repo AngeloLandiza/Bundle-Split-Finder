@@ -124,6 +124,22 @@ describe('windows smoke: the script and the workflow name the same things as the
     expect(workflow).not.toContain('cargo-xwin');
     expect(workflow).toContain('scripts/windows-smoke.ps1');
     expect(workflow).toContain('workflow_dispatch');
-    expect(workflow).toMatch(/tags:\s*\['v\*'\]/);
+  });
+
+  it('a tag runs the release workflow, which builds natively and smoke-tests the installer it publishes', () => {
+    const release = readFileSync(new URL('../.github/workflows/release.yml', import.meta.url), 'utf8');
+    const bundle = readFileSync(new URL('./bundle-agent.ts', import.meta.url), 'utf8');
+    const version = /NODE_VERSION = 'v([0-9.]+)'/.exec(bundle)?.[1];
+    expect(release).toMatch(/tags:\s*\['v\*'\]/);
+    expect(workflow).not.toMatch(/tags:\s*\['v\*'\]/);
+    expect(release.match(new RegExp(`node-version: '${version}'`, 'g'))?.length).toBeGreaterThanOrEqual(3);
+    expect(release).toContain('runs-on: windows-latest');
+    expect(release).toContain('--target x86_64-pc-windows-msvc');
+    expect(release).not.toContain('cargo-xwin');
+    expect(release).toContain('./scripts/windows-smoke.ps1');
+    expect(release).toContain('--config src-tauri/tauri.release.conf.json');
+    // Publishing waits for every job, and the release check of every signature runs before it.
+    expect(release).toContain('needs: [version, tests, windows, mac]');
+    expect(release.indexOf('scripts/release-latest-json.ts')).toBeLessThan(release.indexOf('gh release create'));
   });
 });

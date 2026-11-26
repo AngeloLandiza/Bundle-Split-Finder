@@ -2562,8 +2562,8 @@ compromised npm or Cargo dependency in the build, or a compromised machine. Not 
 secret in a GitHub environment with the owner as required reviewer, so that a pushed tag alone cannot sign.
 
 **Not verified.** An update from one released version to the next, on Windows or macOS: the first release after 0.1.0 is
-the first time the updater runs for real, and the one after it the first real update. The Windows side of the shell is
-compiled only on GitHub's Windows runner. The Mac build on GitHub's macOS runner (the DMG step in particular). Whether
+the first time the updater runs for real, and the one after it the first real update. The Windows side of the shell was
+type-checked on the Mac (`cargo xwin check --release --target x86_64-pc-windows-msvc`), not linked or run. The Mac build on GitHub's macOS runner (the DMG step in particular). Whether
 Windows SmartScreen says anything about the unsigned installer when the app starts it itself (a file the app downloads has
 no mark-of-the-web, so it is expected not to). Whether macOS keeps permissions tied to the app's signature after an update
 of an ad-hoc-signed app (its identity is its code hash, which changes with every build). Whether the passive installer
