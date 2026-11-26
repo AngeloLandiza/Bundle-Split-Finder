@@ -400,6 +400,10 @@ pub fn apply_settings(app: &AppHandle, answer: &serde_json::Value) {
   let login = flag("/shell/launchAtLogin", false);
   let state = app.state::<ShellState>();
   state.sound.store(flag("/notifications/sound", false), Ordering::Relaxed);
+  crate::updater::apply_settings(
+    flag("/updates/tellMeAboutNewVersion", true),
+    flag("/updates/installAutomatically", true),
+  );
   if let Some(at) = answer.get("updatedAt").and_then(|v| v.as_str()) {
     if let Ok(mut g) = state.settings_at.lock() {
       *g = Some(at.to_string());

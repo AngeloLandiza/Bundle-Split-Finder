@@ -3,6 +3,7 @@ mod events;
 mod popover;
 mod prefs;
 mod shell;
+mod updater;
 
 use std::sync::Mutex;
 
@@ -46,6 +47,8 @@ pub fn run() {
     .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_notification::init())
+    // Self-update (updater.rs). Rust only: no capability grants a page any updater command.
+    .plugin(tauri_plugin_updater::Builder::new().build())
     .plugin(tauri_plugin_autostart::init(
       tauri_plugin_autostart::MacosLauncher::LaunchAgent,
       None,
@@ -86,7 +89,8 @@ pub fn run() {
 
       // Ask once; macOS remembers the answer.
       let _ = handle.notification().request_permission();
-      events::spawn(handle);
+      events::spawn(handle.clone());
+      updater::spawn(handle);
       Ok(())
     })
     // Close to tray: the window hides, the agent keeps running. Quit lives in the menus.

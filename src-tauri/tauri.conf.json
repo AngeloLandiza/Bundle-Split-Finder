@@ -31,6 +31,15 @@
     "withGlobalTauri": false,
     "macOSPrivateApi": true
   },
+  "plugins": {
+    "updater": {
+      "endpoints": ["https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/latest/download/latest.json"],
+      "pubkey": "",
+      "requireSignedVersion": true,
+      "allowDowngrades": false,
+      "windows": { "installMode": "passive" }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

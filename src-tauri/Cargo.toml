@@ -35,3 +35,7 @@ tauri-plugin-autostart = "2.5.1"
 tauri-plugin-notification = "2.4.0"
 tauri-plugin-single-instance = "2.4.5"
 tauri-plugin-window-state = "2.4.1"
+# Self-update from GitHub releases (src/updater.rs). 2.14: requireSignedVersion, and install() verifies the bytes again.
+tauri-plugin-updater = "2.14"
+# Only to name the updater's redirect policy (https, GitHub's hosts only); the same major version the plugin uses.
+reqwest = { version = "0.13", default-features = false }

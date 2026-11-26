@@ -389,6 +389,9 @@ fn spawn_agent(app: &AppHandle, restart: Option<(usize, u64)>) -> Result<(), Str
     .env("SPLIT_FINDER_DATA_DIR", data_dir)
     .env("SPLIT_FINDER_EXTENSION_DIR", &extension_dir)
     .env("SPLIT_FINDER_APP_VERSION", env!("CARGO_PKG_VERSION"))
+    // Whether this build updates itself ("on"), or why not ("dev", "no-key"): Settings says so, and the agent's own look
+    // at docs/release.json (a message and a link) is only for a build that cannot.
+    .env("SPLIT_FINDER_UPDATER", crate::updater::availability(app))
     .env("AGENT_PORT", AGENT_PORT.to_string());
 
   if let Some(zip) = extension_zip_in_resources(app) {
@@ -469,6 +472,15 @@ pub fn stop(app: &AppHandle) {
   let _ = child.kill();
 }
 
+/// After an update that did not install (updater.rs): the agent stop() ended is started again, and supervision is back on.
+pub fn resume(app: &AppHandle) {
+  QUITTING.store(false, Ordering::Relaxed);
+  match start(app) {
+    Ok(()) => wait_until_up(),
+    Err(e) => log::warn!("the agent was not started again after a failed update: {e}"),
+  }
+}
+
 /// A request carrying the token, or an error when the listener has not proved it is our agent.
 fn authed(app: &AppHandle, req: ureq::Request) -> Result<ureq::Request, String> {
   match proven_token(app) {
@@ -481,6 +493,16 @@ pub fn http_get_json(app: &AppHandle, path: &str) -> Result<serde_json::Value, S
   let res = authed(app, ureq::get(&format!("{AGENT_ORIGIN}{path}")))?
     .timeout(Duration::from_secs(5))
     .call()
+    .map_err(|e| e.to_string())?;
+  serde_json::from_reader(res.into_reader()).map_err(|e| e.to_string())
+}
+
+/// A POST with a JSON body, and the JSON answer (the updater's reports, updater.rs).
+pub fn http_post_json(app: &AppHandle, path: &str, body: &serde_json::Value) -> Result<serde_json::Value, String> {
+  let res = authed(app, ureq::post(&format!("{AGENT_ORIGIN}{path}")))?
+    .timeout(Duration::from_secs(10))
+    .set("Content-Type", "application/json")
+    .send_string(&body.to_string())
     .map_err(|e| e.to_string())?;
   serde_json::from_reader(res.into_reader()).map_err(|e| e.to_string())
 }
