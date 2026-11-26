@@ -1,14 +1,13 @@
 # Proves the Windows installer on a real Windows machine: builds it natively, installs it silently, starts it,
 # and checks the agent behind it (scripts/windows-smoke.ps1). It runs only when started by hand (Actions tab, "Run
-# workflow") or when a tag v* is pushed. It spends no SerpApi searches and uses no secrets.
+# workflow"). A tag v* runs the same steps inside release.yml, on the installer that is published, so it no longer
+# starts this one too. It spends no SerpApi searches and uses no secrets.
 # Two independent jobs: `tests` (typecheck, unit tests) and `smoke` (build, install, run). A failing test never
 # hides whether the app installs and runs.
 name: windows-smoke
 
 on:
   workflow_dispatch:
-  push:
-    tags: ['v*']
 
 permissions:
   contents: read

@@ -1,0 +1,313 @@
+# Makes a release: the Windows installer (built and smoke-tested on Windows), the Mac app (built on an Apple-silicon
+# runner), their signed update files, and latest.json, which every installed copy reads to update itself
+# (docs/decisions.md, "The app updates itself from GitHub releases"; the steps for the developer are in docs/install.md).
+#
+# Started by pushing a tag v<version> (npm run release:prepare prints the commands), or by hand from the Actions tab.
+# By hand, "dry run" (the default) builds, tests and signs everything and uploads it as the run's artifacts, and
+# publishes nothing. A release is published only when every job passed: the tests, the Windows smoke test, both builds,
+# and a check of every signature against the public key in src-tauri/tauri.conf.json.
+#
+# Secrets: TAURI_SIGNING_PRIVATE_KEY (set once by npm run updater:setup), and TAURI_SIGNING_PRIVATE_KEY_PASSWORD only if
+# the key has a password (the setup makes one without). They are given only to the two build steps that sign, as
+# environment variables, and never printed. Publishing uses the run's own GITHUB_TOKEN. It spends no SerpApi searches.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build, test and sign, but publish nothing'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # The version this run releases: the tag without its v, which must be the version in every file (release:prepare).
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          conf=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          note=$(node -p "require('./docs/release.json').version")
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME does not match package.json's version $version. Run npm run release:prepare -- <version>."
+            exit 1
+          fi
+          if [ "$conf" != "$version" ] || [ "$note" != "$version" ]; then
+            echo "::error::package.json says $version, tauri.conf.json $conf, docs/release.json $note. Run npm run release:prepare -- <version>."
+            exit 1
+          fi
+          if [ -z "$(node -p "require('./src-tauri/tauri.conf.json').plugins.updater.pubkey")" ]; then
+            echo "::error::src-tauri/tauri.conf.json has no updater public key. Run npm run updater:setup once and commit the file."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  tests:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+      - run: npm ci
+      - run: npx wxt prepare
+      - run: npm run typecheck
+      - run: npm test
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    timeout-minutes: 75
+    env:
+      # Tells desktop/bundle-agent.ts to build the Windows sidecar.
+      TAURI_ENV_TARGET_TRIPLE: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+
+      # The sidecar is a Node SEA whose blob must come from this exact Node (desktop/bundle-agent.ts refuses another).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare the extension build
+        run: npx wxt prepare
+
+      - name: Build the sidecar
+        run: |
+          npm run desktop:bundle-agent *>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'build-sidecar.log')
+          exit $LASTEXITCODE
+
+      # As windows-smoke.yml, plus tauri.release.conf.json (createUpdaterArtifacts): the CLI signs the installer with the
+      # key from the secret and writes its .sig beside it.
+      - name: Build and sign the NSIS installer
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if (-not $env:TAURI_SIGNING_PRIVATE_KEY) { throw 'The secret TAURI_SIGNING_PRIVATE_KEY is not set. Run npm run updater:setup once.' }
+          npx tauri build --target x86_64-pc-windows-msvc --config src-tauri/tauri.release.conf.json *>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'build-installer.log')
+          exit $LASTEXITCODE
+
+      - name: Failed build output in the job summary
+        if: failure()
+        run: |
+          foreach ($name in 'build-sidecar', 'build-installer') {
+            $log = Join-Path $env:RUNNER_TEMP "$name.log"
+            if (Test-Path -LiteralPath $log) {
+              "## $name (last 60 lines)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+              '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+              Get-Content -LiteralPath $log -Tail 60 | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+              '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            }
+          }
+
+      # The installer and its signature under the names the README and latest.json use.
+      - name: Collect the installer
+        id: installer
+        shell: pwsh
+        run: |
+          $dir = 'src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis'
+          $exe = @(Get-ChildItem -Path $dir -Filter '*-setup.exe')
+          if ($exe.Count -ne 1) { throw "Expected one *-setup.exe in $dir, found $($exe.Count)" }
+          $sig = "$($exe[0].FullName).sig"
+          if (-not (Test-Path -LiteralPath $sig)) { throw "No signature beside $($exe[0].Name): is createUpdaterArtifacts on?" }
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Copy-Item -LiteralPath $exe[0].FullName -Destination 'release/Split-Finder-Windows-x64-setup.exe'
+          Copy-Item -LiteralPath $sig -Destination 'release/Split-Finder-Windows-x64-setup.exe.sig'
+          "path=$((Resolve-Path 'release/Split-Finder-Windows-x64-setup.exe').Path)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      # The same smoke test as windows-smoke.yml, on the installer that will be published. A failure stops the release.
+      - name: Smoke test the installed app
+        shell: pwsh
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP 'windows-smoke.log'
+          & ./scripts/windows-smoke.ps1 -Installer '${{ steps.installer.outputs.path }}' *>&1 | Tee-Object -FilePath $log
+          exit $LASTEXITCODE
+
+      - name: Smoke output in the job summary
+        if: always()
+        shell: pwsh
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP 'windows-smoke.log'
+          $sum = $env:GITHUB_STEP_SUMMARY
+          if (Test-Path -LiteralPath $log) {
+            '## Windows smoke test' | Out-File -FilePath $sum -Append -Encoding utf8
+            '```' | Out-File -FilePath $sum -Append -Encoding utf8
+            Get-Content -LiteralPath $log | Out-File -FilePath $sum -Append -Encoding utf8
+            '```' | Out-File -FilePath $sum -Append -Encoding utf8
+          } else {
+            'The smoke test did not run (an earlier step failed).' | Out-File -FilePath $sum -Append -Encoding utf8
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: release/
+          if-no-files-found: error
+
+  mac:
+    needs: version
+    # Apple silicon (arm64), the only Mac the app is built for.
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      # The sidecar is a Node SEA made from the Node running the build (desktop/bundle-agent.ts), re-signed ad hoc.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare the extension build
+        run: npx wxt prepare
+
+      # beforeBuildCommand makes the extension zip, the UI and the sidecar, as npm run desktop:build does on the owner's
+      # Mac (without mac-tidy, which only tidies a developer's Launch Services). The app is ad-hoc signed, as today.
+      - name: Build and sign the app and the DMG
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then echo "::error::The secret TAURI_SIGNING_PRIVATE_KEY is not set. Run npm run updater:setup once."; exit 1; fi
+          npx tauri build --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json 2>&1 | tee "$RUNNER_TEMP/build-mac.log"
+          exit "${PIPESTATUS[0]}"
+
+      - name: Failed build output in the job summary
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/build-mac.log" ]; then
+            { echo '## build-mac (last 60 lines)'; echo '```'; tail -n 60 "$RUNNER_TEMP/build-mac.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Collect the DMG and the update file
+        run: |
+          set -euo pipefail
+          bundle=src-tauri/target/aarch64-apple-darwin/release/bundle
+          mkdir -p release
+          shopt -s nullglob
+          dmgs=("$bundle"/dmg/*.dmg)
+          tars=("$bundle"/macos/*.app.tar.gz)
+          if [ "${#dmgs[@]}" -ne 1 ] || [ "${#tars[@]}" -ne 1 ]; then echo "::error::Expected one .dmg and one .app.tar.gz, found ${#dmgs[@]} and ${#tars[@]}."; exit 1; fi
+          if [ ! -f "${tars[0]}.sig" ]; then echo "::error::No signature beside ${tars[0]}: is createUpdaterArtifacts on?"; exit 1; fi
+          cp "${dmgs[0]}" release/Split-Finder-Mac-Apple-silicon.dmg
+          cp "${tars[0]}" release/Split-Finder-Mac-Apple-silicon.app.tar.gz
+          cp "${tars[0]}.sig" release/Split-Finder-Mac-Apple-silicon.app.tar.gz.sig
+          ls -l release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-mac
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    needs: [version, tests, windows, mac]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+
+      # Every signature checked against the app's public key and the version, then latest.json written. Any problem:
+      # the step fails and nothing is published.
+      - name: Check the signatures and write latest.json
+        run: npx tsx scripts/release-latest-json.ts --version "$VERSION" --dir release --out release/latest.json
+
+      - name: Release notes
+        run: |
+          node -e '
+            const n = require("./docs/release.json");
+            const lines = [
+              "Windows 10 or 11: download Split-Finder-Windows-x64-setup.exe and open it.",
+              "Mac with Apple silicon: download Split-Finder-Mac-Apple-silicon.dmg.",
+              "Split Finder 0.1.0 cannot update itself: install this version over it once (your data and keys are kept). Copies installed from a release that has latest.json update themselves.",
+              "",
+              "What changed:",
+              ...n.notes.map((x) => "- " + x),
+            ];
+            require("fs").writeFileSync("release-notes.md", lines.join("\n") + "\n");
+          '
+          ls -l release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-all
+          path: release/
+          if-no-files-found: error
+
+      # The tag must already be on GitHub (--verify-tag): a release is never made from a branch.
+      - name: Publish the release
+        if: github.event_name == 'push' || inputs.dry_run == false
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" --verify-tag --title "Split Finder $VERSION" --notes-file release-notes.md \
+            release/Split-Finder-Windows-x64-setup.exe \
+            release/Split-Finder-Windows-x64-setup.exe.sig \
+            release/Split-Finder-Mac-Apple-silicon.dmg \
+            release/Split-Finder-Mac-Apple-silicon.app.tar.gz \
+            release/Split-Finder-Mac-Apple-silicon.app.tar.gz.sig \
+            release/latest.json
+
+      - name: Dry run
+        if: github.event_name != 'push' && inputs.dry_run != false
+        run: |
+          echo "Dry run: nothing was published. The files are the run's artifact release-all." >> "$GITHUB_STEP_SUMMARY"
