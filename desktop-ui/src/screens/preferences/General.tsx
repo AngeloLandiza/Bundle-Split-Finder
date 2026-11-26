@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { api, useAction, useApp } from '../../api/hooks';
+import { coverageSentence } from '@core/links/pictures';
+import { api, useAction, useApp, useResource } from '../../api/hooks';
 import { Button } from '../../components/Button';
 import { Segmented, Switch } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
@@ -93,6 +94,9 @@ function NewVersions() {
  */
 function LinksAndPictures() {
   const [prefs, setPrefs] = useState(readLinkPrefs);
+  // Nov 25: how far pictures reach on the stored deals, so he sees it fill in after a scan ("Pictures for 212 of 258 deals").
+  const [deals] = useResource(() => api.deals(), [], ['deals']);
+  const coverage = deals.data?.pictures ? coverageSentence(deals.data.pictures) : null;
   const change = (patch: Partial<LinkPrefs>) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
@@ -116,7 +120,10 @@ function LinksAndPictures() {
           ]}
         />
       </Row>
-      <Row label="Pictures" help="The Amazon photo stored for a part. Each picture is loaded from Amazon’s image server.">
+      <Row
+        label="Pictures"
+        help={`The Home Depot photo stored for a deal, and the Amazon or Home Depot photo stored for each part. Each picture is loaded from Home Depot’s or Amazon’s image server.${coverage ? ` ${coverage}` : ''}`}
+      >
         <Switch label="Show product pictures" checked={prefs.showPictures} onChange={(showPictures) => change({ showPictures })} />
       </Row>
     </>

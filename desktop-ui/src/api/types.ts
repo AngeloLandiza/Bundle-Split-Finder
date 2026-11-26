@@ -7,6 +7,7 @@ import type {
   KeyEntryView, StackedKeyName, NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, UpdaterState, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
+import type { PictureCoverage } from '@core/links/pictures';
 import type { PartFactView } from '@core/scan/types';
 import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
@@ -239,7 +240,10 @@ export interface RoiRange {
 }
 
 export interface DealRow {
-  /** Product pictures (Nov 25): the first part's stored Amazon picture, checked (core/src/links/pictures.ts), or null. */
+  /**
+   * Product pictures (Nov 25): the bundle's own Home Depot picture, else its first part's stored picture, checked
+   * (core/src/links/pictures.ts rowPicture), or null.
+   */
   image: string | null;
   id: string;
   title: string;
@@ -322,6 +326,8 @@ export interface DealsView {
   limitNotice: { title: string; text: string } | null;
   /** Days since the oldest price was seen, when the list is stale. */
   staleDays: number | null;
+  /** Nov 25: how many deals and parts have a picture (Settings > General); null from an older agent. */
+  pictures?: PictureCoverage | null;
 }
 
 // ------------------------------------------------------------------ GET /api/deals/:id
@@ -376,6 +382,8 @@ export interface DealPart {
   asin: string | null;
   /** The chosen listing's stored picture (core/src/links/pictures.ts checked it), or null. */
   image: string | null;
+  /** Nov 25: the part's own Home Depot picture, shown when `image` is null; null or absent when none is stored. */
+  hdImage?: string | null;
   /** The counted Amazon New price, or null. */
   price: number | null;
   /** That price after fees. */
@@ -441,6 +449,8 @@ export interface Estimate {
 
 export interface DealDetail {
   id: string;
+  /** Nov 25: the picture the deal's row shows (DealRow.image), at the inspector's size; null when none is stored. */
+  image?: string | null;
   title: string;
   brand: string;
   model: string;

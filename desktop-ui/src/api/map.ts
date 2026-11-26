@@ -406,7 +406,7 @@ export function mapRow(r: C.DealRow): DealRow {
 }
 
 export function mapDeals(r: C.DealsResponse): DealsView {
-  return { rows: r.rows.map(mapRow), at: r.at, ebayNotice: r.notices.ebay, limitNotice: r.notices.limit, staleDays: r.staleDays };
+  return { rows: r.rows.map(mapRow), at: r.at, ebayNotice: r.notices.ebay, limitNotice: r.notices.limit, staleDays: r.staleDays, pictures: r.pictures ?? null };
 }
 
 /** The deals list's sort, in the agent's words (GET /api/deals/export.csv?sort=). */
@@ -508,6 +508,7 @@ function partOf(p: PartRow): DealPart {
     grade,
     asin: p.asin,
     image: pictureUrl(p.image),
+    hdImage: pictureUrl(p.hdImage ?? null),
     price: p.price,
     // The contract holds the estimate's totals, not each part's net; nothing here works one out.
     net: null,
@@ -607,6 +608,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
   const parts = [...b.parts.map(partOf), ...unnamedOf(b)];
   return {
     id: d.row.id,
+    image: pictureUrl(d.row.image ?? null),
     title: b.title,
     brand: b.brand,
     model: b.model,

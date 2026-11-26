@@ -195,7 +195,7 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
               <li key={r.id}>
                 <button type="button" className="nav-row deal-grid" onClick={() => navigate({ screen: 'deals', id: r.id })}>
                   <span className="nav-pic-main">
-                    <Picture src={r.image} size="row" />
+                    <Picture src={r.image} size="row" brand={r.brand} />
                     <span className="nav-main">
                       <span className="nav-title" title={r.title}>
                         {r.buyNow ? <Tag tone="buy">Buy now</Tag> : null}

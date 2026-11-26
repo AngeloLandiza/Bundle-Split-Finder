@@ -12,6 +12,7 @@ import type { ApiClient } from './client';
 import { words } from '../lib/platform';
 import { mergePatch } from '../lib/patch';
 import { confirmedSourceName } from '@core/scan/confirmed';
+import { pictureCoverage } from '@core/links/pictures';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
 import type * as C from '@core/api/contract';
 import { mapDetail, mapReview, mapRow } from './map';
@@ -387,7 +388,9 @@ export function createMockClient(): ApiClient {
     async deals() {
       await online();
       if (mode === 'error') throw new ApiError('server', 'The agent could not read the deals. Try again.');
-      return { rows: clone(deals), at: deals.length ? new Date(Date.now() - 47 * 60_000).toISOString() : null, ebayNotice, limitNotice: null, staleDays: null };
+      // Nov 25: picture coverage as the agent counts it (core/src/links/pictures.ts), on the mock's rows and their parts.
+      const pictures = pictureCoverage(deals.map((r) => ({ brand: r.brand, image: r.image, parts: (details[r.id]?.parts ?? []).filter((p) => !p.unnamed) })));
+      return { rows: clone(deals), at: deals.length ? new Date(Date.now() - 47 * 60_000).toISOString() : null, ebayNotice, limitNotice: null, staleDays: null, pictures };
     },
     async deal(id) {
       await online();

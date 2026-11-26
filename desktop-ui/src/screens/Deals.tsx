@@ -286,8 +286,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       width: 'col-title',
       render: (r) => (
         <div className="deal-pic-cell">
-          {/* Product pictures (Nov 25): the first part's stored Amazon photo, or the neutral square. */}
-          <Picture src={r.image} size="row" />
+          {/* Product pictures (Nov 25): the bundle's Home Depot photo, else its first part's; else the brand's mark. */}
+          <Picture src={r.image} size="row" brand={r.brand} />
           <div className="deal-cell">
             <span className="deal-line">
               <span className="deal-title" title={r.title}>

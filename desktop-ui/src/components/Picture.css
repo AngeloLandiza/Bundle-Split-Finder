@@ -1,5 +1,6 @@
-/* Product pictures (design.md, Desktop app > Product pictures): a square slot, the photo on white (Amazon's photos are
-   shot on white), or a quiet neutral square with a hairline where none is stored. No glyph, no broken-image icon. */
+/* Product pictures (design.md, Desktop app > Product pictures): a square slot, the photo on white (Amazon's and Home
+   Depot's photos are shot on white), or a quiet neutral square marked with the brand's initial where none is stored. No
+   glyph, no icon, no broken-image icon. */
 .pic {
   flex: none;
   display: inline-flex;
@@ -15,9 +16,41 @@
   background: #fff;
 }
 
-/* No picture stored: the quietest square, the fill alone, so a column of them recedes. */
+/* No picture stored: the quietest square, the fill alone, so a column of them recedes; the brand's initial in the
+   tertiary label colour says it is a placeholder, not a picture that failed. */
 .pic:not(.pic-has) {
   box-shadow: none;
+}
+
+.pic-mark {
+  color: var(--label-3);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* On the selected row while the window is key (the accent with white text), the empty square and its mark stay readable. */
+:root[data-window-active] .tr-on .pic:not(.pic-has) {
+  background: rgb(255 255 255 / 0.16);
+}
+
+:root[data-window-active] .tr-on .pic-mark {
+  color: rgb(255 255 255 / 0.75);
+}
+
+.pic-row .pic-mark {
+  font-size: 12px;
+}
+
+.pic-part .pic-mark {
+  font-size: 14px;
+}
+
+.pic-head .pic-mark {
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .pic img {

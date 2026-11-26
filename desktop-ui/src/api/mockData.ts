@@ -5,6 +5,7 @@
 // placeholders: no fixture records them. Part lists and questions are written to match the titles. Estimates are computed here with the
 // same fee rule as core/src/money.ts, so the table, the pane and Today agree to the cent.
 
+import { rowPicture } from '@core/links/pictures';
 import { unnamedPartOf } from './map';
 import { MOCK_ALERTS, MOCK_ELIGIBLE, mockBogoView, trackingFor, withMockBogoGroups, type PairSeed, type TrackSeed } from './mockTracking';
 import type {
@@ -102,6 +103,23 @@ const MOCK_PICTURES: Record<string, string> = {
   B0CHSZLJ43: 'https://m.media-amazon.com/images/I/519NqtJVSRL._AC_UL320_.jpg',
 };
 
+/**
+ * Nov 25: the bundles' own Home Depot pictures, at the 145 px size the app keeps, copied from SerpApi's recorded rows of the
+ * same item ids (fixtures/recorded/hd-*.json, fixtures/validation/responses/home_depot/). Nine of the fifteen: the others
+ * show their first part's photo or the brand's mark, as rows do while a scan has not yet read their list.
+ */
+const MOCK_BUNDLE_PICTURES: Record<string, string> = {
+  '204373168': 'https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_145.jpg',
+  '317987591': 'https://images.thdstatic.com/productImages/b16b4743-d4cf-4c84-b731-5ccd3e2cc507/svn/ryobi-power-tool-combo-kits-pcl1600k2-64_145.jpg',
+  '317987595': 'https://images.thdstatic.com/productImages/0a572c1c-8c2c-4eda-b119-8df5de93975a/svn/ryobi-power-tool-combo-kits-pcl1200k2-64_145.jpg',
+  '322138483': 'https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_145.jpg',
+  '324869940': 'https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_145.jpg',
+  '324904496': 'https://images.thdstatic.com/productImages/29b6ba43-bdcd-4fe7-8152-cfd6067aed74/svn/ryobi-power-tool-combo-kits-pcl1201k2-pcl430b-64_145.jpg',
+  '328690510': 'https://images.thdstatic.com/productImages/2b4811b9-7e13-49a0-bb11-b4a3fe3d4bdf/svn/ryobi-power-tool-combo-kits-pcl500525sb-64_145.jpg',
+  '337440459': 'https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_145.jpg',
+  '339379349': 'https://images.thdstatic.com/productImages/3eecd39f-66b4-46e2-ba31-b2dcb456d6d7/svn/ryobi-power-tool-combo-kits-pcl2200k3n-64_145.jpg',
+};
+
 function part(s: PartSeed): DealPart {
   const qty = s.qty ?? 1;
   const counted = s.price !== null && (s.grade === 'verified' || s.grade === 'title_match');
@@ -133,6 +151,7 @@ function part(s: PartSeed): DealPart {
     grade: s.grade,
     asin: s.asin,
     image: s.asin ? (MOCK_PICTURES[s.asin] ?? null) : null,
+    hdImage: null,
     price: counted ? s.price : null,
     net: counted && s.price !== null ? net(s.price) : null,
     prices,
@@ -216,6 +235,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     : [];
   const detail: DealDetail = {
     id,
+    image: rowPicture(MOCK_BUNDLE_PICTURES[seed.itemId] ?? null, parts),
     title: seed.title,
     brand: seed.brand,
     model: seed.model,
@@ -244,7 +264,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
   if (seed.bogo) detail.bogo = mockBogoView(detail, { eligible: MOCK_ELIGIBLE, chosen: [], freeCount: 1, link: 'https://www.homedepot.com/b/Special-Values-Buy-One-Get-One-Free/N-5yc1vZ1z24hvk' });
   const row: DealRow = {
     id,
-    image: parts[0]?.image ?? null,
+    image: rowPicture(MOCK_BUNDLE_PICTURES[seed.itemId] ?? null, parts),
     title: seed.title,
     brand: seed.brand,
     model: seed.model,

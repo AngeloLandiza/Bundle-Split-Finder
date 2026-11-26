@@ -1,6 +1,6 @@
 import { checkedWords, staleWhy } from '../lib/pricesChecked';
 import { Fragment, useMemo, useState } from 'react';
-import { rowPicture } from '@core/links/pictures';
+import { partPicture, pictureUrl, rowPicture } from '@core/links/pictures';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealBuying } from '@core/api/contract';
 import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine, SellerPartLine } from '../api/types';
@@ -108,10 +108,23 @@ export function DealDetailPane({ id }: { id: string }) {
   );
 }
 
+/**
+ * The inspector's large picture: the same one the deal's row shows (the bundle's own Home Depot photo, else its first
+ * part's), with words saying whose photo it is.
+ */
+export function headPicture(d: Pick<DealDetail, 'image' | 'parts' | 'model'>): { src: string | null; label: string } {
+  const own = pictureUrl(d.image ?? null);
+  const first = d.parts[0];
+  if (own && own !== partPicture(first)) return { src: own, label: `${d.model} on Home Depot` };
+  const src = rowPicture(null, d.parts);
+  return { src, label: `${first?.model ?? d.model} on ${first && pictureUrl(first.image) ? 'Amazon' : 'Home Depot'}` };
+}
+
 function Detail({ d }: { d: DealDetail }) {
   const { navigate, state } = useApp();
   const e = d.estimate;
   const [copied, setCopied] = useState<string | null>(null);
+  const head = headPicture(d);
   const look = useAction(api.lookUp);
   // Answer once: "Change" on what his answer settled forgets it; the bundles it settled are asked about again.
   const forget = useAction(api.forgetFact);
@@ -144,8 +157,8 @@ function Detail({ d }: { d: DealDetail }) {
     <>
       <div className="detail-body" data-link-context={`deal:${d.id}`}>
         <header className="detail-head">
-          {/* The bundle's first part's stored Amazon photo; Home Depot's own photo is not stored. */}
-          <Picture src={rowPicture(null, d.parts)} size="head" label={`${d.parts[0]?.model ?? d.model} on Amazon`} />
+          {/* The picture the row shows: the bundle's own Home Depot photo, else its first part's. */}
+          <Picture src={head.src} size="head" label={head.label} brand={d.brand} />
           <p className="detail-brand">{d.brand}</p>
           <h2 className="detail-title">{d.title}</h2>
           <p className="detail-meta">
@@ -557,7 +570,7 @@ function Part({ part, pages, dealId, brand, questionId, scanRunning, seller }: {
       }}
     >
       <div className="part-top">
-        {part.unnamed ? null : <Picture src={part.image} size="part" label={`${part.model} on Amazon`} />}
+        {part.unnamed ? null : <Picture src={partPicture(part)} size="part" label={`${part.model} on ${pictureUrl(part.image) ? 'Amazon' : 'Home Depot'}`} brand={brand} />}
         <div className="part-name">
           <span className={`part-model${part.unnamed ? '' : ' code'}`}>
             {part.unnamed ? part.title ?? part.model : part.model}
