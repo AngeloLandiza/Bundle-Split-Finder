@@ -162,7 +162,7 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
       brand: b.brand, model: setModel(b), title: b.title, itemId: b.itemId || null, link: b.link,
       ...(b.setItems !== undefined ? { setItems: b.setItems } : {}),
     },
-    ...(rowPicture(b.parts) ? { image: rowPicture(b.parts) } : {}),
+    ...(rowPicture(null, b.parts) ? { image: rowPicture(null, b.parts) } : {}),
     section: b.section,
     price: b.price,
     regularPrice: b.regularPrice,

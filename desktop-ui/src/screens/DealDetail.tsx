@@ -145,7 +145,7 @@ function Detail({ d }: { d: DealDetail }) {
       <div className="detail-body" data-link-context={`deal:${d.id}`}>
         <header className="detail-head">
           {/* The bundle's first part's stored Amazon photo; Home Depot's own photo is not stored. */}
-          <Picture src={rowPicture(d.parts)} size="head" label={`${d.parts[0]?.model ?? d.model} on Amazon`} />
+          <Picture src={rowPicture(null, d.parts)} size="head" label={`${d.parts[0]?.model ?? d.model} on Amazon`} />
           <p className="detail-brand">{d.brand}</p>
           <h2 className="detail-title">{d.title}</h2>
           <p className="detail-meta">

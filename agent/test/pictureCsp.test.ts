@@ -22,4 +22,17 @@ describe('the content security policy', () => {
     };
     expect(imgSrc(conf.app.security.csp)).toEqual(expected);
   });
+
+  it('names Amazon’s and Home Depot’s image hosts exactly, for images only', () => {
+    const conf = JSON.parse(readFileSync(resolve(import.meta.dirname, '../../src-tauri/tauri.conf.json'), 'utf8')) as {
+      app: { security: { csp: string } };
+    };
+    for (const csp of [UI_CSP, conf.app.security.csp]) {
+      expect(imgSrc(csp)).toEqual(["'self'", 'data:', 'https://m.media-amazon.com', 'https://images.thdstatic.com']);
+      // No other directive names either host (no script, style, frame or connection to them), and no wildcard.
+      const others = csp.split(';').filter((d) => !/^\s*img-src /.test(d)).join(';');
+      expect(others).not.toMatch(/thdstatic|media-amazon/);
+      expect(csp).not.toMatch(/\*\.thdstatic|\*\.media-amazon/);
+    }
+  });
 });
