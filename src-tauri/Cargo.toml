@@ -1,6 +1,6 @@
 [package]
 name = "split-finder-desktop"
-version = "0.1.1"
+version = "0.1.2"
 description = "Split Finder local agent (Chrome extension companion)"
 authors = ["Bundle Split Finder"]
 license = ""

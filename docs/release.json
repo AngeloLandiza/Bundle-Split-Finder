@@ -1,10 +1,9 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "date": "2026-11-25",
   "notes": [
-    "Split Finder now installs new versions by itself.",
-    "You can save more than one SerpApi and Keepa key; searches and tokens add up.",
-    "Profit says when sales tax and inbound shipping are not counted yet."
+    "Home Depot and Amazon pages open inside Split Finder, with Copy link and Open in browser.",
+    "Product pictures on deals and parts, from data the app already had."
   ],
   "downloadUrl": "https://github.com/AngeloLandiza/Bundle-Split-Finder/releases/latest"
 }
