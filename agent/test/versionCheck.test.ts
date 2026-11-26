@@ -288,9 +288,9 @@ describe('what the request sends', () => {
 });
 
 describe('"Tell me when a new version is ready"', () => {
-  it('is on by default', async () => {
+  it('is on by default, and so is installing automatically', async () => {
     const s = (await (await ui('/api/settings')).json()) as { settings: { updates?: { tellMeAboutNewVersion: boolean } } };
-    expect(s.settings.updates).toEqual({ tellMeAboutNewVersion: true });
+    expect(s.settings.updates).toEqual({ tellMeAboutNewVersion: true, installAutomatically: true });
   });
 
   it('off: no request at all, no notice, no message', async () => {

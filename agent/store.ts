@@ -270,6 +270,21 @@ export interface ReleaseRuntime {
   history: VersionEntry[];
 }
 
+/** Nov 25, self-update (agent/selfUpdate.ts): what the shell's updater reported, kept across restarts. */
+export interface SelfUpdateRuntime {
+  /** The shell's last look at GitHub (epoch ms), and what it found. */
+  checkedAt: number | null;
+  outcome: 'current' | 'found' | 'failed' | null;
+  /** Written just before the shell installs: the next start compares it with the running version. */
+  installing: { version: string; from: string; notes: string[]; at: number } | null;
+  /** The version the app was updated to, for the calm notice, until he closes it. */
+  updated: { version: string; notes: string[] } | null;
+  /** He pressed Install now for this version. */
+  requested: string | null;
+  /** Versions said to be ready (Install now waiting), once each. Newest last, at most 20. */
+  announced: string[];
+}
+
 /** W4: what the scheduler, the meters and the alert engine keep between runs. Never a key. */
 export interface AgentRuntime {
   /** When the last scheduled scan started (epoch ms); the schedule counts from it. */
@@ -325,6 +340,8 @@ export interface AgentRuntime {
   telegramBot?: TelegramBotRuntime;
   /** Nov 25, new versions (agent/versionCheck.ts): what the daily look at the release note found, and what the owner was told. */
   release?: ReleaseRuntime;
+  /** Nov 25, self-update (agent/selfUpdate.ts). */
+  selfUpdate?: SelfUpdateRuntime;
   /** Seconds a unit of each kind took in recent scans, for the progress estimate (pipeline.ts). */
   rates: UnitRates;
   /** The last scan's job, as the Deals limit notice reads it (core/src/deals/limitCopy.ts). */
@@ -483,8 +500,9 @@ export function defaultSettings(): StoreData['settings'] {
       weekly: { day: 1, at: '08:00' },
     },
     shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
-    // Nov 25: the app reads the project's public release note once a day and says when a new version is ready.
-    updates: { tellMeAboutNewVersion: true },
+    // Nov 25: the app looks for new versions (self-update from GitHub releases, or the release note in a build that cannot)
+    // and installs a verified one by itself when nothing is running.
+    updates: { tellMeAboutNewVersion: true, installAutomatically: true },
     // Step 18: no prices entered, no budget; the AI limit is the AI cap's $25 (one value: syncAiLimit).
     costs: structuredClone(DEFAULT_COST_SETTINGS),
   };

@@ -67,13 +67,15 @@ import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_LISTING_SOURCE, isBundleListingPath, LISTING_SOURCES } from '../core/src/scan/listingSource';
 import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
-import { AgentWork, extensionSettingsOf, secretsOf, WorkRefused, type WorkDeps } from './work';
+import { AgentWork, extensionSettingsOf, scrub, secretsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 import { priceFromLink } from './priceFromLink';
 import { OutcomeBook, outcomesCsvOf, outcomesResponse } from './outcomes';
 import { parseSemver } from '../core/src/release/note';
 import { weeklyOf } from '../core/src/selfRun/weekly';
 import { checkForNewVersion, dismissUpdate, releaseState, updateNoticeOf, type VersionCheck } from './versionCheck';
+import { parseCheckReport, parsePendingReport } from '../core/src/release/update';
+import { SelfUpdate } from './selfUpdate';
 
 /** A paired extension counts as connected this long after it was last heard from. */
 export const HELPER_CONNECTED_MS = 90_000;
@@ -102,6 +104,11 @@ export interface AgentOptions {
   helperUnpack?: (zip: string, dest: string) => void;
   /** Nov 25: the running app's version; default the shell's SPLIT_FINDER_APP_VERSION. Null: nothing to compare, so no release check. */
   appVersion?: string | null;
+  /**
+   * Nov 25, self-update: the shell's SPLIT_FINDER_UPDATER ("on": it updates itself from GitHub releases, and the release
+   * note is not read; "dev" or "no-key": it cannot). Default the environment's; null outside the app.
+   */
+  updaterAvailability?: string | null;
   /** Nov 25: one line for a developer when the release note cannot be read; default console.warn. */
   releaseLog?: (line: string) => void;
   /** Nov 25, supervision: the shell started this agent again after the last one died (crash.ts restartFromEnv). */
@@ -386,6 +393,7 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
   if ('updates' in patch) {
     const u = obj(patch.updates, 'updates');
     if ('tellMeAboutNewVersion' in u) next.updates = { ...(next.updates ?? { tellMeAboutNewVersion: true }), tellMeAboutNewVersion: flag(u.tellMeAboutNewVersion, 'updates.tellMeAboutNewVersion') };
+    if ('installAutomatically' in u) next.updates = { ...(next.updates ?? { tellMeAboutNewVersion: true }), installAutomatically: flag(u.installAutomatically, 'updates.installAutomatically') };
   }
   if ('shell' in patch) {
     const sh = obj(patch.shell, 'shell');
@@ -584,22 +592,40 @@ export function createAgent(opts: AgentOptions): Agent {
       { store, fetchFn: opts.fetchFn ?? fetch, now, appVersion, announce: (text) => work.announceVersion(text), changed: () => mark('state', 'activity'), ...(opts.releaseLog ? { log: opts.releaseLog } : {}) },
       o,
     );
+  // Nov 25, self-update: a copy that updates itself (the shell's updater) learns of new versions from the release on GitHub,
+  // and the release note (a message and a link) would say the same thing twice: it is read only by a copy that cannot.
+  const selfUpdate = new SelfUpdate({
+    store, now, appVersion,
+    availability: opts.updaterAvailability !== undefined ? opts.updaterAvailability : (process.env.SPLIT_FINDER_UPDATER ?? null),
+    working: () => work.state().busy ?? (work.writing() ? 'other' : null),
+    nextScanAt: () => work.nextScanAt(),
+    announce: (text) => work.announceVersion(text),
+    scrub: (text, keys) => scrub(text, keys),
+    changed: () => mark('state', 'activity'),
+  });
+  try {
+    selfUpdate.atStart();
+  } catch (err) {
+    work.jobFailed('Noting the update', err);
+  }
   // Once shortly after start, then the hourly tick looks only when a day has passed since the last look.
-  const releaseStart = timers ? setTimeout(() => void checkVersion({ force: true }).catch(() => undefined), 30_000) : null;
-  const releaseTimer = timers ? setInterval(() => void checkVersion().catch(() => undefined), 3_600_000) : null;
+  const readNote = timers && !selfUpdate.can;
+  const releaseStart = readNote ? setTimeout(() => void checkVersion({ force: true }).catch(() => undefined), 30_000) : null;
+  const releaseTimer = readNote ? setInterval(() => void checkVersion().catch(() => undefined), 3_600_000) : null;
   releaseStart?.unref?.();
   releaseTimer?.unref?.();
 
   const state = () => {
     const data = Object.fromEntries(COLLECTIONS.map((n) => [n, store.get(n)])) as unknown as StoreData;
     const live = work.state();
-    const update = updateNoticeOf(store, appVersion);
+    const update = selfUpdate.can ? selfUpdate.notice(releaseState(store).dismissed) : updateNoticeOf(store, appVersion);
     return {
       ...agentState(data, {
         ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(), nextScanNote: work.nextScanNote(),
         ...(live.drip ? { drip: live.drip } : {}), serpLeft: work.serpLeft(), costs: work.costs.short(),
       }),
       ...(update ? { update } : {}),
+      updater: selfUpdate.state(),
       ...(work.seller.connected() ? { seller: work.seller.usage() } : {}),
     };
   };
@@ -728,6 +754,29 @@ export function createAgent(opts: AgentOptions): Agent {
     const b = obj(await ctx.body());
     if (typeof b.version !== 'string' || parseSemver(b.version) === null) throw new HttpError('bad_request', 'version must be like 0.1.1.');
     dismissUpdate(store, b.version);
+    selfUpdate.dismiss(b.version);
+    return { ok: true };
+  });
+  // Nov 25, self-update: the shell's reports (src-tauri/src/updater.rs). The app token only: an extension cannot send them.
+  r.post('/api/update/report', 'ui', async (ctx) => {
+    const report = parseCheckReport(await ctx.body());
+    if (!report) throw new HttpError('bad_request', 'outcome must be current or failed.');
+    selfUpdate.report(report);
+    return { ok: true };
+  });
+  r.post('/api/update/pending', 'ui', async (ctx) => {
+    const pending = parsePendingReport(await ctx.body());
+    if (!pending) throw new HttpError('bad_request', 'version must be like 0.2.0.');
+    if (!selfUpdate.can) return { install: false, why: 'This copy does not update itself.' };
+    const d = await selfUpdate.offer(pending);
+    return d.install ? { install: true } : { install: false, why: d.why };
+  });
+  // He pressed Install now: it installs at the shell's next offer (within 20 s), once nothing is running.
+  r.post('/api/update/install-now', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    if (typeof b.version !== 'string' || parseSemver(b.version) === null) throw new HttpError('bad_request', 'version must be like 0.2.0.');
+    const done = selfUpdate.installNow(b.version);
+    if (!done.ok) throw new HttpError('conflict', done.why);
     return { ok: true };
   });
 

@@ -360,6 +360,8 @@ export interface AgentState {
    * owner turned "Tell me when a new version is ready" off, or when he dismissed this version (POST /api/update/dismiss).
    */
   update?: UpdateNotice;
+  /** Nov 25, self-update: whether this copy updates itself, the running version and the last look (Settings, General). */
+  updater?: UpdaterState;
   /**
    * Nov 25: the app turned "Open at login" on itself, once, because a schedule was set (scans run only while it is running). The
    * quiet notice offers Turn off; POST /api/self-run/login-notice closes it (`turnOff` also turns the setting off). Absent when closed.
@@ -1513,15 +1515,47 @@ export interface AppSettings {
 }
 
 export interface UpdateSettings {
+  /**
+   * Settings, General, "Look for new versions" (the name is from before the app updated itself). Off: no request at all,
+   * so nothing is found, downloaded or installed either.
+   */
   tellMeAboutNewVersion: boolean;
+  /**
+   * Nov 25, self-update: "Install new versions automatically" (default on; absent: on). On: a verified update installs by
+   * itself when nothing is running, then a calm notice says so. Off: a notice "Version X is ready" with Install now.
+   */
+  installAutomatically?: boolean;
 }
 
-/** A newer version than the one running, as the notice shows it (GET /api/state `update`). `link` passed core's safeDownloadLink, else null. */
+/**
+ * The new-version notice (GET /api/state `update`). `kind`: `download` (a build that cannot update itself: the release
+ * note's link, which passed core's safeDownloadLink, else null), `ready` (a verified update waits for Install now) or
+ * `updated` (the app was updated to this version). Absent `kind`: `download` (an agent from before self-update).
+ */
 export interface UpdateNotice {
+  kind?: 'download' | 'ready' | 'updated';
   version: string;
   date: string;
   notes: string[];
   link: string | null;
+  /** `ready` after Install now: why it has not installed yet ("It installs when nothing is running; a scan is running."). */
+  waiting?: string;
+}
+
+/** Nov 25, self-update: what Settings, General shows about this copy's updates (GET /api/state `updater`). */
+export interface UpdaterState {
+  /** This copy updates itself from the project's GitHub releases. */
+  can: boolean;
+  /** When it cannot, why, in a sentence. */
+  why?: string;
+  /** The running version (x.y.z); null outside the app. */
+  version: string | null;
+  /** The shell's last look at GitHub (ISO); null before one since this copy was installed. */
+  checkedAt: string | null;
+  /** What that look found: nothing newer, a newer version (downloaded and verified), or a failure. */
+  outcome: 'current' | 'found' | 'failed' | null;
+  /** A verified version waiting to be installed. */
+  ready?: string;
 }
 
 /** One announced version in Activity (GET /api/activity `versions`), newest first. */
