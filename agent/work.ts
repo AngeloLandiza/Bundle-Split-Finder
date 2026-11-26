@@ -11,7 +11,7 @@
 import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { AppSettings, AskResponse, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import type { AppSettings, AskResponse, DripState, EvidenceQuote, KeyCheck, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
 import { profitQualifier } from '../core/src/estimateNote';
 import { keepaTokensForScan, routeAmazonWork, type KeepaRoom, type SerpRoom } from '../core/src/keepa/route';
 import { lookupsSentence, lookupWaysSentence, type LookupWays, sumWays } from '../core/src/deals/lookupCopy';
@@ -21,7 +21,7 @@ import { liveSuggestion, agreedWith, type StoredSuggestion } from '../core/src/a
 import { approvalOf } from '../core/src/assist/approve';
 import { EbayClient } from '../core/src/ebay/client';
 import { partPriceDropMessage } from '../core/src/keepa/alerts';
-import { TokenBudget } from '../core/src/keepa/budget';
+import { minutesUntilTokens, TokenBudget } from '../core/src/keepa/budget';
 import { KeepaClient, KeepaError } from '../core/src/keepa/client';
 import { type KeepaLookupAsk, keepaPartLookup, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
 import { keepCodeSample } from '../core/src/keepa/barcode';
@@ -54,9 +54,9 @@ import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ReviewItem, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { partKey } from '../core/src/scan/types';
-import { parseLedger, searchesLeftNow } from '../core/src/serpapi/balance';
-import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
-import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
+import { parseLedger, searchesLeftByKey, searchesLeftNow, type SpendRow } from '../core/src/serpapi/balance';
+import { type AccountInfo, type KeyAccount, pooledAccount, SearchBudget } from '../core/src/serpapi/budget';
+import { type LedgerEntry, type PoolKey, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import {
   BRAND_QUERIES, budgetPolicyFor, estimatedJudgeCost, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
 } from '../core/src/settings';
@@ -80,7 +80,8 @@ import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
 import { buildDigest, sendPending, type OutgoingTelegram } from './alerts';
-import { scrubKeyText } from './keyChecks';
+import { recordEntryCheck, scrubKeyText } from './keyChecks';
+import { keepaBalanceNoted, keyEntries, stackedSecrets, type StackedKeyName } from './keyList';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
@@ -89,7 +90,7 @@ import { backlogSentence, fullPerHour, HD_LIST_REREAD_MS, HdPace, type HdMode, p
 import { backlogOf, pagesWanted } from '../core/src/scan/hdOrder';
 import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
-import type { ActivityErrorRecord, PendingMessage, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer, TelegramAbout } from './store';
+import type { ActivityErrorRecord, PendingMessage, Store, StoredAutopilotEntry, StoredKeyEntry, StoredKeys, StoredOwnerAnswer, TelegramAbout } from './store';
 import { aiSpentThisMonth, asksAboutEbay } from './views';
 import { CostBook, scanHistory } from './costs';
 import type { CostStep } from '../core/src/costs/decide';
@@ -215,7 +216,8 @@ export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
 /** Every key the store holds, as text, so no sentence can carry one out. */
 export function secretsOf(keys: StoredKeys): string[] {
   const s = keys.amazonSeller;
-  return [keys.serpapi, keys.keepa, keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken, s?.clientId, s?.clientSecret, s?.refreshToken, s?.sellerId].filter(
+  // Key stacking: every saved SerpApi and Keepa key, not only the first.
+  return [keys.serpapi, keys.keepa, ...stackedSecrets(keys), keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken, s?.clientId, s?.clientSecret, s?.refreshToken, s?.sellerId].filter(
     (k): k is string => typeof k === 'string' && k.length >= 4,
   );
 }
@@ -839,7 +841,7 @@ export class AgentWork {
       return;
     }
     const budget = new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: this.costs.left('keepa') ?? Number.POSITIVE_INFINITY });
-    const keepa = this.keepaClient(keys.keepa, budget);
+    const keepa = this.keepaClient(budget);
     store.update('runtime', (r) => ({ ...r, drip: { checkedAt: now, lastLookupAt: r.drip?.lastLookupAt ?? null } }));
     const status = await this.keepaStatus(keepa);
     if (status === null) {
@@ -867,8 +869,8 @@ export class AgentWork {
         }, amazonDue(kept, this.d.now(), this.keepUsage().tried), tier);
         done.kept = (done.kept ?? 0) + r.pulled;
         done.tokens += r.tokens;
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       }
     };
     // Buy safety (Nov 23): the listings a buy waits on are checked first, before the lookups.
@@ -882,8 +884,8 @@ export class AgentWork {
         done.verified += v.verified;
         done.removed += v.removed;
         done.tokens += v.tokens;
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       }
     }
     // The drip's order (Nov 25): buy-safety checks (above), keeping deals current (Buy now first, then the watched deals,
@@ -901,8 +903,8 @@ export class AgentWork {
         });
         done.verified += r.replaced.length;
         rechecked = r.changed;
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       }
     }
     // Nov 25: the parts marked "no Amazon listing" whose barcode is now known, by code only (never a search, never
@@ -918,8 +920,8 @@ export class AgentWork {
           keepaLookup: (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask),
           keepaProduct: product,
         }, part);
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
         break;
       }
       if (out.status === 'refused') break;
@@ -940,9 +942,9 @@ export class AgentWork {
           keepaLookup: (brand, model, label, ask) => keepaPartLookup(keepa, brand, model, label, ask),
           keepaProduct: product,
         }, step);
-      } catch (err) {
-        // A refusal or a network error: the part keeps waiting; the next look is after DRIP_POLL_MS.
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A refusal or a network error: the part keeps waiting; the next look is after DRIP_POLL_MS. A Keepa key that
+        // Keepa refused is recorded by the client (keepaClient, onKeyRefused).
         break;
       }
       if (out.status === 'refused') break;
@@ -965,8 +967,8 @@ export class AgentWork {
         done.removed += v.removed;
         done.tokens += v.tokens;
         if (v.pulled > 0) store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: this.d.now() } }));
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       }
     }
     // The listing ladder, round 2: before giving up on a listing, the part's other candidates (free), then one Keepa search.
@@ -982,8 +984,8 @@ export class AgentWork {
         }, repicks);
         done.tokens += r.tokens;
         done.verified += r.switched.length;
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       }
     }
     // Signals rounds 2 and 3: then the fee and sales pulls (1 token each), after the lookups and the catalog check, the
@@ -1005,17 +1007,18 @@ export class AgentWork {
         }, wanted);
         done.sales += a.pulled;
         done.tokens += a.tokens;
-      } catch (err) {
-        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      } catch {
+        // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       }
     }
     this.dripActive = false;
     // The next look: when a lookup's tokens will have refilled above the reserve, and never sooner than DRIP_POLL_MS.
-    const left = (budget.knownBalance ?? status.tokensLeft) - ext.keepaReserve;
-    // Signals round 3: with no lookup waiting, a fee pull needs only its 1 token.
-    const short = (this.dripWaiting > 0 ? KEEPA_LOOKUP_TOKEN_ESTIMATE : 1) - left;
-    const perMin = status.refillRate > 0 ? status.refillRate : 1;
-    this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
+    // Signals round 3: with no lookup waiting, a fee pull needs only its 1 token. Key stacking: each key refills on its
+    // own and a request uses one key, so the wait is until one key holds it (minutesUntilTokens; one key: as before).
+    const need = this.dripWaiting > 0 ? KEEPA_LOOKUP_TOKEN_ESTIMATE : 1;
+    const perKey = budget.byKey.filter((k) => !k.out);
+    const balances = perKey.length > 0 ? perKey : [{ tokensLeft: budget.knownBalance ?? status.tokensLeft, refillRate: status.refillRate }];
+    this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, minutesUntilTokens(balances, need, ext.keepaReserve) * 60_000);
     if (done.looked === 0 && done.verified === 0 && done.removed === 0 && done.sales === 0 && (done.kept ?? 0) === 0) {
       if (prices > 0 || done.tokens > 0 || rechecked) await this.refresh(undefined, keepBefore);
       return;
@@ -1288,7 +1291,8 @@ export class AgentWork {
   private ledger(file: string) {
     return (entry: unknown) => {
       // The balance shown counts this row at once; the file is the record that survives a restart.
-      if (file === SERP_LEDGER && typeof (entry as { at?: unknown }).at === 'string') this.serpRows().push({ at: (entry as { at: string }).at });
+      const row = entry as { at?: unknown; keyId?: unknown };
+      if (file === SERP_LEDGER && typeof row.at === 'string') this.serpRows().push({ at: row.at, ...(typeof row.keyId === 'string' ? { keyId: row.keyId } : {}) });
       try {
         appendFileSync(join(this.d.dataDir, file), `${JSON.stringify(entry)}\n`);
       } catch {
@@ -1298,11 +1302,11 @@ export class AgentWork {
   }
 
   /** The rows of serpapi-ledger.jsonl, read once and then kept up to date by every spend this agent records. */
-  private serpLedgerRows: { at: string }[] | null = null;
+  private serpLedgerRows: SpendRow[] | null = null;
   /** Set when a scan's account check found the balance at or below the reserve and no explicit yes: it spends no search. */
   private reserveHeld: { left: number; reserve: number } | null = null;
 
-  private serpRows(): { at: string }[] {
+  private serpRows(): SpendRow[] {
     if (!this.serpLedgerRows) {
       try {
         this.serpLedgerRows = parseLedger(readFileSync(join(this.d.dataDir, SERP_LEDGER), 'utf8'));
@@ -1315,18 +1319,65 @@ export class AgentWork {
 
   /**
    * Searches left now: the last account check less the ledger rows written after it (core/src/serpapi/balance.ts). What
-   * the state shows and what the checks that gate spending read; the spend itself is held to a fresh account check.
+   * the state shows and what the checks that gate spending read; the spend itself is held to a fresh account check. Key
+   * stacking: the sum over the keys not refused, each from its own check less its own rows (rows with no key id are the
+   * first key's).
    */
   serpLeft(): number | null {
-    return searchesLeftNow(this.d.store.get('runtime').serp, this.serpRows());
+    const byKey = this.serpLeftByKey();
+    if (byKey === null) return searchesLeftNow(this.d.store.get('runtime').serp, this.serpRows());
+    const live = new Set(this.liveEntries('serpapi').map((e) => e.id));
+    const mine = Object.entries(byKey).filter(([id]) => live.has(id));
+    return mine.length === 0 ? null : mine.reduce((n, [, v]) => n + v, 0);
   }
 
-  /** The last account check, kept for the balance (runtime.serp). The rows it already counts are dropped from memory. */
-  private noteAccount(a: AccountInfo): void {
+  /** Key stacking: searches left now on each saved key with an account check; null when no key has one yet. */
+  serpLeftByKey(): Record<string, number> | null {
+    const rt = this.d.store.get('runtime');
+    const entries = keyEntries(this.d.store.get('keys'), 'serpapi');
+    if (!rt.serpKeys || !entries.some((e) => rt.serpKeys![e.id])) return null;
+    return searchesLeftByKey(rt.serpKeys, this.serpRows(), entries.map((e) => e.id)).byKey;
+  }
+
+  /**
+   * Key stacking: each key's account check, kept for its balance (runtime.serpKeys), and their sum over the keys not refused
+   * as runtime.serp (one key: its own figures, as before). Rows every key's check already counts are dropped from memory.
+   */
+  private noteKeyAccounts(accounts: readonly KeyAccount[]): void {
     const at = new Date(this.d.now()).toISOString();
-    this.d.store.update('runtime', (r) => ({ ...r, serp: { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at, ...(a.planName ? { planName: a.planName } : {}) } }));
-    const t = Date.parse(at);
-    this.serpLedgerRows = this.serpRows().filter((row) => !(Date.parse(row.at) <= t));
+    const live = new Set(this.liveEntries('serpapi').map((e) => e.id));
+    this.d.store.update('runtime', (r) => {
+      const serpKeys = { ...(r.serpKeys ?? {}) };
+      for (const { id, account: a } of accounts) {
+        serpKeys[id] = { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at, ...(a.planName ? { planName: a.planName } : {}) };
+      }
+      const mine = Object.entries(serpKeys).filter(([id]) => live.has(id)).map(([, v]) => v);
+      if (mine.length === 0) return { ...r, serpKeys };
+      const names = [...new Set(mine.map((v) => v.planName).filter((n): n is string => Boolean(n)))];
+      return {
+        ...r, serpKeys,
+        serp: {
+          left: mine.reduce((n, v) => n + v.left, 0), perMonth: mine.reduce((n, v) => n + v.perMonth, 0),
+          rateLimitPerHour: mine.reduce((n, v) => n + v.rateLimitPerHour, 0), at: mine.map((v) => v.at).sort().at(-1) ?? at,
+          ...(names.length > 0 ? { planName: names.join(' + ') } : {}),
+        },
+      };
+    });
+    const ids = new Set(keyEntries(this.d.store.get('keys'), 'serpapi').map((e) => e.id));
+    const oldest = Math.min(...Object.entries(this.d.store.get('runtime').serpKeys ?? {}).filter(([id]) => ids.has(id)).map(([, v]) => Date.parse(v.at)));
+    if (Number.isFinite(oldest) && ids.size === Object.keys(this.d.store.get('runtime').serpKeys ?? {}).filter((id) => ids.has(id)).length) {
+      this.serpLedgerRows = this.serpRows().filter((row) => !(Date.parse(row.at) <= oldest));
+    }
+  }
+
+  /** Key stacking: one key's account as its key check found it (free), kept as that key's balance. */
+  noteSerpKeyAccount(id: string, a: AccountInfo): void {
+    this.noteKeyAccounts([{ id, account: a }]);
+  }
+
+  /** Key stacking: one Keepa key's token status as its key check found it (free). */
+  noteKeepaKeyStatus(id: string, s: { tokensLeft: number; refillRate: number; refillIn: number }): void {
+    this.noteKeepaKey(id, s);
   }
 
   /** What rung 2's gate reads of the balance: the corrected figure (null before any account check). */
@@ -1337,10 +1388,9 @@ export class AgentWork {
 
   /** The free account check once more (no search is spent), so the balance is the account's own figure again. Never throws. */
   private async refreshAccount(): Promise<void> {
-    const key = this.d.store.get('keys').serpapi;
-    if (!key) return;
+    if (keyEntries(this.d.store.get('keys'), 'serpapi').length === 0) return;
     try {
-      this.noteAccount(await SerpApiClient.account(key, this.d.fetchFn, this.d.serpBaseUrl));
+      await this.serpPool();
     } catch {
       // The ledger-corrected balance stays; the next check tries again.
     }
@@ -1487,18 +1537,16 @@ export class AgentWork {
     if (work.lookups.length === 0) return none('No part waits for an Amazon lookup.');
     let keepa: KeepaRoom | null = null;
     if (keys.keepa && ext.amazonRefreshViaKeepa) {
-      const status = await this.keepaStatus(this.keepaClient(keys.keepa, new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: Number.POSITIVE_INFINITY })));
+      const status = await this.keepaStatus(this.keepaClient(new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: Number.POSITIVE_INFINITY })));
       keepa = { tokens: keepaTokensForScan({ tokensLeft: status?.tokensLeft ?? null, reserve: ext.keepaReserve, tokensPerScan: ext.keepaTokensPerScan }), trackingDepth: ext.trackingDepth };
     }
     let serp: SerpRoom;
     try {
-      const account = await SerpApiClient.account(keys.serpapi, this.d.fetchFn, this.d.serpBaseUrl);
-      this.keyProblem('serpapi', null);
-      this.noteAccount(account);
-      serp = new SearchBudget(account, budgetPolicyFor(lookupsCap(ext, maxSearches), reserveTrigger(useReserve), 0));
+      // Key stacking: each key's own free account check; the budget over the keys SerpApi accepted.
+      const pool = await this.serpPool();
+      serp = new SearchBudget(pool.accounts, budgetPolicyFor(lookupsCap(ext, maxSearches), reserveTrigger(useReserve), 0));
     } catch (err) {
-      if (err instanceof SerpApiError && err.status === 401) this.keyProblem('serpapi', err.message);
-      return none(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
+      return none(err instanceof WorkRefused ? err.message : 'Something went wrong while checking your SerpApi account.');
     }
     const plan = routeAmazonWork({ lookups: work.lookups }, keepa, serp);
     const viaKeepa = plan.keepaLookups.length;
@@ -1727,15 +1775,10 @@ export class AgentWork {
     const problems = Object.values(validateSettings(ext));
     if (problems.length > 0) throw new WorkRefused(`A setting needs fixing before a scan: ${problems[0]}`);
     if (!keys.serpapi) throw new WorkRefused('Add your SerpApi key in Settings.');
-    let account: AccountInfo;
-    try {
-      account = await SerpApiClient.account(keys.serpapi, this.d.fetchFn, this.d.serpBaseUrl);
-    } catch (err) {
-      if (err instanceof SerpApiError && err.status === 401) this.keyProblem('serpapi', err.message);
-      throw new WorkRefused(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
-    }
-    this.keyProblem('serpapi', null);
-    this.noteAccount(account);
+    // Key stacking: each key's own free account check. A refused key is said beside it and the scan goes on with the
+    // others; every key refused (or none answering) refuses the scan as one key did.
+    const pool = await this.serpPool();
+    const account = pool.total;
 
     const newest = (await this.scanStore.listScans())[0];
     const continued = newest?.status === 'running' ? newest : undefined;
@@ -1747,12 +1790,8 @@ export class AgentWork {
     const serpOk = this.costGate('serpapi', this.serpScanStep(ext, lookups?.maxSearches), this.costRun, notes).allow;
     const serpLeft = serpOk ? this.costs.left('serpapi') : 0;
     const extHeld = serpLeft === null ? ext : lookupsCap(ext, serpLeft);
-    const budget = new SearchBudget(account, budgetPolicyFor(lookups ? lookupsCap(extHeld, lookups.maxSearches) : extHeld, reserveTrigger(lookups?.useReserve === true), again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
-    const serpLedger = this.ledger(SERP_LEDGER);
-    const client = new SerpApiClient({
-      apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
-      onSpend: (e: LedgerEntry) => serpLedger(e),
-    });
+    const budget = new SearchBudget(pool.accounts, budgetPolicyFor(lookups ? lookupsCap(extHeld, lookups.maxSearches) : extHeld, reserveTrigger(lookups?.useReserve === true), again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
+    const client = this.serpClient(pool, budget);
     const keepa = await this.keepaDeps(ext, keys, notes);
     // Home Depot's pace: after a refusal no Home Depot page is read until the cool-down ends (lists, pages, part prices).
     const pausedUntil = lookups ? null : this.pace.pausedUntil();
@@ -1835,39 +1874,111 @@ export class AgentWork {
   }
 
   /** Step 15: a Keepa client on the owner's key whose every answer keeps the balance and refill in runtime.keepa. */
-  private keepaClient(key: string, budget: TokenBudget): KeepaClient {
+  /**
+   * Step 15: a Keepa client on the owner's keys whose every answer keeps the balance and refill in runtime.keepa. Key
+   * stacking: every saved Keepa key not refused, each request on one key that holds its tokens; each key's own balance in
+   * runtime.keepaKeys and their sum in runtime.keepa. A key Keepa refuses is recorded beside it in Settings.
+   */
+  private keepaClient(budget: TokenBudget): KeepaClient {
     const ledger = this.ledger('keepa-ledger.jsonl');
     return new KeepaClient({
-      apiKey: key, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now,
+      // Every saved key: the free token status asks each again, so a key refused earlier is found again once it works.
+      keys: keyEntries(this.d.store.get('keys'), 'keepa').map((e) => ({ id: e.id, key: e.key })), budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now,
       // Nov 25: a code request's cost as its responses said, kept between runs; its first answers kept as samples.
       codeCost: this.d.store.get('runtime').keepaCodeCost ?? null,
       onCodeAnswer: (sample, learned) => {
         this.d.store.update('runtime', (r) => ({ ...r, keepaCodeCost: learned, keepaCodeSamples: keepCodeSample(r.keepaCodeSamples, sample) }));
       },
+      onKeyRefused: (id, message) => this.noteEntryVerdict('keepa', id, { ok: false, kind: 'rejected', problem: message }),
       onSpend: (entry) => {
         ledger(entry);
-        this.d.store.update('runtime', (r) => ({
-          ...r, keepa: { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, refillRate: entry.refillRate ?? r.keepa?.refillRate, at: new Date(this.d.now()).toISOString() },
-        }));
+        if (entry.keyId) this.noteKeepaKey(entry.keyId, { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, ...(entry.refillRate !== undefined ? { refillRate: entry.refillRate } : {}) });
       },
     });
   }
 
+  /** Key stacking: one Keepa key's balance as its answer said; runtime.keepa is the sum over the keys not refused. */
+  private noteKeepaKey(id: string, s: { tokensLeft: number; refillIn: number; refillRate?: number }): void {
+    const at = new Date(this.d.now()).toISOString();
+    const keys = this.d.store.get('keys');
+    this.d.store.update('runtime', (r) => keepaBalanceNoted(r, keys, id, s, at));
+  }
+
   /**
    * Step 15: Keepa's free token status, kept in runtime.keepa; null when it could not be read (a rejected key is a key
-   * problem, said beside the key in Settings). Never spends a token.
+   * problem, said beside the key in Settings). Never spends a token. Key stacking: every key's own status; the sums.
    */
   async keepaStatus(client: KeepaClient): Promise<{ tokensLeft: number; refillRate: number } | null> {
     try {
       const st = await client.tokenStatus();
-      const at = new Date(this.d.now()).toISOString();
-      this.d.store.update('runtime', (r) => ({ ...r, keepa: { tokensLeft: st.tokensLeft, refillIn: st.refillIn, refillRate: st.refillRate, at } }));
-      this.keyProblem('keepa', null);
+      for (const k of st.keys ?? []) {
+        if (!k.ok) continue;
+        this.noteEntryVerdict('keepa', k.id, { ok: true, detail: `${k.tokensLeft} ${k.tokensLeft === 1 ? 'token' : 'tokens'}${k.refillRate > 0 ? `, ${k.refillRate} a minute` : ''}` });
+        this.noteKeepaKey(k.id, k);
+      }
       return st;
-    } catch (err) {
-      if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+    } catch {
+      // A Keepa key that Keepa refused is recorded by the client (keepaClient, onKeyRefused).
       return null;
     }
+  }
+
+  // ---- Nov 25, key stacking: SerpApi and Keepa keys, each its own account
+
+  /** The saved keys of a service that their service has not refused (a key with no verdict yet counts: it is tried). */
+  private liveEntries(name: StackedKeyName): StoredKeyEntry[] {
+    const checks = this.d.store.get('runtime').keyEntryChecks ?? {};
+    return keyEntries(this.d.store.get('keys'), name).filter((e) => checks[e.id]?.ok !== false);
+  }
+
+  /** What a service said of one saved key, recorded beside it (and the service's own record from all its keys). */
+  private noteEntryVerdict(name: StackedKeyName, id: string, check: KeyCheck): void {
+    const entry = keyEntries(this.d.store.get('keys'), name).find((e) => e.id === id);
+    if (!entry) return;
+    const said = check.ok ? check : { ...check, problem: scrubKeyText(check.problem, this.d.store.get('keys')) };
+    recordEntryCheck(this.d.store, name, id, entry.key, said, new Date(this.d.now()).toISOString());
+  }
+
+  /**
+   * Key stacking: every saved SerpApi key's account, each from its own free check (no search is spent). A key SerpApi does
+   * not accept is recorded beside it and left out; a key whose check did not answer is left out of this run (its balance is
+   * not known, so nothing is spent on it). Refused with the first key's sentence when no key answered.
+   */
+  private async serpPool(): Promise<{ accounts: KeyAccount[]; keys: PoolKey[]; total: AccountInfo }> {
+    const entries = keyEntries(this.d.store.get('keys'), 'serpapi');
+    if (entries.length === 0) throw new WorkRefused('Add your SerpApi key in Settings.');
+    const accounts: KeyAccount[] = [];
+    let first: unknown = null;
+    for (const e of entries) {
+      try {
+        const a = await SerpApiClient.account(e.key, this.d.fetchFn, this.d.serpBaseUrl);
+        accounts.push({ id: e.id, account: a });
+        this.noteEntryVerdict('serpapi', e.id, { ok: true, detail: `${a.totalSearchesLeft} of ${a.searchesPerMonth} searches left` });
+      } catch (err) {
+        first ??= err;
+        if (err instanceof SerpApiError && err.status === 401) this.noteEntryVerdict('serpapi', e.id, { ok: false, kind: 'rejected', problem: err.message });
+      }
+    }
+    if (accounts.length === 0) throw new WorkRefused(first instanceof SerpApiError ? first.message : 'Something went wrong while checking your SerpApi account.');
+    this.noteKeyAccounts(accounts);
+    return {
+      accounts,
+      keys: entries.filter((e) => accounts.some((a) => a.id === e.id)).map((e) => ({ id: e.id, key: e.key })),
+      total: pooledAccount(accounts.map((a) => a.account)),
+    };
+  }
+
+  /** A SerpApi client on the keys the pool's checks accepted, charging each search to the key its budget picks. */
+  private serpClient(pool: { keys: PoolKey[] }, budget: SearchBudget): SerpApiClient {
+    const ledger = this.ledger(SERP_LEDGER);
+    return new SerpApiClient({
+      keys: pool.keys, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
+      onSpend: (e: LedgerEntry) => ledger(e),
+      // A key SerpApi does not accept is said beside it; one out of searches or at its hour shows at its next account check.
+      onKeyRefused: (id, why, message) => {
+        if (why === 'rejected') this.noteEntryVerdict('serpapi', id, { ok: false, kind: 'rejected', problem: message });
+      },
+    });
   }
 
   /**
@@ -1887,7 +1998,7 @@ export class AgentWork {
     const keepaLeft = this.costs.left('keepa');
     const perScan = s.keepaTokensPerScan > 0 ? s.keepaTokensPerScan : Number.POSITIVE_INFINITY;
     const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: keepaLeft === null ? perScan : Math.min(perScan, keepaLeft) });
-    const keepa = this.keepaClient(keys.keepa, keepaBudget);
+    const keepa = this.keepaClient(keepaBudget);
     const status = await this.keepaStatus(keepa);
     if (status === null) {
       const problem = this.d.store.get('runtime').keyProblems?.keepa;
@@ -2626,7 +2737,7 @@ export class AgentWork {
     const perDay = app.lookups?.verifySearchesPerDay ?? 5;
     const high = Math.max(1, Math.min(wanted.length, perDay));
     if (!this.costGate('serpapi', { what: 'The listing check', held: 'was not made', expected: high, high }, mode === 'scan' ? this.costRun : `drip:${localDate(now)}`).allow) return null;
-    const ledger = this.ledger(SERP_LEDGER);
+    let pool: { keys: PoolKey[] } | null = null;
     const startedAt = this.d.now();
     const stop = (): boolean => (mode === 'drip' ? !this.dripAllowed() || this.dripCtl.signal.aborted : this.stopCtl.signal.aborted);
     let done: AutoConfirmDone;
@@ -2635,13 +2746,14 @@ export class AgentWork {
         ...base, ext, perDay: app.lookups?.verifySearchesPerDay ?? null, mode, usedThisScan, now: this.d.now, ...(progress ? { progress } : {}),
         saveState: (st) => store.update('runtime', (r) => ({ ...r, autoConfirm: { ...st, queue: r.autoConfirm?.queue ?? [], nextAt: r.autoConfirm?.nextAt ?? null } })),
         account: async () => {
-          const a = await SerpApiClient.account(keys.serpapi!, this.d.fetchFn, this.d.serpBaseUrl);
-          // Round 2: the last known account decides, without a call, whether rung 2 can read (rung2CanRun).
-          this.noteAccount(a);
-          return a;
+          // Round 2: the last known account decides, without a call, whether rung 2 can read (rung2CanRun). Key stacking:
+          // each key's own check, and the budget over the keys SerpApi accepted.
+          const p = await this.serpPool();
+          pool = p;
+          return p.accounts;
         },
         verify: (t, budget) => runPaid({
-          client: new SerpApiClient({ apiKey: keys.serpapi!, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl, onSpend: (e) => ledger(e) }),
+          client: this.serpClient(pool!, budget),
           budget, store: this.scanStore, now: this.d.now, settings: toScanSettings(ext), shouldStop: () => (stop() ? 'Stopped.' : null),
         }, { kind: 'verify', brand: t.brand, model: t.model, asin: t.asin }),
         shouldStop: stop,
@@ -2730,17 +2842,12 @@ export class AgentWork {
       if (!d.allow) return { searchesUsed: 0, held: `${d.reason} Confirm to spend anyway.` };
     }
     const ext = extensionSettingsOf(this.d.store.get('settings'));
-    let account: AccountInfo;
-    try {
-      account = await SerpApiClient.account(keys.serpapi, this.d.fetchFn, this.d.serpBaseUrl);
-    } catch (err) {
-      throw new WorkRefused(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
-    }
-    const budget = new SearchBudget(account, budgetPolicyFor(ext, 'manual', 0));
+    // Key stacking: each key's own free account check; the budget over the keys SerpApi accepted.
+    const pool = await this.serpPool();
+    const budget = new SearchBudget(pool.accounts, budgetPolicyFor(ext, 'manual', 0));
     const quote = quotePaid(action, await savedAnswers(this.scanStore), budget);
     if (quote.refusal) throw new WorkRefused(quote.refusal);
-    const ledger = this.ledger(SERP_LEDGER);
-    const client = new SerpApiClient({ apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl, onSpend: (e) => ledger(e) });
+    const client = this.serpClient(pool, budget);
     const startedAt = this.d.now();
     const run: RunRecord = { id: `run-${startedAt}`, kind: kind === 'verify' ? 'verify' : 'lookup', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: '', trigger: 'manual' };
     try {

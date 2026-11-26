@@ -8,7 +8,7 @@ import type { ExtensionSettings } from '../core/src/settings';
 import { budgetPolicyFor } from '../core/src/settings';
 import { autoConfirmSentence, autoConfirmTargets, dayOf, verifyAllowanceToday, type AutoConfirmTarget } from '../core/src/scan/autoConfirm';
 import type { MatchRecord, ScanStore } from '../core/src/scan/types';
-import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
+import { type AccountInfo, type KeyAccount, pooledAccount, SearchBudget } from '../core/src/serpapi/budget';
 import type { BundleSignals } from '../core/src/tracking/signals';
 import { unconfirmedReason } from '../core/src/keepa/verify';
 import { REPICK_SEARCH_EVERY_MS } from './verifyMatches';
@@ -43,8 +43,8 @@ export interface AutoConfirmDeps {
   keepaReads: boolean;
   state: AutoConfirmState | undefined;
   saveState: (s: AutoConfirmState) => void;
-  /** A fresh free account check (account.json). */
-  account: () => Promise<AccountInfo>;
+  /** A fresh free account check (account.json); key stacking: each saved key's own, by key id. */
+  account: () => Promise<AccountInfo | KeyAccount[]>;
   /** One paid Verify of the target within `budget` (runPaid with a SerpApiClient on that budget). */
   verify: (t: AutoConfirmTarget, budget: SearchBudget) => Promise<void>;
   /** 'scan': the scan's own cap applies, less what it spent (`usedThisScan`); 'drip': today's allowance only. */
@@ -99,7 +99,9 @@ export async function runAutoConfirm(d: AutoConfirmDeps): Promise<AutoConfirmDon
   if (targets.length === 0) return done;
   const today = dayOf(d.now());
   const state: AutoConfirmState = d.state && d.state.day === today ? { ...d.state, tried: [...d.state.tried] } : { day: today, spent: 0, tried: [...(d.state?.tried ?? [])] };
-  const account = await d.account();
+  const checked = await d.account();
+  // Key stacking: the allowance reads the keys' total; the budget charges each search to one key.
+  const account = Array.isArray(checked) ? pooledAccount(checked.map((k) => k.account)) : checked;
   const allowance = verifyAllowanceToday(account, d.ext.reserve, d.perDay, state.spent, d.now());
   if (allowance === 0) {
     d.saveState({ ...state, exhaustedDay: today });
@@ -107,7 +109,7 @@ export async function runAutoConfirm(d: AutoConfirmDeps): Promise<AutoConfirmDon
     return done;
   }
   const policy = budgetPolicyFor(d.ext, 'scheduled', d.mode === 'scan' ? d.usedThisScan ?? 0 : 0);
-  const budget = new SearchBudget(account, { reserve: policy.reserve, maxPerRun: Math.min(policy.maxPerRun, allowance) });
+  const budget = new SearchBudget(checked, { reserve: policy.reserve, maxPerRun: Math.min(policy.maxPerRun, allowance) });
   // What the allowance can read, not every listing that waits: the step's total is what will be read.
   d.progress?.add(Math.min(targets.length, Math.max(0, allowance)));
   for (const t of targets) {

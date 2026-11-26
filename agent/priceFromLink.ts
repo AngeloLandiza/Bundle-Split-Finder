@@ -19,6 +19,7 @@ import { parseListingLink } from '../core/src/scan/listingLink';
 import type { Cache } from '../core/src/serpapi/client';
 import { type HdPace, pausedSentence } from '../core/src/scan/hdPace';
 import { remoteReaders, NO_ANSWER } from './remoteReaders';
+import { keepaBalanceNoted, keyEntries } from './keyList';
 import type { Store, StoredKeys } from './store';
 import type { WorkerJobs } from './workerJobs';
 import { extensionSettingsOf, scrub } from './work';
@@ -102,17 +103,19 @@ async function fromAmazon(deps: PriceFromLinkDeps, keys: Keys, asin: string | un
   if (!keys.keepa) return no(`Add your Keepa key in Settings to read Amazon prices. ${TYPE_IT}`);
   const { keepaReserve } = extensionSettingsOf(deps.store.get('settings'));
   const budget = new TokenBudget({ reserve: keepaReserve, maxPerRun: Number.POSITIVE_INFINITY }, deps.store.get('runtime').keepa?.tokensLeft ?? null);
+  // Key stacking: every saved Keepa key (the one pull uses one key); each key's balance kept on its own, their sum as before.
   const client = new KeepaClient({
-    apiKey: keys.keepa, budget, cache: deps.cache, fetchFn, now: deps.now,
+    keys: keyEntries(keys, 'keepa').map((e) => ({ id: e.id, key: e.key })), budget, cache: deps.cache, fetchFn, now: deps.now,
     onSpend: (entry) => {
       try {
         appendFileSync(join(deps.dataDir, 'keepa-ledger.jsonl'), `${JSON.stringify(entry)}\n`);
       } catch {
         // The ledger is the record; the token balance is Keepa's.
       }
-      deps.store.update('runtime', (r) => ({
-        ...r, keepa: { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, refillRate: entry.refillRate ?? r.keepa?.refillRate, at: new Date(deps.now()).toISOString() },
-      }));
+      const at = new Date(deps.now()).toISOString();
+      deps.store.update('runtime', (r) => (entry.keyId
+        ? keepaBalanceNoted(r, keys, entry.keyId, { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, ...(entry.refillRate !== undefined ? { refillRate: entry.refillRate } : {}) }, at)
+        : { ...r, keepa: { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, refillRate: entry.refillRate ?? r.keepa?.refillRate, at } }));
     },
   });
   let result;
