@@ -1,7 +1,9 @@
 //! Development only (debug builds): the page viewer on its own, without the agent, to look at it and to check its
 //! security model on a real page while the installed app holds the agent's port. `examples/viewer_preview.rs` runs it:
 //!
-//!     cargo run --example viewer_preview -- <toolbar page> <first page> [context.json] [probe]
+//! ```text
+//! cargo run --example viewer_preview -- <toolbar page> <first page> [context.json] [probe] [wait:N page:N menu go:URL]
+//! ```
 //!
 //! The toolbar page is the dashboard bundle from `npm run ui:mock` (for example http://127.0.0.1:5199/#/viewer), which
 //! a runtime capability lets call the viewer's own commands, as capabilities/viewer-bar.json does for the agent's port.
