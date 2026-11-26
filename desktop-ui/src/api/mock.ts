@@ -21,12 +21,14 @@ import { applyFees } from './mockFees';
 import { mockBogoView } from './mockTracking';
 import { createMockOutcomes } from './mockOutcomes';
 import { buildCostsView, COSTS_SCENARIOS, costSettingsFor, type CostsScenario } from './mockCosts';
+import { keyLines } from '@core/costs/view';
+import type { CostsView } from '@core/costs/types';
 import type { BundleRow } from '@core/scan/types';
 import { parseListingLink } from '@core/scan/listingLink';
 import type { CostSettings } from '@core/costs/types';
 import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type KeyCheck, type KeyName, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early' | `costs-${CostsScenario}`;
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early' | 'keys' | `costs-${CostsScenario}`;
 
 const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
 const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
@@ -52,7 +54,7 @@ function scenario(): Scenario {
     const c = COSTS_SCENARIOS.find((x) => `costs-${x}` === s);
     if (c) return `costs-${c}`;
   }
-  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-ai', 'real-scanning', 'real-problems', 'real-early'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-ai', 'real-scanning', 'real-problems', 'real-early', 'keys'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
@@ -234,6 +236,24 @@ export function createMockClient(): ApiClient {
     state.agent.lastScan = { at: new Date(Date.now() - 20 * 60_000).toISOString(), result: 'limit', newDeals: 1, searches: 3, message: 'The scan stopped at your reserve of 20 searches. Scans start again when the plan renews on Dec 1.' };
   }
   if (mode === 'paused') state.agent.status = 'paused';
+  // Key stacking: every mock holds one SerpApi and one Keepa key, as the agent lists them; `?mock=keys` holds two SerpApi keys,
+  // the second refused, and two Keepa keys.
+  state.keyEntries = {
+    serpapi: [{ id: 'serpapi-1', label: 'Key 1', addedAt: null, check: { ok: true, at: new Date().toISOString(), detail: `${state.budget.serpLeft ?? 0} of 250 searches left` }, searchesLeft: state.budget.serpLeft, searchesPerMonth: 250 }],
+    keepa: [{ id: 'keepa-1', label: 'Key 1', addedAt: null, check: { ok: true, at: new Date().toISOString(), detail: '1,180 tokens, 1 a minute' }, tokensLeft: state.budget.keepaTokens, refillPerMin: 1 }],
+  };
+  if (mode === 'keys') {
+    state.keyEntries.serpapi!.push(
+      { id: 'serpapi-b', label: 'Partner', addedAt: new Date(Date.now() - 2 * 86_400_000).toISOString(), check: { ok: true, at: new Date().toISOString(), detail: '143 of 250 searches left' }, searchesLeft: 143, searchesPerMonth: 250 },
+      { id: 'serpapi-c', label: 'Key 3', addedAt: new Date(Date.now() - 3600_000).toISOString(), check: { ok: false, at: new Date().toISOString(), problem: 'SerpApi did not accept this key.' }, searchesLeft: null, searchesPerMonth: null },
+    );
+    state.keyEntries.keepa!.push({ id: 'keepa-b', label: 'Paid plan', addedAt: new Date(Date.now() - 86_400_000).toISOString(), check: { ok: true, at: new Date().toISOString(), detail: '300 tokens, 5 a minute' }, tokensLeft: 300, refillPerMin: 5 });
+    state.budget.serpLeft = (state.budget.serpLeft ?? 0) + 143;
+    state.budget.serpMonthly = 500;
+    state.budget.keepaTokens = (state.budget.keepaTokens ?? 0) + 300;
+    state.budget.keepaRefillPerMin = 6;
+    state.keyEntryProblems = [{ service: 'serpapi', id: 'serpapi-c', label: 'Key 3', problem: 'SerpApi Key 3 is not accepted. SerpApi did not accept this key.' }];
+  }
   if (mode === 'unread') {
     // The first scan stopped on a Home Depot page read: the bundles whose page was not read wait, they are not questions.
     const unread = deals.filter((d) => d.needsAnswer).slice(0, 4);
@@ -320,6 +340,23 @@ export function createMockClient(): ApiClient {
   const online = async (ms?: number) => {
     await wait(ms);
     if (mode === 'offline') throw new ApiError('offline', `The agent is not running. Open Split Finder from the ${words.trayPlace} to start it.`);
+  };
+
+  /** Key stacking: with two or more keys of a service, a line per key under its totals (the use split made up evenly). */
+  const withKeyLines = (view: CostsView): CostsView => {
+    for (const s of view.services) {
+      const name = s.service === 'serpapi' || s.service === 'keepa' ? s.service : null;
+      const entries = name ? state.keyEntries?.[name] ?? [] : [];
+      if (!name || entries.length < 2) continue;
+      const live = entries.filter((e) => e.check?.ok !== false);
+      const share = Math.floor(s.used / Math.max(1, live.length));
+      const used = new Map(live.map((e, i) => [e.id, i === 0 ? s.used - share * (live.length - 1) : share]));
+      s.keys = keyLines(name === 'serpapi' ? 'searches' : 'tokens', entries.map((e) => ({
+        id: e.id, label: e.label, left: (name === 'serpapi' ? e.searchesLeft : e.tokensLeft) ?? null,
+        planLimit: name === 'serpapi' ? e.searchesPerMonth ?? null : null, refused: e.check?.ok === false,
+      })), used);
+    }
+    return view;
   };
 
   /** What the key's own service says, and what the agent records of it (keyProblems, keyChecks). */
@@ -704,13 +741,13 @@ export function createMockClient(): ApiClient {
     },
     async costs() {
       await online(180);
-      return buildCostsView(costsScenario, costs, new Date());
+      return withKeyLines(buildCostsView(costsScenario, costs, new Date()));
     },
     async patchCosts(patch) {
       await online(150);
       costs = mergePatch(costs, patch as CostSettings);
       emit({ type: 'activity' });
-      return buildCostsView(costsScenario, costs, new Date());
+      return withKeyLines(buildCostsView(costsScenario, costs, new Date()));
     },
     async testNotification() {
       await online(300);
@@ -767,7 +804,52 @@ export function createMockClient(): ApiClient {
     async deleteKey(name) {
       await online();
       state.keys[name] = false;
+      if (name === 'serpapi' || name === 'keepa') delete state.keyEntries?.[name];
       sync();
+    },
+    // Key stacking: the same words as the agent; "bad" is refused, anything else works with a made-up balance.
+    async addKey(name, key, label) {
+      await online(1100);
+      const list = state.keyEntries?.[name] ?? [];
+      if (list.length >= 10) throw new ApiError('refused', 'At most 10 keys can be saved for one service.');
+      const id = `${name}-${Math.random().toString(16).slice(2, 10)}`;
+      const at = new Date().toISOString();
+      const bad = /bad/i.test(key);
+      const used = new Set(list.map((e) => e.label.toLowerCase()));
+      let n = list.length + 1;
+      while (used.has(`key ${n}`)) n += 1;
+      const check: KeyCheck = bad
+        ? { ok: false, kind: 'rejected', problem: REFUSED[name] }
+        : { ok: true, detail: name === 'serpapi' ? '250 of 250 searches left' : '60 tokens, 1 a minute' };
+      const entry = {
+        id, label: label?.trim() || `Key ${n}`, addedAt: at,
+        check: check.ok ? { ok: true, at, ...(check.detail ? { detail: check.detail } : {}) } : { ok: false, at, problem: check.problem },
+        ...(name === 'serpapi' ? { searchesLeft: bad ? null : 250, searchesPerMonth: bad ? null : 250 } : { tokensLeft: bad ? null : 60, refillPerMin: bad ? null : 1 }),
+      };
+      state.keyEntries = { ...state.keyEntries, [name]: [...list, entry] };
+      state.keys[name] = true;
+      if (!bad && name === 'serpapi') state.budget.serpLeft = (state.budget.serpLeft ?? 0) + 250;
+      if (bad) state.keyEntryProblems = [...(state.keyEntryProblems ?? []), { service: name, id, label: entry.label, problem: `${SERVICE[name]} ${entry.label} is not accepted. ${REFUSED[name]}` }];
+      sync();
+      return { id, check };
+    },
+    async renameKey(name, id, label) {
+      await online(300);
+      state.keyEntries = { ...state.keyEntries, [name]: (state.keyEntries?.[name] ?? []).map((e) => (e.id === id ? { ...e, label } : e)) };
+      sync();
+    },
+    async removeKeyEntry(name, id) {
+      await online(300);
+      const list = (state.keyEntries?.[name] ?? []).filter((e) => e.id !== id);
+      state.keyEntries = { ...state.keyEntries, [name]: list };
+      state.keyEntryProblems = (state.keyEntryProblems ?? []).filter((p) => p.id !== id);
+      if (list.length === 0) state.keys[name] = false;
+      sync();
+    },
+    async checkKeyEntry(name, id) {
+      await online(900);
+      const e = (state.keyEntries?.[name] ?? []).find((x) => x.id === id);
+      return e?.check?.ok === false ? { ok: false, kind: 'rejected', problem: e.check.problem ?? REFUSED[name] } : { ok: true, ...(e?.check?.detail ? { detail: e.check.detail } : {}) };
     },
 
     async pairRequests() {

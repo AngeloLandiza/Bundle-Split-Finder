@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, UpdaterState, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
+  KeyEntryView, StackedKeyName, NeedsLook, ActivityError, DealBuying, KeysPresence, OutcomeEntry, TelegramActionEntry, UpdateNotice, UpdaterState, VersionEntry, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState, OptionMarket,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PartFactView } from '@core/scan/types';
@@ -48,15 +48,17 @@ export type {
   WatchState,
   KeyCheck,
   KeyCheckRecord,
+  KeyEntryView,
   KeyName,
   KeysPresence,
+  StackedKeyName,
   NeedsLook,
   PairedExtension,
   PendingPairRequest,
   ReviewAnswer,
   SettingsPatch,
 } from '@core/api/contract';
-export type { CostsView, CostSettings, ServiceCost, CostState, BudgetedService, CostService } from '@core/costs/types';
+export type { CostsView, CostSettings, ServiceCost, CostState, BudgetedService, CostService, KeyCostLine } from '@core/costs/types';
 export type { ConfirmState } from '@core/scan/confirmed';
 export type { Schedule } from '@core/schedule';
 export type { FeeSource } from '@core/money';
@@ -198,6 +200,10 @@ export interface AppState {
   keyProblems?: KeyProblems;
   /** When each saved key last got a verdict from its own service; absent for a key not yet checked. */
   keyChecks?: KeyChecks;
+  /** Nov 25, key stacking: each saved SerpApi and Keepa key (id, label, added, check, its own balance), never a value. */
+  keyEntries?: Partial<Record<StackedKeyName, KeyEntryView[]>>;
+  /** Nov 25, key stacking: keys refused while another key of the same service still works ("SerpApi Key 2 is not accepted"). */
+  keyEntryProblems?: { service: StackedKeyName; id: string; label: string; problem: string }[];
   /**
    * The new-version notice: `download` (a copy that cannot update itself: the release note's link), `ready` (a verified
    * update waits for Install now) or `updated` (it was updated). Absent when none, when he turned it off, or closed it.

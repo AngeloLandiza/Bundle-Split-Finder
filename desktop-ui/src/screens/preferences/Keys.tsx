@@ -9,6 +9,8 @@ import { Glyph } from '../../components/Glyph';
 import { KeyCheckLine, useKeyCheck } from '../../components/KeyCheck';
 import { ConfirmInline } from '../../components/States';
 import { ebayHints } from '../../lib/keyCheck';
+import { entriesOf } from '../../lib/keyEntries';
+import { AddAnotherKey, KeyEntryList } from './KeyEntries';
 import { keyState } from '../../lib/keyStatus';
 import { words } from '../../lib/platform';
 import { Pane, Row } from './form';
@@ -157,6 +159,10 @@ function KeyRow({ def }: { def: Def }) {
   const del = useAction(() => api.deleteKey(def.name));
   const complete = def.fields.every((f) => f.optional || (values[f.id] ?? '').trim());
   const open = editing || (!has && state !== null);
+  // Key stacking: SerpApi and Keepa may hold keys from more than one account. With one key the row is as before; with two
+  // or more, a line per key replaces the single status, Replace, Remove and check.
+  const stacked = def.name === 'serpapi' || def.name === 'keepa' ? def.name : null;
+  const several = stacked !== null && entriesOf(state, stacked).length >= 2;
 
   const save = () => {
     if (!complete) return;
@@ -172,7 +178,8 @@ function KeyRow({ def }: { def: Def }) {
   return (
     <Row label={def.label} align="start" help={def.what}>
       <div className="stack">
-        <div className="key-status">
+        {several ? <KeyEntryList name={stacked!} /> : null}
+        <div className="key-status" hidden={several}>
           {state === null ? null : has ? (
             ks.state === 'rejected' ? (
               <span className="key-rejected">
@@ -212,7 +219,8 @@ function KeyRow({ def }: { def: Def }) {
         </div>
         {def.how ?? null}
         {def.name === 'amazonSeller' && has && sellerUsageLine(state?.seller) ? <p className="muted key-usage">{sellerUsageLine(state?.seller)}</p> : null}
-        <KeyCheckLine name={def.name} checking={put.busy || kc.rechecking} now={kc.now} onCheckAgain={kc.recheck} canCheckAgain={!open && !removing} />
+        {several ? null : <KeyCheckLine name={def.name} checking={put.busy || kc.rechecking} now={kc.now} onCheckAgain={kc.recheck} canCheckAgain={!open && !removing} />}
+        {stacked !== null && has && !open && !removing ? <AddAnotherKey name={stacked} /> : null}
         {waitingForChat && !open && !removing ? <TelegramChatFinder /> : null}
         {removing ? (
           <ConfirmInline

@@ -2,7 +2,7 @@
 // the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse, TelegramChatResponse, TelegramChatSaveResponse } from '@core/api/contract';
+import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse, StackedKeyName, TelegramChatResponse, TelegramChatSaveResponse } from '@core/api/contract';
 import type { CostSettingsPatch } from '../lib/costs';
 import { createHttpClient } from './http';
 import type {
@@ -135,6 +135,17 @@ export interface ApiClient {
   /** Checks the stored key again with its own service (POST /api/keys/:name/check), from the stored value; nothing is typed. */
   checkKey(name: KeyName): Promise<KeyCheck>;
   deleteKey(name: KeyName): Promise<void>;
+  /**
+   * Key stacking (SerpApi, Keepa): another key, from another account (POST /api/keys/:name/entries). Saved either way unless
+   * refused at the door (the same key twice, or ten saved); the answer is its own check.
+   */
+  addKey(name: StackedKeyName, key: string, label?: string): Promise<{ id: string; check: KeyCheck }>;
+  /** A new name for one saved key (PATCH /api/keys/:name/entries/:id). */
+  renameKey(name: StackedKeyName, id: string, label: string): Promise<void>;
+  /** Removes one saved key (DELETE /api/keys/:name/entries/:id); the others stay. */
+  removeKeyEntry(name: StackedKeyName, id: string): Promise<void>;
+  /** Checks one saved key again with its own service (POST /api/keys/:name/entries/:id/check). */
+  checkKeyEntry(name: StackedKeyName, id: string): Promise<KeyCheck>;
 
   /** Asks the agent for one notification on this Mac (POST /api/notify/test), so the owner can see how they arrive. */
   testNotification(): Promise<void>;

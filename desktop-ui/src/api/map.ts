@@ -219,6 +219,43 @@ export function keyChecksOf(v: unknown): KeyChecks | undefined {
   return Object.keys(out).length ? out : undefined;
 }
 
+/** Key stacking: each saved SerpApi and Keepa key as the agent lists it; a record without an id or a label is dropped. */
+export function keyEntriesOf(v: unknown): AppState['keyEntries'] {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const out: NonNullable<AppState['keyEntries']> = {};
+  const n = (x: unknown): number | null => (typeof x === 'number' && Number.isFinite(x) ? x : null);
+  for (const name of ['serpapi', 'keepa'] as const) {
+    const list = (v as Record<string, unknown>)[name];
+    if (!Array.isArray(list)) continue;
+    const entries = list.flatMap((r): C.KeyEntryView[] => {
+      if (typeof r !== 'object' || r === null) return [];
+      const e = r as Record<string, unknown>;
+      if (typeof e.id !== 'string' || !e.id || typeof e.label !== 'string') return [];
+      const c = e.check as Record<string, unknown> | undefined;
+      const check = c && typeof c.ok === 'boolean' && typeof c.at === 'string'
+        ? { ok: c.ok, at: c.at, ...(typeof c.detail === 'string' ? { detail: c.detail } : {}), ...(typeof c.problem === 'string' ? { problem: c.problem } : {}) }
+        : undefined;
+      return [{
+        id: e.id, label: e.label, addedAt: typeof e.addedAt === 'string' ? e.addedAt : null, ...(check ? { check } : {}),
+        ...(name === 'serpapi' ? { searchesLeft: n(e.searchesLeft), searchesPerMonth: n(e.searchesPerMonth) } : { tokensLeft: n(e.tokensLeft), refillPerMin: n(e.refillPerMin) }),
+      }];
+    });
+    if (entries.length > 0) out[name] = entries;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+/** Key stacking: the keys refused while another key of their service works, as the agent names them. */
+export function keyEntryProblemsOf(v: unknown): AppState['keyEntryProblems'] {
+  if (!Array.isArray(v)) return undefined;
+  const out = v.flatMap((r) => {
+    const e = r as Record<string, unknown> | null;
+    if (!e || (e.service !== 'serpapi' && e.service !== 'keepa') || typeof e.id !== 'string' || typeof e.label !== 'string' || typeof e.problem !== 'string') return [];
+    return [{ service: e.service as C.StackedKeyName, id: e.id, label: e.label, problem: e.problem }];
+  });
+  return out.length ? out : undefined;
+}
+
 /** The agent's new-version notice, or undefined when it is not one. The link is held to the same rule the agent applied (core/src/release/note.ts), so a bad one is never a button. */
 function updateOf(v: unknown): AppState['update'] {
   if (typeof v !== 'object' || v === null) return undefined;
@@ -288,6 +325,8 @@ export function mapState(s: C.AgentState): AppState {
     firstRun: s.firstRun ?? false,
     ...(problems ? { keyProblems: problems } : {}),
     ...(checks ? { keyChecks: checks } : {}),
+    ...(keyEntriesOf((s as { keyEntries?: unknown }).keyEntries) ? { keyEntries: keyEntriesOf((s as { keyEntries?: unknown }).keyEntries)! } : {}),
+    ...(keyEntryProblemsOf((s as { keyEntryProblems?: unknown }).keyEntryProblems) ? { keyEntryProblems: keyEntryProblemsOf((s as { keyEntryProblems?: unknown }).keyEntryProblems)! } : {}),
     ...(typeof s.profitNote === 'string' && s.profitNote ? { profitNote: s.profitNote } : {}),
     ...(s.costsPrompt && typeof s.costsPrompt.sentence === 'string' ? { costsPrompt: { sentence: s.costsPrompt.sentence } } : {}),
     ...(updateOf(s.update) ? { update: updateOf(s.update)! } : {}),

@@ -203,6 +203,13 @@ export function createHttpClient(): ApiClient {
     checkKey: async (name) => (await call<C.CheckKeyResponse>('POST', `/api/keys/${name}/check`, {})).check,
     setSelfShip: async (asin, selfShip) => void (await call<{ asin: string; selfShip: boolean }>('POST', `/api/seller/self-ship/${id(asin)}`, { selfShip })),
     deleteKey: async (name) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}`)),
+    addKey: async (name, key, label) => {
+      const r = await call<C.AddKeyResponse>('POST', `/api/keys/${name}/entries`, { key, ...(label ? { label } : {}) });
+      return { id: r.id, check: r.check };
+    },
+    renameKey: async (name, id, label) => void (await call<{ ok: true }>('PATCH', `/api/keys/${name}/entries/${encodeURIComponent(id)}`, { label })),
+    removeKeyEntry: async (name, id) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}/entries/${encodeURIComponent(id)}`)),
+    checkKeyEntry: async (name, id) => (await call<C.CheckKeyResponse>('POST', `/api/keys/${name}/entries/${encodeURIComponent(id)}/check`, {})).check,
 
     costs: () => call<CostsView>('GET', '/api/costs'),
     // The agent saves what changed and answers with the settings; the view is asked for again, since the states and the forecast moved.
