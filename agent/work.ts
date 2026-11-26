@@ -69,7 +69,7 @@ import { checkOwnWork, evaluateSignals, pullKeepingTrends, pullSales, pullsWante
 import { SellerAccount } from './seller';
 import { dealSnapshots, keepaKeeps, keptNow, pullDue, readOneDue, staleBuyKeys, tokenShareOf, used } from './keepCurrent';
 import { backfillMarkets, cachedMarkets, MARKET_BACKFILL } from './marketBackfill';
-import { backfillPictures, backfillSentence, cachedPictures, PICTURE_BACKFILL } from './pictureBackfill';
+import { backfillPictures, backfillSentence, cachedHomeDepotPictures, cachedPictures, PICTURE_BACKFILL } from './pictureBackfill';
 import { amazonDue, failingOf, hdDue, keepUsageOf, snapshotOf, verdictChanges, type DealSnapshot } from '../core/src/tracking/keepCurrent';
 import type { TrackingState } from '../core/src/tracking/state';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
@@ -460,12 +460,13 @@ export class AgentWork {
   }
 
   /**
-   * Pictures from what the app already reads (Nov 25, agent/pictureBackfill.ts): one pass over the Keepa answers cached in
-   * this data folder, once (runtime.migrations), reading files only. One line in Activity when it found any. A pass that
+   * Pictures from what the app already reads (Nov 25, agent/pictureBackfill.ts): one pass over the Keepa answers and SerpApi
+   * Home Depot list pages cached in this data folder, once (runtime.migrations), reading files only. One line in Activity when it found any. A pass that
    * fails is recorded as done too: the pulls after it keep their pictures themselves, and it must never hold up the start.
    */
   async picturesAtStart(): Promise<void> {
-    const filled = await backfillPictures(this.scanStore, cachedPictures(join(this.d.dataDir, 'cache'))).catch(() => ({ listings: 0, parts: 0 }));
+    const cacheDir = join(this.d.dataDir, 'cache');
+    const filled = await backfillPictures(this.scanStore, cachedPictures(cacheDir), cachedHomeDepotPictures(cacheDir)).catch(() => ({ listings: 0, deals: 0, parts: 0 }));
     const sentence = backfillSentence(filled);
     const log = sentence ? [{ name: PICTURE_BACKFILL, at: new Date(this.d.now()).toISOString(), sentence }] : [];
     this.d.store.update('runtime', (r) => ({ ...r, migrations: [...(r.migrations ?? []), PICTURE_BACKFILL], ...(log.length ? { migrationLog: [...(r.migrationLog ?? []), ...log] } : {}) }));

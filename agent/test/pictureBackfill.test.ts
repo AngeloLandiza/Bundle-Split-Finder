@@ -7,9 +7,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { pictureCoverage } from '../../core/src/links/pictures';
 import { MemoryScanStore } from '../../core/src/scan/memoryStore';
-import type { ListingRecord, MatchRecord } from '../../core/src/scan/types';
-import { backfillPictures, backfillSentence, cachedPictures } from '../pictureBackfill';
+import { buildReport } from '../../core/src/scan/report';
+import { DEFAULT_SCAN_SETTINGS, type ListingRecord, type MatchRecord } from '../../core/src/scan/types';
+import { loadScanFolder } from '../../scripts/data-folder';
+import { backfillPictures, backfillSentence, cachedHomeDepotPictures, cachedPictures } from '../pictureBackfill';
 import { DirCache } from '../scanStore';
 
 const FIX = join(import.meta.dirname, '..', '..', 'fixtures');
@@ -69,7 +72,7 @@ describe('pictures from cached Keepa answers', () => {
     await store.putMatch(match('DEWALT:DCF921B', 'B09M3TL9BB'));
 
     const first = await backfillPictures(store, pictures);
-    expect(first).toEqual({ listings: 1, parts: 1 });
+    expect(first).toEqual({ listings: 1, deals: 0, parts: 1 });
     expect(backfillSentence(first)).toBe('Found pictures for 1 part from data already stored. Nothing was spent.');
     expect((await store.getListing('B0BGYFTPGK'))!.image).toBe('https://m.media-amazon.com/images/I/31335X5Nl8L.jpg');
     expect((await store.getListing('B09M3TL9BB'))!.image).toBe(had);
@@ -77,7 +80,7 @@ describe('pictures from cached Keepa answers', () => {
     expect(await store.getListing('B01H9BL8EO')).toBeUndefined();
 
     const again = await backfillPictures(store, cachedPictures(join(dir, 'cache')));
-    expect(again).toEqual({ listings: 0, parts: 0 });
+    expect(again).toEqual({ listings: 0, deals: 0, parts: 0 });
     expect(backfillSentence(again)).toBeNull();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -86,19 +89,29 @@ describe('pictures from cached Keepa answers', () => {
     expect(cachedPictures(join(tmpdir(), 'no-such-cache-dir-pictures'))).toEqual(new Map());
   });
 
-  it('on the real store after six scans, with the Keepa answers recorded in fixtures/', async () => {
-    const store = new MemoryScanStore();
-    for (const [, l] of json('e2e-2026-11-23', 'after-scan6', 'scan', 'listings.json') as [string, ListingRecord][]) await store.putListing(l);
-    for (const [, m] of json('e2e-2026-11-23', 'after-scan6', 'scan', 'matches.json') as [string, MatchRecord][]) await store.putMatch(m);
+  it('on the real store after six scans, with the Keepa answers and Home Depot pages recorded in fixtures/', async () => {
+    const store = await loadScanFolder(join(FIX, 'e2e-2026-11-23', 'after-scan6'));
+    const coverage = async () => pictureCoverage((await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles);
     const pictured = async () => (await store.listListings()).filter((l) => l.image).length;
+    // Before: what the app showed (docs/decisions.md, Nov 25): 46 of 258 rows, 46 of 153 distinct parts.
     expect(await pictured()).toBe(573);
-    const r = await backfillPictures(store, cachedPictures(await cacheWithFixtures()));
-    // Four stored listings are in the recorded answers without a picture; none of them is a part's chosen listing. The
-    // owner's own cache (521 answers) holds the 25 chosen listings that have none (fixtures/keepa/stats-sample-2026-11-25.json
-    // lists all 25, trimmed of their pictures), so his numbers will differ.
-    expect(r).toEqual({ listings: 4, parts: 0 });
-    expect(await pictured()).toBe(577);
+    expect(await coverage()).toEqual({ deals: 46, dealsOf: 258, parts: 46, partsOf: 153 });
+
+    const cacheDir = await cacheWithFixtures();
+    // SerpApi's recorded Home Depot list pages, cached as the agent caches them (DirCache, by engine).
+    const cache = new DirCache(cacheDir);
+    for (const name of ['hd-bundles-ryobi-p1', 'hd-bundles-dewalt-p1', 'hd-bogo-bundles-ryobi-p1', 'hd-bogo-bundles-dewalt-p1', 'hd-search-ryobi-combo-p1', 'hd-search-dewalt-combo-p1', 'hd-search-ryobi-ratchet']) {
+      await cache.set(`engine=home_depot&page=1&q=${name}`, { at: 1, data: json('recorded', `${name}.json`) });
+    }
+    const r = await backfillPictures(store, cachedPictures(cacheDir), cachedHomeDepotPictures(cacheDir));
     expect(fetchSpy).not.toHaveBeenCalled();
+    // Four stored listings are in the recorded Keepa answers without a picture, none a part's chosen listing; the recorded
+    // Home Depot pages hold 20 of the 258 bundles and 33 of the 50 catalog parts. The owner's own cache (521 Keepa answers,
+    // and the SerpApi list pages of his first scans) is not this: his numbers will differ, most likely higher.
+    expect(r).toEqual({ listings: 4, deals: 20, parts: 33 });
+    expect(await pictured()).toBe(577);
+    const after = await coverage();
+    expect(after).toEqual({ deals: 62, dealsOf: 258, parts: 48, partsOf: 153 });
   });
 });
 
