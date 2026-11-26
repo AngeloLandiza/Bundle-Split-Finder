@@ -134,6 +134,20 @@ Open **Costs** (sidebar, under Activity; **⌘6** or **Ctrl+6**) to see what the
 - **Hold back anything expected to pass a limit** (on by default): a step that would take a service past its limit does not run, and a notice says so. Turn it off and you are only warned.
 - A warning (nearing a limit, expected to pass it, reached, or something held back) also appears as a banner on the other screens, with **Open Costs**.
 
+### More than one SerpApi or Keepa key
+
+If one month's searches are not enough, you can add a key from another account, for example your partner's or a paid plan. Open **Settings, Keys** and press **Add another key** under SerpApi (or Keepa). Paste the key, give it a name if you like (otherwise it is "Key 2"), and press **Save**. The app checks it at once, for free.
+
+- **The app adds them up.** Searches left, the month's allowance and Keepa's tokens are the totals of all your keys. Today, Settings and Costs show the total first and each key's share under it ("Key 1 60 · Partner 143").
+- **Your settings stay one number.** The **Reserve** and **Searches per scan** apply to the total, exactly as before. A scheduled scan still never touches the reserve.
+- **Each search uses one key:** the one with the most searches left that is not at its hourly limit. If SerpApi refuses that key during a search, the same search goes once to your next key; it is never sent twice to the same key, and you are only charged for the search that worked.
+- **One refused key does not stop a scan.** The others carry on, and a banner names the key ("SerpApi Key 2 is not accepted") with a button to **Settings, Keys**. Only when every key is refused does the scan stop, as it did with one key.
+- **Each key has its own line** in Settings, Keys: its name, when you added it, and what its service said ("Accepted, 143 of 250 searches left this month"). **Rename**, **Check again** and **Remove** work on that key alone.
+- **Costs** shows each service's totals with one line per key underneath. Type what you pay for the service in total, for all keys together, in its **Monthly price**.
+- **The AI keys, eBay, Telegram and your Amazon seller account stay one each.** The AI is capped in dollars across your account, and the others are one identity each.
+
+You are responsible for keeping to each account's terms with its provider.
+
 Your keys are saved only on your computer, in the app's own folder. On Windows they are readable by your Windows account and by this PC's administrators, the same as SSH keys; on a Mac, by your account alone. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To clear the deals, Review and scan history but keep your keys and settings, open **Settings, Data** and press **Reset scan data…**. The app copies what it deletes into a backup folder first and tells you where. To remove everything, including keys, uninstall the app and delete its data folder (**Settings, Data** shows it; on Windows it is `%APPDATA%\com.bundlesplitfinder.desktop`).
 
 ### Connecting your Amazon seller account

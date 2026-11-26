@@ -67,7 +67,8 @@ bucket's cap for the month, and `npm run budget` shows the account and each buck
 5. Before the demo run, `npm run budget` again and confirm at least 50 above the reserve.
 
 If the budget is closed: wait for the next hour (hourly limit) or the plan renewal (monthly).
-Do not work around it with a second key.
+Do not work around it with a second key. (Development has one key, the development key, and this rule stands. The
+desktop app's own store of the owner's keys may hold several of his own, below; that is never the development key.)
 
 ### With subagents and git worktrees
 
@@ -113,6 +114,32 @@ every scan.
 
 On the free plan a daily scan can afford about 5 searches (150 usable ÷ 30). Scanning only
 on click is the default; the $75 plan (5,000) fits a daily scan of 40 with room to spare.
+
+## Several keys of the owner's own (desktop app, Nov 25)
+
+The desktop agent's store may hold more than one SerpApi key and more than one Keepa key, each the key of its own account
+(the owner's partner's, a paid plan). Only the agent's store of the owner's keys; the development key, the extension's own
+key and `DEV_ALLOCATION` are untouched. The guard is the same `SearchBudget`, built from several accounts:
+
+1. **Each key is checked on its own**, with the free account check, at the start of every scan, Look up, Verify and
+   listing check. A key SerpApi refuses is left out and said beside it; one whose check did not answer is left out of
+   that run (its balance is not known, so nothing is spent on it). Every key refused refuses the run, as one key did.
+2. **Searches left = the sum** over the accepted keys; the month's allowance = the sum of their plans.
+3. **The reserve and the per-scan cap are single numbers on the total**, exactly as before: a scheduled scan never touches
+   the reserve, only the owner's explicit "Use searches for these" spends from it, still under the per-scan cap.
+4. **The hourly limit is each account's own.** A search needs one key with both a search left and room in its hour.
+5. **A search is charged to one key, chosen before the call:** the accepted key with the most searches left that is not at
+   its hourly limit (the earlier key on a tie). `serpapi-ledger.jsonl` rows carry that key's id (`keyId`), never the key;
+   rows written before have none and are read as the first key's.
+6. **One fall-over, never a retry.** If SerpApi answers the chosen key with 401 (key not accepted) or 429 (that account at
+   its hourly limit or out of searches), both uncharged per the table above, that key is marked for the run and the same
+   search may go once with the next key, when the keys left can still pay within the reserve, the run and the hour.
+   Never more than two sends for one search, never twice to one key. Any other failure is handled exactly as before.
+   No recorded fixture holds a 401 or 429 body: the rule reads the HTTP status only, as the client always has.
+
+Keepa: tokens are per key. Tokens available and the refill a minute are the sums; the Keepa reserve is on the total; a
+request uses one key that holds its tokens; the drip waits until one key holds a lookup's tokens
+(`minutesUntilTokens`). `keepa-ledger.jsonl` rows carry `keyId`. A Keepa request is never sent again with another key.
 
 ## Keepa tokens (v2 prototype)
 

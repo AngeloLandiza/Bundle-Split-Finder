@@ -19,13 +19,23 @@ Honest status: the Mac `.dmg` and the Windows `.exe` installer are both built an
 | Processes | The Tauri shell starts the agent as a bundled sidecar (`binaries/agent-dashboard`, a Node single executable built from `agent/` by `desktop:bundle-agent`). The UI runs in the shell's window. The extension runs in Chrome. |
 | Port | `127.0.0.1:8790` only. The agent checks Host (no DNS rebinding) and Origin (the app's own or the paired extension's). |
 | Auth | The app uses a token file, `<app-data>/agent-token` (owner-only). The shell injects it into the UI. The extension pairs once: a 6-digit code approved in the app returns its own token. Only a hash of each token is kept. No endpoint returns a key. |
-| Store | One writer, the agent. JSON files under `<app-data>/store/`, written to a temp file and renamed. A lock file refuses a second agent on the same folder. Keys are in `store/keys.json`, mode 0600. |
+| Store | One writer, the agent. JSON files under `<app-data>/store/`, written to a temp file and renamed. A lock file refuses a second agent on the same folder. Keys are in `store/keys.json`, mode 0600. SerpApi and Keepa may hold several keys (`serpapiKeys`, `keepaKeys`: id, label, added, key); the plain `serpapi` / `keepa` field is kept equal to the first key so an older build still finds one (agent/keyList.ts). |
 | Events | `GET /api/events` (server-sent): `state`, `deals`, `review`, `activity`, `notify`. The UI and the shell both listen. The shell turns `notify` into a native notification and the review count into the tray count. |
 | Home Depot reads | Queued as worker jobs. The extension long-polls `/api/worker/next` and posts results. Jobs wait while Chrome is closed. |
 | Contract | `core/src/api/`, shared by agent, UI and extension. |
 
 The shell: tray with open-question count, close to tray, single instance, window size
 remembered (minimum 1000x680), Cmd+R scan, Cmd+, settings, launch at login (opt-in).
+
+## Several SerpApi and Keepa keys (Nov 25)
+
+`POST /api/keys/:name/entries` adds a key (`{key, label?}`, answers `{saved, id, check}`), `PATCH /api/keys/:name/entries/:id`
+renames it (`{label}`), `DELETE /api/keys/:name/entries/:id` removes it, `POST /api/keys/:name/entries/:id/check` checks it
+again; `:name` is `serpapi` or `keepa` (any other is 404). The plain `PUT /api/keys/:name` adds Key 1 when none is saved
+and otherwise replaces the first key; `DELETE /api/keys/:name` removes every key of the service. `GET /api/state` lists
+each key as `keyEntries` (id, label, added date, its last check, its own searches left or tokens), never a value, and a key
+refused while another of its service works as `keyEntryProblems`; `keyProblems` names a service only when every key is
+refused. Spending and the ledgers: docs/search-budget.md, "Several keys of the owner's own". `?mock=keys` shows it.
 
 ## Commands
 

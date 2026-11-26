@@ -2570,3 +2570,71 @@ of an ad-hoc-signed app (its identity is its code hash, which changes with every
 window on Windows ever needs a click (per the docs it does not). The smoke test runs the real updater: if latest.json ever
 named a newer version than the build under test, that copy could update itself during the test.
 
+
+## Nov 25: more than one SerpApi and Keepa key ("key stacking")
+
+The owner may save more than one key for a service, each from its own account, and everything that counts, limits,
+forecasts, warns or explains adds them up. Built in `core/src/serpapi/budget.ts` (SearchBudget over several accounts),
+`core/src/serpapi/client.ts` (key choice, one fall-over), `core/src/keepa/budget.ts` and `client.ts` (tokens per key),
+`agent/keyList.ts` (the store's lists), `agent/keyChecks.ts` (a check per key), `agent/work.ts` (`serpPool`, `serpClient`,
+`keepaClient`), `core/src/costs/view.ts` (`keyLines`) and the desktop UI (`lib/keyEntries.ts`,
+`screens/preferences/KeyEntries.tsx`).
+
+- **Only SerpApi and Keepa.** Their allowance belongs to a key's account: searches a month and an hour, tokens and a refill.
+  The AI keys (Anthropic, OpenAI-compatible) stay single because the AI is capped in dollars across the account (one
+  monthly cap, `costs.services.ai.monthlyLimit`), so a second key adds nothing the cap would let through; eBay, Telegram
+  and the Amazon seller account are one identity each (one developer app, one bot and chat, one seller), so a second one
+  is a different setup, not more of the same. *For v2:* if the owner runs two AI providers, that is a pipeline setting,
+  not a key list.
+- **The store keeps a list and the old field.** `keys.json` holds `serpapiKeys` / `keepaKeys`, an ordered list of
+  `{id, label, addedAt, key}`, and the plain `serpapi` / `keepa` string, kept equal to the first key's value on every
+  write. *Why keep the old field:* a build from before this (one key) that opens the file still finds a key, so a
+  downgrade never leaves the owner with none; it sees and spends only the first key. *Migration:* at every open of the
+  store (`normalizeKeyLists`, not a one-time migration, because an older build may have written the file since) a store
+  with only the plain field reads as one key, id `serpapi-1` / `keepa-1`, label "Key 1", added date null (not known: the
+  old store never kept one, and a made-up date would be a guess); a list whose first key differs from the plain field
+  means an older build replaced its key (the new value takes the first place under the first key's label, with a new id,
+  since it may be another account); a list with no plain field means an older build removed its key (the first entry
+  goes, the others stay). The list is written back only when it changed. Old ledger rows (no `keyId`) are read as the
+  first key's: with the fixed id of the migrated key they stay that key's.
+- **No endpoint returns a key value**, as before: the state lists each key's id, label, added date, last check and its own
+  balance (`keyEntries`). Every key of every service is in the scrubbers (`keySecrets`, `secretsOf`, so errors, Activity,
+  the crash line and Telegram). `npm run costs` reads only ids and labels from `keys.json` and drops the values at once.
+- **SerpApi's budget.** Each key gets its own free account check; searches left and the allowance are sums over the
+  accepted keys; the reserve and the per-scan cap stay single numbers on the total, exactly as before (a scheduled scan
+  never touches the reserve; only "Use searches for these" spends it); the hourly limit is each account's own, so a
+  search needs one key with both a search left and room in its hour (`leftThisHour` counts each key's smaller of the
+  two). A search is charged to the accepted key with the most searches left that is not at its hourly limit, the earlier
+  key on a tie, chosen before the call; the ledger row carries its id. With one key every figure is computed exactly as
+  before (a test holds the one-key budget equal to a plain one). A key whose account check did not answer is left out of
+  the run: its balance is not known, and an unknown number spends nothing (the rule above).
+- **One fall-over, never a retry** (rule 1). A 401 (SerpApi does not accept the key) or a 429 (that account is at its
+  hourly limit or out of searches) on the chosen key marks it for the run, and the same search may go once more with the
+  next key, only while the keys left can still pay within the reserve, the run and the hour. Never two sends to one key,
+  never a third send; every other failure (5xx, an errored search, the network) is thrown as with one key. *What it rests
+  on:* the HTTP status alone, as `SerpApiClient` has always read it, and the facts in docs/search-budget.md (429 is the
+  hourly limit or no searches left; errored and failed searches are not counted). No fixture records a 401 or 429 body,
+  and none is needed: the body is not read. *Open:* a recording of each (both free) would confirm SerpApi does not count
+  them; if it ever did, a fall-over could cost one extra search, at most once a search.
+- **Keepa.** Tokens are per key: tokens and the refill are sums; the Keepa reserve is on the total; a request uses one key
+  that holds its tokens (a lookup's 11 must be on one key); the free token status asks every key; the drip waits until one
+  key holds the next request's tokens and the total is above the reserve (`minutesUntilTokens`, equal to the old wait with
+  one key). A Keepa request is never sent again with another key: no recording says what Keepa charges for a refused one.
+- **A refused key does not stop the others.** A service's `keyProblems` entry (today's banner, today's refusal) is set
+  only when every one of its keys is refused; with one key it is that key's sentence, as before. A key refused while
+  another works is `keyEntryProblems`: the banner "SerpApi Key 2 is not accepted." with "Your other SerpApi keys carry
+  on." and the button to Settings, Keys; the sidebar's problem line "SerpApi Key 2 not accepted".
+- **Costs.** A service's row stays the totals (used, the plan's month summed, Keepa's refill summed); under it one line
+  per key when there are two or more (label, used and left this month, accepted, out, refused or not checked). Two plans
+  cost $0 only when every one is free. A key that ran out is named in the service's sentence, which warnings and held
+  steps carry ("SerpApi Key 1 has no searches left this month."). The monthly price stays one number, labelled as what he
+  pays for all keys together; a price never entered is still never $0. The limit's slider range follows the summed plan.
+- **Words.** Totals everywhere a number is shown, the split where there is room: Today's Agent card and Settings
+  Scanning's This month box (a second line), the sidebar (its tooltip), the welcome's key step, Telegram `/status`
+  ("Searches left: 203 across 2 keys: Key 1 60, Partner 143 (you keep 100)."), the weekly summary ("SerpApi 17 searches
+  (Key 1 15, Partner 2)"), a scan's summary ("5 searches (Key 2 4, Key 1 1)."). Settings, Keys says "a key from another
+  account, for example your partner's or a paid plan", never to open several free accounts, and "You are responsible for
+  keeping to each account's terms."
+- **Not changed:** the development key and `DEV_ALLOCATION`; the unpaired extension's one key; `validateSettings`' 1 to
+  250 for the reserve and the per-scan cap (so with several keys a reserve above 250 cannot be set yet); how profit is
+  computed and which deals count. *For v2:* the bounds could follow the summed allowance.
