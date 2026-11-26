@@ -86,6 +86,19 @@ There are also All deals, Confirmed, Needs an answer and Waiting for data.
 
 Press a number to choose an answer, then **Enter** to save. A "Saved" line appears with **Undo** for a few seconds. **Ctrl+Z** does the same. You can also undo from Activity later. A part left unanswered is not counted.
 
+### Looking at the Home Depot and Amazon pages inside the app
+
+When you click a Home Depot, Amazon, Keepa or eBay link, the page opens in Split Finder's own page window. You do not need to switch to Chrome.
+
+- **The bar at the top** shows Back, Forward and Reload, then which page this is ("Amazon · PCG002"), then the page's address. The website's name is shown in bold. It comes from the page that is really loaded, so a fake page cannot pretend to be Amazon.
+- **The other pages of the same deal.** When you open a page from a deal, the button with the page's name (for example "Amazon · PCG002") lists the deal's other pages: the bundle on Home Depot and each part on Amazon. Pick one to go straight to it. The list grows with the number of parts.
+- **Copy link** copies the page's address. **Open in browser** opens the same page in your normal browser.
+- **To use your browser instead**, hold Ctrl (⌘ on a Mac) while you click the link, or right-click the link and choose **Open in browser**. The right-click menu also has **Copy link address**. To always use your browser, set **Settings, General, Open links** to **In my browser**.
+- **You are not signed in here.** This window is not your browser. If a page asks you to sign in or pay, the app does not show it. It says "Sign in only in your browser" and offers **Open in browser**. Do not type a password into this window. Seller Central, the key sign-up pages and downloads always open in your browser.
+- **If a page does not load**, the window says so and offers **Try again** and **Open in browser**. Sometimes Home Depot or Amazon shows its own "something went wrong" or "access denied" page here. The app shows that page as it is and does not try to get around it. Use **Open in browser**.
+- **Clear viewer browsing data** (Settings, Data) clears the cookies and history of this window. Your own browser is not touched.
+- **Pictures.** Deals, Today and a deal's details show the Amazon photo the app stored for a part. A grey square means no photo is stored. The app never guesses one. To turn the photos off, use **Settings, General, Show product pictures**.
+
 ### Recording what you bought and what it made
 
 The app can only say what it expects. To find out whether its estimates can be trusted, tell it what you really did.
@@ -260,3 +273,9 @@ Press **Ctrl+/** in the app to see this list.
 | Ask AI about the question | A | A |
 | Undo the answer just saved | Ctrl+Z | ⌘Z |
 | Close a menu or sheet | Esc | Esc |
+| Page window: close it | Ctrl+W or Esc | ⌘W or Esc |
+| Page window: reload | Ctrl+R or F5 | ⌘R |
+| Page window: back, forward | Ctrl+[ and Ctrl+] (or Alt+Left, Alt+Right) | ⌘[ and ⌘] |
+| Page window: copy the link | Ctrl+Shift+C | ⇧⌘C |
+
+On Windows the page window's keys work when the bar at the top has the focus: click the bar first if they do nothing.

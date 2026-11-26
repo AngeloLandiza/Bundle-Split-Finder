@@ -2638,3 +2638,87 @@ forecasts, warns or explains adds them up. Built in `core/src/serpapi/budget.ts`
 - **Not changed:** the development key and `DEV_ALLOCATION`; the unpaired extension's one key; `validateSettings`' 1 to
   250 for the reserve and the per-scan cap (so with several keys a reserve above 250 cannot be set yet); how profit is
   computed and which deals count. *For v2:* the bounds could follow the summed allowance.
+
+
+## Nov 25: the page viewer, and product pictures from what is stored
+
+The owner: "If I click on a product link it should open a view of the website that shows the information... still allow
+copying the link address." Design in docs/design.md (Page viewer, Product pictures); Alex's words in docs/guide.md.
+
+**Decided.** A companion window (`src-tauri/src/viewer/`), one for every link, made of two child webviews: `viewer-bar`
+(our toolbar, the dashboard bundle at `#/viewer`) over `viewer-page` (the site). An iframe cannot do it: Home Depot and
+Amazon forbid being framed. The window is destroyed on close (nothing of a site keeps running) and rebuilt on the next
+link; the window-state plugin puts it back where he left it. Which links go there is one pure function,
+`core/src/links/viewerPolicy.ts` (`linkDestination`), with the same list in `src-tauri/src/viewer/policy.rs`
+(`VIEWER_SITES`; `core/test/viewer-policy.test.ts` fails when they differ): https only, exact hosts, page kinds (Home
+Depot `/p/ /s/ /b/ /c/ /collection/`, Amazon `/dp/ /gp/product/ /<words>/dp/ /s`, Keepa `#!product/`, eBay `/itm/`).
+Everything else, Seller Central, key sign-up pages, Telegram, GitHub downloads and `chrome://` included, goes to the
+default browser. The app does not link to Keepa product pages today, so a deal's page pop-up has none.
+
+**Verified facts (tauri 2.12.7, wry 0.57.3).**
+- `Window::add_child`, `tauri::window::WindowBuilder` and `WebviewBuilder` are behind the `unstable` cargo feature, which
+  "might introduce breaking changes in future minor releases" (https://docs.rs/tauri/2.12.7/tauri/window/struct.Window.html,
+  https://docs.rs/tauri/2.12.7/). Turned on in Cargo.toml for this alone. A Tauri update must re-run the viewer.
+- Creating a webview from a synchronous command can deadlock on Windows (WebviewBuilder docs, "Known issues",
+  https://docs.rs/tauri/2.12.7/tauri/webview/struct.WebviewBuilder.html): `viewer_open` and `viewer_clear_data` are async.
+- A capability whose `windows` matches a window applies to every webview in it; `webviews` matches a webview label alone
+  (https://v2.tauri.app/reference/acl/capability/). "If a webview or its window is not matching any capability then it
+  has no access to the IPC layer at all" (https://docs.rs/tauri-utils/latest/tauri_utils/acl/capability/struct.Capability.html).
+  `__TAURI_INTERNALS__` is still injected into every webview, remote pages included; enforcement is at the call.
+- `on_navigation` fires for every navigation action, subframes included: wry's WKWebView delegate has no main-frame check
+  (wry-0.57.3/src/wkwebview/navigation.rs `navigation_policy`), so `about:blank`, `about:srcdoc` and a page's own `blob:`
+  are allowed. `on_page_load` is WebKit's didCommit/didFinish, main frame only. wry reports no load failure.
+- `on_new_window` returns `NewWindowResponse::{Allow, Create, Deny}`; `on_download` returning false refuses;
+  `on_permission_request` returning `Deny` refuses camera, microphone, notifications; geolocation is not routed through
+  it on macOS ("not yet", https://docs.rs/tauri/2.12.7/tauri/webview/enum.PermissionKind.html). The app has no
+  location usage description, so macOS refuses it anyway.
+- `data_directory` is not used by WKWebView; `data_store_identifier([u8; 16])` gives a separate WebKit store on macOS 14+
+  (WebviewBuilder docs). Older macOS: `incognito(true)` (nothing kept). Windows: `data_directory` = the app's local data
+  `viewer-browsing` folder, never under the agent's `store/`. `clear_all_browsing_data` clears that store.
+- `Webview` has no back, forward, stop or loading state. They come from the platform view itself (`native.rs`, through
+  `with_webview`): WKWebView `goBack goForward stopLoading canGoBack canGoForward isLoading estimatedProgress`, and
+  ICoreWebView2 `GoBack GoForward Stop CanGoBack CanGoForward` (objc2, webview2-com and windows were already in
+  Cargo.lock through wry). No script of ours runs in the site's page.
+- A native menu treats one `&` as a mnemonic marker and drops it (muda-0.20.0 `strip_mnemonic`): the page pop-up doubles them.
+
+**Security model, and how each part is enforced.**
+- The site's webview has no capability: `viewer::tests::no_capability_reaches_the_sites_page` fails if any capability (a
+  file or inline in tauri.conf.json) names `viewer-page` in `webviews`, or names the `viewer` window in `windows` (which
+  would reach the page), with `*`/`?` globs matched and a `[` set counted as a match. The toolbar's one capability
+  (`viewer-bar.json`) names only `webviews: ["viewer-bar"]` and only `allow-viewer-state/do/pages` plus window drag and
+  zoom (`the_toolbar_gets_only_the_viewers_own_commands`). Each viewer command also checks the calling webview's label.
+- Run on this Mac (`cargo run --example viewer_preview -- ... probe`, a debug-only preview that evaluates one script in
+  the page to ask): on a real Home Depot page, `viewer_do`, `viewer_open`, `open_external`, `agent_status`,
+  `plugin:window|close`, `plugin:opener|open_url` and `plugin:event|emit` were each refused ("not allowed on window viewer
+  webview viewer-page"); `window.__SPLIT_FINDER_TOKEN__` was undefined in the page and in the toolbar.
+- No token: the page gets no init script of ours; the toolbar's own init script (`bar_script`) sets only the platform
+  and chrome, on its own origin. The toolbar asks the agent nothing.
+- Navigation: https away from this computer and its network (loopback, private, link-local, `.local`, `.localhost`,
+  single-label names) or the three in-memory frames; everything else dropped. The toolbar may not leave its own page. A
+  new window loads in the same viewer if https, else nothing. Downloads refused. Permission requests denied.
+- Sign-in, account, cart and payment pages (`policy::asks_sign_in`, on the committed main-frame address) are covered by
+  our own state and the page is hidden, so nothing is typed into it; Open in browser is the way on.
+- No user agent change, no header, nothing to get past a bot check. A page loads only on his click.
+- "Open in browser" and Copy link use the webview's real address, never the page's text; copying is pbcopy/clip.exe
+  with ASCII only (URL serialisation guarantees it), because the focus may be in the page where no script of ours runs.
+
+**Keys.** On a Mac they are View menu items, active only while the viewer is the key window; Cmd+R moves from Scan now to
+Reload page while the viewer is focused and back when it is not (a Cmd+R meant for the page must never spend searches).
+Windows has no menu bar: the toolbar takes the keys while it has the focus; in the page WebView2's own F5 and Alt+arrows work.
+
+**Pictures.** Real store after six scans (fixtures/e2e-2026-11-23/after-scan6): bundles 0 of 258 have a picture (no Home
+Depot image is stored at all); part rows 160 of 410 (39%), 46 of 153 distinct part models; saved Amazon listings 573 of
+962; rows whose first part has a picture 46 of 258 (18%), bundles with any part picture 91, all parts 24; among the 37
+bundles with an estimate, 28 have a first-part picture. Every stored picture is on `m.media-amazon.com`, the only host
+the CSP's `img-src` names (`agent/uiStatic.ts`, `tauri.conf.json`; `agent/test/pictureCsp.test.ts`). A row shows its
+first part's picture only (a later part's photo would misdescribe a kit); a missing or failed picture is a quiet square.
+Coverage is thin on the whole list and good where it matters (the estimated deals at the top). Nothing new is fetched to
+fill it; a Home Depot photo would need a new field in the stored read.
+
+**Not verified.** Windows: compiled only (`cargo xwin check --target x86_64-pc-windows-msvc`, no errors); never run, so
+the WebView2 calls, the data folder, the toolbar's keys and a failed load (WebView2 shows its own error page; there is no
+load-failure detection there) are unseen. The full app with the viewer was not run on this Mac: the installed app holds
+port 8790, so the viewer was run on its own through the preview, the dashboard links were exercised in the browser mock
+and by unit tests, and the View menu accelerator swap was built but not pressed. On the one Home Depot product page
+loaded, Home Depot answered with its own "Oops!! Something went wrong" page inside the viewer; Amazon's listing loaded
+normally. If Home Depot keeps refusing there, Open in browser is the way, by design.
